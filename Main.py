@@ -1,3 +1,4 @@
+from io import StringIO
 import os
 import sys
 import json
@@ -81,6 +82,7 @@ class Main:
         """ 
         Converts objects to dictionaries.
         \nSource: https://www.codegrepper.com/code-examples/whatever/python+nested+object+to+dict
+        \nreturn a dictionary of input object
         """
         
         if not  hasattr(obj,"__dict__"):
@@ -102,7 +104,11 @@ class Main:
             
         return result
     
-    def toJson(obj):
+    def toJson(obj: object) -> str:
+        """
+        Converts objects to JSON though dictionaries.
+        \nreturns JSON string
+        """
         dict = Main.toDict(obj)
         return json.dumps(dict, default=str)
             
@@ -112,8 +118,11 @@ class Main:
         \nreturns number of added sources
         """
         
-        newSources = []
+        fileContent = open(sourcesFilename, "r").read()
+        fileSources = json.loads(fileContent if len(fileContent) > 0 else """{"sources":[]}""")
+        updatedSourcesJson = fileSources
         
+        addedSources = 0
         for source in sources:
             isUrl = validators.url(source)
             url = source if isUrl else None
@@ -122,14 +131,18 @@ class Main:
                 printS("The source: ", source, "is not a valid URL or directory path.", color=colors["ERROR"])
                 continue
             
+            addedSources += 1
             dto = DateTimeObject()
             newSource = VideoSource("name", url, dir, isUrl, True, dto, dto)
-            newSources.append(newSource)
+            updatedSourcesJson["sources"].append(Main.toDict(newSource))
             
-        updatedSourcesJson = Main.toJson(newSource)
-        f = open(sourcesFilename, "a")
-        f.writelines(updatedSourcesJson)
-        f.close        
+        f = open(sourcesFilename, "w") # Truncate
+        j = json.dumps(Main.toJson(updatedSourcesJson))
+        print(j)
+        f.writelines(j)
+        f.close
+        
+        return addedSources 
 
     def printHelp():
         """

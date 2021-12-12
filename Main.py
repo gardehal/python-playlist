@@ -2,6 +2,7 @@ from io import StringIO
 import os
 import sys
 import json
+from types import SimpleNamespace
 from model.VideoSource import VideoSource
 from myutil.Util import *
 from myutil.DateTimeObject import *
@@ -54,7 +55,6 @@ class Main:
                 sourcesAdded = Main.addSource(args)
                 if(sourcesAdded != None and sourcesAdded > 0):
                     printS("Added ", sourcesAdded, " new sources", color=colors["OKGREEN"])
-                    continue
 
                 argIndex += len(args) + 1
                 continue
@@ -112,6 +112,16 @@ class Main:
         dict = Main.toDict(obj)
         return json.dumps(dict, default=str)
             
+    def jsonToObject(jsonString):
+        """JSON to T type object
+
+        Args:
+            json ([type]): [description]
+        """
+        # return json.loads(jsonString, object_hook=Main.toDict)
+        return json.loads(jsonString)
+        return json.loads(jsonString, object_hook=lambda d: SimpleNamespace(**d))
+            
     def addSource(sources) -> int:
         """
         Add video source(s) to list of watched sources.
@@ -119,7 +129,8 @@ class Main:
         """
         
         fileContent = open(sourcesFilename, "r").read()
-        fileSources = json.loads(fileContent if len(fileContent) > 0 else """{"sources":[]}""")
+        startingString = fileContent if len(fileContent) > 0 else """{"sources":[]}"""
+        fileSources = Main.jsonToObject(startingString)
         updatedSourcesJson = fileSources
         
         addedSources = 0
@@ -128,19 +139,17 @@ class Main:
             url = source if isUrl else None
             dir = source if os.path.exists(source) else None
             if(url == None and dir == None):
-                printS("The source: ", source, "is not a valid URL or directory path.", color=colors["ERROR"])
+                printS("The source: ", source, "is not a valid URL or directory path.", color=colors["FAIL"])
                 continue
             
             addedSources += 1
             dto = DateTimeObject()
             newSource = VideoSource("name", url, dir, isUrl, True, dto, dto)
-            updatedSourcesJson["sources"].append(Main.toDict(newSource))
+            newSourceJ = Main.toDict(newSource)
+            updatedSourcesJson["sources"].append(newSourceJ)
             
-        f = open(sourcesFilename, "w") # Truncate
-        j = json.dumps(Main.toJson(updatedSourcesJson))
-        print(j)
-        f.writelines(j)
-        f.close
+        with open(sourcesFilename, "w") as file: 
+            json.dump(updatedSourcesJson, file, default=str)
         
         return addedSources 
 

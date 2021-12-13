@@ -1,8 +1,12 @@
-from io import StringIO
 import os
+from re import S
 import sys
 import json
 from types import SimpleNamespace
+
+from six.moves import urllib
+import mechanize
+from typing import List
 from model.VideoSource import VideoSource
 from myutil.Util import *
 from myutil.DateTimeObject import *
@@ -22,6 +26,7 @@ playFlags = ["-play", "-p"]
 listQueueFlags = ["-list", "-l"]
 addVideoFlags = ["-add", "-a"]
 removeVideoFlags = ["-remove", "-rm", "-r"]
+listSourcesFlags = ["-listsources", "-ls"]
 addSourcesFlags = ["-addsource", "-as"]
 removeSourceFlags = ["-removesource", "-rms", "-rs"]
 fetchSourceFlags = ["-fetch", "-f", "-update", "-u"]
@@ -49,12 +54,29 @@ class Main:
 
                 quit()
 
+            elif(arg in listSourcesFlags):
+                args = extractArgs(argIndex, argV)
+                
+                sources = Main.getSources()
+                for i, source in enumerate(sources.sources):
+                    print(f"{i+1}: {source.name} - {source.url if source.isWebSource else source.directory}")
+
+                argIndex += 1
+                continue
+
             elif(arg in addSourcesFlags):
                 args = extractArgs(argIndex, argV)
                 
-                sourcesAdded = Main.addSource(args)
+                sourcesAdded = Main.addSources(args)
                 if(sourcesAdded != None and sourcesAdded > 0):
                     printS("Added ", sourcesAdded, " new sources", color=colors["OKGREEN"])
+
+                argIndex += len(args) + 1
+                continue
+
+            elif(arg in fetchSourceFlags):
+                args = extractArgs(argIndex, argV)
+                
 
                 argIndex += len(args) + 1
                 continue
@@ -66,7 +88,7 @@ class Main:
             argIndex += 1
             
     def createLocalFilesIfNone() -> bool:
-        """"
+        """
         Create local files used for storing settings, video ques, sources etc.
         \nreturns success = true
         """
@@ -109,20 +131,29 @@ class Main:
         Converts objects to JSON though dictionaries.
         \nreturns JSON string
         """
+        
         dict = Main.toDict(obj)
         return json.dumps(dict, default=str)
-            
-    def jsonToObject(jsonString):
-        """JSON to T type object
-
-        Args:
-            json ([type]): [description]
+    
+    def fromJson(str: str) -> any:
         """
-        # return json.loads(jsonString, object_hook=Main.toDict)
-        return json.loads(jsonString)
-        return json.loads(jsonString, object_hook=lambda d: SimpleNamespace(**d))
-            
-    def addSource(sources) -> int:
+        Converts JSON to an object.
+        \nreturns object any
+        """
+        
+        return json.loads(str, object_hook=lambda d: SimpleNamespace(**d))
+        
+    def getSources() -> List[VideoSource]:
+        """
+        List watched sources.
+        \nreturns list of sources
+        """
+        
+        fileContent = open(sourcesFilename, "r").read()
+        # Handle empty file?
+        return Main.fromJson(fileContent)
+    
+    def addSources(sources: List[str]) -> int:
         """
         Add video source(s) to list of watched sources.
         \nreturns number of added sources
@@ -130,7 +161,7 @@ class Main:
         
         fileContent = open(sourcesFilename, "r").read()
         startingString = fileContent if len(fileContent) > 0 else """{"sources":[]}"""
-        fileSources = Main.jsonToObject(startingString)
+        fileSources = json.loads(startingString)
         updatedSourcesJson = fileSources
         
         addedSources = 0
@@ -144,14 +175,23 @@ class Main:
             
             addedSources += 1
             dto = DateTimeObject()
-            newSource = VideoSource("name", url, dir, isUrl, True, dto, dto)
-            newSourceJ = Main.toDict(newSource)
-            updatedSourcesJson["sources"].append(newSourceJ)
+            
+            name = f"New source - {source}"
+            if(isUrl):
+                br = mechanize.Browser()
+                br.open(source)
+                name = br.title()
+                br.close()
+            else:
+                name = os.path.basename(source)
+            
+            newSource = VideoSource(name, url, dir, isUrl, True, dto, dto)
+            updatedSourcesJson["sources"].append(Main.toDict(newSource))
             
         with open(sourcesFilename, "w") as file: 
             json.dump(updatedSourcesJson, file, default=str)
         
-        return addedSources 
+        return addedSources     
 
     def printHelp():
         """
@@ -173,6 +213,7 @@ class Main:
         printS(listQueueFlags, ": List videos in queue.")
         printS(addVideoFlags, " + [1+ URLs or paths to files]: Add videos to queue.")
         printS(removeVideoFlags, " + [index]: Remove videos from queue.")
+        printS(listSourcesFlags, ": List watched sources.")
         printS(addSourcesFlags, " + [1+ URLs or paths to directories]: Adds a video source to list of watched sources.")
         printS(removeSourceFlags, " + [1+ URLs or paths to directories]: Removes video source(s) from list of watched sources.")
         printS(fetchSourceFlags, ": Update queue with videos from list of watched sources.")

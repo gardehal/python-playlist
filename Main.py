@@ -3,14 +3,14 @@ from re import S
 import sys
 import json
 from types import SimpleNamespace
-
-from six.moves import urllib
 import mechanize
 from typing import List
+from enums.VideoSourceType import VideoSourceType
+from model.QueueVideo import QueueVideo
 from model.VideoSource import VideoSource
 from myutil.Util import *
 from myutil.DateTimeObject import *
-from pytube import YouTube
+from pytube import *
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -77,6 +77,9 @@ class Main:
             elif(arg in fetchSourceFlags):
                 args = extractArgs(argIndex, argV)
                 
+                sourcesAdded = Main.fetchVideoSources(10)
+                if(sourcesAdded != None and sourcesAdded > 0):
+                    printS("Added ", sourcesAdded, " new sources", color=colors["OKGREEN"])
 
                 argIndex += len(args) + 1
                 continue
@@ -100,6 +103,24 @@ class Main:
             
         return True
     
+    def sourceToVideoSourceType(source: str) -> VideoSourceType:
+        """
+        Get VideoSourceType from string (path or url)
+
+        Args:
+            source (str): path or url to source of videos
+
+        Returns:
+            VideoSourceType: VideoSourceType or None
+        """
+        
+        if(os.path.isdir(source)):
+            return VideoSourceType.DICTIONARY
+        if("https://youtu.be" in source or "https://www.youtube.com" in source):
+            return VideoSourceType.YOUTUBE
+        
+        return None
+        
     def toDict(obj: object) -> dict:
         """ 
         Converts objects to dictionaries.
@@ -169,8 +190,8 @@ class Main:
             isUrl = validators.url(source)
             url = source if isUrl else None
             dir = source if os.path.exists(source) else None
-            if(url == None and dir == None):
-                printS("The source: ", source, "is not a valid URL or directory path.", color=colors["FAIL"])
+            if(Main.sourceToVideoSourceType(source) == None):
+                printS("The source: ", source, "is not a valid supported website or directory path.", color=colors["FAIL"])
                 continue
             
             addedSources += 1
@@ -185,13 +206,65 @@ class Main:
             else:
                 name = os.path.basename(source)
             
-            newSource = VideoSource(name, url, dir, isUrl, True, dto, dto)
+            newSource = VideoSource(name, url, dir, isUrl, True, VideoSourceType.YOUTUBE, dto, dto)
             updatedSourcesJson["sources"].append(Main.toDict(newSource))
             
         with open(sourcesFilename, "w") as file: 
             json.dump(updatedSourcesJson, file, default=str)
         
         return addedSources     
+    
+    def fetchVideoSources(batchSize: int = 10, takeAfter: DateTimeObject = None, takeBefore: DateTimeObject = None) -> int:
+        """
+        Fetch new videos from watched sources, adding them in chronological order.
+        \nreturns number of videos added
+        """
+        
+        sources = Main.getSources().sources
+        newVideos: List[QueueVideo] = []
+        for source in sources:
+            if(source.isWebSource):
+                if(Main.sourceToVideoSourceType(source.url)):
+                    yt = Main.fetchYoutube(source, batchSize, takeAfter, takeBefore)
+                    newVideos.append(*yt)
+                else:  
+                    # TODO handle other sources
+                    continue
+            else:
+                # TODO handle directory sources
+                continue
+            
+            
+            # Get source
+            # List videos
+            # check date of last 10 vs last fetched (if 10th should load, check next 10 recursivly)
+            # add videos to list
+            
+        # write to queue file - use model
+            
+        return len(newVideos)
+    
+    def fetchYoutube(videoSource: VideoSource, batchSize: int, takeAfter: DateTimeObject, takeBefore: DateTimeObject) -> List[QueueVideo]:
+        """
+        Fetch videos from YouTube
+
+        Args:
+            batchSize (int): Number of videos per batch. Not the limit.
+            takeAfter (DateTimeObject): DateTimeObject to take videos after
+            takeBefore (DateTimeObject): DateTimeObject to take videos before
+
+        Returns:
+            List[QueueVideo]: List of QueueVideo
+        """
+        
+        channel = Channel(videoSource.url)
+        print(channel)
+        if(channel == None):
+            print("nmonoe")
+            quit()
+        
+        print("ass")
+        quit()
 
     def printHelp():
         """

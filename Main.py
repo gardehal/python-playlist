@@ -58,8 +58,12 @@ class Main:
                 args = extractArgs(argIndex, argV)
                 
                 sources = Main.getSources()
-                for i, source in enumerate(sources.sources):
-                    print(f"{i+1}: {source.name} - {source.url if source.isWebSource else source.directory}")
+                
+                if(len(sources.sources) > 0):
+                    for i, source in enumerate(sources.sources):
+                        print(f"{i+1}: {source.name} - {source.url if source.isWebSource else source.directory}")
+                else:
+                    printS("No sources found in the sources file.")
 
                 argIndex += 1
                 continue
@@ -93,7 +97,9 @@ class Main:
     def createLocalFilesIfNone() -> bool:
         """
         Create local files used for storing settings, video ques, sources etc.
-        \nreturns success = true
+
+        Returns:
+            bool: success = true
         """
         
         files = [settingsFilename, sourcesFilename, queueFilename]
@@ -105,7 +111,7 @@ class Main:
     
     def sourceToVideoSourceType(source: str) -> VideoSourceType:
         """
-        Get VideoSourceType from string (path or url)
+        Get VideoSourceType from string (path or url).
 
         Args:
             source (str): path or url to source of videos
@@ -122,10 +128,15 @@ class Main:
         return None
         
     def toDict(obj: object) -> dict:
-        """ 
+        """
         Converts objects to dictionaries.
-        \nSource: https://www.codegrepper.com/code-examples/whatever/python+nested+object+to+dict
-        \nreturn a dictionary of input object
+        Source: https://www.codegrepper.com/code-examples/whatever/python+nested+object+to+dict
+
+        Args:
+            obj (object): object to convert
+
+        Returns:
+            dict: dictionary of input object
         """
         
         if not  hasattr(obj,"__dict__"):
@@ -150,7 +161,12 @@ class Main:
     def toJson(obj: object) -> str:
         """
         Converts objects to JSON though dictionaries.
-        \nreturns JSON string
+
+        Args:
+            obj (object): object to convert
+
+        Returns:
+            str: JSON string
         """
         
         dict = Main.toDict(obj)
@@ -159,7 +175,12 @@ class Main:
     def fromJson(str: str) -> any:
         """
         Converts JSON to an object.
-        \nreturns object any
+
+        Args:
+            str (str): string to convert
+
+        Returns:
+            any: object
         """
         
         return json.loads(str, object_hook=lambda d: SimpleNamespace(**d))
@@ -167,17 +188,27 @@ class Main:
     def getSources() -> List[VideoSource]:
         """
         List watched sources.
-        \nreturns list of sources
+
+        Returns:
+            List[VideoSource]: list of sources
         """
         
         fileContent = open(sourcesFilename, "r").read()
-        # Handle empty file?
-        return Main.fromJson(fileContent)
+        
+        if(len(fileContent) < 2):
+            return { sources: [] }
+        else:
+            return Main.fromJson(fileContent)
     
     def addSources(sources: List[str]) -> int:
         """
         Add video source(s) to list of watched sources.
-        \nreturns number of added sources
+
+        Args:
+            sources (List[str]): list of sources to add
+
+        Returns:
+            int: number of added sources
         """
         
         fileContent = open(sourcesFilename, "r").read()
@@ -210,14 +241,21 @@ class Main:
             updatedSourcesJson["sources"].append(Main.toDict(newSource))
             
         with open(sourcesFilename, "w") as file: 
-            json.dump(updatedSourcesJson, file, default=str)
+            json.dump(updatedSourcesJson, file, indent=4, default=str)
         
         return addedSources     
     
     def fetchVideoSources(batchSize: int = 10, takeAfter: DateTimeObject = None, takeBefore: DateTimeObject = None) -> int:
         """
         Fetch new videos from watched sources, adding them in chronological order.
-        \nreturns number of videos added
+
+        Args:
+            batchSize (int): number of videos to check at a time, unrelated to max videos that will be read
+            takeAfter (DateTimeObject): limit to take video after
+            takeBefore (DateTimeObject): limit to take video before
+
+        Returns:
+            int: number of videos added
         """
         
         sources = Main.getSources().sources
@@ -258,17 +296,20 @@ class Main:
         """
         
         channel = Channel(videoSource.url)
-        print(channel)
-        if(channel == None):
-            print("nmonoe")
+        if(channel == None or channel.channel_name == None):
+            print("none source yt")
             quit()
         
-        print("ass")
+        print(channel)
+        print("fetch done")
         quit()
 
     def printHelp():
         """
         A simple console print that informs user of program arguments.
+
+        Returns:
+            None: None
         """
 
         print("--- Help ---")

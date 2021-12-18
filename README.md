@@ -8,6 +8,7 @@ Program for queueing and playing videos from list or from sources like YouTube B
 ## TODO
 
 - play in what? default video browser for system?
-- 
 - queue videos from  list
 - queue videos from channels on youtube since last check
+- user-defined queues/playlists
+- mp3/audio for playlist purposes, not so much sources

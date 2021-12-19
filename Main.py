@@ -5,6 +5,7 @@ import json
 from types import SimpleNamespace
 import mechanize
 from typing import List
+from datetime import datetime
 from enums.VideoSourceType import VideoSourceType
 from model.QueueVideo import QueueVideo
 from model.VideoSource import VideoSource
@@ -277,6 +278,7 @@ class Main:
             # List videos
             # check date of last 10 vs last fetched (if 10th should load, check next 10 recursivly)
             # add videos to list
+            # update file for datetime queue updated
             
         # write to queue file - use model
             
@@ -287,22 +289,48 @@ class Main:
         Fetch videos from YouTube
 
         Args:
-            batchSize (int): Number of videos per batch. Not the limit.
-            takeAfter (DateTimeObject): DateTimeObject to take videos after
-            takeBefore (DateTimeObject): DateTimeObject to take videos before
+            batchSize (int): number of videos to check at a time, unrelated to max videos that will be read
+            takeAfter (DateTimeObject): limit to take video after
+            takeBefore (DateTimeObject): limit to take video before
 
         Returns:
             List[QueueVideo]: List of QueueVideo
         """
         
+        if(debug): printS("fetchYoutube start, fetching channel source")
         channel = Channel(videoSource.url)
-        if(channel == None or channel.channel_name == None):
-            print("none source yt")
-            quit()
+        # Todo fetch batches using batchSize of videos instead of all 3000 videos in some cases taking 60 seconds+ to load
         
-        print(channel)
-        print("fetch done")
-        quit()
+        if(channel == None or channel.channel_name == None):
+            printS("Channel ", videoSource.name, " ( ", videoSource.url, " ) could not be found or is not valid. Please remove it and add it back.", color=colors["ERROR"])
+            return []
+        
+        if(debug): printS("Fetching videos from ", channel.channel_name)
+        if(len(channel.video_urls) < 1):
+            printS("Channel ", channel.channel_name, " has no videos.", color=colors["WARNING"])
+            return []
+        
+        newVideos = []
+        for i, yt in enumerate(channel.videos):
+            published = yt.publish_date
+                      
+            if(takeAfter != None and published < datetime.datetime.fromisoformat(takeAfter.iso)):
+                continue
+            if(takeBefore != None and published > datetime.datetime.fromisoformat(takeBefore.iso)):
+                continue
+            
+            test = datetime.datetime.fromisoformat("2021-12-10 00:00:00")
+            print(published)
+            print(published < test)
+            
+            newVideos.append(QueueVideo(videoSource, videoSource.url, DateTimeObject(), True))
+            print(newVideos)
+            
+            if( i > 2):
+                print("fetch done")
+                quit()
+        
+        return newVideos
 
     def printHelp():
         """

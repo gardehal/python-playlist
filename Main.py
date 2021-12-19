@@ -18,7 +18,7 @@ load_dotenv()
 debug = False
 settingsFilename = "settings.json"
 sourcesFilename = "queuesources.json"
-queueFilename = "queue.txt"
+queueFilename = "queue.json"
 
 os.system("") # Needed to "trigger" coloured text
 helpFlags = ["-help", "-h"]
@@ -27,6 +27,7 @@ playFlags = ["-play", "-p"]
 listQueueFlags = ["-list", "-l"]
 addVideoFlags = ["-add", "-a"]
 removeVideoFlags = ["-remove", "-rm", "-r"]
+removeWatchedVideoFlags = ["-removewatched", "-rmw", "-rw"]
 listSourcesFlags = ["-listsources", "-ls"]
 addSourcesFlags = ["-addsource", "-as"]
 removeSourceFlags = ["-removesource", "-rms", "-rs"]
@@ -52,6 +53,10 @@ class Main:
             elif(arg in testFlags):
                 args = extractArgs(argIndex, argV)
                 print("test")
+                
+                for i in range(0, 100):
+                    d = DateTimeObject()
+                    print(d.isoWithMilliAsNumber)
 
                 quit()
 
@@ -260,29 +265,34 @@ class Main:
         """
         
         sources = Main.getSources().sources
-        newVideos: List[QueueVideo] = []
+        
+        lastFetch = DateTimeObject().fromString("2021-12-18 00:00:00")
+        newVideos = []
         for source in sources:
             if(source.isWebSource):
                 if(Main.sourceToVideoSourceType(source.url)):
-                    yt = Main.fetchYoutube(source, batchSize, takeAfter, takeBefore)
-                    newVideos.append(*yt)
+                    yt = Main.fetchYoutube(source, batchSize, lastFetch, takeBefore)
+                    newVideos += yt
                 else:  
                     # TODO handle other sources
                     continue
             else:
                 # TODO handle directory sources
                 continue
+        
+        
+        fileContent = open(queueFilename, "r").read()
+        startingString = fileContent if len(fileContent) > 0 else """{"videos":[]}"""
+        fileQueue = json.loads(startingString)
+        updatedQueueJson = fileQueue
+        
+        for video in newVideos:
+            updatedQueueJson["videos"].append(Main.toDict(video))
+        
+        with open(queueFilename, "w") as file: 
+            json.dump(updatedQueueJson, file, indent=4, default=str)
             
-            
-            # Get source
-            # List videos
-            # check date of last 10 vs last fetched (if 10th should load, check next 10 recursivly)
-            # add videos to list
-            # update file for datetime queue updated
-            
-        # write to queue file - use model
-            
-        return len(newVideos)
+        return len(updatedQueueJson)
     
     def fetchYoutube(videoSource: VideoSource, batchSize: int, takeAfter: DateTimeObject, takeBefore: DateTimeObject) -> List[QueueVideo]:
         """
@@ -312,23 +322,20 @@ class Main:
         
         newVideos = []
         for i, yt in enumerate(channel.videos):
-            published = yt.publish_date
+            published = DateTimeObject().fromDatetime(yt.publish_date)
                       
-            if(takeAfter != None and published < datetime.datetime.fromisoformat(takeAfter.iso)):
+            if(takeAfter != None and published.isoWithMilliAsNumber < takeAfter.isoWithMilliAsNumber):
+                break
+            if(takeBefore != None and published.isoWithMilliAsNumber > takeBefore.isoWithMilliAsNumber):
                 continue
-            if(takeBefore != None and published > datetime.datetime.fromisoformat(takeBefore.iso)):
-                continue
             
-            test = datetime.datetime.fromisoformat("2021-12-10 00:00:00")
-            print(published)
-            print(published < test)
+            # lastFetch = datetime.datetime.fromisoformat("2021-12-18 00:00:00")
+            newVideos.append(QueueVideo(videoSource, videoSource.url, DateTimeObject(), False))
             
-            newVideos.append(QueueVideo(videoSource, videoSource.url, DateTimeObject(), True))
-            print(newVideos)
-            
-            if( i > 2):
-                print("fetch done")
-                quit()
+            if(i > 10):
+                print("WIP: Cannot get all videos")
+                print(len(newVideos))
+                break
         
         return newVideos
 

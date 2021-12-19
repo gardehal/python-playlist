@@ -1,9 +1,9 @@
 from myutil import DateTimeObject
-from model.VideoSource import VideoSource
 
 class QueueVideo:
-    def __init__(self, videoSource: VideoSource, source: str, datetimeAdded: DateTimeObject, watched: bool):
-        self.videoSource: VideoSource = videoSource
-        self.source: str = source
-        self.datetimeAdded: DateTimeObject = datetimeAdded
+    def __init__(self, videoName: str, sourceUri: str, watched: bool, datetimeAdded: DateTimeObject, videoSourceName: str):
+        self.videoName: str = videoName
+        self.sourceUri: str = sourceUri
         self.watched: bool = watched
+        self.datetimeAdded: DateTimeObject = datetimeAdded
+        self.videoSourceName: str = videoSourceName

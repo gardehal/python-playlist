@@ -1,9 +1,9 @@
-from myutil import DateTimeObject
+from datetime import datetime
 
 class QueueVideo:
-    def __init__(self, videoName: str, sourceUri: str, watched: bool, datetimeAdded: DateTimeObject, videoSourceName: str):
+    def __init__(self, videoName: str, sourceUri: str, watched: bool, datetimeAdded: datetime, videoSourceName: str):
         self.videoName: str = videoName
         self.sourceUri: str = sourceUri
         self.watched: bool = watched
-        self.datetimeAdded: DateTimeObject = datetimeAdded
+        self.datetimeAdded: datetime = datetimeAdded
         self.videoSourceName: str = videoSourceName

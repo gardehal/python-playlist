@@ -4,7 +4,7 @@ import sys
 import json
 from types import SimpleNamespace
 import mechanize
-from typing import List
+from typing import List, TypeVar
 from datetime import datetime
 from enums.VideoSourceType import VideoSourceType
 from model.QueueVideo import QueueVideo
@@ -13,6 +13,10 @@ from myutil.Util import *
 from myutil.DateTimeObject import *
 from pytube import *
 from dotenv import load_dotenv
+
+from model.VideoSourceCollection import VideoSourceCollection
+
+T = TypeVar("T")
 
 load_dotenv()
 debug = False
@@ -54,9 +58,12 @@ class Main:
                 args = extractArgs(argIndex, argV)
                 print("test")
                 
-                for i in range(0, 100):
-                    d = DateTimeObject()
-                    print(d.isoWithMilliAsNumber)
+                fileContent = open(sourcesFilename, "r").read()
+                print(fileContent)
+                t = Main.fromJsonT(fileContent, VideoSourceCollection)
+                
+                print("---------------")
+                print(t.name)
 
                 quit()
 
@@ -189,9 +196,24 @@ class Main:
             any: object
         """
         
-        return json.loads(str, object_hook=lambda d: SimpleNamespace(**d))
+        return json.loads(str)
+    
+    def fromJsonT(jsonStr: str, typeT: T) -> T:
+        """
+        Converts JSON to an object.
+
+        Args:
+            str (str): string to convert
+
+        Returns:
+            any: object
+        """
         
-    def getSources() -> List[VideoSource]:
+        print(jsonStr)
+        jsonDict = json.loads(jsonStr)
+        return typeT(**jsonDict)
+        
+    def getSources() -> VideoSourceCollection:
         """
         List watched sources.
 
@@ -201,11 +223,27 @@ class Main:
         
         fileContent = open(sourcesFilename, "r").read()
         
+        if(len(fileContent) < 8):
+            return []
+        else:
+            j = Main.fromJson(fileContent)
+            return VideoSourceCollection(**j)
+    
+    def getPlaylists() -> List[Playlist]:
+        """
+        List playlists.
+
+        Returns:
+            List[Playlist]: list of playlists
+        """
+        
+        fileContent = open(queueFilename, "r").read()
+        
         if(len(fileContent) < 2):
-            return { sources: [] }
+            return [Playlist()]
         else:
             return Main.fromJson(fileContent)
-    
+        
     def addSources(sources: List[str]) -> int:
         """
         Add video source(s) to list of watched sources.
@@ -217,10 +255,11 @@ class Main:
             int: number of added sources
         """
         
+        now = DateTimeObject().now
         fileContent = open(sourcesFilename, "r").read()
-        startingString = fileContent if len(fileContent) > 0 else """{"sources":[]}"""
+        startingString = fileContent if len(fileContent) > 0 else Main.toJson(VideoSourceCollection("Main queue", [], now))
         fileSources = json.loads(startingString)
-        updatedSourcesJson = fileSources
+        updatedSourcesJson = VideoSourceCollection(**fileSources)
         
         addedSources = 0
         for source in sources:
@@ -232,7 +271,6 @@ class Main:
                 continue
             
             addedSources += 1
-            dto = DateTimeObject()
             
             name = f"New source - {source}"
             if(isUrl):
@@ -242,12 +280,13 @@ class Main:
                 br.close()
             else:
                 name = os.path.basename(source)
+                # TODO
             
-            newSource = VideoSource(name, url, dir, isUrl, True, VideoSourceType.YOUTUBE, dto, dto)
-            updatedSourcesJson["sources"].append(Main.toDict(newSource))
+            newSource = VideoSource(name, url, dir, isUrl, True, VideoSourceType.YOUTUBE, now, now)
+            updatedSourcesJson.sources.append(Main.toDict(newSource))
             
         with open(sourcesFilename, "w") as file: 
-            json.dump(updatedSourcesJson, file, indent=4, default=str)
+            json.dump(Main.toDict(updatedSourcesJson), file, indent=4, default=str)
         
         return addedSources     
     
@@ -265,6 +304,10 @@ class Main:
         """
         
         sources = Main.getSources().sources
+        fileContent = open(queueFilename, "r").read()
+        startingString = fileContent if len(fileContent) > 0 else "[]"
+        fileQueue = json.loads(startingString)
+        updatedQueueJson = fileQueue
         
         lastFetch = DateTimeObject().fromString("2021-12-18 00:00:00")
         newVideos = []
@@ -281,13 +324,8 @@ class Main:
                 continue
         
         
-        fileContent = open(queueFilename, "r").read()
-        startingString = fileContent if len(fileContent) > 0 else """{"videos":[]}"""
-        fileQueue = json.loads(startingString)
-        updatedQueueJson = fileQueue
-        
         for video in newVideos:
-            updatedQueueJson["videos"].append(Main.toDict(video))
+            updatedQueueJson["content"].append(Main.toDict(video))
         
         with open(queueFilename, "w") as file: 
             json.dump(updatedQueueJson, file, indent=4, default=str)

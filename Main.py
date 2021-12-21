@@ -7,11 +7,12 @@ import mechanize
 from typing import List, TypeVar
 from datetime import datetime
 from enums.VideoSourceType import VideoSourceType
+from model.Playlist import Playlist
 from model.QueueVideo import QueueVideo
 from model.VideoSource import VideoSource
 from myutil.Util import *
 from myutil.DateTimeObject import *
-from pytube import *
+from pytube import YouTube, Channel
 from dotenv import load_dotenv
 
 from model.VideoSourceCollection import VideoSourceCollection
@@ -22,7 +23,7 @@ load_dotenv()
 debug = False
 settingsFilename = "settings.json"
 sourcesFilename = "queuesources.json"
-queueFilename = "queue.json"
+mainQueueFilename = "queue.json"
 
 os.system("") # Needed to "trigger" coloured text
 helpFlags = ["-help", "-h"]
@@ -58,12 +59,14 @@ class Main:
                 args = extractArgs(argIndex, argV)
                 print("test")
                 
-                fileContent = open(sourcesFilename, "r").read()
-                print(fileContent)
-                t = Main.fromJsonT(fileContent, VideoSourceCollection)
+                r = Main.readJsonFile(mainQueueFilename, Playlist)
                 
-                print("---------------")
-                print(t.name)
+                # if(r == None): r = Playlist()
+                print(r)
+                print(r.videoSource)
+                print(type(r))
+                print(Main.toDict(r))
+                Main.writeToJsonFile(mainQueueFilename, r)
 
                 quit()
 
@@ -115,7 +118,7 @@ class Main:
             bool: success = true
         """
         
-        files = [settingsFilename, sourcesFilename, queueFilename]
+        files = [settingsFilename, sourcesFilename, mainQueueFilename]
         
         for file in files:
             open(file, "a")
@@ -185,50 +188,57 @@ class Main:
         dict = Main.toDict(obj)
         return json.dumps(dict, default=str)
     
-    def fromJson(str: str) -> any:
+    def writeToJsonFile(filepath: str, obj: object) -> bool:
         """
-        Converts JSON to an object.
+        Writes object obj to a JSON format in file from filepath.
 
         Args:
-            str (str): string to convert
+            filepath (str): path to file to store JSON in
+            obj (object): object to save
 
         Returns:
-            any: object
+            bool: true = success
         """
         
-        return json.loads(str)
+        asDict = Main.toDict(obj)
+        with open(filepath, "w") as file:
+            json.dump(asDict, file, indent=4, default=str)
+            
+        return True
     
-    def fromJsonT(jsonStr: str, typeT: T) -> T:
+    def readJsonFile(filepath: str, typeT: T) -> T:
         """
-        Converts JSON to an object.
+        Opens and reads a JSON formatted file, returning object of type T.
+
+        Args:
+            filepath (str): path to file to read JSON from
+            typeT (T): object to convert to
+
+        Returns:
+            T or None: object from JSON file, if file is empty: None
+        """
+        
+        fileContent = open(filepath, "r").read()
+        if(len(fileContent) < 2):
+            return None
+        else:
+            return Main.fromJson(fileContent, typeT)
+    
+    def fromJson(jsonStr: str, typeT: T) -> T:
+        """
+        Converts JSON to an object T.
 
         Args:
             str (str): string to convert
+            typeT (T): object to convert to
 
         Returns:
-            any: object
+            T: object from JSON
         """
         
-        print(jsonStr)
         jsonDict = json.loads(jsonStr)
         return typeT(**jsonDict)
         
-    def getSources() -> VideoSourceCollection:
-        """
-        List watched sources.
-
-        Returns:
-            List[VideoSource]: list of sources
-        """
-        
-        fileContent = open(sourcesFilename, "r").read()
-        
-        if(len(fileContent) < 8):
-            return []
-        else:
-            j = Main.fromJson(fileContent)
-            return VideoSourceCollection(**j)
-    
     def getPlaylists() -> List[Playlist]:
         """
         List playlists.
@@ -237,12 +247,12 @@ class Main:
             List[Playlist]: list of playlists
         """
         
-        fileContent = open(queueFilename, "r").read()
+        fileContent = open(mainQueueFilename, "r").read()
         
         if(len(fileContent) < 2):
             return [Playlist()]
         else:
-            return Main.fromJson(fileContent)
+            return Main.fromJson(fileContent, List[Playlist])
         
     def addSources(sources: List[str]) -> int:
         """
@@ -270,8 +280,6 @@ class Main:
                 printS("The source: ", source, "is not a valid supported website or directory path.", color=colors["FAIL"])
                 continue
             
-            addedSources += 1
-            
             name = f"New source - {source}"
             if(isUrl):
                 br = mechanize.Browser()
@@ -284,10 +292,9 @@ class Main:
             
             newSource = VideoSource(name, url, dir, isUrl, True, VideoSourceType.YOUTUBE, now, now)
             updatedSourcesJson.sources.append(Main.toDict(newSource))
+            addedSources += 1
             
-        with open(sourcesFilename, "w") as file: 
-            json.dump(Main.toDict(updatedSourcesJson), file, indent=4, default=str)
-        
+        Main.writeToJsonFile(updatedSourcesJson, sourcesFilename)        
         return addedSources     
     
     def fetchVideoSources(batchSize: int = 10, takeAfter: DateTimeObject = None, takeBefore: DateTimeObject = None) -> int:
@@ -303,19 +310,17 @@ class Main:
             int: number of videos added
         """
         
-        sources = Main.getSources().sources
-        fileContent = open(queueFilename, "r").read()
-        startingString = fileContent if len(fileContent) > 0 else "[]"
-        fileQueue = json.loads(startingString)
-        updatedQueueJson = fileQueue
+        sourceCollection = Main.readJsonFile(sourcesFilename, VideoSourceCollection)
+        updatedQueueJson = Main.readJsonFile(mainQueueFilename, Playlist)
         
         lastFetch = DateTimeObject().fromString("2021-12-18 00:00:00")
         newVideos = []
-        for source in sources:
+        for source in sourceCollection.sources:
+            print(type(sourceCollection))
+            print(type(source))
             if(source.isWebSource):
                 if(Main.sourceToVideoSourceType(source.url)):
-                    yt = Main.fetchYoutube(source, batchSize, lastFetch, takeBefore)
-                    newVideos += yt
+                    newVideos += Main.fetchYoutube(source, batchSize, lastFetch, takeBefore)
                 else:  
                     # TODO handle other sources
                     continue
@@ -323,13 +328,10 @@ class Main:
                 # TODO handle directory sources
                 continue
         
-        
         for video in newVideos:
             updatedQueueJson["content"].append(Main.toDict(video))
-        
-        with open(queueFilename, "w") as file: 
-            json.dump(updatedQueueJson, file, indent=4, default=str)
             
+        Main.writeToJsonFile(mainQueueFilename, updatedQueueJson)     
         return len(updatedQueueJson)
     
     def fetchYoutube(videoSource: VideoSource, batchSize: int, takeAfter: DateTimeObject, takeBefore: DateTimeObject) -> List[QueueVideo]:

@@ -5,7 +5,7 @@ from model.VideoSource import VideoSource
 class VideoSourceCollection:
     def __init__(self, 
                  name: str = None, 
-                 sources: List[VideoSource] = None, 
+                 sources: List[VideoSource] = List[VideoSource], 
                  lastUpdated: datetime = None):
         self.name: str = name
         self.sources: List[VideoSource] = sources

@@ -237,22 +237,33 @@ class Main:
         """
         
         jsonDict = json.loads(jsonStr)
-        return typeT(**jsonDict)
-        
-    def getPlaylists() -> List[Playlist]:
-        """
-        List playlists.
 
-        Returns:
-            List[Playlist]: list of playlists
-        """
-        
-        fileContent = open(mainQueueFilename, "r").read()
-        
-        if(len(fileContent) < 2):
-            return [Playlist()]
-        else:
-            return Main.fromJson(fileContent, List[Playlist])
+        asObj = typeT(**jsonDict)
+        for fieldName in dir(asObj):
+            if(not fieldName.startswith('__') and not callable(getattr(asObj, fieldName))):
+                print(fieldName)
+                field = getattr(asObj, fieldName)
+
+                if(isinstance(field, list)):
+                    for element in field:
+                        elementType = type(field)
+                        print("---------test start")
+                        print(type(field))
+                        print(element)
+                        print(type(element))
+                        print(elementType)
+                        ff = getattr(typeT(), fieldName)
+                        print(ff)
+                        print(type(ff))
+                        print("---------test mod")
+                        print(ff)
+                        print(type(ff))
+                        print("---------test end")
+                        setattr(asObj, fieldName, elementType(**element))
+                if(isinstance(field, dict)):
+                    setattr(asObj, fieldName, **field)
+
+        return asObj
         
     def addSources(sources: List[str]) -> int:
         """
@@ -266,10 +277,8 @@ class Main:
         """
         
         now = DateTimeObject().now
-        fileContent = open(sourcesFilename, "r").read()
-        startingString = fileContent if len(fileContent) > 0 else Main.toJson(VideoSourceCollection("Main queue", [], now))
-        fileSources = json.loads(startingString)
-        updatedSourcesJson = VideoSourceCollection(**fileSources)
+        updatedSourcesJson = Main.readJsonFile(sourcesFilename, VideoSourceCollection)
+        if(updatedSourcesJson == None): updatedSourcesJson = VideoSourceCollection("New source", [], now)
         
         addedSources = 0
         for source in sources:
@@ -294,7 +303,7 @@ class Main:
             updatedSourcesJson.sources.append(Main.toDict(newSource))
             addedSources += 1
             
-        Main.writeToJsonFile(updatedSourcesJson, sourcesFilename)        
+        Main.writeToJsonFile(sourcesFilename, updatedSourcesJson)        
         return addedSources     
     
     def fetchVideoSources(batchSize: int = 10, takeAfter: DateTimeObject = None, takeBefore: DateTimeObject = None) -> int:
@@ -312,6 +321,12 @@ class Main:
         
         sourceCollection = Main.readJsonFile(sourcesFilename, VideoSourceCollection)
         updatedQueueJson = Main.readJsonFile(mainQueueFilename, Playlist)
+        now = DateTimeObject().now
+
+        if(sourceCollection == None):
+            printS("Could not find any sources. Use flag -addsource [source] to add a source to fetch from.", color=colors["ERROR"])
+            return 0
+        if(updatedQueueJson == None): updatedQueueJson = Playlist("New playlist", [], sourceCollection, now, 0)
         
         lastFetch = DateTimeObject().fromString("2021-12-18 00:00:00")
         newVideos = []

@@ -350,6 +350,7 @@ class Main:
         """
         
         if(debug): printS("fetchYoutube start, fetching channel source")
+        now = DateTimeObject().now
         channel = Channel(videoSource.url)
         # Todo fetch batches using batchSize of videos instead of all 3000 videos in some cases taking 60 seconds+ to load
         
@@ -365,18 +366,21 @@ class Main:
         newVideos = []
         for i, yt in enumerate(channel.videos):
             published = DateTimeObject().fromDatetime(yt.publish_date)
+
+            print(takeAfter)
+            print(takeAfter.isoWithMilliAsNumber)
+            print(published.isoWithMilliAsNumber)
+            printS("taking: ", takeAfter != None and published.isoWithMilliAsNumber < takeAfter.isoWithMilliAsNumber)
                       
             if(takeAfter != None and published.isoWithMilliAsNumber < takeAfter.isoWithMilliAsNumber):
                 break
             if(takeBefore != None and published.isoWithMilliAsNumber > takeBefore.isoWithMilliAsNumber):
                 continue
             
-            # lastFetch = datetime.datetime.fromisoformat("2021-12-18 00:00:00")
-            newVideos.append(QueueVideo(videoSource, videoSource.url, DateTimeObject(), False))
+            newVideos.append(QueueVideo(yt.title, yt.watch_url, None, now, videoSource.name))
             
             if(i > 10):
-                print("WIP: Cannot get all videos")
-                print(len(newVideos))
+                printS("WIP: Cannot get all videos. Taking last ", len(newVideos))
                 break
         
         return newVideos

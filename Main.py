@@ -239,6 +239,10 @@ class Main:
         jsonDict = json.loads(jsonStr)
 
         asObj = typeT(**jsonDict)
+
+        print("---------------")
+        print(asObj)
+        print(jsonDict)
         for fieldName in dir(asObj):
             if(not fieldName.startswith('__') and not callable(getattr(asObj, fieldName))):
                 field = getattr(asObj, fieldName)
@@ -250,7 +254,8 @@ class Main:
 
                     setattr(asObj, fieldName, objList)
                 if(isinstance(field, dict)):
-                    setattr(asObj, fieldName, **field)
+                    obj = VideoSource(**field)
+                    setattr(asObj, fieldName, obj)
 
         return asObj
         
@@ -288,7 +293,8 @@ class Main:
                 name = os.path.basename(source)
                 # TODO
             
-            newSource = VideoSource(name, url, dir, isUrl, True, VideoSourceType.YOUTUBE, now, now)
+            # TODO vars for non-web sources, non-youtube
+            newSource = VideoSource(name, url, dir, isUrl, VideoSourceType.YOUTUBE.name, True, now, now)
             updatedSourcesJson.sources.append(Main.toDict(newSource))
             addedSources += 1
             
@@ -309,15 +315,17 @@ class Main:
         """
         
         sourceCollection = Main.readJsonFile(sourcesFilename, VideoSourceCollection)
-        updatedQueueJson = Main.readJsonFile(mainQueueFilename, Playlist)
+        queue = Main.readJsonFile(mainQueueFilename, Playlist)
         now = DateTimeObject().now
 
         if(sourceCollection == None):
             printS("Could not find any sources. Use flag -addsource [source] to add a source to fetch from.", color=colors["ERROR"])
             return 0
-        if(updatedQueueJson == None): updatedQueueJson = Playlist("New playlist", [], sourceCollection, now, 0)
+        if(queue == None): queue = Playlist("New playlist", [], sourceCollection.name, now, 0)
         
         lastFetch = DateTimeObject().fromString("2021-12-18 00:00:00")
+        print(queue.lastUpdated.now)
+        print(lastFetch.now)
         newVideos = []
         for source in sourceCollection.sources:
             if(source.isWebSource):
@@ -331,9 +339,10 @@ class Main:
                 continue
         
         for video in newVideos:
-            updatedQueueJson.videos.append(Main.toDict(video))
+            queue.videos.append(Main.toDict(video))
             
-        Main.writeToJsonFile(mainQueueFilename, updatedQueueJson)     
+        queue.lastUpdated = now
+        Main.writeToJsonFile(mainQueueFilename, queue)     
         return len(newVideos)
     
     def fetchYoutube(videoSource: VideoSource, batchSize: int, takeAfter: DateTimeObject, takeBefore: DateTimeObject) -> List[QueueVideo]:
@@ -370,7 +379,8 @@ class Main:
             print(takeAfter)
             print(takeAfter.isoWithMilliAsNumber)
             print(published.isoWithMilliAsNumber)
-            printS("taking: ", takeAfter != None and published.isoWithMilliAsNumber < takeAfter.isoWithMilliAsNumber)
+            printS("not taking after: ", takeAfter != None and published.isoWithMilliAsNumber < takeAfter.isoWithMilliAsNumber)
+            printS("not taking before: ", takeBefore != None and published.isoWithMilliAsNumber > takeBefore.isoWithMilliAsNumber)
                       
             if(takeAfter != None and published.isoWithMilliAsNumber < takeAfter.isoWithMilliAsNumber):
                 break

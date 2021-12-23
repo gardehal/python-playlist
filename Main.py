@@ -241,25 +241,14 @@ class Main:
         asObj = typeT(**jsonDict)
         for fieldName in dir(asObj):
             if(not fieldName.startswith('__') and not callable(getattr(asObj, fieldName))):
-                print(fieldName)
                 field = getattr(asObj, fieldName)
 
                 if(isinstance(field, list)):
-                    for element in field:
-                        elementType = type(field)
-                        print("---------test start")
-                        print(type(field))
-                        print(element)
-                        print(type(element))
-                        print(elementType)
-                        ff = getattr(typeT(), fieldName)
-                        print(ff)
-                        print(type(ff))
-                        print("---------test mod")
-                        print(ff)
-                        print(type(ff))
-                        print("---------test end")
-                        setattr(asObj, fieldName, elementType(**element))
+                    objList = []
+                    for listDict in field:
+                        objList.append(VideoSource(**listDict)) # TODO can't seem to get type of list like list[int] -> int if list is empty
+
+                    setattr(asObj, fieldName, objList)
                 if(isinstance(field, dict)):
                     setattr(asObj, fieldName, **field)
 
@@ -331,8 +320,6 @@ class Main:
         lastFetch = DateTimeObject().fromString("2021-12-18 00:00:00")
         newVideos = []
         for source in sourceCollection.sources:
-            print(type(sourceCollection))
-            print(type(source))
             if(source.isWebSource):
                 if(Main.sourceToVideoSourceType(source.url)):
                     newVideos += Main.fetchYoutube(source, batchSize, lastFetch, takeBefore)
@@ -344,10 +331,10 @@ class Main:
                 continue
         
         for video in newVideos:
-            updatedQueueJson["content"].append(Main.toDict(video))
+            updatedQueueJson.videos.append(Main.toDict(video))
             
         Main.writeToJsonFile(mainQueueFilename, updatedQueueJson)     
-        return len(updatedQueueJson)
+        return len(newVideos)
     
     def fetchYoutube(videoSource: VideoSource, batchSize: int, takeAfter: DateTimeObject, takeBefore: DateTimeObject) -> List[QueueVideo]:
         """

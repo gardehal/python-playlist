@@ -1,18 +1,16 @@
 import os
-from re import S
 import sys
 import json
-from types import SimpleNamespace
+import uuid
 import mechanize
 from typing import List, TypeVar
-from datetime import datetime
 from enums.VideoSourceType import VideoSourceType
 from model.Playlist import Playlist
 from model.QueueVideo import QueueVideo
 from model.VideoSource import VideoSource
 from myutil.Util import *
 from myutil.DateTimeObject import *
-from pytube import YouTube, Channel
+from pytube import Channel
 from dotenv import load_dotenv
 
 from model.VideoSourceCollection import VideoSourceCollection
@@ -237,24 +235,32 @@ class Main:
         """
         
         jsonDict = json.loads(jsonStr)
-
         asObj = typeT(**jsonDict)
 
-        print("---------------")
-        print(asObj)
-        print(jsonDict)
         for fieldName in dir(asObj):
             if(not fieldName.startswith('__') and not callable(getattr(asObj, fieldName))):
                 field = getattr(asObj, fieldName)
+                typeTField = getattr(typeT(), fieldName)
 
-                if(isinstance(field, list)):
+                printS(fieldName, "----------")
+                print(field)
+                print(typeTField)
+
+                if("uuid" in str(type(field))):
+                    continue
+                elif(isinstance(field, list)):
                     objList = []
                     for listDict in field:
-                        objList.append(VideoSource(**listDict)) # TODO can't seem to get type of list like list[int] -> int if list is empty
+                        if("VideoSource" in str(typeTField)):
+                            objList.append(VideoSource(**listDict))
+                        #else: other objects
 
                     setattr(asObj, fieldName, objList)
-                if(isinstance(field, dict)):
-                    obj = VideoSource(**field)
+                elif(isinstance(field, dict)):
+                    obj = {}
+                    if("VideoSource" in str(typeTField)):
+                        obj = VideoSource(**field)
+                    
                     setattr(asObj, fieldName, obj)
 
         return asObj
@@ -321,7 +327,7 @@ class Main:
         if(sourceCollection == None):
             printS("Could not find any sources. Use flag -addsource [source] to add a source to fetch from.", color=colors["ERROR"])
             return 0
-        if(queue == None): queue = Playlist("New playlist", [], sourceCollection.name, now, 0)
+        if(queue == None): queue = Playlist("New playlist", [], sourceCollection.name, sourceCollection.id, now, 0)
         
         lastFetch = DateTimeObject().fromString("2021-12-18 00:00:00")
         print(queue.lastUpdated.now)

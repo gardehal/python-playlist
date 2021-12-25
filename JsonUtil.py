@@ -30,9 +30,9 @@ class JsonUtil:
             element = []
             if isinstance(val, list):
                 for item in val:
-                    element.append(Main.toDict(item))
+                    element.append(JsonUtil.toDict(item))
             else:
-                element = Main.toDict(val)
+                element = JsonUtil.toDict(val)
                 
             result[key] = element
             
@@ -49,7 +49,7 @@ class JsonUtil:
             str: JSON string
         """
         
-        dict = Main.toDict(obj)
+        dict = JsonUtil.toDict(obj)
         return json.dumps(dict, default=str)
     
     def writeToJsonFile(filepath: str, obj: object) -> bool:
@@ -64,7 +64,7 @@ class JsonUtil:
             bool: true = success
         """
         
-        asDict = Main.toDict(obj)
+        asDict = JsonUtil.toDict(obj)
         with open(filepath, "w") as file:
             json.dump(asDict, file, indent=4, default=str)
             
@@ -86,7 +86,7 @@ class JsonUtil:
         if(len(fileContent) < 2):
             return None
         else:
-            return Main.fromJson(fileContent, typeT)
+            return JsonUtil.fromJson(fileContent, typeT)
     
     def fromJson(jsonStr: str, typeT: T) -> T:
         """

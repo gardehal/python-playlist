@@ -6,7 +6,7 @@ class QueueVideo:
                  videoName: str = None, 
                  sourceUri: str = None, 
                  watched: datetime = None, 
-                 datetimeAdded: datetime = datetime.now, 
+                 datetimeAdded: datetime = datetime.now(), 
                  videoSourceName: str = None,
                  id: str = str(uuid.uuid4())):
         self.videoName: str = videoName

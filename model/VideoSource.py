@@ -10,7 +10,7 @@ class VideoSource:
                  videoSourceTypeId: str = None, 
                  enableFetch: bool = None, 
                  lastFetched: datetime = None, 
-                 datetimeAdded: datetime = datetime.now,
+                 datetimeAdded: datetime = datetime.now(),
                  id: str = str(uuid.uuid4())):
         self.name: str = name
         self.url: str = url

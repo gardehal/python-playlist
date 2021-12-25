@@ -7,7 +7,7 @@ class Playlist():
                  name: str = None, 
                  queueVideoIds: List[str] = List[str], 
                  videoSourceCollectionId: str = None, 
-                 lastUpdated: datetime = datetime.now, 
+                 lastUpdated: datetime = datetime.now(), 
                  lastWatchedIndex: int = None,
                  id: str = str(uuid.uuid4())):
         self.name: str = name

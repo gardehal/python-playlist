@@ -20,8 +20,8 @@ T = TypeVar("T")
 load_dotenv()
 debug = False
 settingsFilename = "settings.json"
-sourcesFilename = "queuesources.json"
-mainQueueFilename = "queue.json"
+sourcesFilename = "videoSourceCollection.json"
+mainQueueFilename = "mainQueue.json"
 
 os.system("") # Needed to "trigger" coloured text
 helpFlags = ["-help", "-h"]
@@ -97,7 +97,7 @@ class Main:
                 
                 sourcesAdded = Main.fetchVideoSources(10)
                 if(sourcesAdded != None and sourcesAdded > 0):
-                    printS("Added ", sourcesAdded, " new sources", color=colors["OKGREEN"])
+                    printS("Fetched ", sourcesAdded, " new videos to list ", "listname", color=colors["OKGREEN"])
 
                 argIndex += len(args) + 1
                 continue
@@ -238,30 +238,37 @@ class Main:
         asObj = typeT(**jsonDict)
 
         for fieldName in dir(asObj):
-            if(not fieldName.startswith('__') and not callable(getattr(asObj, fieldName))):
-                field = getattr(asObj, fieldName)
-                typeTField = getattr(typeT(), fieldName)
+            # Skip default fields and functions
+            if(fieldName.startswith('__') or callable(getattr(asObj, fieldName))):
+                continue
 
-                printS(fieldName, "----------")
-                print(field)
-                print(typeTField)
+            field = getattr(asObj, fieldName)
+            fieldType = type(field)
+            typeTField = getattr(typeT(), fieldName)
 
-                if("uuid" in str(type(field))):
-                    continue
-                elif(isinstance(field, list)):
-                    objList = []
-                    for listDict in field:
-                        if("VideoSource" in str(typeTField)):
-                            objList.append(VideoSource(**listDict))
-                        #else: other objects
 
-                    setattr(asObj, fieldName, objList)
-                elif(isinstance(field, dict)):
-                    obj = {}
+            print(type(field))
+            print(field)
+            print(typeTField)
+
+            if("uuid" in str(fieldType) or "datetime" in str(fieldType)):
+                continue
+            elif(isinstance(fieldType, list)):
+                print("--------------list")
+                objList = []
+                for listDict in field:
                     if("VideoSource" in str(typeTField)):
-                        obj = VideoSource(**field)
-                    
-                    setattr(asObj, fieldName, obj)
+                        print(listDict)
+                        objList.append(VideoSource(**listDict))
+                    #else: other objects
+
+                setattr(asObj, fieldName, objList)
+            elif(isinstance(field, dict)):
+                obj = {}
+                if("VideoSource" in str(typeTField)):
+                    obj = VideoSource(**field)
+                
+                setattr(asObj, fieldName, obj)
 
         return asObj
         
@@ -324,16 +331,21 @@ class Main:
         queue = Main.readJsonFile(mainQueueFilename, Playlist)
         now = DateTimeObject().now
 
+        print("quitting")
+        quit()
+
         if(sourceCollection == None):
             printS("Could not find any sources. Use flag -addsource [source] to add a source to fetch from.", color=colors["ERROR"])
             return 0
-        if(queue == None): queue = Playlist("New playlist", [], sourceCollection.name, sourceCollection.id, now, 0)
+        if(queue == None): queue = Playlist("Main playlist", [], sourceCollection.name, sourceCollection.id, now, 0)
         
         lastFetch = DateTimeObject().fromString("2021-12-18 00:00:00")
-        print(queue.lastUpdated.now)
-        print(lastFetch.now)
+        # lastFetch = queue.lastUpdated
         newVideos = []
         for source in sourceCollection.sources:
+            if(not source.enableFetch):
+                continue
+
             if(source.isWebSource):
                 if(Main.sourceToVideoSourceType(source.url)):
                     newVideos += Main.fetchYoutube(source, batchSize, lastFetch, takeBefore)
@@ -344,8 +356,11 @@ class Main:
                 # TODO handle directory sources
                 continue
         
+        printS(queue.videos)
+        printS("old vid len ", len(queue.videos))
         for video in newVideos:
             queue.videos.append(Main.toDict(video))
+        printS("new vid len ", len(queue.videos))
             
         queue.lastUpdated = now
         Main.writeToJsonFile(mainQueueFilename, queue)     
@@ -381,12 +396,6 @@ class Main:
         newVideos = []
         for i, yt in enumerate(channel.videos):
             published = DateTimeObject().fromDatetime(yt.publish_date)
-
-            print(takeAfter)
-            print(takeAfter.isoWithMilliAsNumber)
-            print(published.isoWithMilliAsNumber)
-            printS("not taking after: ", takeAfter != None and published.isoWithMilliAsNumber < takeAfter.isoWithMilliAsNumber)
-            printS("not taking before: ", takeBefore != None and published.isoWithMilliAsNumber > takeBefore.isoWithMilliAsNumber)
                       
             if(takeAfter != None and published.isoWithMilliAsNumber < takeAfter.isoWithMilliAsNumber):
                 break

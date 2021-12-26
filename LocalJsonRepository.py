@@ -33,12 +33,17 @@ class LocalJsonRepository(Generic[T]):
             bool: success = True
         """
 
+        _entity = LocalJsonRepository.get(self, id)
+        if(_entity != None):
+            printS("Error adding ", id, ", entity already exists", color=colors["FAIL"])
+            return False
+
         try:
-            entityAsJson = JsonUtil.toDict(entity)
+            _newEntityDict = JsonUtil.toDict(entity)
             _filename = entity.id + ".json"
-            path = os.path.join(self.storagePath, _filename)
-            with open(path, "a") as file:
-                json.dump(entityAsJson, file, indent=4, default=str)
+            _path = os.path.join(self.storagePath, _filename)
+            with open(_path, "a") as file:
+                json.dump(_newEntityDict, file, indent=4, default=str)
 
             return True
         except Exception:
@@ -59,12 +64,12 @@ class LocalJsonRepository(Generic[T]):
 
         try:
             _filename = id + ".json"
-            path = os.path.join(self.storagePath, _filename)
-            fileContent = open(path, "r").read()
-            if(len(fileContent) < 2):
+            _path = os.path.join(self.storagePath, _filename)
+            _fileContent = open(_path, "r").read()
+            if(len(_fileContent) < 2):
                 return None
             else:
-                return JsonUtil.fromJson(fileContent, self.typeT)
+                return JsonUtil.fromJson(_fileContent, self.typeT)
         except Exception:
             if(self.debug): printS(sys.exc_info(), color=colors["WARNING"])
             printS("Error getting", color=colors["FAIL"])
@@ -79,20 +84,20 @@ class LocalJsonRepository(Generic[T]):
         """
 
         try:
-            all = []
-            globPath = glob.glob(f"{self.storagePath}/*.json")
-            for file in globPath:
+            _all = []
+            _globPath = glob.glob(f"{self.storagePath}/*.json")
+            for file in _globPath:
                 fileContent = open(file, "r").read()
                 if(len(fileContent) > 2):
-                    all.append(JsonUtil.fromJson(fileContent, self.typeT))
+                    _all.append(JsonUtil.fromJson(fileContent, self.typeT))
             
-            return all
+            return _all
         except Exception:
             if(self.debug): printS(sys.exc_info(), color=colors["WARNING"])
             printS("Error getting all", color=colors["FAIL"])
             return List[T]
 
-    def update(self, id: str) -> bool:
+    def update(self, entity: T) -> bool:
         """
         Update entity using local JSON files for storage.
 
@@ -103,16 +108,22 @@ class LocalJsonRepository(Generic[T]):
             bool: success = True
         """
 
+        _entity = LocalJsonRepository.get(self, entity.id)
+        if(_entity == None):
+            printS("Error updating ", entity.id, ", entity does not exist", color=colors["FAIL"])
+            return False
+
         try:
-            entity = LocalJsonRepository.get(self, id)
-            if(entity == None):
-                printS("Error updating ", id, ", entity does not exist", color=colors["FAIL"])
-                return False
+            _updatedEntityDict = JsonUtil.toDict(entity)
+            _filename = _entity.id + ".json"
+            _path = os.path.join(self.storagePath, _filename)
+            with open(_path, "w") as file:
+                json.dump(_updatedEntityDict, file, indent=4, default=str)
             
             return True
         except Exception:
             if(self.debug): printS(sys.exc_info(), color=colors["WARNING"])
-            printS("Error updating ", id, color=colors["FAIL"])
+            printS("Error updating ", entity.id, color=colors["FAIL"])
             return False
 
     def remove(self, id: str) -> bool:
@@ -126,13 +137,13 @@ class LocalJsonRepository(Generic[T]):
             bool: success = True
         """
 
-        try:
-            entity = LocalJsonRepository.get(self, id)
-            if(entity == None):
-                printS("Error removeing ", id, ", entity does not exist", color=colors["FAIL"])
-                return False
+        _entity = LocalJsonRepository.get(self, id)
+        if(_entity == None):
+            printS("Error removeing ", id, ", entity does not exist", color=colors["FAIL"])
+            return False
 
-            _filename = entity.id + ".json"
+        try:
+            _filename = _entity.id + ".json"
             path = os.path.join(self.storagePath, _filename)
             os.remove(path)
             

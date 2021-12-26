@@ -1,17 +1,21 @@
+import glob
 from model.Playlist import *
 from myutil.Util import *
 from JsonUtil import *
-from typing import List, TypeVar
+from typing import Generic, List, TypeVar
 
 T = TypeVar("T")
 
-class LocalJsonRepository():
+class LocalJsonRepository(Generic[T]):
+    typeT: T = None
     debug: bool = False
     storagePath: str = "./"
 
-    def __init__(self, 
+    def __init__(self,
+                 typeT: T,
                  debug: bool = False,
                  storagePath: str = "./"):
+        self.typeT: bool = typeT
         self.debug: bool = debug
         self.storagePath: str = storagePath
 
@@ -39,23 +43,28 @@ class LocalJsonRepository():
             return True
         except Exception:
             if(self.debug): printS(sys.exc_info(), color=colors["WARNING"])
-            printS("Error adding", color=colors["FAIL"])
+            printS("Error adding ", entity.id, color=colors["FAIL"])
             return False
 
-    def get(self, id: uuid) -> T:
+    def get(self, id: str) -> T:
         """
         Get entity using local JSON files for storage.
 
         Args:
-            id (uuid): id of entity to get
+            id (str): id of entity to get
 
         Returns:
             T: entity if any, else None
         """
 
         try:
-            
-            return None
+            _filename = id + ".json"
+            path = os.path.join(self.storagePath, _filename)
+            fileContent = open(path, "r").read()
+            if(len(fileContent) < 2):
+                return None
+            else:
+                return JsonUtil.fromJson(fileContent, self.typeT)
         except Exception:
             if(self.debug): printS(sys.exc_info(), color=colors["WARNING"])
             printS("Error getting", color=colors["FAIL"])
@@ -70,47 +79,65 @@ class LocalJsonRepository():
         """
 
         try:
+            all = []
+            globPath = glob.glob(f"{self.storagePath}/*.json")
+            for file in globPath:
+                fileContent = open(file, "r").read()
+                if(len(fileContent) > 2):
+                    all.append(JsonUtil.fromJson(fileContent, self.typeT))
             
-            return List[T]
+            return all
         except Exception:
             if(self.debug): printS(sys.exc_info(), color=colors["WARNING"])
             printS("Error getting all", color=colors["FAIL"])
             return List[T]
 
-    def update(self, id: uuid) -> bool:
+    def update(self, id: str) -> bool:
         """
         Update entity using local JSON files for storage.
 
         Args:
-            id (uuid): id of entity to update
+            id (str): id of entity to update
 
         Returns:
             bool: success = True
         """
 
         try:
+            entity = LocalJsonRepository.get(self, id)
+            if(entity == None):
+                printS("Error updating ", id, ", entity does not exist", color=colors["FAIL"])
+                return False
             
             return True
         except Exception:
             if(self.debug): printS(sys.exc_info(), color=colors["WARNING"])
-            printS("Error updating", color=colors["FAIL"])
+            printS("Error updating ", id, color=colors["FAIL"])
             return False
 
-    def remove(self, id: uuid) -> bool:
+    def remove(self, id: str) -> bool:
         """
         Remove entity using local JSON files for storage.
 
         Args:
-            id (uuid): id of entity to remove
+            id (str): id of entity to remove
 
         Returns:
             bool: success = True
         """
 
         try:
+            entity = LocalJsonRepository.get(self, id)
+            if(entity == None):
+                printS("Error removeing ", id, ", entity does not exist", color=colors["FAIL"])
+                return False
+
+            _filename = entity.id + ".json"
+            path = os.path.join(self.storagePath, _filename)
+            os.remove(path)
             
             return True
         except Exception:
             if(self.debug): printS(sys.exc_info(), color=colors["WARNING"])
-            printS("Error removeing", color=colors["FAIL"])
+            printS("Error removeing ", id, color=colors["FAIL"])
             return False

@@ -27,15 +27,14 @@ class LocalJsonRepository(Generic[T]):
 
         Args:
             entity (T): entity to add
-            filename (str): filename to store file in, defaults to id + "".json"
 
         Returns:
             bool: success = True
         """
 
-        _entity = LocalJsonRepository.get(self, id)
+        _entity = LocalJsonRepository.get(self, entity.id)
         if(_entity != None):
-            printS("Error adding ", id, ", entity already exists", color=colors["FAIL"])
+            printS("Error adding ", entity.id, ", ID already exists", color=colors["FAIL"])
             return False
 
         try:
@@ -65,6 +64,9 @@ class LocalJsonRepository(Generic[T]):
         try:
             _filename = id + ".json"
             _path = os.path.join(self.storagePath, _filename)
+            if(not os.path.isfile(_path)):
+                return None
+
             _fileContent = open(_path, "r").read()
             if(len(_fileContent) < 2):
                 return None

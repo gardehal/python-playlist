@@ -12,10 +12,12 @@ class LocalJsonRepository():
     def __init__(self, 
                  debug: bool = False,
                  storagePath: str = "./"):
-        LocalJsonRepository.debug: bool = debug
-        LocalJsonRepository.storagePath: str = storagePath
+        self.debug: bool = debug
+        self.storagePath: str = storagePath
 
-    def add(self, entity: T, filename: str = None) -> bool:
+        mkdir(storagePath)
+
+    def add(self, entity: T) -> bool:
         """
         Add a new entity using local JSON files for storage.
 
@@ -29,21 +31,18 @@ class LocalJsonRepository():
 
         try:
             entityAsJson = JsonUtil.toDict(entity)
-            _filename = filename
-            if(_filename == None):
-                _filename = entity.id + ".json"
-
-            path = os.path.join(LocalJsonRepository.storagePath, _filename)
+            _filename = entity.id + ".json"
+            path = os.path.join(self.storagePath, _filename)
             with open(path, "a") as file:
                 json.dump(entityAsJson, file, indent=4, default=str)
 
             return True
         except Exception:
-            if(LocalJsonRepository.debug): printS(sys.exc_info(), color=colors["WARNING"])
+            if(self.debug): printS(sys.exc_info(), color=colors["WARNING"])
             printS("Error adding", color=colors["FAIL"])
             return False
 
-    def get(id: uuid) -> T:
+    def get(self, id: uuid) -> T:
         """
         Get entity using local JSON files for storage.
 
@@ -58,11 +57,11 @@ class LocalJsonRepository():
             
             return None
         except Exception:
-            if(debug): printS(sys.exc_info(), color=colors["WARNING"])
+            if(self.debug): printS(sys.exc_info(), color=colors["WARNING"])
             printS("Error getting", color=colors["FAIL"])
             return None
 
-    def getAll() -> List[T]:
+    def getAll(self) -> List[T]:
         """
         Get all entities using local JSON files for storage.
 
@@ -74,11 +73,11 @@ class LocalJsonRepository():
             
             return List[T]
         except Exception:
-            if(debug): printS(sys.exc_info(), color=colors["WARNING"])
+            if(self.debug): printS(sys.exc_info(), color=colors["WARNING"])
             printS("Error getting all", color=colors["FAIL"])
             return List[T]
 
-    def update(id: uuid) -> bool:
+    def update(self, id: uuid) -> bool:
         """
         Update entity using local JSON files for storage.
 
@@ -93,11 +92,11 @@ class LocalJsonRepository():
             
             return True
         except Exception:
-            if(debug): printS(sys.exc_info(), color=colors["WARNING"])
+            if(self.debug): printS(sys.exc_info(), color=colors["WARNING"])
             printS("Error updating", color=colors["FAIL"])
             return False
 
-    def remove(id: uuid) -> bool:
+    def remove(self, id: uuid) -> bool:
         """
         Remove entity using local JSON files for storage.
 
@@ -112,6 +111,6 @@ class LocalJsonRepository():
             
             return True
         except Exception:
-            if(debug): printS(sys.exc_info(), color=colors["WARNING"])
+            if(self.debug): printS(sys.exc_info(), color=colors["WARNING"])
             printS("Error removeing", color=colors["FAIL"])
             return False

@@ -10,15 +10,17 @@ T = Playlist
 class PlaylistService():
     typeT = Playlist
     debug: bool = False
-    storagePath: str = "Playlist"
-    repository: LocalJsonRepository = None
+    storagePath: str = None
+    playlistRepository: LocalJsonRepository = None
+    queueVideoRepository: LocalJsonRepository = None
 
     def __init__(self,
                  debug: bool = False,
-                 storagePath: str = "Playlist"):
+                 storagePath: str = "."):
         self.debug: bool = debug
         self.storagePath: str = storagePath
-        self.repository: str = LocalJsonRepository(self.typeT, self.debug, self.storagePath)
+        self.playlistRepository: str = LocalJsonRepository(self.typeT, self.debug, os.path.join(storagePath, "Playlist"))
+        self.queueVideoRepository: str = LocalJsonRepository(QueueVideo, self.debug, os.path.join(storagePath, "QueueVideo"))
 
         mkdir(storagePath)
 
@@ -33,7 +35,7 @@ class PlaylistService():
             bool: success = True
         """
 
-        return self.repository.add(playlist)
+        return self.playlistRepository.add(playlist)
 
     def get(self, id: str) -> T:
         """
@@ -46,7 +48,7 @@ class PlaylistService():
             Playlist: playlist if any, else None
         """
 
-        return self.repository.get(id)
+        return self.playlistRepository.get(id)
 
     def getAll(self) -> List[T]:
         """
@@ -56,7 +58,7 @@ class PlaylistService():
             List[Playlist]: playlists if any, else empty list
         """
 
-        return self.repository.getAll()
+        return self.playlistRepository.getAll()
 
     def update(self, playlist: T) -> bool:
         """
@@ -69,7 +71,7 @@ class PlaylistService():
             bool: success = True
         """
 
-        return self.repository.update(playlist)
+        return self.playlistRepository.update(playlist)
 
     def remove(self, id: str) -> bool:
         """
@@ -82,7 +84,7 @@ class PlaylistService():
             bool: success = True
         """
 
-        return self.repository.remove(id)
+        return self.playlistRepository.remove(id)
 
     def addOrUpdate(self, playlist: T) -> bool:
         """
@@ -95,22 +97,44 @@ class PlaylistService():
             bool: success = True
         """
 
-        return False
+        if(self.add(playlist)):
+            return True
 
-    def play(self, playlistId: str, startIndex: int = 0, shuffle: bool = False) -> bool:
+        return self.update(playlist)
+
+    def playCmd(self, playlistId: str, startIndex: int = 0, shuffle: bool = False, repeatPlaylist: bool = False) -> bool:
         """
         Start playing streams from this playlist.
 
         Args:
             playlistId (str): ID of playlist to play from
             startIndex (int): index to start playing from
-            shuffle (bool): should videos be shuffled
+            shuffle (bool): shuffle videos
+            repeatPlaylist (bool): repeat playlist once it reaches the end
 
         Returns:
             bool: success = True
         """
 
-        return False
+        _playlist = self.playlistRepository.get(playlistId)
+        if(_playlist == None):
+            return False
+
+        _streams = []
+        for id in _playlist.streamIds:
+            _stream = self.queueVideoRepository.get(id)
+            if(_stream == None):
+                if(self.debug): printS("Stream ", id, " in playlist ", _playlist.name, " was not found. Consider removing it from the playlist and adding it again.", color=colors["WARNING"])
+                continue
+            _streams.append(_stream)
+
+        _streams = _streams[startIndex:]
+
+        # make list of qv to play
+        # open new cmdwindow
+        # open browser to link of video if web source, else is local file, play though VLC (use default player if can be grabbed by python)
+        # display something like "video is playing, press any key to play next" in new window
+        # optional: get length of video, when video is done, open next video automatically (what id user pauses video)
 
     def addStreams(self, playlistId: str, streams: List[QueueVideo]) -> int:
         """

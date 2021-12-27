@@ -2,6 +2,7 @@ from LocalJsonRepository import LocalJsonRepository
 from model.Playlist import *
 from myutil.Util import *
 from typing import List
+from datetime import datetime
 from model.QueueVideo import QueueVideo
 
 T = Playlist
@@ -84,6 +85,16 @@ class PlaylistService():
         return self.repository.remove(id)
 
     def addOrUpdate(self, playlist: T) -> bool:
+        """
+        Add playlist if none exists, else update existing.
+
+        Args:
+            playlist (T): playlist to add or update
+
+        Returns:
+            bool: success = True
+        """
+
         return False
 
     def play(self, playlistId: str, startIndex: int = 0, shuffle: bool = False) -> bool:
@@ -99,10 +110,19 @@ class PlaylistService():
             bool: success = True
         """
 
-        return None
+        return False
 
     def addStreams(self, playlistId: str, streams: List[QueueVideo]) -> int:
+        """
+        Add streams to playlist.
 
+        Args:
+            playlistId (str): ID of playlist to add to
+            streams (List[QueueVideo]): streams to add
+
+        Returns:
+            int: number of streams added
+        """
 
         _playlist = self.repository.get(playlistId)
         if(_playlist == None):
@@ -112,21 +132,42 @@ class PlaylistService():
         for stream in streams:
             if(stream.id == None):
                 continue
-            
+            print(stream.id)
             _playlist.streamIds.append(stream.id)
             _addedIds += 1
 
+        _playlist.lastUpdated = datetime.now()
         _updateResult = self.repository.update(_playlist)
         if(_updateResult):
             return _addedIds
         else:
             return 0
 
-    def removeStream(self, playlistId: str, index: int) -> bool:
-        return None
+    def removeStreams(self, playlistId: str, indices: List[int]) -> int:
+        """
+        Remove streams to playlist.
 
-    def removeSteamById(self, playlistId: str, streamId: int) -> bool:
-        return None
+        Args:
+            playlistId (str): ID of playlist to remove from
+            indices (List[int]): indices to remove
 
-    def moveStream(self, playlistId: str, streamId: str, toIndex: int) -> bool:
-        return None
+        Returns:
+            int: number of streams removed
+        """
+
+        return 0
+
+    def moveStream(self, playlistId: str, fromIndex: int, toIndex: int) -> bool:
+        """
+        Move streams in playlist.
+
+        Args:
+            playlistId (str): ID of playlist to move in
+            fromIndex (int): index move
+            toIndex (int): index to move to
+
+        Returns:
+            bool: success = True
+        """
+
+        return False

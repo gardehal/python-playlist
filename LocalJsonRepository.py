@@ -9,7 +9,7 @@ T = TypeVar("T")
 class LocalJsonRepository(Generic[T]):
     typeT: T = None
     debug: bool = False
-    storagePath: str = "./"
+    storagePath: str = "."
 
     def __init__(self,
                  typeT: T,
@@ -104,7 +104,7 @@ class LocalJsonRepository(Generic[T]):
         Update entity using local JSON files for storage.
 
         Args:
-            id (str): id of entity to update
+            entity (T): entity to update
 
         Returns:
             bool: success = True

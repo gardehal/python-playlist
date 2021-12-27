@@ -34,7 +34,7 @@ class LocalJsonRepository(Generic[T]):
 
         _entity = LocalJsonRepository.get(self, entity.id)
         if(_entity != None):
-            printS("Error adding ", entity.id, ", ID already exists", color=colors["FAIL"])
+            if(self.debug): printS("Error adding ", entity.id, ", ID already exists", color=colors["FAIL"])
             return False
 
         try:

@@ -1,9 +1,12 @@
+import random
+import webbrowser
 from LocalJsonRepository import LocalJsonRepository
 from model.Playlist import *
 from myutil.Util import *
 from typing import List
 from datetime import datetime
 from model.QueueVideo import QueueVideo
+from subprocess import Popen, check_call
 
 T = Playlist
 
@@ -102,7 +105,7 @@ class PlaylistService():
 
         return self.update(playlist)
 
-    def playCmd(self, playlistId: str, startIndex: int = 0, shuffle: bool = False, repeatPlaylist: bool = False) -> bool:
+    def playCmd(self, playlistId: str, startIndex: int = 0, shuffle: bool = False, repeatPlaylist: bool = False, playedAlwaysWatched: bool = False) -> bool:
         """
         Start playing streams from this playlist.
 
@@ -121,20 +124,44 @@ class PlaylistService():
             return False
 
         _streams = []
+        _rawStreams = []
         for id in _playlist.streamIds:
             _stream = self.queueVideoRepository.get(id)
             if(_stream == None):
                 if(self.debug): printS("Stream ", id, " in playlist ", _playlist.name, " was not found. Consider removing it from the playlist and adding it again.", color=colors["WARNING"])
                 continue
-            _streams.append(_stream)
+            _rawStreams.append(_stream)
 
-        _streams = _streams[startIndex:]
+        if(shuffle):
+            _streams = random.shuffle(_rawStreams)
+        else:
+            _streams = _rawStreams[startIndex:]
 
-        # make list of qv to play
-        # open new cmdwindow
+        printS("Playing playlist ", _playlist.name, ".")
+        printS("Starting at video ", (startIndex + 1), ", shuffle is ", ("on" if shuffle else "off"), ", repeat is ", ("on" if repeatPlaylist else "off"), ", played videos set to watched is ", ("on" if playedAlwaysWatched else "off"), ".")
+
+        for _stream in _streams:
+            if(_stream.isWeb):
+                tes = webbrowser.open(_stream.uri)
+                print(tes)
+            else:
+                # TODO
+                printS("Non-web streams currently not supported, skipping video ", _stream.name, color = colors["ERROR"])
+                continue
+
+            printS("Now playing ", _stream.name, ", press space to play next...")
+            #TODO listen to input
+
+
+
+
+        # OK - make list of qv to play
+        # wait - open new cmdwindow
         # open browser to link of video if web source, else is local file, play though VLC (use default player if can be grabbed by python)
         # display something like "video is playing, press any key to play next" in new window
+        # kill PID when user clicks next? Cannot kill browser, just tab
         # optional: get length of video, when video is done, open next video automatically (what id user pauses video)
+        # repeat playlist if repeat
 
     def addStreams(self, playlistId: str, streams: List[QueueVideo]) -> int:
         """

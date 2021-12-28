@@ -1,13 +1,19 @@
 import random
-import webbrowser
 from LocalJsonRepository import LocalJsonRepository
 from model.Playlist import *
 from myutil.Util import *
 from typing import List
 from datetime import datetime
 from model.QueueVideo import QueueVideo
-from subprocess import Popen, check_call
 from selenium import webdriver
+from dotenv import load_dotenv
+
+load_dotenv()
+LOG_WATCHED = os.environ.get("LOG_WATCHED")
+DOWNLOAD_WEB_STREAMS = os.environ.get("DOWNLOAD_WEB_STREAMS")
+REMOVE_WATCHED_ON_FETCH = os.environ.get("REMOVE_WATCHED_ON_FETCH")
+BROWSER_BIN = os.environ.get("BROWSER_BIN")
+BROWSER_PROFILE = os.environ.get("BROWSER_PROFILE")
 
 T = Playlist
 
@@ -117,7 +123,7 @@ class PlaylistService():
             repeatPlaylist (bool): repeat playlist once it reaches the end
 
         Returns:
-            bool: success = True
+            bool: finished = True
         """
 
         _playlist = self.playlistRepository.get(playlistId)
@@ -139,46 +145,37 @@ class PlaylistService():
             _streams = _rawStreams[startIndex:]
 
         printS("Playing playlist ", _playlist.name, ".")
-        printS("Starting at video ", (startIndex + 1), ", shuffle is ", ("on" if shuffle else "off"), ", repeat is ", ("on" if repeatPlaylist else "off"), ", played videos set to watched is ", ("on" if playedAlwaysWatched else "off"), ".")
-
-        browserBIN = ""
-        browserProfile = ""
+        printS("Starting at video ", (startIndex + 1), ", shuffle is ", ("on" if shuffle else "off"), ", repeat playlist is ", ("on" if repeatPlaylist else "off"), ", played videos set to watched is ", ("on" if playedAlwaysWatched else "off"), ".")
 
         options = webdriver.ChromeOptions()
-        options.binary_location = browserBIN # TODO use settings
+        if(len(BROWSER_BIN) > 0):
+            options.binary_location = BROWSER_BIN
+        if(len(BROWSER_PROFILE) > 0):
+            options.add_argument(f"user-data-dir={BROWSER_PROFILE}")
         options.add_argument("log-level=3")
-        options.add_experimental_option('excludeSwitches', ['enable-logging'])
-        options.add_argument(f"user-data-dir={browserProfile}")
+        options.add_experimental_option("excludeSwitches", ["enable-logging"])
         driver = webdriver.Chrome(options=options)
-        driver.get('http://stackoverflow.com/')
-        # driver.execute_script("$(window.open('http://stackoverflow.com/'))") # New tab
-        time.sleep(5)
-        driver.close()
-
-        quit()
 
         for _stream in _streams:
             if(_stream.isWeb):
-                tes = webbrowser.open(_stream.uri)
-                print(tes)
+                driver.get(_stream.uri)
             else:
                 # TODO
                 printS("Non-web streams currently not supported, skipping video ", _stream.name, color = colors["ERROR"])
                 continue
 
-            printS("Now playing ", _stream.name, ", press space to play next...")
-            #TODO listen to input
+            input(f"Now playing {_stream.name}, press enter to close it and play the next...")
+            driver.close()
 
+            if(playedAlwaysWatched):
+                _stream.watched = datetime.now()
 
+        printS("Playlist ", _playlist.name, " finished.")
 
+        if(repeatPlaylist):
+            self.playCmd(playlistId, startIndex, shuffle, repeatPlaylist, playedAlwaysWatched)
 
-        # OK - make list of qv to play
-        # wait - open new cmdwindow
-        # open browser to link of video if web source, else is local file, play though VLC (use default player if can be grabbed by python)
-        # display something like "video is playing, press any key to play next" in new window
-        # kill PID when user clicks next? Cannot kill browser, just tab
-        # optional: get length of video, when video is done, open next video automatically (what id user pauses video)
-        # repeat playlist if repeat
+        return True
 
     def addStreams(self, playlistId: str, streams: List[QueueVideo]) -> int:
         """

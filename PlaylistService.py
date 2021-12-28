@@ -12,6 +12,7 @@ load_dotenv()
 LOG_WATCHED = os.environ.get("LOG_WATCHED")
 DOWNLOAD_WEB_STREAMS = os.environ.get("DOWNLOAD_WEB_STREAMS")
 REMOVE_WATCHED_ON_FETCH = os.environ.get("REMOVE_WATCHED_ON_FETCH")
+PLAYED_ALWAYS_WATCHED = os.environ.get("PLAYED_ALWAYS_WATCHED")
 BROWSER_BIN = os.environ.get("BROWSER_BIN")
 BROWSER_PROFILE = os.environ.get("BROWSER_PROFILE")
 
@@ -154,21 +155,30 @@ class PlaylistService():
             options.add_argument(f"user-data-dir={BROWSER_PROFILE}")
         options.add_argument("log-level=3")
         options.add_experimental_option("excludeSwitches", ["enable-logging"])
-        driver = webdriver.Chrome(options=options)
 
-        for _stream in _streams:
-            if(_stream.isWeb):
-                driver.get(_stream.uri)
-            else:
-                # TODO
-                printS("Non-web streams currently not supported, skipping video ", _stream.name, color = colors["ERROR"])
-                continue
+        try:
+            for _stream in _streams:
+                driver = webdriver.Chrome(options=options)
 
-            input(f"Now playing {_stream.name}, press enter to close it and play the next...")
+                if(_stream.isWeb):
+                    driver.get(_stream.uri)
+                else:
+                    # TODO
+                    printS("Non-web streams currently not supported, skipping video ", _stream.name, color = colors["ERROR"])
+                    continue
+
+                input(f"Now playing {_stream.name}, press enter to close it and play the next...")
+                driver.quit()
+
+                # TODO log watched
+                if(playedAlwaysWatched):
+                    _stream.watched = datetime.now()
+        except:
+            if(self.debug): printS(sys.exc_info(), color=colors["WARNING"])
+            #printS("Selenium encountered an issue.", color=colors["WARNING"])
+        finally:
             driver.close()
 
-            if(playedAlwaysWatched):
-                _stream.watched = datetime.now()
 
         printS("Playlist ", _playlist.name, " finished.")
 
@@ -189,7 +199,7 @@ class PlaylistService():
             int: number of streams added
         """
 
-        _playlist = self.repository.get(playlistId)
+        _playlist = self.playlistRepository.get(playlistId)
         if(_playlist == None):
             return 0
 
@@ -202,7 +212,7 @@ class PlaylistService():
             _added += 1
 
         _playlist.lastUpdated = datetime.now()
-        _updateResult = self.repository.update(_playlist)
+        _updateResult = self.playlistRepository.update(_playlist)
         if(_updateResult):
             return _added
         else:
@@ -220,7 +230,7 @@ class PlaylistService():
             int: number of streams removed
         """
 
-        _playlist = self.repository.get(playlistId)
+        _playlist = self.playlistRepository.get(playlistId)
         if(_playlist == None):
             return 0
 
@@ -236,7 +246,7 @@ class PlaylistService():
             _removed += 1
 
         _playlist.lastUpdated = datetime.now()
-        _updateResult = self.repository.update(_playlist)
+        _updateResult = self.playlistRepository.update(_playlist)
         if(_updateResult):
             return _removed
         else:
@@ -255,7 +265,7 @@ class PlaylistService():
             bool: success = True
         """
 
-        _playlist = self.repository.get(playlistId)
+        _playlist = self.playlistRepository.get(playlistId)
         if(_playlist == None):
             return 0
 
@@ -276,4 +286,4 @@ class PlaylistService():
         _playlist.streamIds.insert(toIndex, entry)
 
         _playlist.lastUpdated = datetime.now()
-        return self.repository.update(_playlist)
+        return self.playlistRepository.update(_playlist)

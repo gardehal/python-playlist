@@ -7,6 +7,7 @@ from typing import List
 from datetime import datetime
 from model.QueueVideo import QueueVideo
 from subprocess import Popen, check_call
+from selenium import webdriver
 
 T = Playlist
 
@@ -139,6 +140,22 @@ class PlaylistService():
 
         printS("Playing playlist ", _playlist.name, ".")
         printS("Starting at video ", (startIndex + 1), ", shuffle is ", ("on" if shuffle else "off"), ", repeat is ", ("on" if repeatPlaylist else "off"), ", played videos set to watched is ", ("on" if playedAlwaysWatched else "off"), ".")
+
+        browserBIN = ""
+        browserProfile = ""
+
+        options = webdriver.ChromeOptions()
+        options.binary_location = browserBIN # TODO use settings
+        options.add_argument("log-level=3")
+        options.add_experimental_option('excludeSwitches', ['enable-logging'])
+        options.add_argument(f"user-data-dir={browserProfile}")
+        driver = webdriver.Chrome(options=options)
+        driver.get('http://stackoverflow.com/')
+        # driver.execute_script("$(window.open('http://stackoverflow.com/'))") # New tab
+        time.sleep(5)
+        driver.close()
+
+        quit()
 
         for _stream in _streams:
             if(_stream.isWeb):

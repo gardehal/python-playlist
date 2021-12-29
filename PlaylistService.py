@@ -1,5 +1,7 @@
 import random
 import subprocess
+
+from myutil.DateTimeObject import DateTimeObject
 from LocalJsonRepository import LocalJsonRepository
 from model.Playlist import *
 from myutil.Util import *
@@ -7,6 +9,8 @@ from typing import List
 from datetime import datetime
 from model.QueueStream import QueueStream
 from dotenv import load_dotenv
+
+from model.VideoSourceCollection import VideoSourceCollection
 
 load_dotenv()
 LOG_WATCHED = os.environ.get("LOG_WATCHED")
@@ -23,7 +27,7 @@ class PlaylistService():
     debug: bool = False
     storagePath: str = None
     playlistRepository: LocalJsonRepository = None
-    QueueStreamRepository: LocalJsonRepository = None
+    queueStreamRepository: LocalJsonRepository = None
 
     def __init__(self,
                  debug: bool = False,
@@ -31,7 +35,8 @@ class PlaylistService():
         self.debug: bool = debug
         self.storagePath: str = storagePath
         self.playlistRepository: str = LocalJsonRepository(self.typeT, self.debug, os.path.join(storagePath, "Playlist"))
-        self.QueueStreamRepository: str = LocalJsonRepository(QueueStream, self.debug, os.path.join(storagePath, "QueueStream"))
+        self.queueStreamRepository: str = LocalJsonRepository(QueueStream, self.debug, os.path.join(storagePath, "QueueStream"))
+        self.videoSourceCollectionRepository: str = LocalJsonRepository(VideoSourceCollection, self.debug, os.path.join(storagePath, "VideoSourceCollection"))
 
         mkdir(storagePath)
 
@@ -127,14 +132,14 @@ class PlaylistService():
             bool: finished = True
         """
 
-        _playlist = self.playlistRepository.get(playlistId)
+        _playlist = self.get(playlistId)
         if(_playlist == None):
             return False
 
         _streams = []
         _rawStreams = []
         for id in _playlist.streamIds:
-            _stream = self.QueueStreamRepository.get(id)
+            _stream = self.queueStreamRepository.get(id)
             if(_stream == None):
                 if(self.debug): printS("Stream ", id, " in playlist ", _playlist.name, " was not found. Consider removing it from the playlist and adding it again.", color=colors["WARNING"])
                 continue
@@ -200,7 +205,7 @@ class PlaylistService():
             int: number of streams added
         """
 
-        _playlist = self.playlistRepository.get(playlistId)
+        _playlist = self.get(playlistId)
         if(_playlist == None):
             return 0
 
@@ -213,7 +218,7 @@ class PlaylistService():
             _added += 1
 
         _playlist.lastUpdated = datetime.now()
-        _updateResult = self.playlistRepository.update(_playlist)
+        _updateResult = self.update(_playlist)
         if(_updateResult):
             return _added
         else:
@@ -231,7 +236,7 @@ class PlaylistService():
             int: number of streams removed
         """
 
-        _playlist = self.playlistRepository.get(playlistId)
+        _playlist = self.get(playlistId)
         if(_playlist == None):
             return 0
 
@@ -247,7 +252,7 @@ class PlaylistService():
             _removed += 1
 
         _playlist.lastUpdated = datetime.now()
-        _updateResult = self.playlistRepository.update(_playlist)
+        _updateResult = self.update(_playlist)
         if(_updateResult):
             return _removed
         else:
@@ -266,7 +271,7 @@ class PlaylistService():
             bool: success = True
         """
 
-        _playlist = self.playlistRepository.get(playlistId)
+        _playlist = self.get(playlistId)
         if(_playlist == None):
             return 0
 
@@ -287,4 +292,4 @@ class PlaylistService():
         _playlist.streamIds.insert(toIndex, entry)
 
         _playlist.lastUpdated = datetime.now()
-        return self.playlistRepository.update(_playlist)
+        return self.update(_playlist)

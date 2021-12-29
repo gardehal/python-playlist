@@ -10,8 +10,6 @@ from datetime import datetime
 from model.QueueStream import QueueStream
 from dotenv import load_dotenv
 
-from model.StreamSourceCollection import StreamSourceCollection
-
 load_dotenv()
 DEBUG = eval(os.environ.get("DEBUG"))
 LOCAL_STORAGE_PATH = os.environ.get("LOCAL_STORAGE_PATH")
@@ -33,9 +31,6 @@ class PlaylistService():
     def __init__(self):
         self.playlistRepository: str = LocalJsonRepository(T, self.debug, os.path.join(self.storagePath, "Playlist"))
         self.queueStreamRepository: str = LocalJsonRepository(QueueStream, self.debug, os.path.join(self.storagePath, "QueueStream"))
-        self.videoSourceCollectionRepository: str = LocalJsonRepository(StreamSourceCollection, self.debug, os.path.join(self.storagePath, "StreamSourceCollection"))
-
-        mkdir(self.storagePath)
 
     def add(self, playlist: T) -> bool:
         """

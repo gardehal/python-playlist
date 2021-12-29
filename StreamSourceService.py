@@ -19,8 +19,6 @@ class StreamSourceService():
     def __init__(self):
         self.streamSourceRepository: str = LocalJsonRepository(T, self.debug, os.path.join(self.storagePath, "StreamSource"))
 
-        mkdir(self.storagePath)
-
     def add(self, streamSource: T) -> bool:
         """
         Add a new streamSource.

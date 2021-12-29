@@ -1,5 +1,5 @@
-from enum import Enum
+from enum import IntEnum
 
-class StreamSourceType(Enum):
+class StreamSourceType(IntEnum):
     DICTIONARY = 1,
     YOUTUBE = 2,

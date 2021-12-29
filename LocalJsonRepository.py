@@ -11,8 +11,10 @@ class LocalJsonRepository(Generic[T]):
     storagePath: str = "."
 
     def __init__(self,
+                 typeT: type,
                  debug: bool = False,
-                 storagePath: str = "./"):
+                 storagePath: str = "."):
+        self.typeT: type = typeT
         self.debug: bool = debug
         self.storagePath: str = storagePath
 
@@ -68,7 +70,7 @@ class LocalJsonRepository(Generic[T]):
             if(len(_fileContent) < 2):
                 return None
             else:
-                return JsonUtil.fromJson(_fileContent, T)
+                return JsonUtil.fromJson(_fileContent, self.typeT)
         except Exception:
             if(self.debug): printS(sys.exc_info(), color=colors["WARNING"])
             printS("Error getting", color=colors["FAIL"])
@@ -88,7 +90,7 @@ class LocalJsonRepository(Generic[T]):
             for file in _globPath:
                 fileContent = open(file, "r").read()
                 if(len(fileContent) > 2):
-                    _all.append(JsonUtil.fromJson(fileContent, T))
+                    _all.append(JsonUtil.fromJson(fileContent, self.typeT))
             
             return _all
         except Exception:

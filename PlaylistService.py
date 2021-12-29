@@ -7,6 +7,9 @@ from datetime import datetime
 from model.QueueVideo import QueueVideo
 from selenium import webdriver
 from dotenv import load_dotenv
+import webbrowser
+import subprocess
+import mechanize
 
 load_dotenv()
 LOG_WATCHED = os.environ.get("LOG_WATCHED")
@@ -113,7 +116,7 @@ class PlaylistService():
 
         return self.update(playlist)
 
-    def playCmd(self, playlistId: str, startIndex: int = 0, shuffle: bool = False, repeatPlaylist: bool = False, playedAlwaysWatched: bool = False) -> bool:
+    def playCmd(self, playlistId: str, startIndex: int = 0, shuffle: bool = False, repeatPlaylist: bool = False) -> bool:
         """
         Start playing streams from this playlist.
 
@@ -146,44 +149,35 @@ class PlaylistService():
             _streams = _rawStreams[startIndex:]
 
         printS("Playing playlist ", _playlist.name, ".")
-        printS("Starting at video ", (startIndex + 1), ", shuffle is ", ("on" if shuffle else "off"), ", repeat playlist is ", ("on" if repeatPlaylist else "off"), ", played videos set to watched is ", ("on" if playedAlwaysWatched else "off"), ".")
-
-        options = webdriver.ChromeOptions()
-        if(len(BROWSER_BIN) > 0):
-            options.binary_location = BROWSER_BIN
-        if(len(BROWSER_PROFILE) > 0):
-            options.add_argument(f"user-data-dir={BROWSER_PROFILE}")
-        options.add_argument("log-level=3")
-        options.add_experimental_option("excludeSwitches", ["enable-logging"])
+        printS("Starting at video ", (startIndex + 1), ", shuffle is ", ("on" if shuffle else "off"), ", repeat playlist is ", ("on" if repeatPlaylist else "off"), ", played videos set to watched is ", ("on" if PLAYED_ALWAYS_WATCHED else "off"), ".")
 
         try:
             for _stream in _streams:
-                driver = webdriver.Chrome(options=options)
-
+                subprocessStream = None
                 if(_stream.isWeb):
-                    driver.get(_stream.uri)
+                    subprocessStream = subprocess.Popen(f"call start {_stream.uri}", stdout=subprocess.PIPE, shell=True) # PID set by this is not PID of browser, just subprocess which opens browser
+                    
+                    # https://stackoverflow.com/questions/7989922/opening-a-process-with-popen-and-getting-the-pid
+                    # subprocessStream = subprocess.Popen([BROWSER_BIN, f"{_stream.uri}"], stdout=subprocess.PIPE, shell=False) # PID set by this SHOULD be browser, but is not
                 else:
                     # TODO
                     printS("Non-web streams currently not supported, skipping video ", _stream.name, color = colors["ERROR"])
                     continue
 
                 input(f"Now playing {_stream.name}, press enter to close it and play the next...")
-                driver.quit()
+                # subprocessStream.terminate() # TODO Doesn't seem to work with browser, at least not new tabs
 
                 # TODO log watched
-                if(playedAlwaysWatched):
+                if(PLAYED_ALWAYS_WATCHED):
                     _stream.watched = datetime.now()
         except:
             if(self.debug): printS(sys.exc_info(), color=colors["WARNING"])
-            #printS("Selenium encountered an issue.", color=colors["WARNING"])
-        finally:
-            driver.close()
-
+            #printS("handleing of streams encountered an issue.", color=colors["WARNING"])
 
         printS("Playlist ", _playlist.name, " finished.")
 
         if(repeatPlaylist):
-            self.playCmd(playlistId, startIndex, shuffle, repeatPlaylist, playedAlwaysWatched)
+            self.playCmd(playlistId, startIndex, shuffle, repeatPlaylist)
 
         return True
 

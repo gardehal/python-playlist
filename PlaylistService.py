@@ -1,15 +1,12 @@
 import random
+import subprocess
 from LocalJsonRepository import LocalJsonRepository
 from model.Playlist import *
 from myutil.Util import *
 from typing import List
 from datetime import datetime
 from model.QueueStream import QueueStream
-from selenium import webdriver
 from dotenv import load_dotenv
-import webbrowser
-import subprocess
-import mechanize
 
 load_dotenv()
 LOG_WATCHED = os.environ.get("LOG_WATCHED")
@@ -177,6 +174,7 @@ class PlaylistService():
                     logLine = f"{str(now)} - Playlist \"{_playlist.name}\" (ID: {_playlist.id}), watched video \"{_stream.name}\" (ID: {_stream.id})\n" 
                     with open(WATCHED_LOG_FILEPATH, "a") as file:
                         file.write(logLine)
+                        
                 if(PLAYED_ALWAYS_WATCHED):
                     _stream.watched = now
         except:

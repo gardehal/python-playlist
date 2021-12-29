@@ -13,19 +13,13 @@ from JsonUtil import *
 from LocalJsonRepository import *
 from myutil.DateTimeObject import *
 from dotenv import load_dotenv
-
-from model.StreamSourceCollection import StreamSourceCollection
+os.system("") # Needed to "trigger" coloured text
 
 load_dotenv()
 DEBUG = eval(os.environ.get("DEBUG"))
 LOCAL_STORAGE_PATH = os.environ.get("LOCAL_STORAGE_PATH")
 WATCHED_LOG_FILEPATH = os.environ.get("WATCHED_LOG_FILEPATH")
 
-debug = False
-sourcesFilename = "videoSourceCollection.json"
-mainQueueFilename = "mainQueue.json"
-
-os.system("") # Needed to "trigger" coloured text
 # General
 helpFlags = ["-help", "-h"]
 testFlags = ["-test", "-t"]
@@ -54,7 +48,7 @@ class Main:
         if(argC < 2):
             Main.printHelp()
             
-        Main.mkfiles(sourcesFilename, mainQueueFilename, WATCHED_LOG_FILEPATH)
+        Main.makeFiles(WATCHED_LOG_FILEPATH)
 
         while argIndex < argC:
             arg = sys.argv[argIndex].lower()
@@ -107,7 +101,7 @@ class Main:
 
             argIndex += 1
             
-    def mkfiles(*args) -> bool:
+    def makeFiles(*args) -> bool:
         """
         Create local files used for storing settings, video ques, sources etc.
 

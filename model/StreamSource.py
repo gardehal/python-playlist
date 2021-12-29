@@ -1,22 +1,20 @@
 from datetime import datetime
 import uuid
 
-class VideoSource:
+class StreamSource:
     def __init__(self, 
                  name: str = None, 
-                 url: str = None, 
-                 directory: str = None, 
-                 isWebSource: bool = None, 
-                 videoSourceTypeId: str = None, 
+                 uri: str = None, 
+                 isWeb: bool = None,
+                 videoSourceTypeId: int = None, 
                  enableFetch: bool = None, 
                  lastFetched: datetime = None, 
                  datetimeAdded: datetime = datetime.now(),
                  id: str = str(uuid.uuid4())):
         self.name: str = name
-        self.url: str = url
-        self.directory: str = directory
-        self.isWebSource: bool = isWebSource
-        self.videoSourceTypeId: str = videoSourceTypeId
+        self.uri: str = uri
+        self.isWeb: bool = isWeb
+        self.videoSourceTypeId: int = videoSourceTypeId
         self.enableFetch: bool = enableFetch
         self.lastFetched: datetime = lastFetched
         self.datetimeAdded: datetime = datetimeAdded

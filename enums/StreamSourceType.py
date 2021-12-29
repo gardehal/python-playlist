@@ -1,5 +1,5 @@
 from enum import Enum
 
-class VideoSourceType(Enum):
+class StreamSourceType(Enum):
     DICTIONARY = 1,
     YOUTUBE = 2,

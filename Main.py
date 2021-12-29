@@ -4,20 +4,21 @@ from uuid import uuid4
 import mechanize
 from typing import List
 from PlaylistService import PlaylistService
-from enums.VideoSourceType import VideoSourceType
+from enums.StreamSourceType import StreamSourceType
 from model.Playlist import Playlist
 from model.QueueStream import QueueStream
-from model.VideoSource import VideoSource
+from model.StreamSource import StreamSource
 from myutil.Util import *
 from JsonUtil import *
 from LocalJsonRepository import *
 from myutil.DateTimeObject import *
-from pytube import Channel
 from dotenv import load_dotenv
 
-from model.VideoSourceCollection import VideoSourceCollection
+from model.StreamSourceCollection import StreamSourceCollection
 
 load_dotenv()
+DEBUG = eval(os.environ.get("DEBUG"))
+LOCAL_STORAGE_PATH = os.environ.get("LOCAL_STORAGE_PATH")
 WATCHED_LOG_FILEPATH = os.environ.get("WATCHED_LOG_FILEPATH")
 
 debug = False
@@ -64,7 +65,6 @@ class Main:
             elif(arg in testFlags):
                 args = extractArgs(argIndex, argV)
                 printS("Test", color = colors["OKBLUE"])
-                
                 quit()
 
             elif(arg in listSourcesFlags):
@@ -94,7 +94,7 @@ class Main:
             elif(arg in fetchSourceFlags):
                 args = extractArgs(argIndex, argV)
                 
-                sourcesAdded = Main.fetchVideoSources(10)
+                sourcesAdded = Main.fetchStreamSources(10)
                 if(sourcesAdded != None and sourcesAdded > 0):
                     printS("Fetched ", sourcesAdded, " new videos to list ", "listname", color=colors["OKGREEN"])
 
@@ -130,161 +130,23 @@ class Main:
             
         return True
 
-    def sourceToVideoSourceType(source: str) -> VideoSourceType:
+    def sourceToStreamSourceType(source: str) -> StreamSourceType:
         """
-        Get VideoSourceType from string (path or url).
+        Get StreamSourceType from string (path or url).
 
         Args:
             source (str): path or url to source of videos
 
         Returns:
-            VideoSourceType: VideoSourceType or None
+            StreamSourceType: StreamSourceType or None
         """
         
         if(os.path.isdir(source)):
-            return VideoSourceType.DICTIONARY
+            return StreamSourceType.DICTIONARY
         if("https://youtu.be" in source or "https://www.youtube.com" in source):
-            return VideoSourceType.YOUTUBE
+            return StreamSourceType.YOUTUBE
         
-        return None
-        
-    def addSources(sources: List[str]) -> int:
-        """
-        Add video source(s) to list of watched sources.
-
-        Args:
-            sources (List[str]): list of sources to add
-
-        Returns:
-            int: number of added sources
-        """
-        
-        now = DateTimeObject().now
-        updatedSourcesJson = Main.readJsonFile(sourcesFilename, VideoSourceCollection)
-        if(updatedSourcesJson == None): updatedSourcesJson = VideoSourceCollection("New source", [], now)
-        
-        addedSources = 0
-        for source in sources:
-            isUrl = validators.url(source)
-            url = source if isUrl else None
-            dir = source if os.path.exists(source) else None
-            if(Main.sourceToVideoSourceType(source) == None):
-                printS("The source: ", source, "is not a valid supported website or directory path.", color=colors["FAIL"])
-                continue
-            
-            name = f"New source - {source}"
-            if(isUrl):
-                br = mechanize.Browser()
-                br.open(source)
-                name = br.title()
-                br.close()
-            else:
-                name = os.path.basename(source)
-                # TODO
-            
-            # TODO vars for non-web sources, non-youtube
-            newSource = VideoSource(name, url, dir, isUrl, VideoSourceType.YOUTUBE.name, True, now, now)
-            updatedSourcesJson.sources.append(Main.toDict(newSource))
-            addedSources += 1
-            
-        Main.writeToJsonFile(sourcesFilename, updatedSourcesJson)        
-        return addedSources     
-    
-    def fetchVideoSources(batchSize: int = 10, takeAfter: DateTimeObject = None, takeBefore: DateTimeObject = None) -> int:
-        """
-        Fetch new videos from watched sources, adding them in chronological order.
-
-        Args:
-            batchSize (int): number of videos to check at a time, unrelated to max videos that will be read
-            takeAfter (DateTimeObject): limit to take video after
-            takeBefore (DateTimeObject): limit to take video before
-
-        Returns:
-            int: number of videos added
-        """
-        
-        sourceCollection = JsonUtil.readJsonFile(sourcesFilename, VideoSourceCollection)
-        queue = JsonUtil.readJsonFile(mainQueueFilename, Playlist)
-        now = DateTimeObject().now
-
-        print("quitting")
-        quit()
-
-        if(sourceCollection == None):
-            printS("Could not find any sources. Use flag -addsource [source] to add a source to fetch from.", color=colors["ERROR"])
-            return 0
-        if(queue == None): queue = Playlist("Main playlist", [], sourceCollection.name, sourceCollection.id, now, 0)
-        
-        lastFetch = DateTimeObject().fromString("2021-12-18 00:00:00")
-        # lastFetch = queue.lastUpdated
-        newVideos = []
-        for source in sourceCollection.sources:
-            if(not source.enableFetch):
-                continue
-
-            if(source.isWebSource):
-                if(Main.sourceToVideoSourceType(source.url)):
-                    newVideos += Main.fetchYoutube(source, batchSize, lastFetch, takeBefore)
-                else:  
-                    # TODO handle other sources
-                    continue
-            else:
-                # TODO handle directory sources
-                continue
-        
-        printS(queue.videos)
-        printS("old vid len ", len(queue.videos))
-        for video in newVideos:
-            queue.videos.append(Main.toDict(video))
-        printS("new vid len ", len(queue.videos))
-            
-        queue.lastUpdated = now
-        Main.writeToJsonFile(mainQueueFilename, queue)     
-        return len(newVideos)
-    
-    def fetchYoutube(videoSource: VideoSource, batchSize: int, takeAfter: DateTimeObject, takeBefore: DateTimeObject) -> List[QueueStream]:
-        """
-        Fetch videos from YouTube
-
-        Args:
-            batchSize (int): number of videos to check at a time, unrelated to max videos that will be read
-            takeAfter (DateTimeObject): limit to take video after
-            takeBefore (DateTimeObject): limit to take video before
-
-        Returns:
-            List[QueueStream]: List of QueueStream
-        """
-        
-        if(debug): printS("fetchYoutube start, fetching channel source")
-        now = DateTimeObject().now
-        channel = Channel(videoSource.url)
-        # Todo fetch batches using batchSize of videos instead of all 3000 videos in some cases taking 60 seconds+ to load
-        
-        if(channel == None or channel.channel_name == None):
-            printS("Channel ", videoSource.name, " ( ", videoSource.url, " ) could not be found or is not valid. Please remove it and add it back.", color=colors["ERROR"])
-            return []
-        
-        if(debug): printS("Fetching videos from ", channel.channel_name)
-        if(len(channel.video_urls) < 1):
-            printS("Channel ", channel.channel_name, " has no videos.", color=colors["WARNING"])
-            return []
-        
-        newVideos = []
-        for i, yt in enumerate(channel.videos):
-            published = DateTimeObject().fromDatetime(yt.publish_date)
-                      
-            if(takeAfter != None and published.isoWithMilliAsNumber < takeAfter.isoWithMilliAsNumber):
-                break
-            if(takeBefore != None and published.isoWithMilliAsNumber > takeBefore.isoWithMilliAsNumber):
-                continue
-            
-            newVideos.append(QueueStream(yt.title, yt.watch_url, True, None, now, videoSource.id))
-            
-            if(i > 10):
-                printS("WIP: Cannot get all videos. Taking last ", len(newVideos))
-                break
-        
-        return newVideos
+        return None 
 
     def printHelp():
         """

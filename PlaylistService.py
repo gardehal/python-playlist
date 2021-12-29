@@ -17,6 +17,7 @@ DOWNLOAD_WEB_STREAMS = os.environ.get("DOWNLOAD_WEB_STREAMS")
 REMOVE_WATCHED_ON_FETCH = os.environ.get("REMOVE_WATCHED_ON_FETCH")
 PLAYED_ALWAYS_WATCHED = os.environ.get("PLAYED_ALWAYS_WATCHED")
 BROWSER_BIN = os.environ.get("BROWSER_BIN")
+WATCHED_LOG_FILEPATH = os.environ.get("WATCHED_LOG_FILEPATH")
 
 T = Playlist
 
@@ -163,7 +164,6 @@ class PlaylistService():
                     printS("Non-web streams currently not supported, skipping video ", _stream.name, color = colors["ERROR"])
                     continue
 
-                printS("i " , i)
                 streamOpensText = " (opening in your browser)" if _stream.isWeb else ""
                 if(i < (len(_streams) - 1)):
                     input(f"Now playing {_stream.name}" + streamOpensText + ", press enter to play next...")
@@ -171,10 +171,14 @@ class PlaylistService():
                     input(f"Now playing last stream in playlist, {_stream.name}" + streamOpensText + ", press enter to finish.")
                 
                 # subprocessStream.terminate() # TODO Doesn't seem to work with browser, at least not new tabs
-                    
-                # TODO log watched
+                
+                now = datetime.now()
+                if(LOG_WATCHED and len(WATCHED_LOG_FILEPATH) > 0):
+                    logLine = f"{str(now)} - Playlist \"{_playlist.name}\" (ID: {_playlist.id}), watched video \"{_stream.name}\" (ID: {_stream.id})\n" 
+                    with open(WATCHED_LOG_FILEPATH, "a") as file:
+                        file.write(logLine)
                 if(PLAYED_ALWAYS_WATCHED):
-                    _stream.watched = datetime.now()
+                    _stream.watched = now
         except:
             if(self.debug): printS(sys.exc_info(), color=colors["WARNING"])
             #printS("handleing of streams encountered an issue.", color=colors["WARNING"])

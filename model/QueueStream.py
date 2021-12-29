@@ -1,7 +1,7 @@
 from datetime import datetime
 import uuid
 
-class QueueVideo:
+class QueueStream:
     def __init__(self, 
                  name: str = None, 
                  uri: str = None, 

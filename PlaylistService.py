@@ -10,35 +10,32 @@ from datetime import datetime
 from model.QueueStream import QueueStream
 from dotenv import load_dotenv
 
-from model.VideoSourceCollection import VideoSourceCollection
+from model.StreamSourceCollection import StreamSourceCollection
 
 load_dotenv()
-LOG_WATCHED = os.environ.get("LOG_WATCHED")
-DOWNLOAD_WEB_STREAMS = os.environ.get("DOWNLOAD_WEB_STREAMS")
-REMOVE_WATCHED_ON_FETCH = os.environ.get("REMOVE_WATCHED_ON_FETCH")
-PLAYED_ALWAYS_WATCHED = os.environ.get("PLAYED_ALWAYS_WATCHED")
+DEBUG = eval(os.environ.get("DEBUG"))
+LOCAL_STORAGE_PATH = os.environ.get("LOCAL_STORAGE_PATH")
+LOG_WATCHED = eval(os.environ.get("LOG_WATCHED"))
+DOWNLOAD_WEB_STREAMS = eval(os.environ.get("DOWNLOAD_WEB_STREAMS"))
+REMOVE_WATCHED_ON_FETCH = eval(os.environ.get("REMOVE_WATCHED_ON_FETCH"))
+PLAYED_ALWAYS_WATCHED = eval(os.environ.get("PLAYED_ALWAYS_WATCHED"))
 BROWSER_BIN = os.environ.get("BROWSER_BIN")
 WATCHED_LOG_FILEPATH = os.environ.get("WATCHED_LOG_FILEPATH")
 
 T = Playlist
 
 class PlaylistService():
-    typeT = Playlist
-    debug: bool = False
-    storagePath: str = None
+    debug: bool = DEBUG
+    storagePath: str = LOCAL_STORAGE_PATH
     playlistRepository: LocalJsonRepository = None
     queueStreamRepository: LocalJsonRepository = None
 
-    def __init__(self,
-                 debug: bool = False,
-                 storagePath: str = "."):
-        self.debug: bool = debug
-        self.storagePath: str = storagePath
-        self.playlistRepository: str = LocalJsonRepository(self.typeT, self.debug, os.path.join(storagePath, "Playlist"))
-        self.queueStreamRepository: str = LocalJsonRepository(QueueStream, self.debug, os.path.join(storagePath, "QueueStream"))
-        self.videoSourceCollectionRepository: str = LocalJsonRepository(VideoSourceCollection, self.debug, os.path.join(storagePath, "VideoSourceCollection"))
+    def __init__(self):
+        self.playlistRepository: str = LocalJsonRepository(T, self.debug, os.path.join(self.storagePath, "Playlist"))
+        self.queueStreamRepository: str = LocalJsonRepository(QueueStream, self.debug, os.path.join(self.storagePath, "QueueStream"))
+        self.videoSourceCollectionRepository: str = LocalJsonRepository(StreamSourceCollection, self.debug, os.path.join(self.storagePath, "StreamSourceCollection"))
 
-        mkdir(storagePath)
+        mkdir(self.storagePath)
 
     def add(self, playlist: T) -> bool:
         """

@@ -1,12 +1,12 @@
 from myutil.DateTimeObject import DateTimeObject
 from PlaylistService import PlaylistService
 from QueueStreamService import QueueStreamService
+from StreamSourceService import StreamSourceService
 from enums.StreamSourceType import StreamSourceType
 from model.Playlist import *
 from myutil.Util import *
-from model.QueueStream import QueueStream
+from model.QueueStream import *
 from pytube import Channel
-from model.StreamSourceCollection import StreamSourceCollection
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -17,10 +17,13 @@ class FetchService():
     debug: bool = DEBUG
     storagePath: str = LOCAL_STORAGE_PATH
     playlistService: PlaylistService = None
+    queueStreamService: QueueStreamService = None
+    streamSourceService: StreamSourceService = None
 
     def __init__(self):
-        self.playlistService: str = PlaylistService()
-        self.queueStreamService: str = QueueStreamService()
+        self.playlistService: PlaylistService = PlaylistService()
+        self.queueStreamService: QueueStreamService = QueueStreamService()
+        self.streamSourceService: StreamSourceService = StreamSourceService()
 
         mkdir(self.storagePath)
     
@@ -37,42 +40,43 @@ class FetchService():
             int: number of videos added
         """
         
-        _playlist = self.get(playlistId)
+        _playlist = self.playlistService.get(playlistId)
         if(_playlist == None):
             return 0
 
-        _sourceCollection = self.videoSourceCollectionRepository.get(_playlist.sourceCollectionId)
-        if(_sourceCollection == None):
-            return 0
+        _newStreams = []
+        for _sourceId in _playlist.streamSourceIds:
+            _source = self.streamSourceService.get(_sourceId)
+            if(_source == None):
+                if(self.debug): printS("StreamSource with ID ", _sourceId, " could not be found. Consider removing it using the purge commands.", color=colors["WARNING"])
+                continue
 
-        _lastFetch = _sourceCollection.lastFetched
-        _newVideos = []
-        for _source in _sourceCollection.videoSourceIds:
             if(not _source.enableFetch):
                 continue
 
             if(_source.isWeb):
                 if(_source.videoSourceTypeId == StreamSourceType.YOUTUBE.value):
-                    _newVideos += self.fetchYoutube(_source, batchSize, _lastFetch, takeBefore)
+                    _newStreams += self.fetchYoutube(_source, batchSize, _source.lastFetched, takeBefore)
                 else:
                     # TODO handle other sources
                     continue
             else:
                 # TODO handle directory sources
                 continue
+            print(_newStreams)
         
-        for _video in _newVideos:
+        for _video in _newStreams:
             self.queueStreamService.add(_video)
             _playlist.streamIds.append(_video.id)
             
         _playlist.lastUpdated = datetime.now()
-        _updateSuccess = self.update(_playlist)
+        _updateSuccess = self.playlistService.update(_playlist)
         if(_updateSuccess):
-            return len(_newVideos)
+            return len(_newStreams)
         else:
             return 0
                
-    def fetchYoutube(self, videoSource: StreamSourceCollection, batchSize: int, takeAfter: datetime, takeBefore: datetime) -> List[QueueStream]:
+    def fetchYoutube(self, playlistId: str, batchSize: int, takeAfter: datetime, takeBefore: datetime) -> List[QueueStream]:
         """
         Fetch videos from YouTube
 
@@ -85,6 +89,7 @@ class FetchService():
             List[QueueStream]: List of QueueStream
         """
         
+        return [QueueStream("mocked", "https://youtu.be/O3-ucafI1MY", True, None, datetime.now())]
         if(self.debug): printS("fetchYoutube start, fetching channel source")
         _channel = Channel(videoSource.url)
         
@@ -97,7 +102,7 @@ class FetchService():
             printS("Channel ", _channel.channel_name, " has no videos.", color=colors["WARNING"])
             return []
         
-        _newVideos = []
+        _newStreams = []
         for i, yt in enumerate(_channel.videos):
             publishedDto = DateTimeObject().fromDatetime(yt.publish_date)
                       
@@ -106,11 +111,11 @@ class FetchService():
             if(takeBefore != None and publishedDto.now > takeBefore):
                 continue
             
-            _newVideos.append(QueueStream(yt.title, yt.watch_url, True, None, datetime.now(), videoSource.id))
+            _newStreams.append(QueueStream(yt.title, yt.watch_url, True, None, datetime.now(), videoSource.id))
             
             # Todo fetch batches using batchSize of videos instead of all 3000 videos in some cases taking 60 seconds+ to load
             if(i > 10):
-                printS("WIP: Cannot get all videos. Taking last ", len(_newVideos))
+                printS("WIP: Cannot get all videos. Taking last ", len(_newStreams))
                 break
         
-        return _newVideos
+        return _newStreams

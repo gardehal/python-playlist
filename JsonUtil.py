@@ -1,8 +1,6 @@
 import json
-from typing import TypeVar
-from model.VideoSource import VideoSource
+from typing import List, TypeVar, _GenericAlias
 from myutil.Util import *
-from myutil.DateTimeObject import *
 
 T = TypeVar("T")
 
@@ -24,11 +22,13 @@ class JsonUtil:
         
         result = {}
         for key, val in obj.__dict__.items():
-            if key.startswith("_"):
+            if(key.startswith("_")):
                 continue
             
             element = []
-            if isinstance(val, list):
+            if(isinstance(val, _GenericAlias)): # E.g. List[str]
+                element = []
+            elif(isinstance(val, list)):
                 for item in val:
                     element.append(JsonUtil.toDict(item))
             else:
@@ -110,30 +110,8 @@ class JsonUtil:
 
             field = getattr(asObj, fieldName)
             fieldType = type(field)
-            typeTField = getattr(typeT(), fieldName)
-
-
-            print(type(field))
-            print(field)
-            print(typeTField)
 
             if("uuid" in str(fieldType) or "datetime" in str(fieldType)):
                 continue
-            elif(isinstance(fieldType, list)):
-                print("--------------list")
-                objList = []
-                for listDict in field:
-                    if("VideoSource" in str(typeTField)):
-                        print(listDict)
-                        objList.append(VideoSource(**listDict))
-                    #else: other objects
-
-                setattr(asObj, fieldName, objList)
-            elif(isinstance(field, dict)):
-                obj = {}
-                if("VideoSource" in str(typeTField)):
-                    obj = VideoSource(**field)
-                
-                setattr(asObj, fieldName, obj)
 
         return asObj

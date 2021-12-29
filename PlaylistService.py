@@ -4,7 +4,7 @@ from model.Playlist import *
 from myutil.Util import *
 from typing import List
 from datetime import datetime
-from model.QueueVideo import QueueVideo
+from model.QueueStream import QueueStream
 from selenium import webdriver
 from dotenv import load_dotenv
 import webbrowser
@@ -26,7 +26,7 @@ class PlaylistService():
     debug: bool = False
     storagePath: str = None
     playlistRepository: LocalJsonRepository = None
-    queueVideoRepository: LocalJsonRepository = None
+    QueueStreamRepository: LocalJsonRepository = None
 
     def __init__(self,
                  debug: bool = False,
@@ -34,7 +34,7 @@ class PlaylistService():
         self.debug: bool = debug
         self.storagePath: str = storagePath
         self.playlistRepository: str = LocalJsonRepository(self.typeT, self.debug, os.path.join(storagePath, "Playlist"))
-        self.queueVideoRepository: str = LocalJsonRepository(QueueVideo, self.debug, os.path.join(storagePath, "QueueVideo"))
+        self.QueueStreamRepository: str = LocalJsonRepository(QueueStream, self.debug, os.path.join(storagePath, "QueueStream"))
 
         mkdir(storagePath)
 
@@ -137,7 +137,7 @@ class PlaylistService():
         _streams = []
         _rawStreams = []
         for id in _playlist.streamIds:
-            _stream = self.queueVideoRepository.get(id)
+            _stream = self.QueueStreamRepository.get(id)
             if(_stream == None):
                 if(self.debug): printS("Stream ", id, " in playlist ", _playlist.name, " was not found. Consider removing it from the playlist and adding it again.", color=colors["WARNING"])
                 continue
@@ -190,13 +190,13 @@ class PlaylistService():
 
         return True
 
-    def addStreams(self, playlistId: str, streams: List[QueueVideo]) -> int:
+    def addStreams(self, playlistId: str, streams: List[QueueStream]) -> int:
         """
         Add streams to playlist.
 
         Args:
             playlistId (str): ID of playlist to add to
-            streams (List[QueueVideo]): streams to add
+            streams (List[QueueStream]): streams to add
 
         Returns:
             int: number of streams added

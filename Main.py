@@ -1,13 +1,16 @@
 import os
 import sys
+from uuid import uuid4
 import mechanize
 from typing import List
+from PlaylistService import PlaylistService
 from enums.VideoSourceType import VideoSourceType
 from model.Playlist import Playlist
-from model.QueueVideo import QueueVideo
+from model.QueueStream import QueueStream
 from model.VideoSource import VideoSource
 from myutil.Util import *
 from JsonUtil import *
+from LocalJsonRepository import *
 from myutil.DateTimeObject import *
 from pytube import Channel
 from dotenv import load_dotenv
@@ -15,8 +18,9 @@ from dotenv import load_dotenv
 from model.VideoSourceCollection import VideoSourceCollection
 
 load_dotenv()
+WATCHED_LOG_FILEPATH = os.environ.get("WATCHED_LOG_FILEPATH")
+
 debug = False
-settingsFilename = "settings.json"
 sourcesFilename = "videoSourceCollection.json"
 mainQueueFilename = "mainQueue.json"
 
@@ -49,7 +53,7 @@ class Main:
         if(argC < 2):
             Main.printHelp()
             
-        Main.createLocalFilesIfNone()
+        Main.mkfiles(sourcesFilename, mainQueueFilename, WATCHED_LOG_FILEPATH)
 
         while argIndex < argC:
             arg = sys.argv[argIndex].lower()
@@ -59,17 +63,8 @@ class Main:
 
             elif(arg in testFlags):
                 args = extractArgs(argIndex, argV)
-                print("test")
+                printS("Test", color = colors["OKBLUE"])
                 
-                r = Main.readJsonFile(mainQueueFilename, Playlist)
-                
-                # if(r == None): r = Playlist()
-                print(r)
-                print(r.videoSource)
-                print(type(r))
-                print(Main.toDict(r))
-                Main.writeToJsonFile(mainQueueFilename, r)
-
                 quit()
 
             elif(arg in listSourcesFlags):
@@ -112,21 +107,29 @@ class Main:
 
             argIndex += 1
             
-    def createLocalFilesIfNone() -> bool:
+    def mkfiles(*args) -> bool:
         """
         Create local files used for storing settings, video ques, sources etc.
+
+        Args:
+            args (list): paths+filenames to create
 
         Returns:
             bool: success = true
         """
         
-        files = [settingsFilename, sourcesFilename, mainQueueFilename]
-        
-        for file in files:
-            open(file, "a")
+        for filepath in args:
+            try:
+                if(not os.path.exists(os.path.dirname(filepath))):
+                    os.makedirs(os.path.dirname(filepath))
+            except OSError as exc: # Guard against race condition
+                continue
+
+            file = open(filepath, "a")
+            file.close()
             
         return True
-    
+
     def sourceToVideoSourceType(source: str) -> VideoSourceType:
         """
         Get VideoSourceType from string (path or url).
@@ -239,7 +242,7 @@ class Main:
         Main.writeToJsonFile(mainQueueFilename, queue)     
         return len(newVideos)
     
-    def fetchYoutube(videoSource: VideoSource, batchSize: int, takeAfter: DateTimeObject, takeBefore: DateTimeObject) -> List[QueueVideo]:
+    def fetchYoutube(videoSource: VideoSource, batchSize: int, takeAfter: DateTimeObject, takeBefore: DateTimeObject) -> List[QueueStream]:
         """
         Fetch videos from YouTube
 
@@ -249,7 +252,7 @@ class Main:
             takeBefore (DateTimeObject): limit to take video before
 
         Returns:
-            List[QueueVideo]: List of QueueVideo
+            List[QueueStream]: List of QueueStream
         """
         
         if(debug): printS("fetchYoutube start, fetching channel source")
@@ -275,7 +278,7 @@ class Main:
             if(takeBefore != None and published.isoWithMilliAsNumber > takeBefore.isoWithMilliAsNumber):
                 continue
             
-            newVideos.append(QueueVideo(yt.title, yt.watch_url, None, now, videoSource.name))
+            newVideos.append(QueueStream(yt.title, yt.watch_url, True, None, now, videoSource.id))
             
             if(i > 10):
                 printS("WIP: Cannot get all videos. Taking last ", len(newVideos))

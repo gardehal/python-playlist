@@ -1,18 +1,20 @@
 import os
 import sys
 from uuid import uuid4
-import mechanize
 from typing import List
+from FetchService import FetchService
 from PlaylistService import PlaylistService
+from StreamSourceService import StreamSourceService
 from enums.StreamSourceType import StreamSourceType
 from model.Playlist import Playlist
 from model.QueueStream import QueueStream
-from model.StreamSource import StreamSource
 from myutil.Util import *
 from JsonUtil import *
 from LocalJsonRepository import *
 from myutil.DateTimeObject import *
 from dotenv import load_dotenv
+
+from model.StreamSource import StreamSource
 os.system("") # Needed to "trigger" coloured text
 
 load_dotenv()
@@ -59,6 +61,66 @@ class Main:
             elif(arg in testFlags):
                 args = extractArgs(argIndex, argV)
                 printS("Test", color = colors["OKBLUE"])
+                
+                if(0):
+                    fs = FetchService()
+                    sss = StreamSourceService()
+                    id = "d061d474-c79b-4008-a9cf-a003c03e5db3"
+                    # print(sss.add(StreamSource("mocked", "https://www.youtube.com/channel/UCFtc3XdXgLFwhlDajMGK69w", True, 2, True)))
+                    # print(fs.fetch(id))
+
+                if(1):
+                    e = QueueStream()
+                    e.isWeb = True
+                    e.uri = "https://youtu.be/KMtrY6lbjcY"
+                    id = "d061d474-c79b-4008-a9cf-a003c03e5db3"
+
+                    # r = LocalJsonRepository(QueueStream, True, "test")
+                    # print(r.add(e))
+
+                    s = PlaylistService()
+                    # print(s.addStreams(id, [e]))
+                    print(s.playCmd(id))
+
+                if(False):
+                    e = QueueStream()
+                    id = "28815709-b340-4378-b443-95317a897073"
+
+                    r = LocalJsonRepository(QueueStream, True, "test")
+                    # r.add(e)
+
+                    i = r.get(id)
+                    # print(JsonUtil.toDict(i))
+
+                    all = r.getAll()
+                    # print(all)
+
+                    # r.remove(id)
+
+                    ii = i
+                    ii.videoName = "New name"
+                    r.update(ii)
+
+                if(False):
+                    s = PlaylistService(True, "test")
+
+                    e = Playlist("Test")
+                    id = "d061d474-c79b-4008-a9cf-a003c03e5db3"
+                    print(s.add(e))
+
+                    q = QueueStream("q")
+                    q.id = str(uuid4())
+                    qq = QueueStream("qq")
+
+                    # print(s.addStreams(id, [q, qq]))
+                    # print(s.removeStreams(id, [0, 111, 4]))
+                    # print(s.moveStream(id, 7, 4))
+                    # e.id = "91a5f9ad-f68c-4dda-aaac-c9ee464dcce0"
+                    # e.name = "should update"
+                    # print(s.addOrUpdate(e))
+
+                    # s.playCmd(id)
+                    
                 quit()
 
             elif(arg in listSourcesFlags):

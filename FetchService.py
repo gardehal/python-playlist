@@ -1,27 +1,28 @@
 from myutil.DateTimeObject import DateTimeObject
 from PlaylistService import PlaylistService
-from enums.VideoSourceType import VideoSourceType
+from QueueStreamService import QueueStreamService
+from enums.StreamSourceType import StreamSourceType
 from model.Playlist import *
 from myutil.Util import *
 from model.QueueStream import QueueStream
 from pytube import Channel
+from model.StreamSourceCollection import StreamSourceCollection
+from dotenv import load_dotenv
 
-from model.VideoSourceCollection import VideoSourceCollection
+load_dotenv()
+DEBUG = eval(os.environ.get("DEBUG"))
+LOCAL_STORAGE_PATH = os.environ.get("LOCAL_STORAGE_PATH")
 
 class FetchService():
-    debug: bool = False
-    storagePath: str = None
+    debug: bool = DEBUG
+    storagePath: str = LOCAL_STORAGE_PATH
     playlistService: PlaylistService = None
 
-    def __init__(self,
-                 debug: bool = False,
-                 storagePath: str = "."):
-        self.debug: bool = debug
-        self.storagePath: str = storagePath
-        self.playlistService: str = PlaylistService(debug, storagePath)
-        self.queueStreamService: str = QueueStreamService(debug, storagePath)
+    def __init__(self):
+        self.playlistService: str = PlaylistService()
+        self.queueStreamService: str = QueueStreamService()
 
-        mkdir(storagePath)
+        mkdir(self.storagePath)
     
     def fetch(self, playlistId: str, batchSize: int = 10, takeAfter: datetime = None, takeBefore: datetime = None) -> int:
         """
@@ -51,7 +52,7 @@ class FetchService():
                 continue
 
             if(_source.isWeb):
-                if(_source.videoSourceTypeId == VideoSourceType.YOUTUBE.value):
+                if(_source.videoSourceTypeId == StreamSourceType.YOUTUBE.value):
                     _newVideos += self.fetchYoutube(_source, batchSize, _lastFetch, takeBefore)
                 else:
                     # TODO handle other sources
@@ -71,7 +72,7 @@ class FetchService():
         else:
             return 0
                
-    def fetchYoutube(self, videoSource: VideoSourceCollection, batchSize: int, takeAfter: datetime, takeBefore: datetime) -> List[QueueStream]:
+    def fetchYoutube(self, videoSource: StreamSourceCollection, batchSize: int, takeAfter: datetime, takeBefore: datetime) -> List[QueueStream]:
         """
         Fetch videos from YouTube
 

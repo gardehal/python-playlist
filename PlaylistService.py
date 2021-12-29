@@ -17,7 +17,6 @@ DOWNLOAD_WEB_STREAMS = os.environ.get("DOWNLOAD_WEB_STREAMS")
 REMOVE_WATCHED_ON_FETCH = os.environ.get("REMOVE_WATCHED_ON_FETCH")
 PLAYED_ALWAYS_WATCHED = os.environ.get("PLAYED_ALWAYS_WATCHED")
 BROWSER_BIN = os.environ.get("BROWSER_BIN")
-BROWSER_PROFILE = os.environ.get("BROWSER_PROFILE")
 
 T = Playlist
 
@@ -152,7 +151,7 @@ class PlaylistService():
         printS("Starting at video ", (startIndex + 1), ", shuffle is ", ("on" if shuffle else "off"), ", repeat playlist is ", ("on" if repeatPlaylist else "off"), ", played videos set to watched is ", ("on" if PLAYED_ALWAYS_WATCHED else "off"), ".")
 
         try:
-            for _stream in _streams:
+            for i, _stream in enumerate(_streams):
                 subprocessStream = None
                 if(_stream.isWeb):
                     subprocessStream = subprocess.Popen(f"call start {_stream.uri}", stdout=subprocess.PIPE, shell=True) # PID set by this is not PID of browser, just subprocess which opens browser
@@ -164,9 +163,15 @@ class PlaylistService():
                     printS("Non-web streams currently not supported, skipping video ", _stream.name, color = colors["ERROR"])
                     continue
 
-                input(f"Now playing {_stream.name}, press enter to close it and play the next...")
+                printS("i " , i)
+                streamOpensText = " (opening in your browser)" if _stream.isWeb else ""
+                if(i < (len(_streams) - 1)):
+                    input(f"Now playing {_stream.name}" + streamOpensText + ", press enter to play next...")
+                else:
+                    input(f"Now playing last stream in playlist, {_stream.name}" + streamOpensText + ", press enter to finish.")
+                
                 # subprocessStream.terminate() # TODO Doesn't seem to work with browser, at least not new tabs
-
+                    
                 # TODO log watched
                 if(PLAYED_ALWAYS_WATCHED):
                     _stream.watched = datetime.now()

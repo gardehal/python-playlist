@@ -9,6 +9,8 @@ from model.QueueStream import *
 from pytube import Channel
 from dotenv import load_dotenv
 
+from model.StreamSource import StreamSource
+
 load_dotenv()
 DEBUG = eval(os.environ.get("DEBUG"))
 LOCAL_STORAGE_PATH = os.environ.get("LOCAL_STORAGE_PATH")
@@ -54,21 +56,32 @@ class FetchService():
             if(not _source.enableFetch):
                 continue
 
+            _fetchedStreams = None
             if(_source.isWeb):
                 if(_source.videoSourceTypeId == StreamSourceType.YOUTUBE.value):
-                    _newStreams += self.fetchYoutube(_source, batchSize, _source.lastFetched, takeBefore)
+                    _fetchedStreams = self.fetchYoutube(_source, batchSize, _source.lastFetched, takeBefore)
                 else:
                     # TODO handle other sources
                     continue
             else:
                 # TODO handle directory sources
                 continue
-            print(_newStreams)
+
+            _source.lastFetched = datetime.now()
+            _updateSuccess = self.streamSourceService.update(_source)
+            if(_updateSuccess):
+                _newStreams += _fetchedStreams
+            else:
+                printS("Could not update source ", _source.name, " (", _source.id, "), streams could not be added: \n", _fetchedStreams, color=colors["WARNING"])
         
         for _video in _newStreams:
+            # TODO skip duplicates
             self.queueStreamService.add(_video)
             _playlist.streamIds.append(_video.id)
             
+        
+        # TODO remove watched
+
         _playlist.lastUpdated = datetime.now()
         _updateSuccess = self.playlistService.update(_playlist)
         if(_updateSuccess):
@@ -76,7 +89,7 @@ class FetchService():
         else:
             return 0
                
-    def fetchYoutube(self, playlistId: str, batchSize: int, takeAfter: datetime, takeBefore: datetime) -> List[QueueStream]:
+    def fetchYoutube(self, streamSource: StreamSource, batchSize: int, takeAfter: datetime, takeBefore: datetime) -> List[QueueStream]:
         """
         Fetch videos from YouTube
 
@@ -89,12 +102,12 @@ class FetchService():
             List[QueueStream]: List of QueueStream
         """
         
-        return [QueueStream("mocked", "https://youtu.be/O3-ucafI1MY", True, None, datetime.now())]
+        # return [QueueStream("mocked", "https://youtu.be/O3-ucafI1MY", True, None, datetime.now())]
         if(self.debug): printS("fetchYoutube start, fetching channel source")
-        _channel = Channel(videoSource.url)
+        _channel = Channel(streamSource.uri)
         
         if(_channel == None or _channel.channel_name == None):
-            printS("Channel ", videoSource.name, " ( ", videoSource.url, " ) could not be found or is not valid. Please remove it and add it back.", color=colors["ERROR"])
+            printS("Channel ", streamSource.name, " ( ", streamSource.uri, " ) could not be found or is not valid. Please remove it and add it back.", color=colors["ERROR"])
             return []
         
         if(self.debug): printS("Fetching videos from ", _channel.channel_name)
@@ -105,16 +118,18 @@ class FetchService():
         _newStreams = []
         for i, yt in enumerate(_channel.videos):
             publishedDto = DateTimeObject().fromDatetime(yt.publish_date)
-                      
-            if(takeAfter != None and publishedDto.now < takeAfter):
+            takeAfterDto = DateTimeObject().fromString(takeAfter)
+            takeBeforeDto = DateTimeObject().fromString(takeBefore)
+
+            if(takeAfter != None and publishedDto.now < takeAfterDto.now):
                 break
-            if(takeBefore != None and publishedDto.now > takeBefore):
+            if(takeBefore != None and publishedDto.now > takeBeforeDto.now):
                 continue
             
-            _newStreams.append(QueueStream(yt.title, yt.watch_url, True, None, datetime.now(), videoSource.id))
+            _newStreams.append(QueueStream(yt.title, yt.watch_url, True, None, datetime.now(), streamSource.id))
             
             # Todo fetch batches using batchSize of videos instead of all 3000 videos in some cases taking 60 seconds+ to load
-            if(i > 10):
+            if(i > batchSize):
                 printS("WIP: Cannot get all videos. Taking last ", len(_newStreams))
                 break
         

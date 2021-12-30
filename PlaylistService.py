@@ -43,6 +43,7 @@ class PlaylistService():
             bool: success = True
         """
 
+        playlist.id = str(uuid.uuid4())
         return self.playlistRepository.add(playlist)
 
     def get(self, id: str) -> T:

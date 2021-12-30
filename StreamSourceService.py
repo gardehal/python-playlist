@@ -1,4 +1,5 @@
 from datetime import datetime
+import uuid
 from LocalJsonRepository import LocalJsonRepository
 from myutil.Util import *
 from typing import List
@@ -30,6 +31,7 @@ class StreamSourceService():
             bool: success = True
         """
 
+        streamSource.id = str(uuid.uuid4())
         streamSource.datetimeAdded = datetime.now()
         return self.streamSourceRepository.add(streamSource)
 

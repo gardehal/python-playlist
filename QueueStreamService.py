@@ -1,4 +1,5 @@
 from datetime import datetime
+import uuid
 from LocalJsonRepository import LocalJsonRepository
 from myutil.Util import *
 from typing import List
@@ -32,6 +33,7 @@ class QueueStreamService():
             bool: success = True
         """
 
+        queueStream.id = str(uuid.uuid4())
         queueStream.datetimeAdded = datetime.now()
         return self.queueStreamRepository.add(queueStream)
 

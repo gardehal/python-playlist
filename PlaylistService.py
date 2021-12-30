@@ -1,8 +1,6 @@
 import random
 import subprocess
-
-from myutil.DateTimeObject import DateTimeObject
-from LocalJsonRepository import LocalJsonRepository
+from myutil.LocalJsonRepository import LocalJsonRepository
 from model.Playlist import *
 from myutil.Util import *
 from typing import List
@@ -175,6 +173,10 @@ class PlaylistService():
                         
                 if(PLAYED_ALWAYS_WATCHED):
                     _stream.watched = now
+                    
+                    _updateSuccess = self.update(_stream)
+                    if(not _updateSuccess):
+                        printS("Stream ", _stream.name, " could not be updated as watched.", color=colors["WARNING"])
         except:
             if(self.debug): printS(sys.exc_info(), color=colors["WARNING"])
             #printS("handleing of streams encountered an issue.", color=colors["WARNING"])

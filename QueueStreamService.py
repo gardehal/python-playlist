@@ -1,6 +1,6 @@
 from datetime import datetime
 import uuid
-from LocalJsonRepository import LocalJsonRepository
+from myutil.LocalJsonRepository import LocalJsonRepository
 from myutil.Util import *
 from typing import List
 from model.QueueStream import QueueStream

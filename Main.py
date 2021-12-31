@@ -1,19 +1,14 @@
 import os
 import sys
-from uuid import uuid4
-from typing import List
+
+from dotenv import load_dotenv
+from myutil.Util import *
+
+from enums.StreamSourceType import StreamSourceType
 from FetchService import FetchService
 from PlaylistService import PlaylistService
 from StreamSourceService import StreamSourceService
-from enums.StreamSourceType import StreamSourceType
-from model.Playlist import Playlist
-from model.QueueStream import QueueStream
-from myutil.Util import *
-from myutil.LocalJsonRepository import *
-from myutil.DateTimeObject import *
-from dotenv import load_dotenv
 
-from model.StreamSource import StreamSource
 os.system("") # Needed to "trigger" coloured text
 
 load_dotenv()
@@ -68,9 +63,9 @@ class Main:
                     sourceId = "03dc9d59-bd52-447f-b373-a35e1453c6f4"
                     playlistId = "1154dd04-cbc8-4fcd-8f8a-ccca0b71dd05"
                     # print(sss.add(StreamSource("Mocked source", "https://www.youtube.com/channel/UCFtc3XdXgLFwhlDajMGK69w", True, 2, True)))
-                    # print(ps.add(Playlist("Mocked playlist", [], None, 0, [sourceId])))
-                    # print(fs.fetch(playlistId))
-                    print(ps.playCmd(playlistId))
+                    # print(ps.add(Playlist("Mocked playlist", [], None, 0, True, True, [sourceId])))
+                    print(fs.fetch(playlistId))
+                    # print(ps.playCmd(playlistId))
                     
                 quit()
 

@@ -15,8 +15,8 @@ LOG_WATCHED = eval(os.environ.get("LOG_WATCHED"))
 DOWNLOAD_WEB_STREAMS = eval(os.environ.get("DOWNLOAD_WEB_STREAMS"))
 REMOVE_WATCHED_ON_FETCH = eval(os.environ.get("REMOVE_WATCHED_ON_FETCH"))
 PLAYED_ALWAYS_WATCHED = eval(os.environ.get("PLAYED_ALWAYS_WATCHED"))
-BROWSER_BIN = os.environ.get("BROWSER_BIN")
 WATCHED_LOG_FILEPATH = os.environ.get("WATCHED_LOG_FILEPATH")
+BROWSER_BIN = os.environ.get("BROWSER_BIN")
 
 T = Playlist
 
@@ -127,6 +127,10 @@ class PlaylistService():
         if(_playlist == None):
             return False
 
+        if(len(_playlist.streamIds) == 0):
+            printS("No streams found in playlist ", _playlist.name, ". Ending playback.")
+            return False
+
         _streams = []
         _rawStreams = []
         for id in _playlist.streamIds:
@@ -136,16 +140,25 @@ class PlaylistService():
                 continue
             _rawStreams.append(_stream)
 
+        if(len(_rawStreams) == 0):
+            printS("Playlist ", _playlist.name, " has ", len(_streams), " streams, but they could not be found in database (they may have been removed). Ending playback.")
+            return False
+
         if(shuffle):
             _streams = random.shuffle(_rawStreams)
         else:
             _streams = _rawStreams[startIndex:]
 
         printS("Playing playlist ", _playlist.name, ".")
-        printS("Starting at video ", (startIndex + 1), ", shuffle is ", ("on" if shuffle else "off"), ", repeat playlist is ", ("on" if repeatPlaylist else "off"), ", played videos set to watched is ", ("on" if PLAYED_ALWAYS_WATCHED else "off"), ".")
+        printS("Starting at stream number: ", (startIndex + 1), ", shuffle is ", ("on" if shuffle else "off"), ", repeat playlist is ", ("on" if repeatPlaylist else "off"), ", played videos set to watched is ", ("on" if PLAYED_ALWAYS_WATCHED else "off"), ".")
 
         try:
             for i, _stream in enumerate(_streams):
+                if(_stream.watched != None and not _playlist.playWatchedStreams):
+                    _checkLogsMessage = " Check your logs (" + WATCHED_LOG_FILEPATH + ") for date/time watched." if LOG_WATCHED else " Logging is disabled and date/time watched is not available."
+                    printS("Stream ", _stream.name, "(ID ", _stream.id, ") has been marked as watched.", _checkLogsMessage, color = colors["WARNING"])
+                    continue
+
                 subprocessStream = None
                 if(_stream.isWeb):
                     subprocessStream = subprocess.Popen(f"call start {_stream.uri}", stdout=subprocess.PIPE, shell=True) # PID set by this is not PID of browser, just subprocess which opens browser
@@ -174,7 +187,7 @@ class PlaylistService():
                 if(PLAYED_ALWAYS_WATCHED):
                     _stream.watched = now
                     
-                    _updateSuccess = self.update(_stream)
+                    _updateSuccess = self.queueStreamRepository.update(_stream)
                     if(not _updateSuccess):
                         printS("Stream ", _stream.name, " could not be updated as watched.", color=colors["WARNING"])
         except:

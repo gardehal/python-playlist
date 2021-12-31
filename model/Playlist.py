@@ -9,6 +9,7 @@ class Playlist():
                  lastUpdated: datetime = datetime.now(), 
                  lastWatchedIndex: int = None,
                  playWatchedStreams: bool = True,
+                 allowDuplicates: bool = True,
                  streamSourceIds: List[str] = List[str],
                  id: str = str(uuid.uuid4())):
         self.name: str = name
@@ -16,5 +17,6 @@ class Playlist():
         self.lastUpdated: datetime = lastUpdated
         self.lastWatchedIndex: int = lastWatchedIndex
         self.playWatchedStreams: bool = playWatchedStreams
+        self.allowDuplicates: bool = allowDuplicates
         self.streamSourceIds: List[str] = streamSourceIds
         self.id: str = id

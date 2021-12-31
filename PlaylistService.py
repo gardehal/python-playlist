@@ -128,20 +128,14 @@ class PlaylistService():
             return False
 
         if(len(_playlist.streamIds) == 0):
-            printS("No streams found in playlist ", _playlist.name, ". Ending playback.")
+            printS("No streams found in playlist \"", _playlist.name, "\". Ending playback.")
             return False
 
         _streams = []
-        _rawStreams = []
-        for id in _playlist.streamIds:
-            _stream = self.queueStreamRepository.get(id)
-            if(_stream == None):
-                if(self.debug): printS("Stream ", id, " in playlist ", _playlist.name, " was not found. Consider removing it from the playlist and adding it again.", color=colors["WARNING"])
-                continue
-            _rawStreams.append(_stream)
+        _rawStreams = self.getStreamsByPlaylistId(_playlist.id)
 
         if(len(_rawStreams) == 0):
-            printS("Playlist ", _playlist.name, " has ", len(_streams), " streams, but they could not be found in database (they may have been removed). Ending playback.")
+            printS("Playlist \"", _playlist.name, "\" has ", len(_streams), " streams, but they could not be found in database (they may have been removed). Ending playback.")
             return False
 
         if(shuffle):
@@ -156,7 +150,7 @@ class PlaylistService():
             for i, _stream in enumerate(_streams):
                 if(_stream.watched != None and not _playlist.playWatchedStreams):
                     _checkLogsMessage = " Check your logs (" + WATCHED_LOG_FILEPATH + ") for date/time watched." if LOG_WATCHED else " Logging is disabled and date/time watched is not available."
-                    printS("Stream ", _stream.name, "(ID ", _stream.id, ") has been marked as watched.", _checkLogsMessage, color = colors["WARNING"])
+                    printS("Stream \"", _stream.name, "\" (ID: ", _stream.id, ") has been marked as watched.", _checkLogsMessage, color = colors["WARNING"])
                     continue
 
                 subprocessStream = None
@@ -170,11 +164,10 @@ class PlaylistService():
                     printS("Non-web streams currently not supported, skipping video ", _stream.name, color = colors["ERROR"])
                     continue
 
-                streamOpensText = " (opening in your browser)" if _stream.isWeb else ""
                 if(i < (len(_streams) - 1)):
-                    input(f"Now playing {_stream.name}" + streamOpensText + ", press enter to play next...")
+                    input(f"Now playing \"{_stream.name}\", press enter to play next...")
                 else:
-                    input(f"Now playing last stream in playlist, {_stream.name}" + streamOpensText + ", press enter to finish.")
+                    input(f"Now playing last stream in playlist, {_stream.name}, press enter to finish.")
                 
                 # subprocessStream.terminate() # TODO Doesn't seem to work with browser, at least not new tabs
                 
@@ -189,19 +182,19 @@ class PlaylistService():
                     
                     _updateSuccess = self.queueStreamRepository.update(_stream)
                     if(not _updateSuccess):
-                        printS("Stream ", _stream.name, " could not be updated as watched.", color=colors["WARNING"])
+                        printS("Stream \"", _stream.name, "\" could not be updated as watched.", color=colors["WARNING"])
         except:
             if(self.debug): printS(sys.exc_info(), color=colors["WARNING"])
             #printS("handleing of streams encountered an issue.", color=colors["WARNING"])
 
-        printS("Playlist ", _playlist.name, " finished.")
+        printS("Playlist \"", _playlist.name, "\" finished.")
 
         if(repeatPlaylist):
             self.playCmd(playlistId, startIndex, shuffle, repeatPlaylist)
 
         return True
 
-    def addStreams(self, playlistId: str, streams: List[QueueStream]) -> int:
+    def addStreamsToPlaylist(self, playlistId: str, streams: List[QueueStream]) -> int:
         """
         Add streams to playlist.
 
@@ -217,11 +210,21 @@ class PlaylistService():
         if(_playlist == None):
             return 0
 
+        _playlistStreamUris = []
+        if(not _playlist.allowDuplicates):
+            _playlistStreams = self.getStreamsByPlaylistId(_playlist.id)
+            _playlistStreamUris = [_.uri for _ in _playlistStreams]
+            
         _added = 0
         for stream in streams:
             if(stream.id == None):
+                printS("A stream is missing ID (name: \"", stream.name, "\") and cannot be added.", color=colors["ERROR"])
                 continue
             
+            if(not _playlist.allowDuplicates and stream.uri in _playlistStreamUris):
+                printS("Stream \"", stream.name, "\" (ID: ", stream.name, ") already exists in playlist \"", _playlist.name, "\" and allow duplicates for this playlist is disabled.", color=colors["WARNING"])
+                continue
+
             _playlist.streamIds.append(stream.id)
             _added += 1
 
@@ -301,3 +304,26 @@ class PlaylistService():
 
         _playlist.lastUpdated = datetime.now()
         return self.update(_playlist)
+
+    def getStreamsByPlaylistId(self, playlistId: str) -> List[QueueStream]:
+        """
+        Get all QueueStreams in playlist from playlistId.
+
+        Args:
+            playlistId (str): ID of playlist to add to
+
+        Returns:
+            List[QueueStream]: QueueStreams if any, else empty list
+        """
+
+        _playlist = self.get(playlistId)
+        if(_playlist == None):
+            return 0
+
+        _all = self.queueStreamRepository.getAll()
+        _playlistStreams = []
+        for _stream in _all:
+            if(_stream.id in _playlist.streamIds):
+                _playlistStreams.append(_stream)
+
+        return _playlistStreams

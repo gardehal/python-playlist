@@ -72,15 +72,12 @@ class FetchService():
             if(_updateSuccess):
                 _newStreams += _fetchedStreams
             else:
-                printS("Could not update source ", _source.name, " (", _source.id, "), streams could not be added: \n", _fetchedStreams, color=colors["WARNING"])
+                printS("Could not update source \"", _source.name, "\" (ID: ", _source.id, "), streams could not be added: \n", _fetchedStreams, color=colors["WARNING"])
         
-        for _video in _newStreams:
-            # TODO skip duplicates
-            self.queueStreamService.add(_video)
-            _playlist.streamIds.append(_video.id)
+        for _stream in _newStreams:
+            self.queueStreamService.add(_stream)
             
-        
-        # TODO remove watched
+        self.playlistService.addStreamsToPlaylist(_playlist.id, _newStreams)
 
         _playlist.lastUpdated = datetime.now()
         _updateSuccess = self.playlistService.update(_playlist)
@@ -102,17 +99,16 @@ class FetchService():
             List[QueueStream]: List of QueueStream
         """
         
-        # return [QueueStream("mocked", "https://youtu.be/O3-ucafI1MY", True, None, datetime.now())]
-        if(self.debug): printS("fetchYoutube start, fetching channel source")
+        if(self.debug): printS("fetchYoutube start, fetching channel source...")
         _channel = Channel(streamSource.uri)
         
         if(_channel == None or _channel.channel_name == None):
-            printS("Channel ", streamSource.name, " ( ", streamSource.uri, " ) could not be found or is not valid. Please remove it and add it back.", color=colors["ERROR"])
+            printS("Channel \"", streamSource.name, "\" (URL: ", streamSource.uri, ") could not be found or is not valid. Please remove it and add it back.", color=colors["ERROR"])
             return []
         
-        if(self.debug): printS("Fetching videos from ", _channel.channel_name)
+        if(self.debug): printS("Fetching videos from ", _channel.channel_name, "...")
         if(len(_channel.video_urls) < 1):
-            printS("Channel ", _channel.channel_name, " has no videos.", color=colors["WARNING"])
+            printS("Channel \"", _channel.channel_name, "\" has no videos.", color=colors["WARNING"])
             return []
         
         _newStreams = []

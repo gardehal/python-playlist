@@ -1,3 +1,4 @@
 python-dotenv==0.19.2
-pytube==11.0.1
-util==0.0.5
+pytube==11.0.2
+pytube3==9.6.4
+util==0.0.6

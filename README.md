@@ -14,9 +14,9 @@ Program for queueing and playing videos from list or from sources like YouTube B
 - queue videos from channels on youtube since last check
   - Cannot get hours and minutes of video posted? Only day?
 
-- re-implement fetch
 - setup CLI for everything
-- installation docs
+  - view settings, editing probably fine to keep in file only
+  - update help-print
+  - prune commands for removing watched streams, remove ids from playlists if no corresponding stream, remove sources without playlist?, streams without playlist?
 - more detailed use docs?
-- update help-print
-- prune commands for removing watched streams, remove ids from playlists if no corresponding stream, remove sources without playlist?, streams without playlist?
+- tests for core functions like fetch and play?

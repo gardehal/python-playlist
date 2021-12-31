@@ -1,12 +1,15 @@
+import os
 import random
 import subprocess
-from myutil.LocalJsonRepository import LocalJsonRepository
-from model.Playlist import *
-from myutil.Util import *
-from typing import List
 from datetime import datetime
-from model.QueueStream import QueueStream
+from typing import List
+
 from dotenv import load_dotenv
+from myutil.LocalJsonRepository import LocalJsonRepository
+from myutil.Util import *
+
+from model.Playlist import Playlist
+from model.QueueStream import QueueStream
 
 load_dotenv()
 DEBUG = eval(os.environ.get("DEBUG"))

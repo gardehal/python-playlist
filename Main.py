@@ -14,7 +14,12 @@ os.system("") # Needed to "trigger" coloured text
 load_dotenv()
 DEBUG = eval(os.environ.get("DEBUG"))
 LOCAL_STORAGE_PATH = os.environ.get("LOCAL_STORAGE_PATH")
+LOG_WATCHED = eval(os.environ.get("LOG_WATCHED"))
+DOWNLOAD_WEB_STREAMS = eval(os.environ.get("DOWNLOAD_WEB_STREAMS"))
+REMOVE_WATCHED_ON_FETCH = eval(os.environ.get("REMOVE_WATCHED_ON_FETCH"))
+PLAYED_ALWAYS_WATCHED = eval(os.environ.get("PLAYED_ALWAYS_WATCHED"))
 WATCHED_LOG_FILEPATH = os.environ.get("WATCHED_LOG_FILEPATH")
+BROWSER_BIN = os.environ.get("BROWSER_BIN")
 
 # General
 helpFlags = ["-help", "-h"]
@@ -34,6 +39,8 @@ listSourcesFlags = ["-listsources", "-ls"]
 addSourcesFlags = ["-addsource", "-as"]
 removeSourceFlags = ["-removesource", "-rms", "-rs"]
 fetchSourceFlags = ["-fetch", "-f", "-update", "-u"]
+# Meta
+listSettingsFlags = ["-settings", "-secrets", "-s"]
 
 class Main:
     def main():
@@ -69,36 +76,30 @@ class Main:
                     
                 quit()
 
-            elif(arg in listSourcesFlags):
-                args = extractArgs(argIndex, argV)
-                
-                sources = Main.getSources()
-                
-                if(len(sources.sources) > 0):
-                    for i, source in enumerate(sources.sources):
-                        print(f"{i+1}: {source.name} - {source.url if source.isWebSource else source.directory}")
-                else:
-                    printS("No sources found in the sources file.")
+            # Print settings
+            elif(arg in listSettingsFlags):
+                Main.printSettings()
 
                 argIndex += 1
                 continue
 
+            elif(arg in listSourcesFlags):
+                args = extractArgs(argIndex, argV)
+                # TODO
+
+                argIndex += len(args) + 1
+                continue
+
             elif(arg in addSourcesFlags):
                 args = extractArgs(argIndex, argV)
-                
-                sourcesAdded = Main.addSources(args)
-                if(sourcesAdded != None and sourcesAdded > 0):
-                    printS("Added ", sourcesAdded, " new sources", color=colors["OKGREEN"])
+                # TODO
 
                 argIndex += len(args) + 1
                 continue
 
             elif(arg in fetchSourceFlags):
                 args = extractArgs(argIndex, argV)
-                
-                sourcesAdded = Main.fetchStreamSources(10)
-                if(sourcesAdded != None and sourcesAdded > 0):
-                    printS("Fetched ", sourcesAdded, " new videos to list ", "listname", color=colors["OKGREEN"])
+                # TODO
 
                 argIndex += len(args) + 1
                 continue
@@ -126,6 +127,23 @@ class Main:
             return StreamSourceType.YOUTUBE
         
         return None 
+
+    def printSettings():
+        """
+        Print settings in .env settings/secrets file.
+
+        Returns:
+            None: None
+        """
+
+        printS("DEBUG: ", DEBUG,
+        "\n", "LOCAL_STORAGE_PATH: ", LOCAL_STORAGE_PATH,
+        "\n", "LOG_WATCHED: ", LOG_WATCHED,
+        "\n", "DOWNLOAD_WEB_STREAMS: ", DOWNLOAD_WEB_STREAMS,
+        "\n", "REMOVE_WATCHED_ON_FETCH: ", REMOVE_WATCHED_ON_FETCH,
+        "\n", "PLAYED_ALWAYS_WATCHED: ", PLAYED_ALWAYS_WATCHED,
+        "\n", "WATCHED_LOG_FILEPATH: ", WATCHED_LOG_FILEPATH,
+        "\n", "BROWSER_BIN: ", BROWSER_BIN)
 
     def printHelp():
         """

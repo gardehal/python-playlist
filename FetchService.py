@@ -76,11 +76,8 @@ class FetchService():
                 _newStreams += _fetchedStreams
             else:
                 printS("Could not update source \"", _source.name, "\" (ID: ", _source.id, "), streams could not be added: \n", _fetchedStreams, color=colors["WARNING"])
-        
-        for _stream in _newStreams:
-            self.queueStreamService.add(_stream)
             
-        self.playlistService.addStreamsToPlaylist(_playlist.id, _newStreams)
+        self.playlistService.addStreams(_playlist.id, _newStreams)
 
         _playlist.lastUpdated = datetime.now()
         _updateSuccess = self.playlistService.update(_playlist)

@@ -14,6 +14,7 @@ Program for queueing and playing videos from list or from sources like YouTube B
 - queue videos from channels on youtube since last check
   - Cannot get hours and minutes of video posted? Only day?
 
+- Duplicates, stream might be added but might eb a duplicate in playlist and remain unlinked. Check before add.
 - setup CLI for everything
   - view settings, editing probably fine to keep in file only
   - update help-print

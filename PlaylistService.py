@@ -197,7 +197,7 @@ class PlaylistService():
 
         return True
 
-    def addStreamsToPlaylist(self, playlistId: str, streams: List[QueueStream]) -> int:
+    def addStreams(self, playlistId: str, streams: List[QueueStream]) -> int:
         """
         Add streams to playlist.
 
@@ -219,13 +219,14 @@ class PlaylistService():
             _playlistStreamUris = [_.uri for _ in _playlistStreams]
             
         _added = 0
-        for stream in streams:
-            if(stream.id == None):
-                printS("A stream is missing ID (name: \"", stream.name, "\") and cannot be added.", color=colors["ERROR"])
-                continue
-            
+        for stream in streams:            
             if(not _playlist.allowDuplicates and stream.uri in _playlistStreamUris):
                 printS("Stream \"", stream.name, "\" (ID: ", stream.name, ") already exists in playlist \"", _playlist.name, "\" and allow duplicates for this playlist is disabled.", color=colors["WARNING"])
+                continue
+
+            _addResult = self.queueStreamRepository.add(stream)            
+            if(not _addResult):
+                printS("Stream \"", stream.name, "\" (ID: ", stream.id, ") could not be saved or added.", color=colors["ERROR"])
                 continue
 
             _playlist.streamIds.append(stream.id)

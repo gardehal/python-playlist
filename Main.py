@@ -32,7 +32,7 @@ addPlaylistFlags = ["-addplaylist", "-apl", "-ap"]
 removePlaylistFlags = ["-removeplaylist", "-rmpl", "-rpl", "-rmp", "-rp"]
 listPlaylistFlags = ["-listplaylist", "-lpl", "-lp"]
 fetchPlaylistSourcesFlags = ["-fetch", "-f", "-update", "-u"]
-removePrunePlaylistFlags = ["-prune", "-p"]
+prunePlaylistFlags = ["-prune", "-p"]
 playFlags = ["-play", "-p"]
 # Stream
 addStreamFlags = ["-add", "-a"]
@@ -90,8 +90,8 @@ class Main:
 
                 _entity = Playlist(name = _name, playWatchedStreams = _playWatchedStreams, allowDuplicates = _allowDuplicates, streamSourceIds = _streamSourceIds)
                 _result = playlistService.add(_entity)
-                if(_result):
-                    printS("Playlist added successfully with ID \"", _entity.id, "\".", color=colors["OKGREEN"])
+                if(_result != None):
+                    printS("Playlist added successfully with ID \"", _result.id, "\".", color=colors["OKGREEN"])
                 else:
                     printS("Failed to create playlist. See rerun command with -help to see expected arguments.", color=colors["ERROR"])
 
@@ -113,10 +113,16 @@ class Main:
                 continue
 
             elif(arg in listPlaylistFlags):
-                args = extractArgs(argIndex, argV)
-                # TODO
+                # Expected input: None
 
-                argIndex += len(args) + 1
+                _result = playlistService.getAll()
+                if(len(_result) > 0):
+                    for (i, _entry) in enumerate(_result):
+                        printS((i + 1), " - ", _entry.prettyText())
+                else:
+                    printS("Playlist removed successfully.", color=colors["OKGREEN"])
+
+                argIndex += 1
                 continue
 
             elif(arg in fetchPlaylistSourcesFlags):
@@ -126,7 +132,7 @@ class Main:
                 argIndex += len(args) + 1
                 continue
 
-            elif(arg in removePrunePlaylistFlags):
+            elif(arg in prunePlaylistFlags):
                 args = extractArgs(argIndex, argV)
                 # TODO
 
@@ -246,12 +252,13 @@ class Main:
         # printS("\t", testSwitches, " + [args]: Details.")
 
         # Playlist
+        printS("TODO: details for playlist, use switches for list of streams and sources", ": Prints details about given playlist, with option for including streams and sources.")
         printS(addPlaylistFlags, " [name: str] [? playWatchedStreams: bool] [? allowDuplicates: bool] [? streamSourceIds: list]: Add a playlist with name: name, playWatchedStreams: if playback should play watched streams, allowDuplicates: should playlist allow duplicate streams (only if the uri is the same), streamSourceIds: a list of sources (accepts unlimited number of IDs as long as it's positioned after other arguments).")
-        printS(removePlaylistFlags, " [playlistIds: list]: Removes playlists with IDs in playlistIds.")
-        printS(listPlaylistFlags, ": details.")
-        printS(fetchPlaylistSourcesFlags, ": details.")
-        printS(removePrunePlaylistFlags, ": details.")
-        printS(playFlags, ": details.")
+        printS(removePlaylistFlags, " [playlistIds or indices: list]: Removes playlists indicated.")
+        printS(listPlaylistFlags, ": List playlists with indices that can be used instead of IDs in other commands.")
+        printS(fetchPlaylistSourcesFlags, " [playlistIds or indices: list]: Fetch new streams from sources in playlists indicated, e.g. if a playlist has a YouTube channel as a source, and the channel uploads a new video, this video will be added to the playlist.")
+        printS(prunePlaylistFlags, " [playlistIds or indices: list]: Prune playlists indicated, removeing watched streams?, streams with no parent playlist, and links to stream in playlist if the stream cannot be found in the database.")
+        printS(playFlags, " [playlistIds: str] [? starindex: int] [? shuffle: bool] [? repeat: bool]: Start playing stream from a playlist, order and automation (like skipping already watched streams) depending on the input and playlist.")
         # Stream
         printS(addStreamFlags, ": details.")
         printS(removeStreamFlags, ": details.")
@@ -260,7 +267,7 @@ class Main:
         printS(addSourcesFlags, ": details.")
         printS(removeSourceFlags, ": details.")
         # Meta
-        printS(listSettingsFlags, ": details.")
+        printS(listSettingsFlags, ": Lists settings currently used by program. These settings can also be found in the file named \".env\" with examples in the file \".env-example\"")
 
 if __name__ == "__main__":
     Main.main()

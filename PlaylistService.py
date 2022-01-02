@@ -34,7 +34,7 @@ class PlaylistService():
         self.playlistRepository: str = LocalJsonRepository(T, self.debug, os.path.join(self.storagePath, "Playlist"))
         self.queueStreamRepository: str = LocalJsonRepository(QueueStream, self.debug, os.path.join(self.storagePath, "QueueStream"))
 
-    def add(self, playlist: T) -> bool:
+    def add(self, playlist: T) -> Playlist:
         """
         Add a new playlist.
 
@@ -42,11 +42,17 @@ class PlaylistService():
             playlist (Playlist): playlist to add
 
         Returns:
-            bool: success = True
+            Playlist | None: returns playlist if success, else None
         """
 
-        playlist.id = str(uuid.uuid4())
-        return self.playlistRepository.add(playlist)
+        _playlist = playlist
+        _playlist.id = str(uuid.uuid4())
+        _result = self.playlistRepository.add(_playlist)
+        if(_result):
+            return _playlist
+        else:
+            return None
+
 
     def get(self, id: str) -> T:
         """

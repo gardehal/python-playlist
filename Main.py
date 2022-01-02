@@ -3,11 +3,14 @@ import sys
 
 from dotenv import load_dotenv
 from myutil.Util import *
+from QueueStreamService import QueueStreamService
 
 from enums.StreamSourceType import StreamSourceType
 from FetchService import FetchService
 from PlaylistService import PlaylistService
 from StreamSourceService import StreamSourceService
+from model.Playlist import Playlist
+from model.QueueStream import QueueStream
 
 os.system("") # Needed to "trigger" coloured text
 
@@ -27,18 +30,17 @@ testFlags = ["-test", "-t"]
 # Playlist
 addPlaylistFlags = ["-addplaylist", "-apl", "-ap"]
 removePlaylistFlags = ["-removeplaylist", "-rpl", "-rp"]
-listQueueFlags = ["-listplaylist", "-lpl", "-lp"]
+listPlaylistFlags = ["-listplaylist", "-lpl", "-lp"]
+fetchPlaylistSourcesFlags = ["-fetch", "-f", "-update", "-u"]
+removePrunePlaylistFlags = ["-prune", "-p"]
 playFlags = ["-play", "-p"]
-# Video
-addVideoFlags = ["-add", "-a"]
-removeVideoFlags = ["-remove", "-rm", "-r"]
-listQueueFlags = ["-list", "-l"]
-removeWatchedVideoFlags = ["-removewatched", "-rmw", "-rw"]
+# Stream
+addStreamFlags = ["-add", "-a"]
+removeStreamFlags = ["-remove", "-rm", "-r"]
 # Sources
 listSourcesFlags = ["-listsources", "-ls"]
 addSourcesFlags = ["-addsource", "-as"]
 removeSourceFlags = ["-removesource", "-rms", "-rs"]
-fetchSourceFlags = ["-fetch", "-f", "-update", "-u"]
 # Meta
 listSettingsFlags = ["-settings", "-secrets", "-s"]
 
@@ -50,7 +52,11 @@ class Main:
 
         if(argC < 2):
             Main.printHelp()
-            
+
+        fetchService = FetchService()
+        playlistService = PlaylistService()
+        queueStreamService = QueueStreamService()
+        streamSourceService = StreamSourceService()
         makeFiles(WATCHED_LOG_FILEPATH)
 
         while argIndex < argC:
@@ -60,29 +66,89 @@ class Main:
                 Main.printHelp()
 
             elif(arg in testFlags):
-                args = extractArgs(argIndex, argV)
+                _input = extractArgs(argIndex, argV)
                 printS("Test", color = colors["OKBLUE"])
                 
                 if(1):
-                    fs = FetchService()
-                    ps = PlaylistService()
-                    sss = StreamSourceService()
                     sourceId = "03dc9d59-bd52-447f-b373-a35e1453c6f4"
                     playlistId = "1154dd04-cbc8-4fcd-8f8a-ccca0b71dd05"
-                    # print(sss.add(StreamSource("Mocked source", "https://www.youtube.com/channel/UCFtc3XdXgLFwhlDajMGK69w", True, 2, True)))
-                    # print(ps.add(Playlist("Mocked playlist", [], None, 0, True, True, [sourceId])))
-                    print(fs.fetch(playlistId))
-                    # print(ps.playCmd(playlistId))
+                    # print(streamSourceService.add(StreamSource("Mocked source", "https://www.youtube.com/channel/UCFtc3XdXgLFwhlDajMGK69w", True, 2, True)))
+                    # print(playlistService.add(Playlist("Mocked playlist", [], None, 0, True, True, [sourceId])))
+                    print(fetchService.fetch(playlistId))
+                    # print(playlistService.playCmd(playlistId))
                     
                 quit()
 
-            # Print settings
-            elif(arg in listSettingsFlags):
-                Main.printSettings()
+            # Playlist
+            elif(arg in addPlaylistFlags):
+                # Expected input: name, playWatchedStreams?, allowDuplicates?, streamSourceIds?
+                _input = extractArgs(argIndex, argV)
+                _name = str(_input[0]) if len(_input) > 0 else "New playlist"
+                _playWatchedStreams = eval(_input[1]) if len(_input) > 1 else True
+                _allowDuplicates = eval(_input[2]) if len(_input) > 2 else True
+                _streamSourceIds = _input[3:] if len(_input) > 3 else []
 
-                argIndex += 1
+                _entity = Playlist(name = _name, playWatchedStreams = _playWatchedStreams, allowDuplicates = _allowDuplicates, streamSourceIds = _streamSourceIds)
+                _result = playlistService.add(_entity)
+                if(_result):
+                    printS("Playlist added", color=colors["OKGREEN"])
+                else:
+                    printS("Failed to create playlist. See rerun command with -help to see expected arguments.", color=colors["ERROR"])
+
+                argIndex += len(_input) + 1
                 continue
 
+            elif(arg in removePlaylistFlags):
+                args = extractArgs(argIndex, argV)
+                # TODO
+
+                argIndex += len(args) + 1
+                continue
+
+            elif(arg in listPlaylistFlags):
+                args = extractArgs(argIndex, argV)
+                # TODO
+
+                argIndex += len(args) + 1
+                continue
+
+            elif(arg in fetchPlaylistSourcesFlags):
+                args = extractArgs(argIndex, argV)
+                # TODO
+
+                argIndex += len(args) + 1
+                continue
+
+            elif(arg in removePrunePlaylistFlags):
+                args = extractArgs(argIndex, argV)
+                # TODO
+
+                argIndex += len(args) + 1
+                continue
+
+            elif(arg in playFlags):
+                args = extractArgs(argIndex, argV)
+                # TODO
+
+                argIndex += len(args) + 1
+                continue
+
+            # Streams
+            elif(arg in addStreamFlags):
+                args = extractArgs(argIndex, argV)
+                # TODO
+
+                argIndex += len(args) + 1
+                continue
+
+            elif(arg in removeStreamFlags):
+                args = extractArgs(argIndex, argV)
+                # TODO
+
+                argIndex += len(args) + 1
+                continue
+
+            # Sources
             elif(arg in listSourcesFlags):
                 args = extractArgs(argIndex, argV)
                 # TODO
@@ -97,11 +163,18 @@ class Main:
                 argIndex += len(args) + 1
                 continue
 
-            elif(arg in fetchSourceFlags):
+            elif(arg in removeSourceFlags):
                 args = extractArgs(argIndex, argV)
                 # TODO
 
                 argIndex += len(args) + 1
+                continue
+
+            # Settings
+            elif(arg in listSettingsFlags):
+                Main.printSettings()
+
+                argIndex += 1
                 continue
 
             # Invalid, inform and quit
@@ -159,19 +232,28 @@ class Main:
         print("All arguments must be separated by space only.")
         print("\n")
 
+        # General
         printS(helpFlags, ": Prints this information about input arguments.")
         printS(testFlags, ": A method of calling experimental code (when you want to test if something works).")
         # printS(testFlags, " + [args]: Details.")
         # printS("\t", testSwitches, " + [args]: Details.")
 
-        printS(playFlags, ": Starts playing the queue.")
-        printS(listQueueFlags, ": List videos in queue.")
-        printS(addVideoFlags, " + [1+ URLs or paths to files]: Add videos to queue.")
-        printS(removeVideoFlags, " + [index]: Remove videos from queue.")
-        printS(listSourcesFlags, ": List watched sources.")
-        printS(addSourcesFlags, " + [1+ URLs or paths to directories]: Adds a video source to list of watched sources.")
-        printS(removeSourceFlags, " + [1+ URLs or paths to directories]: Removes video source(s) from list of watched sources.")
-        printS(fetchSourceFlags, ": Update queue with videos from list of watched sources.")
-        
+        # Playlist
+        printS(addPlaylistFlags, " [name: str] [? playWatchedStreams: bool] [? allowDuplicates: bool] [? streamSourceIds: list]: Add a playlist with name: name, playWatchedStreams: if playback should play watched streams, allowDuplicates: should playlist allow duplicate streams (only if the uri is the same), streamSourceIds: a list of sources (accepts unlimited number of IDs as long as it's positioned after other arguments).")
+        printS(removePlaylistFlags, ": details.")
+        printS(listPlaylistFlags, ": details.")
+        printS(fetchPlaylistSourcesFlags, ": details.")
+        printS(removePrunePlaylistFlags, ": details.")
+        printS(playFlags, ": details.")
+        # Stream
+        printS(addStreamFlags, ": details.")
+        printS(removeStreamFlags, ": details.")
+        # Sources
+        printS(listSourcesFlags, ": details.")
+        printS(addSourcesFlags, ": details.")
+        printS(removeSourceFlags, ": details.")
+        # Meta
+        printS(listSettingsFlags, ": details.")
+
 if __name__ == "__main__":
     Main.main()

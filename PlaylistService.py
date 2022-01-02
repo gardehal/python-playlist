@@ -3,6 +3,7 @@ import random
 import subprocess
 from datetime import datetime
 from typing import List
+import uuid
 
 from dotenv import load_dotenv
 from myutil.LocalJsonRepository import LocalJsonRepository

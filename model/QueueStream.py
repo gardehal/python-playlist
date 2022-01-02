@@ -15,3 +15,16 @@ class QueueStream:
         self.watched: datetime = watched
         self.datetimeAdded: datetime = datetimeAdded
         self.id: str = id
+
+    def summaryString(self):
+        return "".join(map(str, ["Name: ", self.name, 
+        ", ID: ", self.id, 
+        ", URI: ", self.uri]))
+
+    def detailsString(self):
+        return "".join(map(str, ["name: ", self.name, 
+        ", uri: ", self.uri, 
+        ", isWeb: ", self.isWeb, 
+        ", watched: ", self.watched, 
+        ", datetimeAdded: ", self.datetimeAdded,
+        ", id: ", self.id]))

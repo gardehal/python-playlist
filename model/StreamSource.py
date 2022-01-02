@@ -19,3 +19,20 @@ class StreamSource:
         self.lastFetched: datetime = lastFetched
         self.datetimeAdded: datetime = datetimeAdded
         self.id: str = id
+
+    def summaryString(self):
+        return "".join(map(str, ["Name: ", self.name, 
+        ", ID: ", self.id, 
+        ", URI: ", self.uri,
+        ", Enable fetch: ", self.enableFetch,
+        ", Last fetch: ", self.lastFetched]))
+
+    def detailsString(self):
+        return "".join(map(str, ["name: ", self.name, 
+        ", uri: ", self.uri, 
+        ", isWeb: ", self.isWeb,
+        ", videoSourceTypeId: ", self.videoSourceTypeId,
+        ", enableFetch: ", self.enableFetch,
+        ", lastFetched: ", self.lastFetched,
+        ", datetimeAdded: ", self.datetimeAdded,
+        ", id: ", self.id]))

@@ -21,10 +21,18 @@ class Playlist():
         self.streamSourceIds: List[str] = streamSourceIds
         self.id: str = id
 
-    def prettyText(self):
+    def summaryString(self):
         return "".join(map(str, ["Name: ", self.name, 
         ", ID: ", self.id, 
-        ", Streams: ", len(self.streamIds), 
-        ", Play watched: ", self.playWatchedStreams, 
-        ", Allow duplicates: ", self.allowDuplicates, 
+        ", Streams: ", len(self.streamIds),
         ", Sources: ", len(self.streamSourceIds)]))
+
+    def detailsString(self):
+        return "".join(map(str, ["name: ", self.name, 
+        ", n streamIds: ", len(self.streamIds), 
+        ", lastUpdated: ", self.lastUpdated, 
+        ", lastWatchedIndex: ", self.lastWatchedIndex, 
+        ", playWatchedStreams: ", self.playWatchedStreams, 
+        ", allowDuplicates: ", self.allowDuplicates, 
+        ", n streamSourceIds: ", len(self.streamSourceIds), 
+        ", id: ", self.id]))

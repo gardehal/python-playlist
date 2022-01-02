@@ -118,7 +118,7 @@ class Main:
                 _result = playlistService.getAll()
                 if(len(_result) > 0):
                     for (i, _entry) in enumerate(_result):
-                        printS((i + 1), " - ", _entry.prettyText())
+                        printS((i + 1), " - ", _entry.summaryString())
                 else:
                     printS("Playlist removed successfully.", color=colors["OKGREEN"])
 

@@ -29,7 +29,7 @@ helpFlags = ["-help", "-h"]
 testFlags = ["-test", "-t"]
 # Playlist
 addPlaylistFlags = ["-addplaylist", "-apl", "-ap"]
-removePlaylistFlags = ["-removeplaylist", "-rpl", "-rp"]
+removePlaylistFlags = ["-removeplaylist", "-rmpl", "-rpl", "-rmp", "-rp"]
 listPlaylistFlags = ["-listplaylist", "-lpl", "-lp"]
 fetchPlaylistSourcesFlags = ["-fetch", "-f", "-update", "-u"]
 removePrunePlaylistFlags = ["-prune", "-p"]
@@ -91,7 +91,7 @@ class Main:
                 _entity = Playlist(name = _name, playWatchedStreams = _playWatchedStreams, allowDuplicates = _allowDuplicates, streamSourceIds = _streamSourceIds)
                 _result = playlistService.add(_entity)
                 if(_result):
-                    printS("Playlist added", color=colors["OKGREEN"])
+                    printS("Playlist added successfully with ID \"", _entity.id, "\".", color=colors["OKGREEN"])
                 else:
                     printS("Failed to create playlist. See rerun command with -help to see expected arguments.", color=colors["ERROR"])
 
@@ -99,10 +99,17 @@ class Main:
                 continue
 
             elif(arg in removePlaylistFlags):
-                args = extractArgs(argIndex, argV)
-                # TODO
+                # Expected input: playlistId
+                _input = extractArgs(argIndex, argV)
+                _id = str(_input[0]) if len(_input) > 0 else None
 
-                argIndex += len(args) + 1
+                _result = playlistService.remove(_id)
+                if(_result):
+                    printS("Playlist removed successfully.", color=colors["OKGREEN"])
+                else:
+                    printS("Failed to remove playlist. See rerun command with -help to see expected arguments.", color=colors["ERROR"])
+
+                argIndex += len(_input) + 1
                 continue
 
             elif(arg in listPlaylistFlags):
@@ -240,7 +247,7 @@ class Main:
 
         # Playlist
         printS(addPlaylistFlags, " [name: str] [? playWatchedStreams: bool] [? allowDuplicates: bool] [? streamSourceIds: list]: Add a playlist with name: name, playWatchedStreams: if playback should play watched streams, allowDuplicates: should playlist allow duplicate streams (only if the uri is the same), streamSourceIds: a list of sources (accepts unlimited number of IDs as long as it's positioned after other arguments).")
-        printS(removePlaylistFlags, ": details.")
+        printS(removePlaylistFlags, " [playlistIds: list]: Removes playlists with IDs in playlistIds.")
         printS(listPlaylistFlags, ": details.")
         printS(fetchPlaylistSourcesFlags, ": details.")
         printS(removePrunePlaylistFlags, ": details.")

@@ -22,7 +22,7 @@ class QueueStreamService():
 
         mkdir(self.storagePath)
 
-    def add(self, queueStream: T) -> bool:
+    def add(self, queueStream: T) -> T:
         """
         Add a new queueStream.
 
@@ -30,12 +30,17 @@ class QueueStreamService():
             queueStream (QueueStream): queueStream to add
 
         Returns:
-            bool: success = True
+            QueueStream | None: returns added QueueStream if success, else None
         """
 
-        queueStream.id = str(uuid.uuid4())
-        queueStream.datetimeAdded = datetime.now()
-        return self.queueStreamRepository.add(queueStream)
+        _queueStream = queueStream
+        _queueStream.id = str(uuid.uuid4())
+        _queueStream.datetimeAdded = datetime.now()
+        _result = self.queueStreamRepository.add(_queueStream)
+        if(_result):
+            return _queueStream
+        else:
+            return None
 
     def get(self, id: str) -> T:
         """
@@ -98,7 +103,7 @@ class QueueStreamService():
             bool: success = True
         """
 
-        if(self.add(queueStream)):
+        if(self.add(queueStream) != None):
             return True
 
         return self.update(queueStream)

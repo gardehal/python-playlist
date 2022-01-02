@@ -22,7 +22,7 @@ class StreamSourceService():
     def __init__(self):
         self.streamSourceRepository: str = LocalJsonRepository(T, self.debug, os.path.join(self.storagePath, "StreamSource"))
 
-    def add(self, streamSource: T) -> bool:
+    def add(self, streamSource: T) -> T:
         """
         Add a new streamSource.
 
@@ -30,12 +30,17 @@ class StreamSourceService():
             streamSource (StreamSource): streamSource to add
 
         Returns:
-            bool: success = True
+            StreamSource | None: returns added StreamSource if success, else None
         """
-
-        streamSource.id = str(uuid.uuid4())
-        streamSource.datetimeAdded = datetime.now()
-        return self.streamSourceRepository.add(streamSource)
+        
+        _streamSource = streamSource
+        _streamSource.id = str(uuid.uuid4())
+        _streamSource.datetimeAdded = datetime.now()
+        _result = self.streamSourceRepository.add(_streamSource)
+        if(_result):
+            return _streamSource
+        else:
+            return None
 
     def get(self, id: str) -> T:
         """
@@ -98,7 +103,7 @@ class StreamSourceService():
             bool: success = True
         """
 
-        if(self.add(streamSource)):
+        if(self.add(streamSource) != None):
             return True
 
         return self.update(streamSource)

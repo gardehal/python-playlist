@@ -196,24 +196,6 @@ class Main:
 
             argIndex += 1
 
-    def sourceToStreamSourceType(source: str) -> StreamSourceType:
-        """
-        Get StreamSourceType from string (path or url).
-
-        Args:
-            source (str): path or url to source of videos
-
-        Returns:
-            StreamSourceType: StreamSourceType or None
-        """
-        
-        if(os.path.isdir(source)):
-            return StreamSourceType.DICTIONARY
-        if("https://youtu.be" in source or "https://www.youtube.com" in source):
-            return StreamSourceType.YOUTUBE
-        
-        return None 
-
     def printSettings():
         """
         Print settings in .env settings/secrets file.
@@ -253,19 +235,20 @@ class Main:
 
         # Playlist
         printS("TODO: details for playlist, use switches for list of streams and sources", ": Prints details about given playlist, with option for including streams and sources.")
+        printS("TODO: create playlist from other playlists from e.g. Youtube", ": Creates a playlist from an existing playlist, e.g. YouTube.")
         printS(addPlaylistFlags, " [name: str] [? playWatchedStreams: bool] [? allowDuplicates: bool] [? streamSourceIds: list]: Add a playlist with name: name, playWatchedStreams: if playback should play watched streams, allowDuplicates: should playlist allow duplicate streams (only if the uri is the same), streamSourceIds: a list of sources (accepts unlimited number of IDs as long as it's positioned after other arguments).")
         printS(removePlaylistFlags, " [playlistIds or indices: list]: Removes playlists indicated.")
         printS(listPlaylistFlags, ": List playlists with indices that can be used instead of IDs in other commands.")
         printS(fetchPlaylistSourcesFlags, " [playlistIds or indices: list]: Fetch new streams from sources in playlists indicated, e.g. if a playlist has a YouTube channel as a source, and the channel uploads a new video, this video will be added to the playlist.")
         printS(prunePlaylistFlags, " [playlistIds or indices: list]: Prune playlists indicated, removeing watched streams?, streams with no parent playlist, and links to stream in playlist if the stream cannot be found in the database.")
-        printS(playFlags, " [playlistIds: str] [? starindex: int] [? shuffle: bool] [? repeat: bool]: Start playing stream from a playlist, order and automation (like skipping already watched streams) depending on the input and playlist.")
+        printS(playFlags, " [playlistId: str] [? starindex: int] [? shuffle: bool] [? repeat: bool]: Start playing stream from a playlist, order and automation (like skipping already watched streams) depending on the input and playlist.")
         # Stream
-        printS(addStreamFlags, ": details.")
-        printS(removeStreamFlags, ": details.")
+        printS(addStreamFlags, " [playlistId or index: str] TODO : Add a stream to a playlist with name: name, .")
+        printS(removeStreamFlags, " [playlistId or index: str] [streamIds or indices: list]: Remove streams from playlist.")
         # Sources
-        printS(listSourcesFlags, ": details.")
-        printS(addSourcesFlags, ": details.")
-        printS(removeSourceFlags, ": details.")
+        printS(listSourcesFlags, " [playlistId or index: str]: Lists sources with indices that can be used instead of IDs in other commands.")
+        printS(addSourcesFlags, " [playlistId or index: str] TODO: details.")
+        printS(removeSourceFlags, " [sourceId or index: str]: Removes source from database and playlist if used anywhere.")
         # Meta
         printS(listSettingsFlags, ": Lists settings currently used by program. These settings can also be found in the file named \".env\" with examples in the file \".env-example\"")
 

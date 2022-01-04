@@ -39,9 +39,9 @@ playFlags = ["-play", "-p"]
 addStreamFlags = ["-add", "-a"]
 removeStreamFlags = ["-remove", "-rm", "-r"]
 # Sources
-listSourcesFlags = ["-listsources", "-ls"]
 addSourcesFlags = ["-addsource", "-as"]
 removeSourceFlags = ["-removesource", "-rms", "-rs"]
+listSourcesFlags = ["-listsources", "-ls"]
 # Meta
 listSettingsFlags = ["-settings", "-secrets", "-s"]
 
@@ -85,7 +85,7 @@ class Main:
             elif(arg in addPlaylistFlags):
                 # Expected input: name, playWatchedStreams?, allowDuplicates?, streamSourceIds/indices?
                 _input = extractArgs(argIndex, argV)
-                _name = str(_input[0]) if len(_input) > 0 else "New playlist"
+                _name = str(_input[0]) if len(_input) > 0 else "New Playlist"
                 _playWatchedStreams = eval(_input[1]) if len(_input) > 1 else True
                 _allowDuplicates = eval(_input[2]) if len(_input) > 2 else True
                 _streamSourceIds = Main.getIdsFromInput(_input[3:], Main.playlistService.getAllIds()) if len(_input) > 3 else []
@@ -95,15 +95,16 @@ class Main:
                 if(_result != None):
                     printS("Playlist added successfully with ID \"", _result.id, "\".", color=colors["OKGREEN"])
                 else:
-                    printS("Failed to create playlist. See rerun command with -help to see expected arguments.", color=colors["FAIL"])
+                    printS("Failed to create Playlist. See rerun command with -help to see expected arguments.", color=colors["FAIL"])
 
                 argIndex += len(_input) + 1
                 continue
 
             elif(arg in removePlaylistFlags):
-                # Expected input: playlistIds
+                # Expected input: playlistIds or indices
                 _input = extractArgs(argIndex, argV)
                 if(len(_input) == 0):
+                    printS("Missing options for argument \"", arg, "\", expected IDs or indices.", color=colors["WARNING"])
                     argIndex += 1
                     continue
                 
@@ -124,71 +125,166 @@ class Main:
                 _result = Main.playlistService.getAll()
                 if(len(_result) > 0):
                     for (i, _entry) in enumerate(_result):
-                        printS((i + 1), " - ", _entry.summaryString())
+                        printS(i, " - ", _entry.summaryString())
                 else:
-                    printS("Playlist removed successfully.", color=colors["OKGREEN"])
+                    printS("No Playlists found.", color=colors["WARNING"])
 
                 argIndex += 1
                 continue
 
             elif(arg in fetchPlaylistSourcesFlags):
-                args = extractArgs(argIndex, argV)
-                # TODO
-
-                argIndex += len(args) + 1
+                # Expected input: playlistIds or indices
+                _input = extractArgs(argIndex, argV)
+                if(len(_input) == 0):
+                    printS("Missing options for argument \"", arg, "\", expected IDs or indices.", color=colors["WARNING"])
+                    argIndex += 1
+                    continue
+                
+                _ids = Main.getIdsFromInput(_input, Main.playlistService.getAllIds())
+                for _id in _ids:
+                    _result = Main.fetchService.fetch(_id)
+                    _playlist = Main.playlistService.get(_id)
+                    printS("Fetched ", _result, " for playlist \"", _playlist.name, "\" successfully.", color=colors["OKGREEN"])
+                
+                argIndex += len(_input) + 1
                 continue
 
             elif(arg in prunePlaylistFlags):
-                args = extractArgs(argIndex, argV)
-                # TODO
-
-                argIndex += len(args) + 1
+                # Expected input: pruneoptions?, playlistIds or indices
+                _input = extractArgs(argIndex, argV)
+                if(len(_input) == 0):
+                    printS("Missing options for argument \"", arg, "\", expected IDs or indices.", color=colors["WARNING"])
+                    argIndex += 1
+                    continue
+                
+                _ids = Main.getIdsFromInput(_input, Main.playlistService.getAllIds())
+                for _id in _ids:
+                    printS("WIP")
+                
+                argIndex += len(_input) + 1
                 continue
 
             elif(arg in playFlags):
-                args = extractArgs(argIndex, argV)
-                # TODO
-
-                argIndex += len(args) + 1
+                # Expected input: playlistId or index
+                _input = extractArgs(argIndex, argV)
+                if(len(_input) == 0):
+                    printS("Missing options for argument \"", arg, "\", expected IDs or indices.", color=colors["WARNING"])
+                    argIndex += 1
+                    continue
+                
+                _id = Main.getIdsFromInput(_input, Main.playlistService.getAllIds())[0]
+                _result = Main.playlistService.playCmd(_id)
+                if(not _result):
+                    _playlist = Main.playlistService.get(_id)
+                    printS("Failed to play playlist \"", _playlist.name, "\", please se error above.", color=colors["FAIL"])
+                    
+                argIndex += len(_input) + 1
                 continue
 
             # Streams
             elif(arg in addStreamFlags):
-                args = extractArgs(argIndex, argV)
-                # TODO
+                # Expected input: uri, name?, enableFetch?
+                _input = extractArgs(argIndex, argV)
+                _uri = _input[0] if len(_input) > 0 else None
+                _name = _input[1] if len(_input) > 1 else None
+                
+                if(_uri == None):
+                    printS("Failed to add QueueStream, missing uri.", color=colors["FAIL"])
+                    argIndex += len(_input) + 1
+                    continue
+                
+                 # TODO if name is none, try to get filename if dir, else try to get page title if web
+                if(_name == None):
+                    _name = "New QueueStream"
+                
+                _entity = QueueStream(name = _name, uri = _uri)
+                _result = Main.queueStreamService.add(_entity)
+                if(_result != None):
+                    printS("QueueStream added successfully with ID \"", _result.id, "\".", color=colors["OKGREEN"])
+                else:
+                    printS("Failed to create QueueStream. See rerun command with -help to see expected arguments.", color=colors["FAIL"])
 
-                argIndex += len(args) + 1
+                argIndex += len(_input) + 1
                 continue
-
+            
             elif(arg in removeStreamFlags):
-                args = extractArgs(argIndex, argV)
-                # TODO
+                # Expected input: queueStreamIds or indices
+                _input = extractArgs(argIndex, argV)
+                if(len(_input) == 0):
+                    printS("Missing options for argument \"", arg, "\", expected IDs or indices.", color=colors["WARNING"])
+                    argIndex += 1
+                    continue
+                
+                _ids = Main.getIdsFromInput(_input, Main.queueStreamService.getAllIds())
+                for _id in _ids:
+                    _result = Main.queueStreamService.remove(_id)
+                    if(_result):
+                        printS("QueueStream removed successfully.", color=colors["OKGREEN"])
+                    else:
+                        printS("Failed to remove QueueStream. See rerun command with -help to see expected arguments.", color=colors["FAIL"])
 
-                argIndex += len(args) + 1
+                argIndex += len(_input) + 1
                 continue
 
             # Sources
-            elif(arg in listSourcesFlags):
-                args = extractArgs(argIndex, argV)
-                # TODO
-
-                argIndex += len(args) + 1
-                continue
-
             elif(arg in addSourcesFlags):
-                args = extractArgs(argIndex, argV)
-                # TODO
+                # Expected input: uri, name?, enableFetch?
+                _input = extractArgs(argIndex, argV)
+                _uri = _input[0] if len(_input) > 0 else None
+                _name = _input[1] if len(_input) > 1 else None
+                _enableFetch = eval(_input[2]) if len(_input) > 2 else False
+                
+                if(_uri == None):
+                    printS("Failed to add StreamSource, missing uri.", color=colors["FAIL"])
+                    argIndex += len(_input) + 1
+                    continue
+                
+                 # TODO if name is none, try to get dirname if dir, else try to get page title if web
+                if(_name == None):
+                    _name = "New source"
+                
+                _entity = StreamSource(name = _name, uri = _uri, enableFetch = _enableFetch)
+                _result = Main.streamSourceService.add(_entity)
+                if(_result != None):
+                    printS("StreamSource added successfully with ID \"", _result.id, "\".", color=colors["OKGREEN"])
+                else:
+                    printS("Failed to create StreamSource. See rerun command with -help to see expected arguments.", color=colors["FAIL"])
 
-                argIndex += len(args) + 1
+                argIndex += len(_input) + 1
                 continue
 
             elif(arg in removeSourceFlags):
-                args = extractArgs(argIndex, argV)
-                # TODO
+                # Expected input: streamSourceIds or indices
+                _input = extractArgs(argIndex, argV)
+                if(len(_input) == 0):
+                    printS("Missing options for argument \"", arg, "\", expected IDs or indices.", color=colors["WARNING"])
+                    argIndex += 1
+                    continue
+                
+                _ids = Main.getIdsFromInput(_input, Main.streamSourceService.getAllIds())
+                for _id in _ids:
+                    _result = Main.streamSourceService.remove(_id)
+                    if(_result):
+                        printS("StreamSource removed successfully.", color=colors["OKGREEN"])
+                    else:
+                        printS("Failed to remove StreamSource. See rerun command with -help to see expected arguments.", color=colors["FAIL"])
 
-                argIndex += len(args) + 1
+                argIndex += len(_input) + 1
                 continue
 
+            elif(arg in listSourcesFlags):
+                # Expected input: None
+
+                _result = Main.queueStreamService.getAll()
+                if(len(_result) > 0):
+                    for (i, _entry) in enumerate(_result):
+                        printS(i, " - ", _entry.summaryString())
+                else:
+                    printS("No QueueStreams found.", color=colors["WARNING"])
+
+                argIndex += 1
+                continue
+            
             # Settings
             elif(arg in listSettingsFlags):
                 Main.printSettings()
@@ -222,7 +318,7 @@ class Main:
                     continue
                 
                 _index = int(float(_string[1]))
-                _indexPlaylist = Main.getPlaylistByIndex(_index)
+                _indexPlaylist = Main.getPlaylistByIndex(_index) # TODO
                 if(_indexPlaylist != None):
                     _result.append(_indexPlaylist.id)
                 else:
@@ -329,6 +425,7 @@ class Main:
         # Playlist
         printS("TODO: details for playlist, use switches for list of streams and sources", ": Prints details about given playlist, with option for including streams and sources.")
         printS("TODO: create playlist from other playlists from e.g. Youtube", ": Creates a playlist from an existing playlist, e.g. YouTube.")
+        
         printS(addPlaylistFlags, " [name: str] [? playWatchedStreams: bool] [? allowDuplicates: bool] [? streamSourceIds: list]: Add a playlist with name: name, playWatchedStreams: if playback should play watched streams, allowDuplicates: should playlist allow duplicate streams (only if the uri is the same), streamSourceIds: a list of sources (accepts unlimited number of IDs as long as it's positioned after other arguments).")
         printS(removePlaylistFlags, " [playlistIds or indices: list]: Removes playlists indicated.")
         printS(listPlaylistFlags, ": List playlists with indices that can be used instead of IDs in other commands.")
@@ -339,9 +436,9 @@ class Main:
         printS(addStreamFlags, " [playlistId or index: str] TODO : Add a stream to a playlist with name: name, .")
         printS(removeStreamFlags, " [playlistId or index: str] [streamIds or indices: list]: Remove streams from playlist.")
         # Sources
-        printS(listSourcesFlags, " [playlistId or index: str]: Lists sources with indices that can be used instead of IDs in other commands.")
         printS(addSourcesFlags, " [playlistId or index: str] TODO: details.")
         printS(removeSourceFlags, " [sourceId or index: str]: Removes source from database and playlist if used anywhere.")
+        printS(listSourcesFlags, " [playlistId or index: str]: Lists sources with indices that can be used instead of IDs in other commands.")
         # Meta
         printS(listSettingsFlags, ": Lists settings currently used by program. These settings can also be found in the file named \".env\" with examples in the file \".env-example\"")
 

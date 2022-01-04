@@ -13,8 +13,6 @@ from model.Playlist import Playlist
 from model.QueueStream import QueueStream
 from model.StreamSource import StreamSource
 
-os.system("") # Needed to "trigger" coloured text
-
 load_dotenv()
 DEBUG = eval(os.environ.get("DEBUG"))
 LOCAL_STORAGE_PATH = os.environ.get("LOCAL_STORAGE_PATH")
@@ -292,11 +290,10 @@ class Main:
                 argIndex += 1
                 continue
 
-            # Invalid, inform and quit
+            # Invalid
             else:
                 printS("Argument not recognized: \"", arg, "\", please see documentation or run with \"-help\" for help.", color=colors["WARNING"])
-
-            argIndex += 1
+                argIndex += 1
             
     def getIdsFromInput(input: List[str], existingIds: List[str]) -> List[str]:
         """

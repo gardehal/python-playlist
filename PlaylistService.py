@@ -76,12 +76,12 @@ class PlaylistService():
 
         return self.playlistRepository.getAll()
 
-    def getAllIds(self):
+    def getAllIds(self) -> List[str]:
         """
         Get all IDs of playlists.
 
         Returns:
-            List[Playlist]: playlists if any, else empty list
+            List[str]: playlists IDs if any, else empty list
         """
         
         _all = self.getAll()

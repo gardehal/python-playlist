@@ -65,6 +65,17 @@ class StreamSourceService():
 
         return self.streamSourceRepository.getAll()
 
+    def getAllIds(self) -> List[str]:
+        """
+        Get all IDs of streamSources.
+
+        Returns:
+            List[str]: streamSources IDs if any, else empty list
+        """
+        
+        _all = self.getAll()
+        return [_.id for _ in _all]
+    
     def update(self, streamSource: T) -> bool:
         """
         Update StreamSource.

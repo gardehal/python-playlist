@@ -64,6 +64,17 @@ class QueueStreamService():
         """
 
         return self.queueStreamRepository.getAll()
+    
+    def getAllIds(self) -> List[str]:
+        """
+        Get all IDs of queueStreams.
+
+        Returns:
+            List[str]: queueStreams IDs if any, else empty list
+        """
+        
+        _all = self.getAll()
+        return [_.id for _ in _all]
 
     def update(self, queueStream: T) -> bool:
         """

@@ -76,6 +76,17 @@ class PlaylistService():
 
         return self.playlistRepository.getAll()
 
+    def getAllIds(self):
+        """
+        Get all IDs of playlists.
+
+        Returns:
+            List[Playlist]: playlists if any, else empty list
+        """
+        
+        _all = self.getAll()
+        return [_.id for _ in _all]
+
     def update(self, playlist: T) -> bool:
         """
         Update Playlist.

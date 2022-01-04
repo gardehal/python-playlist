@@ -1,16 +1,17 @@
 import os
 import sys
+from typing import List
 
 from dotenv import load_dotenv
 from myutil.Util import *
 from QueueStreamService import QueueStreamService
 
-from enums.StreamSourceType import StreamSourceType
 from FetchService import FetchService
 from PlaylistService import PlaylistService
 from StreamSourceService import StreamSourceService
 from model.Playlist import Playlist
 from model.QueueStream import QueueStream
+from model.StreamSource import StreamSource
 
 os.system("") # Needed to "trigger" coloured text
 
@@ -81,19 +82,19 @@ class Main:
 
             # Playlist
             elif(arg in addPlaylistFlags):
-                # Expected input: name, playWatchedStreams?, allowDuplicates?, streamSourceIds?
+                # Expected input: name, playWatchedStreams?, allowDuplicates?, streamSourceIds/indices?
                 _input = extractArgs(argIndex, argV)
                 _name = str(_input[0]) if len(_input) > 0 else "New playlist"
                 _playWatchedStreams = eval(_input[1]) if len(_input) > 1 else True
                 _allowDuplicates = eval(_input[2]) if len(_input) > 2 else True
-                _streamSourceIds = _input[3:] if len(_input) > 3 else []
-
+                _streamSourceIds = Main.getIdsFromInput(_input[3:], playlistService) if len(_input) > 3 else [] # Issue in function with call to self.GetAll in service, self not defined because of passing service as arg?
+                    
                 _entity = Playlist(name = _name, playWatchedStreams = _playWatchedStreams, allowDuplicates = _allowDuplicates, streamSourceIds = _streamSourceIds)
                 _result = playlistService.add(_entity)
                 if(_result != None):
                     printS("Playlist added successfully with ID \"", _result.id, "\".", color=colors["OKGREEN"])
                 else:
-                    printS("Failed to create playlist. See rerun command with -help to see expected arguments.", color=colors["ERROR"])
+                    printS("Failed to create playlist. See rerun command with -help to see expected arguments.", color=colors["FAIL"])
 
                 argIndex += len(_input) + 1
                 continue
@@ -107,7 +108,7 @@ class Main:
                 if(_result):
                     printS("Playlist removed successfully.", color=colors["OKGREEN"])
                 else:
-                    printS("Failed to remove playlist. See rerun command with -help to see expected arguments.", color=colors["ERROR"])
+                    printS("Failed to remove playlist. See rerun command with -help to see expected arguments.", color=colors["FAIL"])
 
                 argIndex += len(_input) + 1
                 continue
@@ -195,6 +196,90 @@ class Main:
                 printS("Argument not recognized: \"", arg, "\", please see documentation or run with \"-help\" for help.", color=colors["WARNING"])
 
             argIndex += 1
+            
+    def getIdsFromInput(input: List[str], service: object) -> List[str]:
+        """
+        Get IDs from a list of inputs, whether they are raw IDs that must be checked via the database or indices (formatted "i[index]") of a list.
+
+        Args:
+            input (List[str]): input if IDs/indices
+            service (object): class which has a function getAllIds() with IDs to check against
+
+        Returns:
+            List[str]: List of existing IDs for input which can be found
+        """
+        
+        _result = []
+        _existingIds = service.getAllIds()
+        for _string in input:
+            if(_string[0] == "i"): #starts with "i", like index of "i2" is 2
+                _index = _string[1]
+                _indexPlaylist = Main.getPlaylistByIndex(_index)
+                if(_indexPlaylist != None):
+                    _result.append(_indexPlaylist.id)
+                else:
+                    printS("Failed to add playlist with index ", _index, ".", color=colors["FAIL"])
+            else: # Assume input is ID if it's not, users problem. Could also check if ID in getAllIds()
+                if(_string in _existingIds): 
+                    _result.append(_string)
+                else:
+                    printS("Failed to add playlist with ID \"", _string, "\", no such entity found in database.", color=colors["FAIL"])
+                            
+        return _result
+            
+    def getPlaylistByIndex(index: int) -> Playlist:
+        """
+        Returns Playlist from PlaylistService.getAll() with by index starting at 0.
+
+        Args:
+            index (int): index of Playlist to get
+
+        Returns:
+            Playlist: Playlist if index is within bounds and can be fetched, else None
+        """
+        
+        _all = PlaylistService.getAll()
+        
+        if(index >= 0 and index < len(_all)):
+            return _all[index]
+        
+        return None
+            
+    def getQueueStreamByIndex(index: int) -> QueueStream:
+        """
+        Returns QueueStream from QueueStreamService.getAll() with by index starting at 0.
+
+        Args:
+            index (int): index of QueueStream to get
+
+        Returns:
+            QueueStream: QueueStream if index is within bounds and can be fetched, else None
+        """
+        
+        _all = QueueStreamService.getAll()
+        
+        if(index >= 0 and index < len(_all)):
+            return _all[index]
+        
+        return None
+            
+    def getStreamSourceByIndex(index: int) -> StreamSource:
+        """
+        Returns StreamSource from StreamSourceService.getAll() with by index starting at 0.
+
+        Args:
+            index (int): index of StreamSource to get
+
+        Returns:
+            StreamSource: StreamSource if index is within bounds and can be fetched, else None
+        """
+        
+        _all = StreamSourceService.getAll()
+        
+        if(index >= 0 and index < len(_all)):
+            return _all[index]
+        
+        return None
 
     def printSettings():
         """

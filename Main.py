@@ -86,7 +86,7 @@ class Main:
                 _name = str(_input[0]) if len(_input) > 0 else "New Playlist"
                 _playWatchedStreams = eval(_input[1]) if len(_input) > 1 else True
                 _allowDuplicates = eval(_input[2]) if len(_input) > 2 else True
-                _streamSourceIds = Main.getIdsFromInput(_input[3:], Main.playlistService.getAllIds()) if len(_input) > 3 else []
+                _streamSourceIds = Main.getIdsFromInput(_input[3:], Main.playlistService.getAllIds(), Main.playlistService.getAll()) if len(_input) > 3 else []
                 
                 _entity = Playlist(name = _name, playWatchedStreams = _playWatchedStreams, allowDuplicates = _allowDuplicates, streamSourceIds = _streamSourceIds)
                 _result = Main.playlistService.add(_entity)
@@ -106,7 +106,7 @@ class Main:
                     argIndex += 1
                     continue
                 
-                _ids = Main.getIdsFromInput(_input, Main.playlistService.getAllIds())
+                _ids = Main.getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll())
                 for _id in _ids:
                     _result = Main.playlistService.remove(_id)
                     if(_result):
@@ -138,7 +138,7 @@ class Main:
                     argIndex += 1
                     continue
                 
-                _ids = Main.getIdsFromInput(_input, Main.playlistService.getAllIds())
+                _ids = Main.getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll())
                 for _id in _ids:
                     _result = Main.fetchService.fetch(_id)
                     _playlist = Main.playlistService.get(_id)
@@ -155,7 +155,7 @@ class Main:
                     argIndex += 1
                     continue
                 
-                _ids = Main.getIdsFromInput(_input, Main.playlistService.getAllIds())
+                _ids = Main.getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll())
                 for _id in _ids:
                     printS("WIP")
                 
@@ -170,8 +170,13 @@ class Main:
                     argIndex += 1
                     continue
                 
-                _id = Main.getIdsFromInput(_input, Main.playlistService.getAllIds())[0]
-                _result = Main.playlistService.playCmd(_id)
+                _ids = Main.getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll())[0]
+                if(len(_ids) < 1):
+                    printS("Failed to play playlist \"", _playlist.name, "\", no such ID or index: \"", _input[0], "\".", color=colors["FAIL"])
+                    argIndex += len(_input) + 1
+                    continue
+                
+                _result = Main.playlistService.playCmd(_ids[0])
                 if(not _result):
                     _playlist = Main.playlistService.get(_id)
                     printS("Failed to play playlist \"", _playlist.name, "\", please se error above.", color=colors["FAIL"])
@@ -213,7 +218,7 @@ class Main:
                     argIndex += 1
                     continue
                 
-                _ids = Main.getIdsFromInput(_input, Main.queueStreamService.getAllIds())
+                _ids = Main.getIdsFromInput(_input, Main.queueStreamService.getAllIds(), Main.queueStreamService.getAll())
                 for _id in _ids:
                     _result = Main.queueStreamService.remove(_id)
                     if(_result):
@@ -259,7 +264,7 @@ class Main:
                     argIndex += 1
                     continue
                 
-                _ids = Main.getIdsFromInput(_input, Main.streamSourceService.getAllIds())
+                _ids = Main.getIdsFromInput(_input, Main.streamSourceService.getAllIds(), Main.streamSourceService.getAll())
                 for _id in _ids:
                     _result = Main.streamSourceService.remove(_id)
                     if(_result):
@@ -295,13 +300,14 @@ class Main:
                 printS("Argument not recognized: \"", arg, "\", please see documentation or run with \"-help\" for help.", color=colors["WARNING"])
                 argIndex += 1
             
-    def getIdsFromInput(input: List[str], existingIds: List[str]) -> List[str]:
+    def getIdsFromInput(input: List[str], existingIds: List[str], indexList: List[any]) -> List[str]:
         """
         Get IDs from a list of inputs, whether they are raw IDs that must be checked via the database or indices (formatted "i[index]") of a list.
 
         Args:
             input (List[str]): input if IDs/indices
             existingIds (List[str]): existing IDs to compare with
+            indexList (List[any]): List of object (must have field "id") to index from
 
         Returns:
             List[str]: List of existing IDs for input which can be found
@@ -315,9 +321,10 @@ class Main:
                     continue
                 
                 _index = int(float(_string[1]))
-                _indexPlaylist = Main.getPlaylistByIndex(_index) # TODO
-                if(_indexPlaylist != None):
-                    _result.append(_indexPlaylist.id)
+                _indexedEntity = indexList[_index] if(len(indexList) > 0 and _index > 0 and _index < len(indexList)) else None
+                
+                if(_indexedEntity != None):
+                    _result.append(_indexedEntity.id)
                 else:
                     printS("Failed to get data for index ", _index, ", it is out of bounds.", color=colors["FAIL"])
             else: # Assume input is ID if it's not, users problem. Could also check if ID in getAllIds()
@@ -327,61 +334,7 @@ class Main:
                     printS("Failed to add playlist with ID \"", _string, "\", no such entity found in database.", color=colors["FAIL"])
                             
         return _result
-            
-    def getPlaylistByIndex(index: int) -> Playlist:
-        """
-        Returns Playlist from PlaylistService.getAll() with by index starting at 0.
-
-        Args:
-            index (int): index of Playlist to get
-
-        Returns:
-            Playlist: Playlist if index is within bounds and can be fetched, else None
-        """
-        
-        _all = Main.playlistService.getAll()
-        
-        if(len(_all) > 0 and index > 0 and index < len(_all)):
-            return _all[index]
-        
-        return None
-            
-    def getQueueStreamByIndex(index: int) -> QueueStream:
-        """
-        Returns QueueStream from QueueStreamService.getAll() with by index starting at 0.
-
-        Args:
-            index (int): index of QueueStream to get
-
-        Returns:
-            QueueStream: QueueStream if index is within bounds and can be fetched, else None
-        """
-        
-        _all = Main.queueStreamService.getAll()
-        
-        if(len(_all) > 0 and index >= 0 and index < len(_all)):
-            return _all[index]
-        
-        return None
-            
-    def getStreamSourceByIndex(index: int) -> StreamSource:
-        """
-        Returns StreamSource from StreamSourceService.getAll() with by index starting at 0.
-
-        Args:
-            index (int): index of StreamSource to get
-
-        Returns:
-            StreamSource: StreamSource if index is within bounds and can be fetched, else None
-        """
-        
-        _all = Main.streamSourceService.getAll()
-        
-        if(len(_all) > 0 and index >= 0 and index < len(_all)):
-            return _all[index]
-        
-        return None
-
+    
     def printSettings():
         """
         Print settings in .env settings/secrets file.

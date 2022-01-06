@@ -74,7 +74,7 @@ class Main:
                     playlistId = "1154dd04-cbc8-4fcd-8f8a-ccca0b71dd05"
                     # print(streamSourceService.add(StreamSource("Mocked source", "https://www.youtube.com/channel/UCFtc3XdXgLFwhlDajMGK69w", True, 2, True)))
                     # print(playlistService.add(Playlist("Mocked playlist", [], None, 0, True, True, [sourceId])))
-                    print(fetchService.fetch(playlistId))
+                    print(Main.fetchService.fetch(playlistId))
                     # print(playlistService.playCmd(playlistId))
                     
                 quit()
@@ -109,7 +109,7 @@ class Main:
                 _ids = Main.getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll())
                 for _id in _ids:
                     _result = Main.playlistService.remove(_id)
-                    if(_result):
+                    if(_result != None):
                         printS("Playlist removed successfully.", color=colors["OKGREEN"])
                     else:
                         printS("Failed to remove playlist. See rerun command with -help to see expected arguments.", color=colors["FAIL"])
@@ -221,7 +221,7 @@ class Main:
                 _ids = Main.getIdsFromInput(_input, Main.queueStreamService.getAllIds(), Main.queueStreamService.getAll())
                 for _id in _ids:
                     _result = Main.queueStreamService.remove(_id)
-                    if(_result):
+                    if(_result != None):
                         printS("QueueStream removed successfully.", color=colors["OKGREEN"])
                     else:
                         printS("Failed to remove QueueStream. See rerun command with -help to see expected arguments.", color=colors["FAIL"])
@@ -267,7 +267,7 @@ class Main:
                 _ids = Main.getIdsFromInput(_input, Main.streamSourceService.getAllIds(), Main.streamSourceService.getAll())
                 for _id in _ids:
                     _result = Main.streamSourceService.remove(_id)
-                    if(_result):
+                    if(_result != None):
                         printS("StreamSource removed successfully.", color=colors["OKGREEN"])
                     else:
                         printS("Failed to remove StreamSource. See rerun command with -help to see expected arguments.", color=colors["FAIL"])

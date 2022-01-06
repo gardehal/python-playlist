@@ -42,14 +42,15 @@ class PlaylistService():
             playlist (Playlist): playlist to add
 
         Returns:
-            Playlist | None: returns added Playlist if success, else None
+            Playlist | None: returns Playlist if success, else None
         """
 
-        _playlist = playlist
-        _playlist.id = str(uuid.uuid4())
-        _result = self.playlistRepository.add(_playlist)
+        _entity = playlist
+        _entity.id = str(uuid.uuid4())
+        _entity.lastUpdated = datetime.now()
+        _result = self.playlistRepository.add(_entity)
         if(_result):
-            return _playlist
+            return _entity
         else:
             return None
 
@@ -87,7 +88,7 @@ class PlaylistService():
         _all = self.getAll()
         return [_.id for _ in _all]
 
-    def update(self, playlist: T) -> bool:
+    def update(self, playlist: T) -> T:
         """
         Update Playlist.
 
@@ -95,12 +96,18 @@ class PlaylistService():
             playlist (Playlist): playlist to update
 
         Returns:
-            bool: success = True
+            Playlist | None: returns Playlist if success, else None
         """
 
-        return self.playlistRepository.update(playlist)
+        _entity = playlist
+        _entity.lastUpdated = datetime.now()
+        _result = self.playlistRepository.update(_entity)
+        if(_result):
+            return _entity
+        else:
+            return None
 
-    def remove(self, id: str) -> bool:
+    def remove(self, id: str) -> T:
         """
         Remove playlist.
 
@@ -108,12 +115,20 @@ class PlaylistService():
             id (str): id of playlist to remove
 
         Returns:
-            bool: success = True
+            Playlist | None: returns Playlist if success, else None
         """
 
-        return self.playlistRepository.remove(id)
+        _entity = self.get(id)
+        if(_entity == None):
+            return None
+        
+        _result = self.playlistRepository.remove(_entity.id)
+        if(_result):
+            return _entity
+        else:
+            return None
 
-    def addOrUpdate(self, playlist: T) -> bool:
+    def addOrUpdate(self, playlist: T) -> T:
         """
         Add playlist if none exists, else update existing.
 
@@ -121,11 +136,11 @@ class PlaylistService():
             playlist (T): playlist to add or update
 
         Returns:
-            bool: success = True
+            Playlist | None: returns Playlist if success, else None
         """
 
-        if(self.add(playlist) != None):
-            return True
+        if(self.get(playlist.id) == None):
+            return self.add(playlist)
 
         return self.update(playlist)
 

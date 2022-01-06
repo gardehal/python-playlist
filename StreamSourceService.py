@@ -5,6 +5,7 @@ from typing import List
 
 from dotenv import load_dotenv
 from myutil.LocalJsonRepository import LocalJsonRepository
+from enums.StreamSourceType import StreamSourceTypeUtil
 
 from model.StreamSource import StreamSource
 
@@ -30,15 +31,16 @@ class StreamSourceService():
             streamSource (StreamSource): streamSource to add
 
         Returns:
-            StreamSource | None: returns added StreamSource if success, else None
+            StreamSource | None: returns StreamSource if success, else None
         """
-        
-        _streamSource = streamSource
-        _streamSource.id = str(uuid.uuid4())
-        _streamSource.datetimeAdded = datetime.now()
-        _result = self.streamSourceRepository.add(_streamSource)
+
+        _entity = streamSource
+        _entity.id = str(uuid.uuid4())
+        _entity.datetimeAdded = datetime.now()
+        _entity.videoSourceTypeId = StreamSourceTypeUtil.strToStreamSourceType(_entity.uri)
+        _result = self.streamSourceRepository.add(_entity)
         if(_result):
-            return _streamSource
+            return _entity
         else:
             return None
 
@@ -76,7 +78,7 @@ class StreamSourceService():
         _all = self.getAll()
         return [_.id for _ in _all]
     
-    def update(self, streamSource: T) -> bool:
+    def update(self, streamSource: T) -> T:
         """
         Update StreamSource.
 
@@ -84,13 +86,17 @@ class StreamSourceService():
             streamSource (StreamSource): streamSource to update
 
         Returns:
-            bool: success = True
+            StreamSource | None: returns StreamSource if success, else None
         """
+        
+        _entity = streamSource
+        _result = self.streamSourceRepository.update(_entity)
+        if(_result):
+            return _entity
+        else:
+            return None
 
-        streamSource.datetimeAdded = datetime.now()
-        return self.streamSourceRepository.update(streamSource)
-
-    def remove(self, id: str) -> bool:
+    def remove(self, id: str) -> T:
         """
         Remove streamSource.
 
@@ -98,12 +104,20 @@ class StreamSourceService():
             id (str): id of streamSource to remove
 
         Returns:
-            bool: success = True
+            StreamSource | None: returns StreamSource if success, else None
         """
 
-        return self.streamSourceRepository.remove(id)
+        _entity = self.get(id)
+        if(_entity == None):
+            return None
+        
+        _result = self.streamSourceRepository.remove(_entity.id)
+        if(_result):
+            return _entity
+        else:
+            return None
 
-    def addOrUpdate(self, streamSource: T) -> bool:
+    def addOrUpdate(self, streamSource: T) -> T:
         """
         Add streamSource if none exists, else update existing.
 
@@ -111,10 +125,10 @@ class StreamSourceService():
             streamSource (T): streamSource to add or update
 
         Returns:
-            bool: success = True
+            StreamSource | None: returns StreamSource if success, else None
         """
 
-        if(self.add(streamSource) != None):
-            return True
+        if(self.get(streamSource.id) == None):
+            return self.add(streamSource)
 
         return self.update(streamSource)

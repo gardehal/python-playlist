@@ -30,15 +30,16 @@ class QueueStreamService():
             queueStream (QueueStream): queueStream to add
 
         Returns:
-            QueueStream | None: returns added QueueStream if success, else None
+            QueueStream | None: returns QueueStream if success, else None
         """
 
-        _queueStream = queueStream
-        _queueStream.id = str(uuid.uuid4())
-        _queueStream.datetimeAdded = datetime.now()
-        _result = self.queueStreamRepository.add(_queueStream)
+        _entity = queueStream
+        _entity.id = str(uuid.uuid4())
+        _entity.datetimeAdded = datetime.now()
+        _entity.watched = False
+        _result = self.queueStreamRepository.add(_entity)
         if(_result):
-            return _queueStream
+            return _entity
         else:
             return None
 
@@ -76,7 +77,7 @@ class QueueStreamService():
         _all = self.getAll()
         return [_.id for _ in _all]
 
-    def update(self, queueStream: T) -> bool:
+    def update(self, queueStream: T) -> T:
         """
         Update QueueStream.
 
@@ -84,13 +85,18 @@ class QueueStreamService():
             queueStream (QueueStream): queueStream to update
 
         Returns:
-            bool: success = True
+            QueueStream | None: returns QueueStream if success, else None
         """
 
-        queueStream.datetimeAdded = datetime.now()
-        return self.queueStreamRepository.update(queueStream)
+        _entity = queueStream
+        _entity.datetimeAdded = datetime.now()
+        _result = self.queueStreamRepository.update(_entity)
+        if(_result):
+            return _entity
+        else:
+            return None
 
-    def remove(self, id: str) -> bool:
+    def remove(self, id: str) -> T:
         """
         Remove queueStream.
 
@@ -98,12 +104,20 @@ class QueueStreamService():
             id (str): id of queueStream to remove
 
         Returns:
-            bool: success = True
+            QueueStream | None: returns QueueStream if success, else None
         """
 
-        return self.queueStreamRepository.remove(id)
+        _entity = self.get(id)
+        if(_entity == None):
+            return None
+        
+        _result = self.queueStreamRepository.remove(_entity.id)
+        if(_result):
+            return _entity
+        else:
+            return None
 
-    def addOrUpdate(self, queueStream: T) -> bool:
+    def addOrUpdate(self, queueStream: T) -> T:
         """
         Add queueStream if none exists, else update existing.
 
@@ -111,10 +125,10 @@ class QueueStreamService():
             queueStream (T): queueStream to add or update
 
         Returns:
-            bool: success = True
+            QueueStream | None: returns QueueStream if success, else None
         """
-
-        if(self.add(queueStream) != None):
-            return True
+        
+        if(self.get(queueStream.id) == None):
+            return self.add(queueStream)
 
         return self.update(queueStream)

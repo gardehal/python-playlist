@@ -186,10 +186,16 @@ class Main:
 
             # Streams
             elif(arg in addStreamFlags):
-                # Expected input: uri, name?, enableFetch?
+                # Expected input: playlistId or index, uri, name?
                 _input = extractArgs(argIndex, argV)
-                _uri = _input[0] if len(_input) > 0 else None
-                _name = _input[1] if len(_input) > 1 else None
+                _ids = Main.getIdsFromInput(_input, Main.queueStreamService.getAllIds(), Main.queueStreamService.getAll())
+                _uri = _input[1] if len(_input) > 1 else None
+                _name = _input[2] if len(_input) > 2 else None
+                
+                if(len(_ids) == 0):
+                    printS("Failed to add QueueStream, missing ID to playlist.", color=colors["FAIL"])
+                    argIndex += len(_input) + 1
+                    continue
                 
                 if(_uri == None):
                     printS("Failed to add QueueStream, missing uri.", color=colors["FAIL"])
@@ -201,11 +207,19 @@ class Main:
                     _name = "New QueueStream"
                 
                 _entity = QueueStream(name = _name, uri = _uri)
-                _result = Main.queueStreamService.add(_entity)
-                if(_result != None):
+                _addResult = Main.queueStreamService.add(_entity)
+                if(_addResult == None):
+                    printS("Failed to create QueueStream.", color=colors["FAIL"])
+                
+                _playlist = Main.playlistService.get(_ids[0])
+                _playlist.streamIds.append(_addResult.id)
+                _updateResult = Main.playlistService.update(_entity)
+                if(_updateResult != None):
                     printS("QueueStream added successfully with ID \"", _result.id, "\".", color=colors["OKGREEN"])
                 else:
-                    printS("Failed to create QueueStream. See rerun command with -help to see expected arguments.", color=colors["FAIL"])
+                    _removeResult = Main.queueStreamService.remove(_addResult.id) # Try to remove added QueueStream if update playlist fails
+                    _removeMessage = "" if _removeResult != None else " QueueStream was not removed, ID: " + _addResult.id
+                    printS("Failed to add QueueStream to playlist.", _removeMessage, color=colors["FAIL"])
 
                 argIndex += len(_input) + 1
                 continue
@@ -231,11 +245,11 @@ class Main:
 
             # Sources
             elif(arg in addSourcesFlags):
-                # Expected input: uri, name?, enableFetch?
+                # Expected input: uri, enableFetch?, name?
                 _input = extractArgs(argIndex, argV)
                 _uri = _input[0] if len(_input) > 0 else None
-                _name = _input[1] if len(_input) > 1 else None
-                _enableFetch = eval(_input[2]) if len(_input) > 2 else False
+                _enableFetch = eval(_input[1]) if len(_input) > 1 else False
+                _name = _input[2] if len(_input) > 2 else None
                 
                 if(_uri == None):
                     printS("Failed to add StreamSource, missing uri.", color=colors["FAIL"])
@@ -364,6 +378,7 @@ class Main:
         print("Arguments marked with ? are optional.")
         print("All arguments that triggers a function start with dash(-).")
         print("All arguments must be separated by space only.")
+        print("When using an index or indices, format with with an \"i\" followed by the index, like \"i0\".")
         print("\n")
 
         # General
@@ -372,21 +387,22 @@ class Main:
         # printS(testFlags, " + [args]: Details.")
         # printS("\t", testSwitches, " + [args]: Details.")
 
-        # Playlist
-        printS("TODO: details for playlist, use switches for list of streams and sources", ": Prints details about given playlist, with option for including streams and sources.")
-        printS("TODO: create playlist from other playlists from e.g. Youtube", ": Creates a playlist from an existing playlist, e.g. YouTube.")
-        
-        printS(addPlaylistFlags, " [name: str] [? playWatchedStreams: bool] [? allowDuplicates: bool] [? streamSourceIds: list]: Add a playlist with name: name, playWatchedStreams: if playback should play watched streams, allowDuplicates: should playlist allow duplicate streams (only if the uri is the same), streamSourceIds: a list of sources (accepts unlimited number of IDs as long as it's positioned after other arguments).")
+        # Playlist        
+        printS(addPlaylistFlags, " [name: str] [? playWatchedStreams: bool] [? allowDuplicates: bool] [? streamSourceIds: list]: Add a playlist with name: name, playWatchedStreams: if playback should play watched streams, allowDuplicates: should playlist allow duplicate streams (only if the uri is the same), streamSourceIds: a list of sources.")
         printS(removePlaylistFlags, " [playlistIds or indices: list]: Removes playlists indicated.")
         printS(listPlaylistFlags, ": List playlists with indices that can be used instead of IDs in other commands.")
         printS(fetchPlaylistSourcesFlags, " [playlistIds or indices: list]: Fetch new streams from sources in playlists indicated, e.g. if a playlist has a YouTube channel as a source, and the channel uploads a new video, this video will be added to the playlist.")
         printS(prunePlaylistFlags, " [playlistIds or indices: list]: Prune playlists indicated, removeing watched streams?, streams with no parent playlist, and links to stream in playlist if the stream cannot be found in the database.")
         printS(playFlags, " [playlistId: str] [? starindex: int] [? shuffle: bool] [? repeat: bool]: Start playing stream from a playlist, order and automation (like skipping already watched streams) depending on the input and playlist.")
+        
+        # printS("TODO: details for playlist, use switches for list of streams and sources", ": Prints details about given playlist, with option for including streams and sources.")
+        # printS("TODO: create playlist from other playlists from e.g. Youtube", ": Creates a playlist from an existing playlist, e.g. YouTube.")
+        
         # Stream
-        printS(addStreamFlags, " [playlistId or index: str] TODO : Add a stream to a playlist with name: name, .")
-        printS(removeStreamFlags, " [playlistId or index: str] [streamIds or indices: list]: Remove streams from playlist.")
+        printS(addStreamFlags, " [playlistId or index: str] [uri: string] [? name: str]: Add a stream to a playlist from ID or index, from uri: URL, and name: name (set automatically if not given).")
+        printS(removeStreamFlags, " [streamIds or indices: list]: Remove streams from playlist.")
         # Sources
-        printS(addSourcesFlags, " [playlistId or index: str] TODO: details.")
+        printS(addSourcesFlags, " [playlistId or index: str] [uri: string] [? enableFetch: bool] [? name: str]: Add a source from uri: URL, enableFetch: if the playlist should fetch new stream from this source, and name: name (set automatically if not given).")
         printS(removeSourceFlags, " [sourceId or index: str]: Removes source from database and playlist if used anywhere.")
         printS(listSourcesFlags, " [playlistId or index: str]: Lists sources with indices that can be used instead of IDs in other commands.")
         # Meta

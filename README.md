@@ -11,9 +11,9 @@ Program for queueing and playing videos from list or from sources like YouTube B
 1. Download PIP packages needed for this program to run:
   - ```$ pip install -r path/to/requirements.txt```
 1. Create the usable .env-file for setting and secrets:
-  1. Copy and paste the file .env-example.
-  1. Rename the file to ".env".
-  1. Change the values to your liking. The value "BROWSER_BIN" can be left blank. Values which are booleans must be Python parsable, "True", "False", "1", "0" etc.
+  - Copy and paste the file .env-example.
+  - Rename the file to ".env".
+  - Change the values to your liking. The value "BROWSER_BIN" can be left blank. Values which are booleans must be Python parsable, "True", "False", "1", "0" etc.
 1. Confirm install by entering the help command:
   - ```$ python main.py -help```
   - Verify that the program prints an overview of commands, arguments, flags, and a description of what they do.
@@ -27,8 +27,8 @@ Program for queueing and playing videos from list or from sources like YouTube B
 - queue videos from channels on youtube since last check
   - Cannot get hours and minutes of video posted? Only day?
 
+- add back mechanize getting page title
 - setup CLI for everything
-  - update help-print
   - Better way to deal with input and types, e.g. eval("false") fails, named input like --mylist = 1, 2, 3?
 - prune commands for removing watched streams, remove ids from playlists if no corresponding stream, remove sources without playlist?, streams without playlist?
 - more detailed use docs?

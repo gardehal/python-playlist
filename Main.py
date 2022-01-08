@@ -72,12 +72,21 @@ class Main:
                 printS("Test", color = colors["OKBLUE"])
 
                 if(1):
-                    sourceId = "03dc9d59-bd52-447f-b373-a35e1453c6f4"
-                    playlistId = "1154dd04-cbc8-4fcd-8f8a-ccca0b71dd05"
-                    # print(streamSourceService.add(StreamSource("Mocked source", "https://www.youtube.com/channel/UCFtc3XdXgLFwhlDajMGK69w", True, 2, True)))
-                    # print(playlistService.add(Playlist("Mocked playlist", [], None, 0, True, True, [sourceId])))
-                    print(Main.fetchService.fetch(playlistId))
-                    # print(playlistService.playCmd(playlistId))
+                    playlistId = "d5b58dfd-c088-40b5-8122-29644ab3a843"
+                    sourceId = "9915f243-56f0-4ea1-bd42-5e96bc35d32a"
+                    dt = "2021-01-08 05:53:27.320888"
+                    
+                    p = Main.playlistService.get(playlistId)
+                    
+                    for i in p.streamIds:
+                        Main.queueStreamService.remove(i)
+                    
+                    p.streamIds = []
+                    Main.playlistService.update(p)
+                    
+                    s = Main.streamSourceService.get(sourceId)
+                    s.lastFetched = dt
+                    Main.streamSourceService.update(s)
 
                 quit()
 

@@ -5,6 +5,7 @@ from typing import List
 
 from dotenv import load_dotenv
 from myutil.LocalJsonRepository import LocalJsonRepository
+import validators
 from enums.StreamSourceType import StreamSourceTypeUtil
 
 from model.StreamSource import StreamSource
@@ -36,8 +37,9 @@ class StreamSourceService():
 
         _entity = streamSource
         _entity.id = str(uuid.uuid4())
+        _entity.isWeb = validators.url(_entity.uri)
         _entity.datetimeAdded = datetime.now()
-        _entity.videoSourceTypeId = StreamSourceTypeUtil.strToStreamSourceType(_entity.uri).denominator
+        _entity.videoSourceTypeId = StreamSourceTypeUtil.strToStreamSourceType(_entity.uri).value
         _result = self.streamSourceRepository.add(_entity)
         if(_result):
             return _entity

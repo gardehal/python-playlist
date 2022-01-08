@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime
 import os
 from typing import List
 
@@ -109,8 +109,7 @@ class FetchService():
             printS("Channel \"", streamSource.name, "\" (URL: ", streamSource.uri, ") could not be found or is not valid. Please remove it and add it back.", color = colors["ERROR"])
             return []
 
-        if(self.debug):
-            printS("Fetching videos from ", _channel.channel_name, "...")
+        if(self.debug): printS("Fetching videos from ", _channel.channel_name, "...")
         if(len(_channel.video_urls) < 1):
             printS("Channel \"", _channel.channel_name, "\" has no videos.", color = colors["WARNING"])
             return []
@@ -126,7 +125,7 @@ class FetchService():
             if(takeBefore != None and publishedDto.now > takeBeforeDto.now):
                 continue
 
-            _newStreams.append(QueueStream(yt.title, yt.watch_url, True, None, datetime.now(), streamSource.id))
+            _newStreams.append(QueueStream(yt.title, yt.watch_url, True, None, datetime.now()))
 
             # Todo fetch batches using batchSize of videos instead of all 3000 videos in some cases taking 60 seconds+ to load
             if(i > batchSize):

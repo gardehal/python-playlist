@@ -80,23 +80,6 @@ class Main:
                     print("`123")
                     
                     # print(sanitize("test's"))
-                    
-                if(0):
-                    playlistId = "d5b58dfd-c088-40b5-8122-29644ab3a843"
-                    sourceId = "9915f243-56f0-4ea1-bd42-5e96bc35d32a"
-                    dt = "2021-01-08 05:53:27.320888"
-                    
-                    p = Main.playlistService.get(playlistId)
-                    
-                    for i in p.streamIds:
-                        Main.queueStreamService.remove(i)
-                    
-                    p.streamIds = []
-                    Main.playlistService.update(p)
-                    
-                    s = Main.streamSourceService.get(sourceId)
-                    s.lastFetched = dt
-                    Main.streamSourceService.update(s)
 
                 quit()
 
@@ -165,7 +148,11 @@ class Main:
                     argIndex += len(_input) + 1
                     continue
                 
-                Main.printPlaylistDetails(_ids, _includeUri, _includeId)
+                _result = Main.printPlaylistDetails(_ids, _includeUri, _includeId)
+                if(_result):
+                    printS("Finished printing details.", color = colors["OKGREEN"])
+                else:
+                    printS("Failed print details.", color = colors["FAIL"])
                         
                 argIndex += len(_input) + 1
                 continue
@@ -206,13 +193,32 @@ class Main:
                 _input = extractArgs(argIndex, argV)
                 _ids = Main.getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll())
                 
-                if(len(_ids) == 0): # No ids, do all?
+                if(len(_ids) == 0):
                     printS("Failed to prune playlists, missing playlistIds or indices.", color = colors["FAIL"])
                     argIndex += len(_input) + 1
                     continue
                 
                 for _id in _ids:
                     printS("WIP")
+
+                argIndex += len(_input) + 1
+                continue
+            
+            elif(arg in resetPlaylistFetchFlags):
+                # Expected input: playlistIds or indices
+                _input = extractArgs(argIndex, argV)
+                _ids = Main.getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll())
+                
+                if(len(_ids) == 0):
+                    printS("Failed to reset fetch-status of playlists, missing playlistIds or indices.", color = colors["FAIL"])
+                    argIndex += len(_input) + 1
+                    continue
+                    
+                _result = Main.resetPlaylistFetch(_ids)
+                if(_result):
+                    printS("Finished printing details.", color = colors["OKGREEN"])
+                else:
+                    printS("Failed print details.", color = colors["FAIL"])
 
                 argIndex += len(_input) + 1
                 continue
@@ -451,18 +457,23 @@ class Main:
 
         return _result
 
-    def printPlaylistDetails(playlistIds: List[str], includeUri: bool = False, includeId: bool = False) -> None:
+    def printPlaylistDetails(playlistIds: List[str], includeUri: bool = False, includeId: bool = False) -> int:
         """
-        Print detailed infor for Playlist, including details for related StreamSources and QueueStreams.
+        Print detailed info for Playlist, including details for related StreamSources and QueueStreams.
 
         Args:
-            playlistIds (List[str]): list of playlists to print details of
-            includeUri (bool, optional): should print include URI if any. Defaults to False.
-            includeId (bool, optional): should print include IDs. Defaults to False.
+            playlistIds (List[str]): list of playlistIds to print details of
+            includeUri (bool, optional): should print include URI if any. Defaults to False
+            includeId (bool, optional): should print include IDs. Defaults to False
+            
+        Returns:
+            int: number of playlists printed for
         """
-                
+        
+        _result = 0
         for _id in playlistIds:
             _playlist = Main.playlistService.get(_id)
+                
             printS(_playlist.detailsString(includeUri, includeId))
             
             for i, _sourceId in enumerate(_playlist.streamSourceIds):
@@ -475,6 +486,45 @@ class Main:
                 _stream = Main.queueStreamService.get(_streamId)
                 _color = "WHITE" if i % 2 == 0 else "GREYBG"
                 printS("\t", _stream.detailsString(includeUri, includeId), color = colors[_color])
+                
+            _result += 1
+                
+        return _result
+    
+    def resetPlaylistFetch(playlistIds: List[str]) -> int:
+        """
+        Reset the fetch-status for sources of a playlist and removes all streams.
+
+        Args:
+            playlistIds (List[str]): list of playlistIds 
+            
+        Returns:
+            int: number of playlists reset
+        """
+        
+        _result = 0
+        for playlistId in playlistIds:            
+            _playlist = Main.playlistService.get(playlistId)
+            _removeUpdateResult = False
+            
+            for queueStreamId in _playlist.streamIds:
+                _ = Main.queueStreamService.remove(queueStreamId) != None
+                _removeUpdateResult = _removeUpdateResult and _
+            
+            _playlist.streamIds = []
+            _ = Main.playlistService.update(_playlist)
+            _removeUpdateResult = _removeUpdateResult and _
+            
+            for streamSourceId in _playlist.streamSourceIds:
+                _streamSource = Main.streamSourceService.get(streamSourceId)
+                _streamSource.lastFetched = None
+                _ = Main.streamSourceService.update(_streamSource)
+                _removeUpdateResult = _removeUpdateResult and _
+            
+            if(_removeUpdateResult):
+                _result += 1
+                
+        return _result
 
     def printSettings():
         """
@@ -520,7 +570,7 @@ class Main:
         printS(fetchPlaylistSourcesFlags, " [playlistIds or indices: list] [? takeAfter: datetime] [? takeBefore: datetime]: Fetch new streams from sources in playlists indicated, e.g. if a playlist has a YouTube channel as a source, and the channel uploads a new video, this video will be added to the playlist. Optional arguments takeAfter: only fetch streams after this date, takeBefore: only fetch streams before this date. Dates formatted like \"2022-01-30\" (YYYY-MM-DD)")
         # printS(TODO, ": Create playlist from other playlists from e.g. Youtube", ": Creates a playlist from an existing playlist, e.g. YouTube.")
         # printS(prunePlaylistFlags, " [playlistIds or indices: list]: Prune playlists indicated, removeing watched streams?, streams with no parent playlist, and links to stream in playlist if the stream cannot be found in the database.")
-        printS(resetPlaylistFetchFlags, ": details.")
+        printS(resetPlaylistFetchFlags, " [playlistIds or indices: list]: Resets fetch status of sources in a playlist and removes streams from playlist.")
         printS(playFlags, " [playlistId: str] [? starindex: int] [? shuffle: bool] [? repeat: bool]: Start playing stream from a playlist, order and automation (like skipping already watched streams) depending on the input and playlist.")
 
         # Stream

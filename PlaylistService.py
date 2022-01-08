@@ -254,12 +254,12 @@ class PlaylistService():
         _added = 0
         for stream in streams:            
             if(not _playlist.allowDuplicates and stream.uri in _playlistStreamUris):
-                printS("Stream \"", stream.name, "\" (ID: ", stream.name, ") already exists in playlist \"", _playlist.name, "\" and allow duplicates for this playlist is disabled.", color=colors["WARNING"])
+                printS("Stream \"", stream.name, "\" already exists in playlist \"", _playlist.name, "\" and allow duplicates for this playlist is disabled.", color=colors["WARNING"])
                 continue
 
             _addResult = self.queueStreamService.add(stream)            
-            if(not _addResult):
-                printS("Stream \"", stream.name, "\" could not be saved or added.", color=colors["ERROR"])
+            if(_addResult == None):
+                printS("Stream \"", stream.name, "\" could not be added.", color=colors["FAIL"])
                 continue
 
             _playlist.streamIds.append(stream.id)

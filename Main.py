@@ -64,6 +64,8 @@ class Main:
 
             if(arg in helpFlags):
                 Main.printHelp()
+                argIndex += 1
+                continue
 
             elif(arg in testFlags):
                 _input = extractArgs(argIndex, argV)
@@ -132,9 +134,12 @@ class Main:
                 continue
 
             elif(arg in fetchPlaylistSourcesFlags):
-                # Expected input: playlistIds or indices
+                # Expected input: playlistIds or indices, fromDateTime?, toDatetime?
                 _input = extractArgs(argIndex, argV)
-                _ids = Main.getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll())
+                _ids = Main.getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll(), returnOnNonIds = True)
+                _lenIds = len(_ids)
+                _takeAfter = _input[_lenIds] if(len(_input) > _lenIds) else None
+                _takeBefore = _input[_lenIds + 1] if(len(_input) > _lenIds + 1) else None
                 
                 if(len(_ids) == 0):
                     printS("Failed to fetch sources, missing playlistIds or indices.", color = colors["FAIL"])
@@ -142,7 +147,7 @@ class Main:
                     continue
                 
                 for _id in _ids:
-                    _result = Main.fetchService.fetch(_id)
+                    _result = Main.fetchService.fetch(_id, takeAfter = _takeAfter, takeBefore = _takeBefore)
                     _playlist = Main.playlistService.get(_id)
                     printS("Fetched ", _result, " for playlist \"", _playlist.name, "\" successfully.", color = colors["OKGREEN"])
 
@@ -302,16 +307,17 @@ class Main:
             elif(arg in removeSourceFlags):
                 # Expected input: streamSourceIds or indices
                 _input = extractArgs(argIndex, argV)
-                if(len(_input) == 0):
-                    printS("Missing options for argument \"", arg, "\", expected IDs or indices.", color = colors["WARNING"])
-                    argIndex += 1
-                    continue
-
                 _ids = Main.getIdsFromInput(_input, Main.streamSourceService.getAllIds(), Main.streamSourceService.getAll())
+                
+                if(len(_ids) == 0):
+                    printS("Failed to remove source, missing streamSourceIds or indices.", color = colors["FAIL"])
+                    argIndex += len(_input) + 1
+                    continue
+                
                 for _id in _ids:
                     _result = Main.streamSourceService.remove(_id)
                     if(_result != None):
-                        printS("StreamSource removed successfully.", color = colors["OKGREEN"])
+                        printS("StreamSource removed successfully (ID ", _result.id, ").", color = colors["OKGREEN"])
                     else:
                         printS("Failed to remove StreamSource. See rerun command with -help to see expected arguments.", color = colors["FAIL"])
 
@@ -343,7 +349,7 @@ class Main:
                 printS("Argument not recognized: \"", arg, "\", please see documentation or run with \"-help\" for help.", color = colors["WARNING"])
                 argIndex += 1
 
-    def getIdsFromInput(input: List[str], existingIds: List[str], indexList: List[any], limit: int = None) -> List[str]:
+    def getIdsFromInput(input: List[str], existingIds: List[str], indexList: List[any], limit: int = None, returnOnNonIds: bool = False) -> List[str]:
         """
         Get IDs from a list of inputs, whether they are raw IDs that must be checked via the database or indices (formatted "i[index]") of a list.
 
@@ -351,7 +357,8 @@ class Main:
             input (List[str]): input if IDs/indices
             existingIds (List[str]): existing IDs to compare with
             indexList (List[any]): List of object (must have field "id") to index from
-            limit (int): Limit the numbers of arguments to parse
+            limit (int): limit the numbers of arguments to parse
+            returnOnNonIds (bool): return valid input IDs if the current input is no an ID, to allow input from user to be something like \"id id id bool\" which allows unspecified IDs before other arguments 
 
         Returns:
             List[str]: List of existing IDs for input which can be found
@@ -369,6 +376,9 @@ class Main:
             
             if(_string[0] == "i"):  # starts with "i", like index of "i2" is 2
                 if(not isNumber(_string[1])):
+                    if(returnOnNonIds):
+                        return _result
+                    
                     printS("Argument ", _string, " is not a valid index format, must be \"i\" followed by an integer, like \"i0\". Argument not processed.", color = colors["FAIL"])
                     continue
 
@@ -378,12 +388,19 @@ class Main:
                 if(_indexedEntity != None):
                     _result.append(_indexedEntity.id)
                 else:
+                    if(returnOnNonIds):
+                        return _result
+                    
                     printS("Failed to get data for index ", _index, ", it is out of bounds.", color = colors["FAIL"])
             else:  # Assume input is ID if it's not, users problem. Could also check if ID in getAllIds()
                 if(_string in existingIds):
                     _result.append(_string)
                 else:
+                    if(returnOnNonIds):
+                        return _result
+                    
                     printS("Failed to add playlist with ID \"", _string, "\", no such entity found in database.", color = colors["FAIL"])
+                    continue
 
         return _result
 
@@ -429,7 +446,7 @@ class Main:
         printS(addPlaylistFlags, " [name: str] [? playWatchedStreams: bool] [? allowDuplicates: bool] [? streamSourceIds: list]: Add a playlist with name: name, playWatchedStreams: if playback should play watched streams, allowDuplicates: should playlist allow duplicate streams (only if the uri is the same), streamSourceIds: a list of sources.")
         printS(removePlaylistFlags, " [playlistIds or indices: list]: Removes playlists indicated.")
         printS(listPlaylistFlags, ": List playlists with indices that can be used instead of IDs in other commands.")
-        printS(fetchPlaylistSourcesFlags, " [playlistIds or indices: list]: Fetch new streams from sources in playlists indicated, e.g. if a playlist has a YouTube channel as a source, and the channel uploads a new video, this video will be added to the playlist.")
+        printS(fetchPlaylistSourcesFlags, " [playlistIds or indices: list] [? takeAfter: datetime] [? takeBefore: datetime]: Fetch new streams from sources in playlists indicated, e.g. if a playlist has a YouTube channel as a source, and the channel uploads a new video, this video will be added to the playlist. Optional arguments takeAfter: only fetch streams after this date, takeBefore: only fetch streams before this date. Dates formatted like \"2022-01-30\" (YYYY-MM-DD)")
         printS(prunePlaylistFlags, " [playlistIds or indices: list]: Prune playlists indicated, removeing watched streams?, streams with no parent playlist, and links to stream in playlist if the stream cannot be found in the database.")
         printS(playFlags, " [playlistId: str] [? starindex: int] [? shuffle: bool] [? repeat: bool]: Start playing stream from a playlist, order and automation (like skipping already watched streams) depending on the input and playlist.")
 

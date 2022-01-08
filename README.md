@@ -27,7 +27,10 @@ Program for queueing and playing videos from list or from sources like YouTube B
 - queue videos from channels on youtube since last check
   - Cannot get hours and minutes of video posted? Only day?
 
-- add back mechanize getting page title
+- detail print for playlist
+- some print results, listing sources should list playlist (ID or name), adding/remiving anything with relations should specify relation
+- input for fetch to override get from, to, dates
+- adding sources, check for duplicates on url (warning on duplicate name?)
 - setup CLI for everything
   - Better way to deal with input and types, e.g. eval("false") fails, named input like --mylist = 1, 2, 3?
 - prune commands for removing watched streams, remove ids from playlists if no corresponding stream, remove sources without playlist?, streams without playlist?

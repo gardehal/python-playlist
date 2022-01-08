@@ -9,6 +9,7 @@ from dotenv import load_dotenv
 from myutil.LocalJsonRepository import LocalJsonRepository
 from myutil.Util import *
 
+from QueueStreamService import QueueStreamService
 from model.Playlist import Playlist
 from model.QueueStream import QueueStream
 
@@ -28,11 +29,11 @@ class PlaylistService():
     debug: bool = DEBUG
     storagePath: str = LOCAL_STORAGE_PATH
     playlistRepository: LocalJsonRepository = None
-    queueStreamRepository: LocalJsonRepository = None
+    queueStreamService: QueueStreamService = None
 
     def __init__(self):
         self.playlistRepository: str = LocalJsonRepository(T, self.debug, os.path.join(self.storagePath, "Playlist"))
-        self.queueStreamRepository: str = LocalJsonRepository(QueueStream, self.debug, os.path.join(self.storagePath, "QueueStream"))
+        self.queueStreamService: str = QueueStreamService()
 
     def add(self, playlist: T) -> T:
         """
@@ -215,7 +216,7 @@ class PlaylistService():
                 if(PLAYED_ALWAYS_WATCHED):
                     _stream.watched = now
                     
-                    _updateSuccess = self.queueStreamRepository.update(_stream)
+                    _updateSuccess = self.queueStreamService.update(_stream)
                     if(not _updateSuccess):
                         printS("Stream \"", _stream.name, "\" could not be updated as watched.", color=colors["WARNING"])
         except:
@@ -256,9 +257,9 @@ class PlaylistService():
                 printS("Stream \"", stream.name, "\" (ID: ", stream.name, ") already exists in playlist \"", _playlist.name, "\" and allow duplicates for this playlist is disabled.", color=colors["WARNING"])
                 continue
 
-            _addResult = self.queueStreamRepository.add(stream)            
+            _addResult = self.queueStreamService.add(stream)            
             if(not _addResult):
-                printS("Stream \"", stream.name, "\" (ID: ", stream.id, ") could not be saved or added.", color=colors["ERROR"])
+                printS("Stream \"", stream.name, "\" could not be saved or added.", color=colors["ERROR"])
                 continue
 
             _playlist.streamIds.append(stream.id)
@@ -356,7 +357,7 @@ class PlaylistService():
         if(_playlist == None):
             return 0
 
-        _all = self.queueStreamRepository.getAll()
+        _all = self.queueStreamService.getAll()
         _playlistStreams = []
         for _stream in _all:
             if(_stream.id in _playlist.streamIds):

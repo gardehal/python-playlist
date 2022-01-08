@@ -101,12 +101,13 @@ class Main:
             elif(arg in removePlaylistFlags):
                 # Expected input: playlistIds or indices
                 _input = extractArgs(argIndex, argV)
-                if(len(_input) == 0):
-                    printS("Missing options for argument \"", arg, "\", expected IDs or indices.", color = colors["WARNING"])
-                    argIndex += 1
-                    continue
-
                 _ids = Main.getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll())
+                
+                if(len(_ids) == 0):
+                    printS("Failed to remove playlists, missing playlistIds or indices.", color = colors["FAIL"])
+                    argIndex += len(_input) + 1
+                    continue
+                
                 for _id in _ids:
                     _result = Main.playlistService.remove(_id)
                     if(_result != None):
@@ -133,13 +134,13 @@ class Main:
             elif(arg in fetchPlaylistSourcesFlags):
                 # Expected input: playlistIds or indices
                 _input = extractArgs(argIndex, argV)
-                if(len(_input) == 0):
-                    printS("Missing options for argument \"", arg, "\", expected IDs or indices.", color = colors["WARNING"])
-                    argIndex += 1
+                _ids = Main.getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll())
+                
+                if(len(_ids) == 0):
+                    printS("Failed to fetch sources, missing playlistIds or indices.", color = colors["FAIL"])
+                    argIndex += len(_input) + 1
                     continue
-
-                _ids = Main.getIdsFromInput(
-                    _input, Main.playlistService.getAllIds(), Main.playlistService.getAll())
+                
                 for _id in _ids:
                     _result = Main.fetchService.fetch(_id)
                     _playlist = Main.playlistService.get(_id)
@@ -151,12 +152,13 @@ class Main:
             elif(arg in prunePlaylistFlags):
                 # Expected input: pruneoptions?, playlistIds or indices
                 _input = extractArgs(argIndex, argV)
-                if(len(_input) == 0):
-                    printS("Missing options for argument \"", arg, "\", expected IDs or indices.", color = colors["WARNING"])
-                    argIndex += 1
-                    continue
-
                 _ids = Main.getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll())
+                
+                if(len(_ids) == 0): # No ids, do all?
+                    printS("Failed to prune playlists, missing playlistIds or indices.", color = colors["FAIL"])
+                    argIndex += len(_input) + 1
+                    continue
+                
                 for _id in _ids:
                     printS("WIP")
 
@@ -361,8 +363,8 @@ class Main:
 
         _result = []
         for i, _string in enumerate(input):
-            if(limit != None and i > limit):
-                if(DEBUG): printS("Returning data for input ", _string, ", limit reached.", color = colors["WARNING"])
+            if(limit != None and i >= limit):
+                if(DEBUG): printS("Returning data before input ", _string, ", limit (", limit, ") reached.", color = colors["WARNING"])
                 break
             
             if(_string[0] == "i"):  # starts with "i", like index of "i2" is 2

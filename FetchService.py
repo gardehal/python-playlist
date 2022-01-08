@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 from myutil.DateTimeObject import DateTimeObject
 from myutil.Util import *
 from pytube import Channel
+import mechanize
 
 from enums.StreamSourceType import StreamSourceType
 from model.QueueStream import QueueStream
@@ -17,6 +18,7 @@ from StreamSourceService import StreamSourceService
 load_dotenv()
 DEBUG = eval(os.environ.get("DEBUG"))
 LOCAL_STORAGE_PATH = os.environ.get("LOCAL_STORAGE_PATH")
+
 
 class FetchService():
     debug: bool = DEBUG
@@ -31,7 +33,7 @@ class FetchService():
         self.streamSourceService: StreamSourceService = StreamSourceService()
 
         mkdir(self.storagePath)
-    
+
     def fetch(self, playlistId: str, batchSize: int = 10, takeAfter: datetime = None, takeBefore: datetime = None) -> int:
         """
         Fetch new videos from watched sources, adding them in chronological order.
@@ -44,7 +46,7 @@ class FetchService():
         Returns:
             int: number of videos added
         """
-        
+
         _playlist = self.playlistService.get(playlistId)
         if(_playlist == None):
             return 0
@@ -53,7 +55,8 @@ class FetchService():
         for _sourceId in _playlist.streamSourceIds:
             _source = self.streamSourceService.get(_sourceId)
             if(_source == None):
-                if(self.debug): printS("StreamSource with ID ", _sourceId, " could not be found. Consider removing it using the purge commands.", color=colors["WARNING"])
+                if(self.debug):
+                    printS("StreamSource with ID ", _sourceId, " could not be found. Consider removing it using the purge commands.", color = colors["WARNING"])
                 continue
 
             if(not _source.enableFetch):
@@ -75,8 +78,8 @@ class FetchService():
             if(_updateSuccess):
                 _newStreams += _fetchedStreams
             else:
-                printS("Could not update source \"", _source.name, "\" (ID: ", _source.id, "), streams could not be added: \n", _fetchedStreams, color=colors["WARNING"])
-            
+                printS("Could not update source \"", _source.name, "\" (ID: ", _source.id, "), streams could not be added: \n", _fetchedStreams, color = colors["WARNING"])
+
         self.playlistService.addStreams(_playlist.id, _newStreams)
 
         _playlist.lastUpdated = datetime.now()
@@ -85,7 +88,7 @@ class FetchService():
             return len(_newStreams)
         else:
             return 0
-               
+
     def fetchYoutube(self, streamSource: StreamSource, batchSize: int, takeAfter: datetime, takeBefore: datetime) -> List[QueueStream]:
         """
         Fetch videos from YouTube
@@ -98,19 +101,20 @@ class FetchService():
         Returns:
             List[QueueStream]: List of QueueStream
         """
-        
+
         if(self.debug): printS("fetchYoutube start, fetching channel source...")
         _channel = Channel(streamSource.uri)
-        
+
         if(_channel == None or _channel.channel_name == None):
-            printS("Channel \"", streamSource.name, "\" (URL: ", streamSource.uri, ") could not be found or is not valid. Please remove it and add it back.", color=colors["ERROR"])
+            printS("Channel \"", streamSource.name, "\" (URL: ", streamSource.uri, ") could not be found or is not valid. Please remove it and add it back.", color = colors["ERROR"])
             return []
-        
-        if(self.debug): printS("Fetching videos from ", _channel.channel_name, "...")
+
+        if(self.debug):
+            printS("Fetching videos from ", _channel.channel_name, "...")
         if(len(_channel.video_urls) < 1):
-            printS("Channel \"", _channel.channel_name, "\" has no videos.", color=colors["WARNING"])
+            printS("Channel \"", _channel.channel_name, "\" has no videos.", color = colors["WARNING"])
             return []
-        
+
         _newStreams = []
         for i, yt in enumerate(_channel.videos):
             publishedDto = DateTimeObject().fromDatetime(yt.publish_date)
@@ -121,12 +125,30 @@ class FetchService():
                 break
             if(takeBefore != None and publishedDto.now > takeBeforeDto.now):
                 continue
-            
+
             _newStreams.append(QueueStream(yt.title, yt.watch_url, True, None, datetime.now(), streamSource.id))
-            
+
             # Todo fetch batches using batchSize of videos instead of all 3000 videos in some cases taking 60 seconds+ to load
             if(i > batchSize):
-                printS("WIP: Cannot get all videos. Taking last ", len(_newStreams))
+                printS("WIP: Cannot get all videos. Taking last ", len(_newStreams), ".")
                 break
-        
+
         return _newStreams
+
+    def getPageTitle(url: str) -> str:
+        """
+        todo
+
+        Args:
+            url (str): [description]
+
+        Returns:
+            str: [description]
+        """
+
+        br = mechanize.Browser()
+        br.open("http://www.example.com/")
+        title = br.title()
+        br.close()
+
+        return title

@@ -1,8 +1,10 @@
+from datetime import datetime
 import os
 import sys
 from typing import List
 
 from dotenv import load_dotenv
+from myutil.DateTimeObject import DateTimeObject
 from myutil.Util import *
 from QueueStreamService import QueueStreamService
 
@@ -152,6 +154,16 @@ class Main:
                 
                 if(len(_ids) == 0):
                     printS("Failed to fetch sources, missing playlistIds or indices.", color = colors["FAIL"])
+                    argIndex += len(_input) + 1
+                    continue
+                
+                try:
+                    if(_takeAfter != None):
+                        _takeAfter = datetime.strptime(_takeAfter, "%Y-%m-%d")
+                    if(_takeBefore != None):
+                        _takeBefore = datetime.strptime(_takeBefore, "%Y-%m-%d")
+                except:
+                    printS("Dates for takeAfter and takeBefore were not valid, see -help print for format.", color = colors["FAIL"])
                     argIndex += len(_input) + 1
                     continue
                 

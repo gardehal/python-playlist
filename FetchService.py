@@ -62,10 +62,11 @@ class FetchService():
             if(not _source.enableFetch):
                 continue
 
-            _fetchedStreams = None
+            _fetchedStreams = []
+            _takeAfter = takeAfter if(takeAfter != None) else _source.lastFetched
             if(_source.isWeb):
                 if(_source.videoSourceTypeId == StreamSourceType.YOUTUBE.value):
-                    _fetchedStreams = self.fetchYoutube(_source, batchSize, _source.lastFetched, takeBefore)
+                    _fetchedStreams = self.fetchYoutube(_source, batchSize, _takeAfter, takeBefore)
                 else:
                     # TODO handle other sources
                     continue
@@ -114,8 +115,8 @@ class FetchService():
         _newStreams = []
         for i, yt in enumerate(_channel.videos):
             publishedDto = DateTimeObject().fromDatetime(yt.publish_date)
-            takeAfterDto = DateTimeObject().fromString(takeAfter)
-            takeBeforeDto = DateTimeObject().fromString(takeBefore)
+            takeAfterDto = DateTimeObject().fromDatetime(takeAfter)
+            takeBeforeDto = DateTimeObject().fromDatetime(takeBefore)
 
             if(takeAfter != None and publishedDto.now < takeAfterDto.now):
                 break

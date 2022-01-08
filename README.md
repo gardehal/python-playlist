@@ -28,7 +28,7 @@ Program for queueing and playing videos from list or from sources like YouTube B
   - Cannot get hours and minutes of video posted? Only day?
 
 - reset fetch command, removes all streams in playlist, sets related sources lastfetch to None
-- confirm delete/remove in commands, delete = soft delete, remove = permanent remove
+- confirm delete/remove in commands, delete = soft delete, remove = permanent remove, restore commands
 - detail print for playlist
 - some print results, listing sources should list playlist (ID or name), adding/removing anything with relations should specify relation
 - input for fetch to override get from, to, dates

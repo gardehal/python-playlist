@@ -190,12 +190,12 @@ class Main:
             elif(arg in addStreamFlags):
                 # Expected input: playlistId or index, uri, name?
                 _input = extractArgs(argIndex, argV)
-                _ids = Main.getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll())
+                _ids = Main.getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll(), 1)
                 _uri = _input[1] if len(_input) > 1 else None
                 _name = _input[2] if len(_input) > 2 else None
 
                 if(len(_ids) == 0):
-                    printS("Failed to add QueueStream, missing ID to playlist.", color = colors["FAIL"])
+                    printS("Failed to add QueueStream, missing playlistId or index.", color = colors["FAIL"])
                     argIndex += len(_input) + 1
                     continue
 
@@ -207,19 +207,21 @@ class Main:
                 if(_name == None and validators.url(_uri)):
                     _name = Main.fetchService.getPageTitle(_uri)
                 else:
-                    _name = "New unnamed stream"
+                    _name = "New stream"
                     printS("Could not automatically get the web name for this stream, will be named \"" , _name, "\".", color = colors["WARNING"])
 
                 _entity = QueueStream(name=_name, uri=_uri)
                 _addResult = Main.queueStreamService.add(_entity)
                 if(_addResult == None):
                     printS("Failed to create QueueStream.", color = colors["FAIL"])
-
+                    argIndex += len(_input) + 1
+                    continue
+                    
                 _playlist = Main.playlistService.get(_ids[0])
                 _playlist.streamIds.append(_addResult.id)
-                _updateResult = Main.playlistService.update(_entity)
+                _updateResult = Main.playlistService.update(_playlist)
                 if(_updateResult != None):
-                    printS("QueueStream added successfully with ID \"", _result.id, "\".", color = colors["OKGREEN"])
+                    printS("QueueStream added successfully with ID \"", _addResult.id, "\".", color = colors["OKGREEN"])
                 else:
                     # Try to remove added QueueStream if update playlist fails
                     _removeResult = Main.queueStreamService.remove(_addResult.id)
@@ -257,6 +259,12 @@ class Main:
                 _enableFetch = eval(_input[2]) if len(_input) > 2 else False
                 _name = _input[3] if len(_input) > 3 else None
 
+                if(len(_ids) == 0):
+                    printS("Failed to add StreamSource, missing playlistId or index.", color = colors["FAIL"])
+                    if(DEBUG): printS("IDs: ", _ids, color = colors["WARNING"])
+                    argIndex += len(_input) + 1
+                    continue
+
                 if(_uri == None):
                     printS("Failed to add StreamSource, missing uri.", color = colors["FAIL"])
                     argIndex += len(_input) + 1
@@ -265,16 +273,26 @@ class Main:
                 if(_name == None):
                     _name = Main.fetchService.getPageTitle(_uri)
                 else:
-                    _name = "New unnamed stream"
+                    _name = "New source"
                     printS("Could not automatically get the web name for this stream, will be named \"" , _name, "\".", color = colors["WARNING"])
 
-                _entity = StreamSource(
-                    name=_name, uri=_uri, enableFetch=_enableFetch)
-                _result = Main.streamSourceService.add(_entity)
-                if(_result != None):
-                    printS("StreamSource added successfully with ID \"", _result.id, "\".", color = colors["OKGREEN"])
+                _entity = StreamSource(name=_name, uri = _uri, enableFetch = _enableFetch)
+                _addResult = Main.streamSourceService.add(_entity)
+                if(_addResult == None):
+                    printS("Failed to create StreamSource.", color = colors["FAIL"])
+                    argIndex += len(_input) + 1
+                    continue
+                
+                _playlist = Main.playlistService.get(_ids[0])
+                _playlist.streamSourceIds.append(_addResult.id)
+                _updateResult = Main.playlistService.update(_playlist)
+                if(_updateResult != None):
+                    printS("StreamSource added successfully with ID \"", _addResult.id, "\".", color = colors["OKGREEN"])
                 else:
-                    printS("Failed to create StreamSource. See rerun command with -help to see expected arguments.", color = colors["FAIL"])
+                    # Try to remove added StreamSource if update playlist fails
+                    _removeResult = Main.streamSourceService.remove(_addResult.id)
+                    _removeMessage = "" if _removeResult != None else " StreamSource was not removed, ID: " + _addResult.id
+                    printS("Failed to add StreamSource to playlist.", _removeMessage, color = colors["FAIL"])
 
                 argIndex += len(_input) + 1
                 continue
@@ -287,8 +305,7 @@ class Main:
                     argIndex += 1
                     continue
 
-                _ids = Main.getIdsFromInput(
-                    _input, Main.streamSourceService.getAllIds(), Main.streamSourceService.getAll())
+                _ids = Main.getIdsFromInput(_input, Main.streamSourceService.getAllIds(), Main.streamSourceService.getAll())
                 for _id in _ids:
                     _result = Main.streamSourceService.remove(_id)
                     if(_result != None):
@@ -302,7 +319,7 @@ class Main:
             elif(arg in listSourcesFlags):
                 # Expected input: None
 
-                _result = Main.queueStreamService.getAll()
+                _result = Main.streamSourceService.getAll()
                 if(len(_result) > 0):
                     for (i, _entry) in enumerate(_result):
                         printS(i, " - ", _entry.summaryString())
@@ -344,8 +361,8 @@ class Main:
 
         _result = []
         for i, _string in enumerate(input):
-            if(limit != None and i == limit):
-                if(DEBUG): printS("Failed to get data for index ", _index, ", it is out of bounds.", color = colors["WARNING"])
+            if(limit != None and i > limit):
+                if(DEBUG): printS("Returning data for input ", _string, ", limit reached.", color = colors["WARNING"])
                 break
             
             if(_string[0] == "i"):  # starts with "i", like index of "i2" is 2
@@ -354,7 +371,7 @@ class Main:
                     continue
 
                 _index = int(float(_string[1]))
-                _indexedEntity = indexList[_index] if(len(indexList) > 0 and _index > 0 and _index < len(indexList)) else None
+                _indexedEntity = indexList[_index]
 
                 if(_indexedEntity != None):
                     _result.append(_indexedEntity.id)

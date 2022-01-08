@@ -37,7 +37,7 @@ class StreamSourceService():
         _entity = streamSource
         _entity.id = str(uuid.uuid4())
         _entity.datetimeAdded = datetime.now()
-        _entity.videoSourceTypeId = StreamSourceTypeUtil.strToStreamSourceType(_entity.uri)
+        _entity.videoSourceTypeId = StreamSourceTypeUtil.strToStreamSourceType(_entity.uri).denominator
         _result = self.streamSourceRepository.add(_entity)
         if(_result):
             return _entity
@@ -122,7 +122,7 @@ class StreamSourceService():
         Add streamSource if none exists, else update existing.
 
         Args:
-            streamSource (T): streamSource to add or update
+            streamSource (StreamSource): StreamSource to add or update
 
         Returns:
             StreamSource | None: returns StreamSource if success, else None

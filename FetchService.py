@@ -135,19 +135,19 @@ class FetchService():
 
         return _newStreams
 
-    def getPageTitle(url: str) -> str:
+    def getPageTitle(self, url: str) -> str:
         """
-        todo
+        Get page title from the URL url, using mechanize.
 
         Args:
-            url (str): [description]
+            url (str): URL to page to get title from
 
         Returns:
-            str: [description]
+            str: Title of page
         """
 
         br = mechanize.Browser()
-        br.open("http://www.example.com/")
+        br.open(url)
         title = br.title()
         br.close()
 

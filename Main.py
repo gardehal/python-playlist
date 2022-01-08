@@ -4,7 +4,6 @@ import sys
 from typing import List
 
 from dotenv import load_dotenv
-from myutil.DateTimeObject import DateTimeObject
 from myutil.Util import *
 from QueueStreamService import QueueStreamService
 
@@ -14,6 +13,7 @@ from StreamSourceService import StreamSourceService
 from model.Playlist import Playlist
 from model.QueueStream import QueueStream
 from model.StreamSource import StreamSource
+import unicodedata
 
 load_dotenv()
 DEBUG = eval(os.environ.get("DEBUG"))
@@ -32,8 +32,10 @@ testFlags = ["-test", "-t"]
 addPlaylistFlags = ["-addplaylist", "-apl", "-ap"]
 removePlaylistFlags = ["-removeplaylist", "-rmpl", "-rpl", "-rmp", "-rp"]
 listPlaylistFlags = ["-listplaylist", "-lpl", "-lp"]
+detailsPlaylistFlags = ["-detailsplaylist", "-dpl", "-dp"]
 fetchPlaylistSourcesFlags = ["-fetch", "-f", "-update", "-u"]
-prunePlaylistFlags = ["-prune", "-p"]
+prunePlaylistFlags = ["-prune", "-pr"]
+resetPlaylistFetchFlags = ["-reset"]
 playFlags = ["-play", "-p"]
 # Stream
 addStreamFlags = ["-add", "-a"]
@@ -74,6 +76,12 @@ class Main:
                 printS("Test", color = colors["OKBLUE"])
 
                 if(1):
+                    # print("\u123")
+                    print("`123")
+                    
+                    # print(sanitize("test's"))
+                    
+                if(0):
                     playlistId = "d5b58dfd-c088-40b5-8122-29644ab3a843"
                     sourceId = "9915f243-56f0-4ea1-bd42-5e96bc35d32a"
                     dt = "2021-01-08 05:53:27.320888"
@@ -142,6 +150,24 @@ class Main:
                     printS("No Playlists found.", color = colors["WARNING"])
 
                 argIndex += 1
+                continue
+            
+            elif(arg in detailsPlaylistFlags):
+                # Expected input: playlistIds or indices, includeUrl, includeId
+                _input = extractArgs(argIndex, argV)
+                _ids = Main.getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll(), returnOnNonIds = True)
+                _lenIds = len(_ids)
+                _includeUri = eval(_input[_lenIds]) if(len(_input) > _lenIds) else False
+                _includeId = eval(_input[_lenIds + 1]) if(len(_input) > _lenIds + 1) else False
+                
+                if(len(_ids) == 0):
+                    printS("Failed to print details, missing playlistIds or indices.", color = colors["FAIL"])
+                    argIndex += len(_input) + 1
+                    continue
+                
+                Main.printPlaylistDetails(_ids, _includeUri, _includeId)
+                        
+                argIndex += len(_input) + 1
                 continue
 
             elif(arg in fetchPlaylistSourcesFlags):
@@ -425,6 +451,31 @@ class Main:
 
         return _result
 
+    def printPlaylistDetails(playlistIds: List[str], includeUri: bool = False, includeId: bool = False) -> None:
+        """
+        Print detailed infor for Playlist, including details for related StreamSources and QueueStreams.
+
+        Args:
+            playlistIds (List[str]): list of playlists to print details of
+            includeUri (bool, optional): should print include URI if any. Defaults to False.
+            includeId (bool, optional): should print include IDs. Defaults to False.
+        """
+                
+        for _id in playlistIds:
+            _playlist = Main.playlistService.get(_id)
+            printS(_playlist.detailsString(includeUri, includeId))
+            
+            for i, _sourceId in enumerate(_playlist.streamSourceIds):
+                _source = Main.streamSourceService.get(_sourceId)
+                _color = "WHITE" if i % 2 == 0 else "GREYBG"
+                printS("\t", _source.detailsString(includeUri, includeId), color = colors[_color])
+            
+            print("\n")
+            for i, _streamId in enumerate(_playlist.streamIds):
+                _stream = Main.queueStreamService.get(_streamId)
+                _color = "WHITE" if i % 2 == 0 else "GREYBG"
+                printS("\t", _stream.detailsString(includeUri, includeId), color = colors[_color])
+
     def printSettings():
         """
         Print settings in .env settings/secrets file.
@@ -460,19 +511,17 @@ class Main:
         # General
         printS(helpFlags, ": Prints this information about input arguments.")
         printS(testFlags, ": A method of calling experimental code (when you want to test if something works).")
-        # printS(testFlags, " + [args]: Details.")
-        # printS("\t", testSwitches, " + [args]: Details.")
 
         # Playlist
         printS(addPlaylistFlags, " [name: str] [? playWatchedStreams: bool] [? allowDuplicates: bool] [? streamSourceIds: list]: Add a playlist with name: name, playWatchedStreams: if playback should play watched streams, allowDuplicates: should playlist allow duplicate streams (only if the uri is the same), streamSourceIds: a list of sources.")
         printS(removePlaylistFlags, " [playlistIds or indices: list]: Removes playlists indicated.")
         printS(listPlaylistFlags, ": List playlists with indices that can be used instead of IDs in other commands.")
+        printS(detailsPlaylistFlags, " [playlistIds or indices: list] [? enableFetch: bool] [? enableFetch: bool]: Prints details about given playlist, with option for including streams and sources.")
         printS(fetchPlaylistSourcesFlags, " [playlistIds or indices: list] [? takeAfter: datetime] [? takeBefore: datetime]: Fetch new streams from sources in playlists indicated, e.g. if a playlist has a YouTube channel as a source, and the channel uploads a new video, this video will be added to the playlist. Optional arguments takeAfter: only fetch streams after this date, takeBefore: only fetch streams before this date. Dates formatted like \"2022-01-30\" (YYYY-MM-DD)")
-        printS(prunePlaylistFlags, " [playlistIds or indices: list]: Prune playlists indicated, removeing watched streams?, streams with no parent playlist, and links to stream in playlist if the stream cannot be found in the database.")
+        # printS(TODO, ": Create playlist from other playlists from e.g. Youtube", ": Creates a playlist from an existing playlist, e.g. YouTube.")
+        # printS(prunePlaylistFlags, " [playlistIds or indices: list]: Prune playlists indicated, removeing watched streams?, streams with no parent playlist, and links to stream in playlist if the stream cannot be found in the database.")
+        printS(resetPlaylistFetchFlags, ": details.")
         printS(playFlags, " [playlistId: str] [? starindex: int] [? shuffle: bool] [? repeat: bool]: Start playing stream from a playlist, order and automation (like skipping already watched streams) depending on the input and playlist.")
-
-        # printS("TODO: details for playlist, use switches for list of streams and sources", ": Prints details about given playlist, with option for including streams and sources.")
-        # printS("TODO: create playlist from other playlists from e.g. Youtube", ": Creates a playlist from an existing playlist, e.g. YouTube.")
 
         # Stream
         printS(addStreamFlags, " [playlistId or index: str] [uri: string] [? name: str]: Add a stream to a playlist from ID or index, from uri: URL, and name: name (set automatically if not given).")

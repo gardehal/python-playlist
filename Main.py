@@ -216,9 +216,9 @@ class Main:
                     
                 _result = Main.resetPlaylistFetch(_ids)
                 if(_result):
-                    printS("Finished printing details.", color = colors["OKGREEN"])
+                    printS("Finished resetting fetch statuses for sources in playlists.", color = colors["OKGREEN"])
                 else:
-                    printS("Failed print details.", color = colors["FAIL"])
+                    printS("Failed to reset fetch statuses for sources in playlists.", color = colors["FAIL"])
 
                 argIndex += len(_input) + 1
                 continue
@@ -505,21 +505,21 @@ class Main:
         _result = 0
         for playlistId in playlistIds:            
             _playlist = Main.playlistService.get(playlistId)
-            _removeUpdateResult = False
+            _removeUpdateResult = True
             
             for queueStreamId in _playlist.streamIds:
-                _ = Main.queueStreamService.remove(queueStreamId) != None
-                _removeUpdateResult = _removeUpdateResult and _
+                _removeStreamResult = Main.queueStreamService.remove(queueStreamId)
+                _removeUpdateResult = _removeUpdateResult and _removeStreamResult != None
             
             _playlist.streamIds = []
-            _ = Main.playlistService.update(_playlist)
-            _removeUpdateResult = _removeUpdateResult and _
+            _updateplaylistResult = Main.playlistService.update(_playlist)
+            _removeUpdateResult = _removeUpdateResult and _updateplaylistResult != None
             
             for streamSourceId in _playlist.streamSourceIds:
                 _streamSource = Main.streamSourceService.get(streamSourceId)
                 _streamSource.lastFetched = None
-                _ = Main.streamSourceService.update(_streamSource)
-                _removeUpdateResult = _removeUpdateResult and _
+                _updateStreamResult = Main.streamSourceService.update(_streamSource)
+                _removeUpdateResult = _removeUpdateResult and _updateStreamResult != None
             
             if(_removeUpdateResult):
                 _result += 1

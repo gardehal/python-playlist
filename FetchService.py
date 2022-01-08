@@ -63,7 +63,7 @@ class FetchService():
                 continue
 
             _fetchedStreams = []
-            _takeAfter = takeAfter if(takeAfter != None) else _source.lastFetched
+            _takeAfter = takeAfter if(takeAfter != None) else DateTimeObject().fromString(_source.lastFetched, "+00:00").now
             if(_source.isWeb):
                 if(_source.streamSourceTypeId == StreamSourceType.YOUTUBE.value):
                     _fetchedStreams = self.fetchYoutube(_source, batchSize, _takeAfter, takeBefore)
@@ -87,7 +87,7 @@ class FetchService():
         else:
             return 0
 
-    def fetchYoutube(self, streamSource: StreamSource, batchSize: int, takeAfter: datetime, takeBefore: datetime) -> List[QueueStream]:
+    def fetchYoutube(self, streamSource: StreamSource, batchSize: int = 10, takeAfter: datetime = None, takeBefore: datetime = None) -> List[QueueStream]:
         """
         Fetch videos from YouTube
 
@@ -114,14 +114,13 @@ class FetchService():
 
         _newStreams = []
         for i, yt in enumerate(_channel.videos):
-            publishedDto = DateTimeObject().fromDatetime(yt.publish_date)
-            takeAfterDto = DateTimeObject().fromDatetime(takeAfter)
-            takeBeforeDto = DateTimeObject().fromDatetime(takeBefore)
-
-            if(takeAfter != None and publishedDto.now < takeAfterDto.now):
-                break
-            if(takeBefore != None and publishedDto.now > takeBeforeDto.now):
-                continue
+            print(yt.publish_date)
+            if(takeAfter != None):
+                if(yt.publish_date < takeAfter):
+                    break
+            if(takeBefore != None):
+                if(yt.publish_date > takeBefore):
+                    continue
 
             _newStreams.append(QueueStream(yt.title, yt.watch_url, True, None, datetime.now()))
 

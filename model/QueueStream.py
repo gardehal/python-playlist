@@ -21,10 +21,10 @@ class QueueStream:
         ", ID: ", self.id, 
         ", URI: ", self.uri]))
 
-    def detailsString(self):
+    def detailsString(self, includeUri: bool = True, includeId: bool = True):
         return "".join(map(str, ["name: ", self.name, 
-        ", uri: ", self.uri, 
+        (", uri: ", self.uri) if(includeUri) else "",
         ", isWeb: ", self.isWeb, 
         ", watched: ", self.watched, 
         ", datetimeAdded: ", self.datetimeAdded,
-        ", id: ", self.id]))
+        (", id: ", self.id) if(includeId) else ""]))

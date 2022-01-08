@@ -27,12 +27,12 @@ class Playlist():
         ", Streams: ", len(self.streamIds),
         ", Sources: ", len(self.streamSourceIds)]))
 
-    def detailsString(self):
+    def detailsString(self, includeUri: bool = True, includeId: bool = True):
         return "".join(map(str, ["name: ", self.name, 
         ", n streamIds: ", len(self.streamIds), 
         ", lastUpdated: ", self.lastUpdated, 
         ", lastWatchedIndex: ", self.lastWatchedIndex, 
         ", playWatchedStreams: ", self.playWatchedStreams, 
         ", allowDuplicates: ", self.allowDuplicates, 
-        ", n streamSourceIds: ", len(self.streamSourceIds), 
-        ", id: ", self.id]))
+        ", n streamSourceIds: ", len(self.streamSourceIds),
+        (", id: ", self.id) if(includeId) else ""]))

@@ -65,7 +65,7 @@ class FetchService():
             _fetchedStreams = []
             _takeAfter = takeAfter if(takeAfter != None) else _source.lastFetched
             if(_source.isWeb):
-                if(_source.videoSourceTypeId == StreamSourceType.YOUTUBE.value):
+                if(_source.streamSourceTypeId == StreamSourceType.YOUTUBE.value):
                     _fetchedStreams = self.fetchYoutube(_source, batchSize, _takeAfter, takeBefore)
                 else:
                     # TODO handle other sources
@@ -148,4 +148,4 @@ class FetchService():
         title = br.title()
         br.close()
 
-        return title
+        return title.encode("utf-8")

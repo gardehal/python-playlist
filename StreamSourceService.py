@@ -74,10 +74,10 @@ class StreamSourceService():
         Returns:
             List[str]: streamSources IDs if any, else empty list
         """
-        
+
         _all = self.getAll()
         return [_.id for _ in _all]
-    
+
     def update(self, streamSource: T) -> T:
         """
         Update StreamSource.
@@ -88,7 +88,7 @@ class StreamSourceService():
         Returns:
             StreamSource | None: returns StreamSource if success, else None
         """
-        
+
         _entity = streamSource
         _result = self.streamSourceRepository.update(_entity)
         if(_result):
@@ -110,7 +110,7 @@ class StreamSourceService():
         _entity = self.get(id)
         if(_entity == None):
             return None
-        
+
         _result = self.streamSourceRepository.remove(_entity.id)
         if(_result):
             return _entity

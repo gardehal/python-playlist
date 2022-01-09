@@ -38,6 +38,8 @@ resetPlaylistFetchFlags = ["-reset"]
 playFlags = ["-play", "-p"]
 quitSwitches = ["quit", "q", "exit", "end"]
 skipSwitches = ["skip", "s"]
+addCurrentToPlaylistSwitches = ["addto", "at"]
+
 # Stream
 addStreamFlags = ["-add", "-a"]
 removeStreamFlags = ["-remove", "-rm", "-r"]
@@ -50,7 +52,7 @@ listSettingsFlags = ["-settings", "-secrets", "-s"]
 
 class Main:
     fetchService = FetchService()
-    playlistService = PlaylistService()
+    playlistService = PlaylistService(quitSwitches, skipSwitches, addCurrentToPlaylistSwitches)
     queueStreamService = QueueStreamService()
     streamSourceService = StreamSourceService()
 
@@ -231,7 +233,7 @@ class Main:
                     argIndex += len(_input) + 1
                     continue
 
-                _result = Main.playlistService.playCmd(_ids[0], quitSwitches, skipSwitches)
+                _result = Main.playlistService.playCmd(_ids[0])
                 if(not _result):
                     _playlist = Main.playlistService.get(_ids[0])
                     printS("Failed to play playlist \"", _playlist.name, "\", please se error above.", color = colors["FAIL"])
@@ -567,6 +569,9 @@ class Main:
         # printS(prunePlaylistFlags, " [playlistIds or indices: list]: Prune playlists indicated, removeing watched streams?, streams with no parent playlist, and links to stream in playlist if the stream cannot be found in the database.")
         printS(resetPlaylistFetchFlags, " [playlistIds or indices: list]: Resets fetch status of sources in a playlist and removes streams from playlist.")
         printS(playFlags, " [playlistId: str] [? starindex: int] [? shuffle: bool] [? repeat: bool]: Start playing stream from a playlist, order and automation (like skipping already watched streams) depending on the input and playlist.")
+        printS("\t", quitSwitches, ": End current playback and contintue the program without playing anymore streams in playlist. Only available while playlist is playing.")
+        printS("\t", skipSwitches, ": Skip current stream playing. This stream will not be marked as watched. Only available while playlist is playing.")
+        printS("\t", addCurrentToPlaylistSwitches, " [playlistId or index: str]: Add the current stream to another playlist indicated by ID on index. Only available while playlist is playing.")
 
         # Stream
         printS(addStreamFlags, " [playlistId or index: str] [uri: string] [? name: str]: Add a stream to a playlist from ID or index, from uri: URL, and name: name (set automatically if not given).")

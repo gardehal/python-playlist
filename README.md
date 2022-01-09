@@ -18,6 +18,12 @@ Program for queueing and playing videos from list or from sources like YouTube B
   - ```$ python main.py -help```
   - Verify that the program prints an overview of commands, arguments, flags, and a description of what they do.
 
+## Help
+
+- All commands can be seen by entering the command "-help".
+- Sources currently supported for fetch: YouTube (channels)
+- All data is stored locally in human readable JSON files in the path specified in the .env setting LOCAL_STORAGE_PATH. This defaults to "data", in the same folder as the rest of the program. To edit data, it's easier to change these text files directly, as long as you adhere to the JSON format.
+
 ## TODO
 
 - play in what? 
@@ -27,8 +33,8 @@ Program for queueing and playing videos from list or from sources like YouTube B
 - queue videos from channels on youtube since last check
   - Cannot get hours and minutes of video posted? Only day?
 
+- argument to add current playing stream to another playlist (favourites, various playlist for specific topics and music)
 - edit parts of object, like playWatchedStreams in Playlist
-- quit/end/exit command for playing stream, should not set current to watched (probably)
 - confirm delete/remove in commands, delete = soft delete, remove = permanent remove, restore commands
 - some print results, listing sources should list playlist (ID or name), adding/removing anything with relations should specify relation
 - adding sources, check for duplicates on url (warning on duplicate name?)

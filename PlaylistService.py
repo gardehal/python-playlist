@@ -30,10 +30,16 @@ class PlaylistService():
     storagePath: str = LOCAL_STORAGE_PATH
     playlistRepository: LocalJsonRepository = None
     queueStreamService: QueueStreamService = None
+    quitInputs: List[str] = None
+    skipInputs: List[str] = None
+    addToInputs: List[str] = None
 
-    def __init__(self):
-        self.playlistRepository: str = LocalJsonRepository(T, self.debug, os.path.join(self.storagePath, "Playlist"))
-        self.queueStreamService: str = QueueStreamService()
+    def __init__(self, quitInputs: List[str] = ["quit"], skipInputs: List[str] = ["skip"], addToInputs: List[str] = ["addto"]):
+        self.playlistRepository: LocalJsonRepository = LocalJsonRepository(T, self.debug, os.path.join(self.storagePath, "Playlist"))
+        self.queueStreamService: QueueStreamService = QueueStreamService()
+        self.quitInputs: List[str] = quitInputs
+        self.skipInputs: List[str] = skipInputs
+        self.addToInputs: List[str] = addToInputs
 
     def add(self, playlist: T) -> T:
         """
@@ -145,7 +151,7 @@ class PlaylistService():
 
         return self.update(playlist)
 
-    def playCmd(self, playlistId: str, quitSymbols: List[str] = ["quit"], skipSymbols: List[str] = ["skip"], startIndex: int = 0, shuffle: bool = False, repeatPlaylist: bool = False) -> bool:
+    def playCmd(self, playlistId: str, startIndex: int = 0, shuffle: bool = False, repeatPlaylist: bool = False) -> bool:
         """
         Start playing streams from this playlist.
 
@@ -203,12 +209,15 @@ class PlaylistService():
 
                 printS(f"Now playing \"{_stream.name}\"" + ("..." if(i < (len(_streams) - 1)) else ". This is the last stream, press enter to finish."))
                 _input = input("Press enter to play next, \"skip\" to skip video, or \"quit\" to quit playback.")
-                if(len(quitSymbols) > 0 and _input in quitSymbols):
+                if(len(self.quitInputs) > 0 and _input in self.quitInputs):
                     printS("Ending playback due to user input.", color = colors["OKGREEN"])
                     break
-                elif(len(skipSymbols) > 0 and _input in skipSymbols):
+                elif(len(self.skipInputs) > 0 and _input in self.skipInputs):
                     printS("Skipping video, will not be marked as watched.", color = colors["OKGREEN"])
                     continue
+                elif(len(self.addToInputs) > 0 and _input in self.addToInputs):
+                    # TODO add
+                    printS("Video added to x.", color = colors["OKGREEN"])
                 
                 # subprocessStream.terminate() # TODO Doesn't seem to work with browser, at least not new tabs
                 

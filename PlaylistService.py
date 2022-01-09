@@ -145,7 +145,7 @@ class PlaylistService():
 
         return self.update(playlist)
 
-    def playCmd(self, playlistId: str, quitSymbols: List[str] = ["quit"], startIndex: int = 0, shuffle: bool = False, repeatPlaylist: bool = False) -> bool:
+    def playCmd(self, playlistId: str, quitSymbols: List[str] = ["quit"], skipSymbols: List[str] = ["skip"], startIndex: int = 0, shuffle: bool = False, repeatPlaylist: bool = False) -> bool:
         """
         Start playing streams from this playlist.
 
@@ -201,12 +201,14 @@ class PlaylistService():
                     printS("Non-web streams currently not supported, skipping video ", _stream.name, color = colors["ERROR"])
                     continue
 
-                _inputMessage = f"Now playing \"{_stream.name}\"" + (", press enter to play next..." if(i < (len(_streams) - 1)) else ". This is the last stream, press enter to finish.")
-                _input = input(_inputMessage)
-                
-                if(_input in quitSymbols):
+                printS(f"Now playing \"{_stream.name}\"" + ("..." if(i < (len(_streams) - 1)) else ". This is the last stream, press enter to finish."))
+                _input = input("Press enter to play next, \"skip\" to skip video, or \"quit\" to quit playback.")
+                if(len(quitSymbols) > 0 and _input in quitSymbols):
                     printS("Ending playback due to user input.", color = colors["OKGREEN"])
                     break
+                elif(len(skipSymbols) > 0 and _input in skipSymbols):
+                    printS("Skipping video, will not be marked as watched.", color = colors["OKGREEN"])
+                    continue
                 
                 # subprocessStream.terminate() # TODO Doesn't seem to work with browser, at least not new tabs
                 

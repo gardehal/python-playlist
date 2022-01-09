@@ -231,7 +231,7 @@ class Main:
                     argIndex += len(_input) + 1
                     continue
 
-                _result = Main.playlistService.playCmd(_ids[0], quitSwitches)
+                _result = Main.playlistService.playCmd(_ids[0], quitSwitches, skipSwitches)
                 if(not _result):
                     _playlist = Main.playlistService.get(_ids[0])
                     printS("Failed to play playlist \"", _playlist.name, "\", please se error above.", color = colors["FAIL"])

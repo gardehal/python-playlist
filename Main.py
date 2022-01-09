@@ -189,7 +189,7 @@ class Main:
                 continue
 
             elif(arg in prunePlaylistFlags):
-                # Expected input: pruneoptions?, playlistIds or indices
+                # Expected input: playlistIds or indices
                 _input = extractArgs(argIndex, argV)
                 _ids = Main.getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll())
                 
@@ -199,7 +199,12 @@ class Main:
                     continue
                 
                 for _id in _ids:
-                    printS("WIP")
+                    _result = Main.playlistService.prune(_id)
+                    
+                    if(len(_result) > 0):
+                        printS("Prune finished, removed ", len(_result), " streams from playlist (ID: \"", _id, "\").", color = colors["OKGREEN"])
+                    else:
+                        printS("Prune finished, could not remove any streams from playlist (ID: \"", _id, "\").", color = colors["FAIL"])
 
                 argIndex += len(_input) + 1
                 continue
@@ -287,20 +292,30 @@ class Main:
                 continue
 
             elif(arg in removeStreamFlags):
-                # Expected input: queueStreamIds or indices
+                # Expected input: playlistId or index, queueStreamIds or indices
                 _input = extractArgs(argIndex, argV)
-                if(len(_input) == 0):
-                    printS("Missing options for argument \"", arg, "\", expected IDs or indices.", color = colors["WARNING"])
-                    argIndex += 1
-                    continue
 
-                _ids = Main.getIdsFromInput(_input, Main.queueStreamService.getAllIds(), Main.queueStreamService.getAll())
-                for _id in _ids:
-                    _result = Main.queueStreamService.remove(_id)
-                    if(_result != None):
-                        printS("QueueStream removed successfully.", color = colors["OKGREEN"])
-                    else:
-                        printS("Failed to remove QueueStream. See rerun command with -help to see expected arguments.", color = colors["FAIL"])
+                _playlistIds = Main.getIdsFromInput(_input, Main.queueStreamService.getAllIds(), Main.queueStreamService.getAll(), 1)
+                if(len(_playlistIds) == 0):
+                    printS("Failed to remove streams, missing playlistId or index.", color = colors["FAIL"])
+                    argIndex += len(_input) + 1
+                    continue
+                
+                _queueStreamIds = Main.getIdsFromInput(_input[1:], Main.queueStreamService.getAllIds(), Main.queueStreamService.getAll())
+                if(len(_queueStreamIds) == 0):
+                    printS("Failed to remove streams, missing queueStreamIds or indices.", color = colors["FAIL"])
+                    argIndex += len(_input) + 1
+                    continue
+                
+                _playlist = Main.playlistService.get(_playlistIds[0])
+                # TODO should be ids, not indicies
+                printS("WIP", color = colors["OKGREEN"])
+                quit()
+                _result = Main.playlistService.removeStreams(_playlist.id, _queueStreamIds)
+                if(len(_result) > 0):
+                    printS("Removed ", len(_result), " QueueStreams successfully from playlist \"", _playlist.name, "\".", color = colors["OKGREEN"])
+                else:
+                    printS("Failed to remove QueueStreams. See rerun command with -help to see expected arguments.", color = colors["FAIL"])
 
                 argIndex += len(_input) + 1
                 continue
@@ -474,15 +489,23 @@ class Main:
             printS("\tStreamSources", color = colors["BOLD"])
             for i, _sourceId in enumerate(_playlist.streamSourceIds):
                 _source = Main.streamSourceService.get(_sourceId)
+                if(_source == None):
+                    printS("\\tSource not found (ID: \"", _sourceId, "\").", color = colors["FAIL"])
+                    continue
+                
                 _color = "WHITE" if i % 2 == 0 else "GREYBG"
-                printS("\t", _source.detailsString(includeUri, includeId), color = colors[_color])
+                printS("\t", str(i), " - ", _source.detailsString(includeUri, includeId), color = colors[_color])
             
             print("\n")
             printS("\tQueueStreams", color = colors["BOLD"])
             for i, _streamId in enumerate(_playlist.streamIds):
                 _stream = Main.queueStreamService.get(_streamId)
+                if(_stream == None):
+                    printS("\tStream not found (ID: \"", _streamId, "\").", color = colors["FAIL"])
+                    continue
+                
                 _color = "WHITE" if i % 2 == 0 else "GREYBG"
-                printS("\t", _stream.detailsString(includeUri, includeId), color = colors[_color])
+                printS("\t", str(i), " - ", _stream.detailsString(includeUri, includeId), color = colors[_color])
                 
             _result += 1
                 

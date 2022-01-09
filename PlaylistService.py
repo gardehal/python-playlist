@@ -145,12 +145,13 @@ class PlaylistService():
 
         return self.update(playlist)
 
-    def playCmd(self, playlistId: str, startIndex: int = 0, shuffle: bool = False, repeatPlaylist: bool = False) -> bool:
+    def playCmd(self, playlistId: str, quitSymbols: List[str] = ["quit"], startIndex: int = 0, shuffle: bool = False, repeatPlaylist: bool = False) -> bool:
         """
         Start playing streams from this playlist.
 
         Args:
             playlistId (str): ID of playlist to play from
+            quitSymbols (List[str]): input from user which should end the playback. Defaults to ["quit"]
             startIndex (int): index to start playing from
             shuffle (bool): shuffle videos
             repeatPlaylist (bool): repeat playlist once it reaches the end
@@ -200,10 +201,12 @@ class PlaylistService():
                     printS("Non-web streams currently not supported, skipping video ", _stream.name, color = colors["ERROR"])
                     continue
 
-                if(i < (len(_streams) - 1)):
-                    input(f"Now playing \"{_stream.name}\", press enter to play next...")
-                else:
-                    input(f"Now playing last stream in playlist, {_stream.name}, press enter to finish.")
+                _inputMessage = f"Now playing \"{_stream.name}\"" + (", press enter to play next..." if(i < (len(_streams) - 1)) else ". This is the last stream, press enter to finish.")
+                _input = input(_inputMessage)
+                
+                if(_input in quitSymbols):
+                    printS("Ending playback due to user input.", color = colors["OKGREEN"])
+                    break
                 
                 # subprocessStream.terminate() # TODO Doesn't seem to work with browser, at least not new tabs
                 
@@ -364,3 +367,20 @@ class PlaylistService():
                 _playlistStreams.append(_stream)
 
         return _playlistStreams
+
+    def createFromYouTubePlaylist(self, url: str) -> T:
+        """
+        Create a Playlist, using a YouTube playlist as the starting point. Videos will be added as streams in the playlist TODO? and source will be the playlist.
+
+        Args:
+            url (str): URI to YouTube playlist
+
+        Returns:
+            Playlist: Playlist if created, else None
+        """
+        
+        _sanitizedTitle = ""
+        _entity = Playlist(_sanitizedTitle, [], )
+        self.add(_entity)
+        
+        return None

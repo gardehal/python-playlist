@@ -13,7 +13,6 @@ from StreamSourceService import StreamSourceService
 from model.Playlist import Playlist
 from model.QueueStream import QueueStream
 from model.StreamSource import StreamSource
-import unicodedata
 
 load_dotenv()
 DEBUG = eval(os.environ.get("DEBUG"))
@@ -37,6 +36,8 @@ fetchPlaylistSourcesFlags = ["-fetch", "-f", "-update", "-u"]
 prunePlaylistFlags = ["-prune", "-pr"]
 resetPlaylistFetchFlags = ["-reset"]
 playFlags = ["-play", "-p"]
+quitSwitches = ["quit", "q", "exit", "end"]
+skipSwitches = ["skip", "s"]
 # Stream
 addStreamFlags = ["-add", "-a"]
 removeStreamFlags = ["-remove", "-rm", "-r"]
@@ -76,11 +77,8 @@ class Main:
                 printS("Test", color = colors["OKBLUE"])
 
                 if(1):
-                    # print("\u123")
-                    print("`123")
+                    printS("testing code here")
                     
-                    # print(sanitize("test's"))
-
                 quit()
 
             # Playlist
@@ -226,21 +224,16 @@ class Main:
             elif(arg in playFlags):
                 # Expected input: playlistId or index
                 _input = extractArgs(argIndex, argV)
-                if(len(_input) == 0):
-                    printS("Missing options for argument \"", arg, "\", expected IDs or indices.", color = colors["WARNING"])
-                    argIndex += 1
-                    continue
-
-                _ids = Main.getIdsFromInput(
-                    _input, Main.playlistService.getAllIds(), Main.playlistService.getAll())[0]
-                if(len(_ids) < 1):
-                    printS("Failed to play playlist \"", _playlist.name, "\", no such ID or index: \"", _input[0], "\".", color = colors["FAIL"])
+                _ids = Main.getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll())
+                
+                if(len(_ids) == 0):
+                    printS("Failed to prune playlists, missing playlistIds or indices.", color = colors["FAIL"])
                     argIndex += len(_input) + 1
                     continue
 
-                _result = Main.playlistService.playCmd(_ids[0])
+                _result = Main.playlistService.playCmd(_ids[0], quitSwitches)
                 if(not _result):
-                    _playlist = Main.playlistService.get(_id)
+                    _playlist = Main.playlistService.get(_ids[0])
                     printS("Failed to play playlist \"", _playlist.name, "\", please se error above.", color = colors["FAIL"])
 
                 argIndex += len(_input) + 1
@@ -476,12 +469,14 @@ class Main:
                 
             printS(_playlist.detailsString(includeUri, includeId))
             
+            printS("\tStreamSources", color = colors["BOLD"])
             for i, _sourceId in enumerate(_playlist.streamSourceIds):
                 _source = Main.streamSourceService.get(_sourceId)
                 _color = "WHITE" if i % 2 == 0 else "GREYBG"
                 printS("\t", _source.detailsString(includeUri, includeId), color = colors[_color])
             
             print("\n")
+            printS("\tQueueStreams", color = colors["BOLD"])
             for i, _streamId in enumerate(_playlist.streamIds):
                 _stream = Main.queueStreamService.get(_streamId)
                 _color = "WHITE" if i % 2 == 0 else "GREYBG"

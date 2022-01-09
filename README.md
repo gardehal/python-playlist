@@ -33,9 +33,11 @@ Program for queueing and playing videos from list or from sources like YouTube B
 - queue videos from channels on youtube since last check
   - Cannot get hours and minutes of video posted? Only day?
 
-- argument to add current playing stream to another playlist (favourites, various playlist for specific topics and music)
+- detailed playlist print: add options to not print sources and streams, not to print datetimes, print number of fetched = true sources, and number of watched != None streams
+- in detailed print, show streams in order of going to be played chronologically, looks like a diffrence in getall which likely get's by natural sort vs list order added 
+- argument to add current playing stream to another playlist (favorites, various playlist for specific topics and music)
 - edit parts of object, like playWatchedStreams in Playlist
-- confirm delete/remove in commands, delete = soft delete, remove = permanent remove, restore commands
+- confirm delete/remove in commands, delete = soft delete with deleted = datetime field, remove = permanent remove, restore commands - or trashcan instead of hard delete
 - some print results, listing sources should list playlist (ID or name), adding/removing anything with relations should specify relation
 - adding sources, check for duplicates on url (warning on duplicate name?)
 - prune commands for removing watched streams, remove ids from playlists if no corresponding stream, remove sources without playlist?, streams without playlist?

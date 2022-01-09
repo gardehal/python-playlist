@@ -37,7 +37,7 @@ class QueueStreamService():
         _entity.id = str(uuid.uuid4())
         _entity.isWeb = validators.url(_entity.uri)
         _entity.datetimeAdded = datetime.now()
-        _entity.watched = False
+        _entity.watched = None
         _result = self.queueStreamRepository.add(_entity)
         if(_result):
             return _entity

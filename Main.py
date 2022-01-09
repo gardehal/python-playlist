@@ -261,7 +261,7 @@ class Main:
 
                 if(_name == None and validators.url(_uri)):
                     _name = Main.fetchService.getPageTitle(_uri)
-                else:
+                elif(_name == None):
                     _name = "New stream"
                     printS("Could not automatically get the web name for this stream, will be named \"" , _name, "\".", color = colors["WARNING"])
 

@@ -28,11 +28,14 @@ class StreamSource:
         ", Last fetch: ", self.lastFetched]))
 
     def detailsString(self, includeUri: bool = True, includeId: bool = True):
+        _uriString = ", uri: " + self.uri if(includeUri) else ""
+        _uidString = ", id: " + self.id if(includeId) else ""
+        
         return "".join(map(str, ["name: ", self.name,
-        (", uri: ", self.uri) if(includeUri) else "",
+        _uriString,
         ", isWeb: ", self.isWeb,
         ", streamSourceTypeId: ", self.streamSourceTypeId,
         ", enableFetch: ", self.enableFetch,
         ", lastFetched: ", self.lastFetched,
         ", datetimeAdded: ", self.datetimeAdded,
-        (", id: ", self.id) if(includeId) else ""]))
+        _uidString]))

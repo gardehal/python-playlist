@@ -4,13 +4,14 @@ import uuid
 
 class Playlist():
     def __init__(self, 
-                 name: str = None, 
+                 name: str = None,
                  streamIds: List[str] = List[str], 
                  lastUpdated: datetime = datetime.now(), 
                  lastWatchedIndex: int = None,
                  playWatchedStreams: bool = True,
                  allowDuplicates: bool = True,
                  streamSourceIds: List[str] = List[str],
+                 description: str = None,
                  id: str = str(uuid.uuid4())):
         self.name: str = name
         self.streamIds: List[str] = streamIds
@@ -19,6 +20,7 @@ class Playlist():
         self.playWatchedStreams: bool = playWatchedStreams
         self.allowDuplicates: bool = allowDuplicates
         self.streamSourceIds: List[str] = streamSourceIds
+        self.description: str = description
         self.id: str = id
 
     def summaryString(self):
@@ -28,6 +30,8 @@ class Playlist():
         ", Sources: ", len(self.streamSourceIds)]))
 
     def detailsString(self, includeUri: bool = True, includeId: bool = True):
+        _uidString = ", id: " + self.id if(includeId) else ""
+        
         return "".join(map(str, ["name: ", self.name, 
         ", n streamIds: ", len(self.streamIds), 
         ", lastUpdated: ", self.lastUpdated, 
@@ -35,4 +39,5 @@ class Playlist():
         ", playWatchedStreams: ", self.playWatchedStreams, 
         ", allowDuplicates: ", self.allowDuplicates, 
         ", n streamSourceIds: ", len(self.streamSourceIds),
-        (", id: ", self.id) if(includeId) else ""]))
+        ", description: ", self.description,
+        _uidString]))

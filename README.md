@@ -27,8 +27,8 @@ Program for queueing and playing videos from list or from sources like YouTube B
 - queue videos from channels on youtube since last check
   - Cannot get hours and minutes of video posted? Only day?
 
-- pytube titles and page titles sanitization, error whe title has special univode like \u1234 or ' etc
-- reset fetch command, removes all streams in playlist, sets related sources lastfetch to None
+- edit parts of object, like playWatchedStreams in Playlist
+- quit/end/exit command for playing stream, should not set current to watched (probably)
 - confirm delete/remove in commands, delete = soft delete, remove = permanent remove, restore commands
 - some print results, listing sources should list playlist (ID or name), adding/removing anything with relations should specify relation
 - adding sources, check for duplicates on url (warning on duplicate name?)

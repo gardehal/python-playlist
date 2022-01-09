@@ -22,9 +22,12 @@ class QueueStream:
         ", URI: ", self.uri]))
 
     def detailsString(self, includeUri: bool = True, includeId: bool = True):
-        return "".join(map(str, ["name: ", self.name, 
-        (", uri: ", self.uri) if(includeUri) else "",
+        _uriString = ", uri: " + self.uri if(includeUri) else ""
+        _uidString = ", id: " + self.id if(includeId) else ""
+        
+        return "".join(map(str, ["name: ", self.name,
+        _uriString,
         ", isWeb: ", self.isWeb, 
         ", watched: ", self.watched, 
         ", datetimeAdded: ", self.datetimeAdded,
-        (", id: ", self.id) if(includeId) else ""]))
+        _uidString]))

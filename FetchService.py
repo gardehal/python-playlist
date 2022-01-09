@@ -19,7 +19,6 @@ load_dotenv()
 DEBUG = eval(os.environ.get("DEBUG"))
 LOCAL_STORAGE_PATH = os.environ.get("LOCAL_STORAGE_PATH")
 
-
 class FetchService():
     debug: bool = DEBUG
     storagePath: str = LOCAL_STORAGE_PATH
@@ -122,7 +121,8 @@ class FetchService():
                 if(yt.publish_date > takeBefore):
                     continue
 
-            _newStreams.append(QueueStream(yt.title, yt.watch_url, True, None, datetime.now()))
+            _sanitizedTitle = sanitize(yt.title)
+            _newStreams.append(QueueStream(_sanitizedTitle, yt.watch_url, True, None, datetime.now()))
 
             # Todo fetch batches using batchSize of videos instead of all 3000 videos in some cases taking 60 seconds+ to load
             if(i > batchSize):
@@ -142,9 +142,9 @@ class FetchService():
             str: Title of page
         """
 
-        br = mechanize.Browser()
-        br.open(url)
-        title = br.title()
-        br.close()
+        _br = mechanize.Browser()
+        _br.open(url)
+        _sanitizedTitle = sanitize(_br.title())
+        _br.close()
 
-        return title.encode("utf-8")
+        return _sanitizedTitle

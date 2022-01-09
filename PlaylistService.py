@@ -395,3 +395,36 @@ class PlaylistService():
         self.add(_entity)
         
         return None
+    
+    def prune(self, playlistId: str) -> List[QueueStream]:
+        """
+        Removes watched streams from a Playlist if it does not allow replaying of already played streams (playWatchedStreams == False).
+
+        Args:
+            playlistId (str): ID of playlist to prune
+
+        Returns:
+            List[QueueStream]: QueueStreams removed
+        """
+        
+        _removedStreams = []
+
+        _playlist = self.get(playlistId)
+        if(_playlist == None or _playlist.playWatchedStreams == True):
+            return _removedStreams
+        
+        for _id in _playlist.streamIds:
+            _stream = self.queueStreamService.get(_id)
+            if(_stream.watched != None):
+                _removedStreams.append(_stream)
+                self.queueStreamService.remove(_id)
+            
+        for _stream in _removedStreams:
+            _playlist.streamIds.remove(_stream.id)
+            
+        _updateResult = self.update(_playlist)
+        if(_updateResult != None):
+            return _removedStreams
+        else:
+            return []
+        

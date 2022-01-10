@@ -24,15 +24,65 @@ Program for queueing and playing videos from list or from sources like YouTube B
 - Sources currently supported for fetch: YouTube (channels)
 - All data is stored locally in human readable JSON files in the path specified in the .env setting LOCAL_STORAGE_PATH. This defaults to "data", in the same folder as the rest of the program. To edit data, it's easier to change these text files directly, as long as you adhere to the JSON format.
 
+
+## Examples
+
+#### Add a playlist, stream to the playlist, and play it
+
+1. Add a playlist, named "YouTube favourites" which will not play streams already watched and not allow duplicates (of URLs):
+    - $ `python main -ap "YouTube favourites" False False`
+1. See an overview of playlists:
+    - $ `python main -lp`
+    - Will return something like this, where the ID is a randomly generated UUID:
+      - `0 - Name: YouTube favourites, ID: 12345678-1234-1234-1234-123456789012, Streams: 0, Sources: 0`
+1. Using the index (idex + 0 = "i0") from the overview, add [this](https://youtu.be/jNQXAC9IVRw) video from youtube to this playlist:
+    - $ `python main -a i0 https://youtu.be/jNQXAC9IVRw`
+1. Check result in overview of playlists:
+    - $ `python main -lp`
+    - Will return something like this:
+      - `0 - Name: YouTube favourites, ID: 12345678-1234-1234-1234-123456789012, Streams: 1, Sources: 0`
+1. Play all videos in our playlist:
+    - $ `python main -p i0`
+    - Will return some info for playback:
+      - `Playing playlist YouTube feed.`
+      - `Starting at stream number: 1, shuffle is off, repeat playlist is off, played videos set to watched is on.`
+      - `Now playing "Me at the zoo". This is the last stream, press enter to finish.`
+      - `Press enter to play next, "skip" to skip video, or "quit" to quit playback.`
+    - Pressing enter would continue the playback and play the next stream, but since this is the last one, pressing enter will finish the playback:
+      - `Playlist "YouTube feed" finished.` 
+1. Since the option to re-watch streams in playlist is turned off, we can prune out playlist to remove watched streams:
+    - $ `python main -prune i0`
+    - Will return prune result:
+      - `Prune finished, removed 1 streams from playlist (ID: "12345678-1234-1234-1234-123456789012").`
+
+#### Add a source to a playlist and fetch streams
+
+1. To our existing playlist, add [this](https://www.youtube.com/c/smartereveryday) YouTube channel and enable fetch:
+    - $ `python main -as i0 https://www.youtube.com/c/smartereveryday True`
+1. Instruct the program to fetch all videos from this channel uploaded after 31st of december, 2021:
+    - $ `python main -f i0 2021-12-31`
+    - This may take some time, depending on the videos available on the channel since given date. Updates will be given when available. This message will be given when finished:
+      - `Fetched 3 for playlist "YouTube feed" successfully.`
+1. Check the detailed print of the playlist, here including ALL information available:
+    - $ `python main -dp i0 True True True True`
+1. Or less verbose details, which has most of the information a user needs:
+    - $ `python main -dp i0`
+    - The print would look something like this:
+      - `name: YouTube feed, lastWatchedIndex: 1, playWatchedStreams: False, allowDuplicates: False, description: `
+      - `   StreamSources`
+      - `   0 - name: SmarterEveryDay - YouTube, isWeb: True, streamSourceTypeId: 2, enableFetch: True`
+      - `   `
+      - `   QueueStreams`
+      - `   1 - name: Video name, isWeb: True`
+
 ## TODO
 
-- play in what? 
-  - default video browser for system?
+- play in what?
   - Close tab after video is watched not possible? killing selenium too slow, PID from Popen not same PID as browser tab  
-  - hidden subprocess for VLC which sets video to watched when video finishes or VLC closes would be nice
-- queue videos from channels on youtube since last check
-  - Cannot get hours and minutes of video posted? Only day?
+  - download stream, play in subprocess VLC which sets video to watched when video finishes or VLC closes would be nice
 
+- "playservice" for playing and playback-related methods?
+- error with add/remove/move streams functions in playlistservice, should be IDs, always, not indices
 - detailed playlist print: add options to not print sources and streams, not to print datetimes, print number of fetched = true sources, and number of watched != None streams
 - in detailed print, show streams in order of going to be played chronologically, looks like a diffrence in getall which likely get's by natural sort vs list order added 
 - argument to add current playing stream to another playlist (favorites, various playlist for specific topics and music)
@@ -40,6 +90,4 @@ Program for queueing and playing videos from list or from sources like YouTube B
 - confirm delete/remove in commands, delete = soft delete with deleted = datetime field, remove = permanent remove, restore commands - or trashcan instead of hard delete
 - some print results, listing sources should list playlist (ID or name), adding/removing anything with relations should specify relation
 - adding sources, check for duplicates on url (warning on duplicate name?)
-- prune commands for removing watched streams, remove ids from playlists if no corresponding stream, remove sources without playlist?, streams without playlist?
-- more detailed use docs?
 - tests for core functions like fetch and play?

@@ -27,15 +27,17 @@ class StreamSource:
         ", Enable fetch: ", self.enableFetch,
         ", Last fetch: ", self.lastFetched]))
 
-    def detailsString(self, includeUri: bool = True, includeId: bool = True):
+    def detailsString(self, includeUri: bool = True, includeId: bool = True, includeDatetime: bool = True, includeListCount: bool = True):
         _uriString = ", uri: " + self.uri if(includeUri) else ""
-        _uidString = ", id: " + self.id if(includeId) else ""
+        _idString = ", id: " + self.id if(includeId) else ""
+        _datetimeAddedString = ", datetimeAdded: " + self.datetimeAdded if(includeDatetime) else ""
+        _lastFetchedString = ", lastFetched: " + self.lastFetched if(includeDatetime) else ""
         
         return "".join(map(str, ["name: ", self.name,
         _uriString,
         ", isWeb: ", self.isWeb,
         ", streamSourceTypeId: ", self.streamSourceTypeId,
         ", enableFetch: ", self.enableFetch,
-        ", lastFetched: ", self.lastFetched,
-        ", datetimeAdded: ", self.datetimeAdded,
-        _uidString]))
+        _lastFetchedString,
+        _datetimeAddedString,
+        _idString]))

@@ -29,15 +29,18 @@ class Playlist():
         ", Streams: ", len(self.streamIds),
         ", Sources: ", len(self.streamSourceIds)]))
 
-    def detailsString(self, includeUri: bool = True, includeId: bool = True):
-        _uidString = ", id: " + self.id if(includeId) else ""
+    def detailsString(self, includeUri: bool = True, includeId: bool = True, includeDatetime: bool = True, includeListCount: bool = True):
+        _idString = ", id: " + self.id if(includeId) else ""
+        _lastUpdatedString = ", lastUpdated: " + self.lastUpdated if(includeDatetime) else ""
+        _lenStreamString = ", n streamIds: " + len(self.streamIds) if(includeListCount) else ""
+        _lenStreamStreamString = ", n streamSourceIds: " + len(self.streamIds) if(includeListCount) else ""
         
         return "".join(map(str, ["name: ", self.name, 
-        ", n streamIds: ", len(self.streamIds), 
-        ", lastUpdated: ", self.lastUpdated, 
+        _lenStreamString, 
+        _lastUpdatedString, 
         ", lastWatchedIndex: ", self.lastWatchedIndex, 
         ", playWatchedStreams: ", self.playWatchedStreams, 
         ", allowDuplicates: ", self.allowDuplicates, 
-        ", n streamSourceIds: ", len(self.streamSourceIds),
+        _lenStreamStreamString,
         ", description: ", self.description,
-        _uidString]))
+        _idString]))

@@ -21,13 +21,15 @@ class QueueStream:
         ", ID: ", self.id, 
         ", URI: ", self.uri]))
 
-    def detailsString(self, includeUri: bool = True, includeId: bool = True):
+    def detailsString(self, includeUri: bool = True, includeId: bool = True, includeDatetime: bool = True, includeListCount: bool = True):
         _uriString = ", uri: " + self.uri if(includeUri) else ""
-        _uidString = ", id: " + self.id if(includeId) else ""
+        _idString = ", id: " + self.id if(includeId) else ""
+        _watchedString = ", watched: " + self.watched if(includeDatetime) else ""
+        _datetimeAddedString = ", datetimeAdded: " + self.datetimeAdded if(includeListCount) else ""
         
         return "".join(map(str, ["name: ", self.name,
         _uriString,
         ", isWeb: ", self.isWeb, 
-        ", watched: ", self.watched, 
-        ", datetimeAdded: ", self.datetimeAdded,
-        _uidString]))
+        _watchedString, 
+        _datetimeAddedString,
+        _idString]))

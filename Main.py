@@ -142,13 +142,15 @@ class Main:
                 _lenIds = len(_ids)
                 _includeUri = eval(_input[_lenIds]) if(len(_input) > _lenIds) else False
                 _includeId = eval(_input[_lenIds + 1]) if(len(_input) > _lenIds + 1) else False
+                _includeDatetime = eval(_input[_lenIds + 2]) if(len(_input) > _lenIds + 2) else False
+                _includeListCount = eval(_input[_lenIds + 3]) if(len(_input) > _lenIds + 3) else False
                 
                 if(len(_ids) == 0):
                     printS("Failed to print details, missing playlistIds or indices.", color = colors["FAIL"])
                     argIndex += len(_input) + 1
                     continue
                 
-                _result = Main.printPlaylistDetails(_ids, _includeUri, _includeId)
+                _result = Main.printPlaylistDetails(_ids, _includeUri, _includeId, _includeDatetime, _includeListCount)
                 if(_result):
                     printS("Finished printing details.", color = colors["OKGREEN"])
                 else:
@@ -467,7 +469,7 @@ class Main:
 
         return _result
 
-    def printPlaylistDetails(playlistIds: List[str], includeUri: bool = False, includeId: bool = False) -> int:
+    def printPlaylistDetails(playlistIds: List[str], includeUri: bool = False, includeId: bool = False, includeDatetime: bool = False, includeListCount: bool = False) -> int:
         """
         Print detailed info for Playlist, including details for related StreamSources and QueueStreams.
 
@@ -484,7 +486,7 @@ class Main:
         for _id in playlistIds:
             _playlist = Main.playlistService.get(_id)
                 
-            printS(_playlist.detailsString(includeUri, includeId))
+            printS(_playlist.detailsString(includeUri, includeId, includeDatetime, includeListCount))
             
             printS("\tStreamSources", color = colors["BOLD"])
             for i, _sourceId in enumerate(_playlist.streamSourceIds):
@@ -494,7 +496,7 @@ class Main:
                     continue
                 
                 _color = "WHITE" if i % 2 == 0 else "GREYBG"
-                printS("\t", str(i), " - ", _source.detailsString(includeUri, includeId), color = colors[_color])
+                printS("\t", str(i), " - ", _source.detailsString(includeUri, includeId, includeDatetime, includeListCount), color = colors[_color])
             
             print("\n")
             printS("\tQueueStreams", color = colors["BOLD"])
@@ -505,7 +507,7 @@ class Main:
                     continue
                 
                 _color = "WHITE" if i % 2 == 0 else "GREYBG"
-                printS("\t", str(i), " - ", _stream.detailsString(includeUri, includeId), color = colors[_color])
+                printS("\t", str(i), " - ", _stream.detailsString(includeUri, includeId, includeDatetime, includeListCount), color = colors[_color])
                 
             _result += 1
                 

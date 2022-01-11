@@ -10,8 +10,10 @@ from myutil.LocalJsonRepository import LocalJsonRepository
 from myutil.Util import *
 
 from QueueStreamService import QueueStreamService
+from StreamSourceService import StreamSourceService
 from model.Playlist import Playlist
 from model.QueueStream import QueueStream
+from model.StreamSource import StreamSource
 
 load_dotenv()
 DEBUG = eval(os.environ.get("DEBUG"))
@@ -30,6 +32,7 @@ class PlaylistService():
     storagePath: str = LOCAL_STORAGE_PATH
     playlistRepository: LocalJsonRepository = None
     queueStreamService: QueueStreamService = None
+    streamSourceService: StreamSourceService = None
     quitInputs: List[str] = None
     skipInputs: List[str] = None
     addToInputs: List[str] = None
@@ -37,6 +40,7 @@ class PlaylistService():
     def __init__(self, quitInputs: List[str] = ["quit"], skipInputs: List[str] = ["skip"], addToInputs: List[str] = ["addto"]):
         self.playlistRepository: LocalJsonRepository = LocalJsonRepository(T, self.debug, os.path.join(self.storagePath, "Playlist"))
         self.queueStreamService: QueueStreamService = QueueStreamService()
+        self.streamSourceService: StreamSourceService = StreamSourceService()
         self.quitInputs: List[str] = quitInputs
         self.skipInputs: List[str] = skipInputs
         self.addToInputs: List[str] = addToInputs
@@ -384,7 +388,7 @@ class PlaylistService():
         Get unwatched QueueStreams in playlist from playlistId.
 
         Args:
-            playlistId (str): ID of playlist to add to
+            playlistId (str): ID of playlist to get from
 
         Returns:
             List[QueueStream]: QueueStreams if any, else empty list
@@ -400,7 +404,30 @@ class PlaylistService():
             if(_stream.id in _playlist.streamIds and _stream.watched != None):
                 _playlistStreams.append(_stream)
 
-        return _playlistStreams
+        return _playlistStreams    
+    
+    def getFetchedSourcesByPlaylistId(self, playlistId: str) -> List[StreamSource]:
+        """
+        Get StreamSources where fetch is enabled in playlist from playlistId.
+
+        Args:
+            playlistId (str): ID of playlist to get from
+
+        Returns:
+            List[StreamSource]: StreamSources if any, else empty list
+        """
+
+        _playlist = self.get(playlistId)
+        if(_playlist == None):
+            return 0
+
+        _all = self.streamSourceService.getAll()
+        _playlistSources = []
+        for _source in _all:
+            if(_source.id in _playlist.streamSourceIds and _source.enableFetch == True):
+                _playlistSources.append(_source)
+
+        return _playlistSources
 
     def createFromYouTubePlaylist(self, url: str) -> T:
         """

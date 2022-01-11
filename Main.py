@@ -485,8 +485,16 @@ class Main:
         _result = 0
         for _id in playlistIds:
             _playlist = Main.playlistService.get(_id)
-                
-            printS(_playlist.detailsString(includeUri, includeId, includeDatetime, includeListCount))
+              
+            _playlistDetailsString = _playlist.detailsString(includeUri, includeId, includeDatetime, includeListCount = False)
+            if(includeListCount):
+                _unwatchedStreams = Main.playlistService.getUnwatchedStreamsByPlaylistId(_playlist.id)
+                _fetchedSources = Main.playlistService.getFetchedSourcesByPlaylistId(_playlist.id)
+                _sourcesListString = ", n streamIds: " + str(len(_playlist.streamIds)) + ", unwatched streamIds: " + str(len(_unwatchedStreams))
+                _streamsListString = ", n streamSourceIds: " + str(len(_playlist.streamSourceIds)) + ", fetched streamSourceIds: " + str(len(_fetchedSources))
+                _playlistDetailsString += _sourcesListString + _streamsListString
+                            
+            printS(_playlistDetailsString)
             
             printS("\tStreamSources", color = colors["BOLD"])
             for i, _sourceId in enumerate(_playlist.streamSourceIds):

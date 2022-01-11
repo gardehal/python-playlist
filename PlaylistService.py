@@ -378,6 +378,29 @@ class PlaylistService():
                 _playlistStreams.append(_stream)
 
         return _playlistStreams
+    
+    def getUnwatchedStreamsByPlaylistId(self, playlistId: str) -> List[QueueStream]:
+        """
+        Get unwatched QueueStreams in playlist from playlistId.
+
+        Args:
+            playlistId (str): ID of playlist to add to
+
+        Returns:
+            List[QueueStream]: QueueStreams if any, else empty list
+        """
+
+        _playlist = self.get(playlistId)
+        if(_playlist == None):
+            return 0
+
+        _all = self.queueStreamService.getAll()
+        _playlistStreams = []
+        for _stream in _all:
+            if(_stream.id in _playlist.streamIds and _stream.watched != None):
+                _playlistStreams.append(_stream)
+
+        return _playlistStreams
 
     def createFromYouTubePlaylist(self, url: str) -> T:
         """

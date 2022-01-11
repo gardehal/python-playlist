@@ -490,8 +490,8 @@ class Main:
             if(includeListCount):
                 _unwatchedStreams = Main.playlistService.getUnwatchedStreamsByPlaylistId(_playlist.id)
                 _fetchedSources = Main.playlistService.getFetchedSourcesByPlaylistId(_playlist.id)
-                _sourcesListString = ", n streamIds: " + str(len(_playlist.streamIds)) + ", unwatched streamIds: " + str(len(_unwatchedStreams))
-                _streamsListString = ", n streamSourceIds: " + str(len(_playlist.streamSourceIds)) + ", fetched streamSourceIds: " + str(len(_fetchedSources))
+                _sourcesListString = f", unwatched streams: {len(_unwatchedStreams)}/{len(_playlist.streamIds)}"
+                _streamsListString = f", fetched sources: {len(_fetchedSources)}/{len(_playlist.streamSourceIds)}"
                 _playlistDetailsString += _sourcesListString + _streamsListString
                             
             printS(_playlistDetailsString)

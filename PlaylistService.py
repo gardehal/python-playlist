@@ -401,7 +401,7 @@ class PlaylistService():
         _all = self.queueStreamService.getAll()
         _playlistStreams = []
         for _stream in _all:
-            if(_stream.id in _playlist.streamIds and _stream.watched != None):
+            if(_stream.id in _playlist.streamIds and _stream.watched == None):
                 _playlistStreams.append(_stream)
 
         return _playlistStreams    

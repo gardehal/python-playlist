@@ -497,6 +497,9 @@ class Main:
             printS(_playlistDetailsString)
             
             printS("\tStreamSources", color = colors["BOLD"])
+            if(len(_playlist.streamSourceIds) == 0):
+                printS("\tNo sources added yet.")
+            
             for i, _sourceId in enumerate(_playlist.streamSourceIds):
                 _source = Main.streamSourceService.get(_sourceId)
                 if(_source == None):
@@ -508,6 +511,9 @@ class Main:
             
             print("\n")
             printS("\tQueueStreams", color = colors["BOLD"])
+            if(len(_playlist.streamIds) == 0):
+                printS("\tNo streams added yet.")
+            
             for i, _streamId in enumerate(_playlist.streamIds):
                 _stream = Main.queueStreamService.get(_streamId)
                 if(_stream == None):

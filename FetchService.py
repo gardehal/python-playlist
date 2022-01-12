@@ -63,7 +63,8 @@ class FetchService():
                 continue
 
             _fetchedStreams = []
-            _takeAfter = takeAfter if(takeAfter != None) else DateTimeObject().fromString(_source.lastFetched, "+00:00").now
+            _takeAfter = takeAfter if(takeAfter != None or _source.lastFetched == None) else DateTimeObject().fromString(_source.lastFetched, "+00:00").now
+                
             if(_source.isWeb):
                 if(_source.streamSourceTypeId == StreamSourceType.YOUTUBE.value):
                     _fetchedStreams = self.fetchYoutube(_source, batchSize, _takeAfter, takeBefore)

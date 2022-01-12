@@ -25,7 +25,7 @@ class QueueStream:
         _uriString = ", uri: " + self.uri if(includeUri) else ""
         _idString = ", id: " + self.id if(includeId) else ""
         _watchedString = ", watched: " + self.watched if(includeDatetime) else ""
-        _datetimeAddedString = ", datetimeAdded: " + self.datetimeAdded if(includeListCount) else ""
+        _datetimeAddedString = ", datetimeAdded: " + self.datetimeAdded if(includeDatetime) else ""
         
         return "".join(map(str, ["name: ", self.name,
         _uriString,

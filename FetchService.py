@@ -63,7 +63,7 @@ class FetchService():
                 continue
 
             _fetchedStreams = []
-            _takeAfter = takeAfter if(takeAfter != None or _source.lastFetched == None) else DateTimeObject().fromString(_source.lastFetched, "+00:00").now
+            _takeAfter = takeAfter if(takeAfter != None or _source.lastSuccessfulFetched == None) else DateTimeObject().fromString(_source.lastSuccessfulFetched, "+00:00").now
                 
             if(_source.isWeb):
                 if(_source.streamSourceTypeId == StreamSourceType.YOUTUBE.value):
@@ -75,6 +75,9 @@ class FetchService():
                 # TODO handle directory sources
                 continue
 
+            if(len(_fetchedStreams) > 0):
+                _source.lastSuccessfulFetched = datetime.now()
+            
             _source.lastFetched = datetime.now()
             _updateSuccess = self.streamSourceService.update(_source)
             if(_updateSuccess):

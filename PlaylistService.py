@@ -211,8 +211,8 @@ class PlaylistService():
                     printS("Non-web streams currently not supported, skipping video ", _stream.name, color = colors["ERROR"])
                     continue
 
-                printS(f"Now playing \"{_stream.name}\"" + ("..." if(i < (len(_streams) - 1)) else ". This is the last stream, press enter to finish."))
-                _input = input("Press enter to play next, \"skip\" to skip video, or \"quit\" to quit playback.")
+                printS(f"Now playing \"{_stream.name}\"" + ("..." if(i < (len(_streams) - 1)) else ". This is the last stream, press enter to finish."), color = colors["BOLD"])
+                _input = input("\tPress enter to play next, \"skip\" to skip video, or \"quit\" to quit playback.")
                 if(len(self.quitInputs) > 0 and _input in self.quitInputs):
                     printS("Ending playback due to user input.", color = colors["OKGREEN"])
                     break

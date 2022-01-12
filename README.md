@@ -79,11 +79,14 @@ Program for queueing and playing videos from list or from sources like YouTube B
 
 - play in what?
   - Close tab after video is watched not possible? killing selenium too slow, PID from Popen not same PID as browser tab  
-  - download stream, play in subprocess VLC which sets video to watched when video finishes or VLC closes would be nice
+  - download stream, play in subprocess VLC which sets video to watched when video finishes or VLC closes would be nice (easy for yt, third party without pytube-like packs much harder)
 
+- due to youtube publish date being date only, there will be problems with missing uploads. add and prefer to use lastSuccessfulFetchedDatetime?
+- search streams and sources in playlist by name?
+- fetch for sources by id or indexs
+- index when playing
 - "playservice" for playing and playback-related methods?
 - error with add/remove/move streams functions in playlistservice, should be IDs, always, not indices
-- detailed playlist print: add options to not print sources and streams, not to print datetimes, print number of fetched = true sources, and number of watched != None streams
 - in detailed print, show streams in order of going to be played chronologically, looks like a diffrence in getall which likely get's by natural sort vs list order added 
 - argument to add current playing stream to another playlist (favorites, various playlist for specific topics and music)
 - edit parts of object, like playWatchedStreams in Playlist

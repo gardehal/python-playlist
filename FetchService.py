@@ -6,9 +6,10 @@ from dotenv import load_dotenv
 from myutil.DateTimeObject import DateTimeObject
 from myutil.Util import *
 from pytube import Channel
+from pytube import YouTube
 import mechanize
 
-from enums.StreamSourceType import StreamSourceType
+from enums.StreamSourceType import StreamSourceType, StreamSourceTypeUtil
 from model.QueueStream import QueueStream
 from model.StreamSource import StreamSource
 from PlaylistService import PlaylistService
@@ -133,7 +134,7 @@ class FetchService():
 
     def getPageTitle(self, url: str) -> str:
         """
-        Get page title from the URL url, using mechanize.
+        Get page title from the URL url, using mechanize or PyTube.
 
         Args:
             url (str): URL to page to get title from
@@ -142,9 +143,16 @@ class FetchService():
             str: Title of page
         """
 
-        _br = mechanize.Browser()
-        _br.open(url)
-        _sanitizedTitle = sanitize(_br.title())
-        _br.close()
+        _title = ""
+        
+        _isYouTubeChannel = "user" in url or "channel" in url  
+        if(StreamSourceTypeUtil.strToStreamSourceType(url) == StreamSourceType.YOUTUBE and not _isYouTubeChannel):
+            _yt = YouTube(url)
+            _title = _yt.title
+        else:
+            _br = mechanize.Browser()
+            _br.open(url)
+            _title = _br.title()
+            _br.close()
 
-        return _sanitizedTitle
+        return sanitize(_title)

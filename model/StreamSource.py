@@ -9,6 +9,7 @@ class StreamSource:
                  streamSourceTypeId: int = None, 
                  enableFetch: bool = None, 
                  lastFetched: datetime = None, 
+                 lastSuccessfulFetched: datetime = None, 
                  datetimeAdded: datetime = datetime.now(),
                  id: str = str(uuid.uuid4())):
         self.name: str = name
@@ -17,6 +18,7 @@ class StreamSource:
         self.streamSourceTypeId: int = streamSourceTypeId
         self.enableFetch: bool = enableFetch
         self.lastFetched: datetime = lastFetched
+        self.lastSuccessfulFetched: datetime = lastSuccessfulFetched
         self.datetimeAdded: datetime = datetimeAdded
         self.id: str = id
 
@@ -25,13 +27,14 @@ class StreamSource:
         ", ID: ", self.id, 
         ", URI: ", self.uri,
         ", Enable fetch: ", self.enableFetch,
-        ", Last fetch: ", self.lastFetched]))
+        ", Last fetch: ", self.lastSuccessfulFetched]))
 
     def detailsString(self, includeUri: bool = True, includeId: bool = True, includeDatetime: bool = True, includeListCount: bool = True):
         _uriString = ", uri: " + self.uri if(includeUri) else ""
         _idString = ", id: " + self.id if(includeId) else ""
-        _datetimeAddedString = ", datetimeAdded: " + self.datetimeAdded if(includeDatetime) else ""
-        _lastFetchedString = ", lastFetched: " + self.lastFetched if(includeDatetime) else ""
+        _lastFetchedString = ", lastFetched: " + str(self.lastFetched) if(includeDatetime) else ""
+        _lastSuccessfulFetchedString = ", lastSuccessfulFetched: " + str(self.lastSuccessfulFetched) if(includeDatetime) else ""
+        _datetimeAddedString = ", datetimeAdded: " + str(self.datetimeAdded) if(includeDatetime) else ""
         
         return "".join(map(str, ["name: ", self.name,
         _uriString,
@@ -39,5 +42,6 @@ class StreamSource:
         ", streamSourceTypeId: ", self.streamSourceTypeId,
         ", enableFetch: ", self.enableFetch,
         _lastFetchedString,
+        _lastSuccessfulFetchedString,
         _datetimeAddedString,
         _idString]))

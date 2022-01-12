@@ -24,8 +24,8 @@ class QueueStream:
     def detailsString(self, includeUri: bool = True, includeId: bool = True, includeDatetime: bool = True, includeListCount: bool = True):
         _uriString = ", uri: " + self.uri if(includeUri) else ""
         _idString = ", id: " + self.id if(includeId) else ""
-        _watchedString = ", watched: " + self.watched if(includeDatetime) else ""
-        _datetimeAddedString = ", datetimeAdded: " + self.datetimeAdded if(includeDatetime) else ""
+        _watchedString = ", watched: " + str(self.watched) if(includeDatetime) else ""
+        _datetimeAddedString = ", datetimeAdded: " + str(self.datetimeAdded) if(includeDatetime) else ""
         
         return "".join(map(str, ["name: ", self.name,
         _uriString,

@@ -31,7 +31,7 @@ class Playlist():
 
     def detailsString(self, includeUri: bool = True, includeId: bool = True, includeDatetime: bool = True, includeListCount: bool = True):
         _idString = ", id: " + self.id if(includeId) else ""
-        _lastUpdatedString = ", lastUpdated: " + self.lastUpdated if(includeDatetime) else ""
+        _lastUpdatedString = ", lastUpdated: " + str(self.lastUpdated) if(includeDatetime) else ""
         _lenStreamString = ", n streamIds: " + len(self.streamIds) if(includeListCount) else ""
         _lenStreamStreamString = ", n streamSourceIds: " + len(self.streamIds) if(includeListCount) else ""
         

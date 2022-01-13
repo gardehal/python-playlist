@@ -85,13 +85,12 @@ Program for queueing and playing videos from list or from sources like YouTube B
 - Playlist list with uris watched to avoid getting duplicates? this is likely edge case due to testing functionality. also duplicate of watchlog function basically
 - search streams and sources in playlist by name?
 - fetch for sources by id or indexs
-- index when playing
 - "playservice" for playing and playback-related methods?
 - error with add/remove/move streams functions in playlistservice, should be IDs, always, not indices
 - in detailed print, show streams in order of going to be played chronologically, looks like a diffrence in getall which likely get's by natural sort vs list order added 
 - argument to add current playing stream to another playlist (favorites, various playlist for specific topics and music)
-- edit parts of object, like playWatchedStreams in Playlist
-- confirm delete/remove in commands, delete = soft delete with deleted = datetime field, remove = permanent remove, restore commands - or trashcan instead of hard delete
+- edit parts of object, like playWatchedStreams bool in Playlist
+- restore command for soft deleted
 - some print results, listing sources should list playlist (ID or name), adding/removing anything with relations should specify relation
 - adding sources, check for duplicates on url (warning on duplicate name?)
 - tests for core functions like fetch and play?

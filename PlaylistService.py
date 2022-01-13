@@ -58,7 +58,8 @@ class PlaylistService():
 
         _entity = playlist
         _entity.id = str(uuid.uuid4())
-        _entity.lastUpdated = datetime.now()
+        _entity.updated = datetime.now()
+        _entity.added = datetime.now()
         _result = self.playlistRepository.add(_entity)
         if(_result):
             return _entity
@@ -111,7 +112,7 @@ class PlaylistService():
         """
 
         _entity = playlist
-        _entity.lastUpdated = datetime.now()
+        _entity.updated = datetime.now()
         _result = self.playlistRepository.update(_entity)
         if(_result):
             return _entity
@@ -212,7 +213,7 @@ class PlaylistService():
                     continue
 
                 printS(f"Now playing \"{_stream.name}\"" + ("..." if(i < (len(_streams) - 1)) else ". This is the last stream, press enter to finish."), color = colors["BOLD"])
-                _input = input("\tPress enter to play next, \"skip\" to skip video, or \"quit\" to quit playback.")
+                _input = input("\tPress enter to play next, \"skip\" to skip video, or \"quit\" to quit playback: ")
                 if(len(self.quitInputs) > 0 and _input in self.quitInputs):
                     printS("Ending playback due to user input.", color = colors["OKGREEN"])
                     break
@@ -283,7 +284,7 @@ class PlaylistService():
             _playlist.streamIds.append(stream.id)
             _added += 1
 
-        _playlist.lastUpdated = datetime.now()
+        _playlist.updated = datetime.now()
         _updateResult = self.update(_playlist)
         if(_updateResult):
             return _added
@@ -317,7 +318,7 @@ class PlaylistService():
             _playlist.streamIds.pop(index)
             _removed += 1
 
-        _playlist.lastUpdated = datetime.now()
+        _playlist.updated = datetime.now()
         _updateResult = self.update(_playlist)
         if(_updateResult):
             return _removed
@@ -357,7 +358,7 @@ class PlaylistService():
         _playlist.streamIds.pop(fromIndex)
         _playlist.streamIds.insert(toIndex, entry)
 
-        _playlist.lastUpdated = datetime.now()
+        _playlist.updated = datetime.now()
         return self.update(_playlist)
 
     def getStreamsByPlaylistId(self, playlistId: str) -> List[QueueStream]:

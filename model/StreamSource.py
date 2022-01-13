@@ -12,7 +12,7 @@ class StreamSource:
                  lastSuccessfulFetched: datetime = None, 
                  backgroundContent: bool = False, 
                  deleted: datetime = None,
-                 datetimeAdded: datetime = datetime.now(),
+                 added: datetime = datetime.now(),
                  id: str = str(uuid.uuid4())):
         self.name: str = name
         self.uri: str = uri
@@ -23,7 +23,7 @@ class StreamSource:
         self.lastSuccessfulFetched: datetime = lastSuccessfulFetched
         self.backgroundContent: bool = backgroundContent
         self.deleted: datetime = deleted
-        self.datetimeAdded: datetime = datetimeAdded
+        self.added: datetime = added
         self.id: str = id
 
     def summaryString(self):
@@ -39,7 +39,7 @@ class StreamSource:
         _lastFetchedString = ", lastFetched: " + str(self.lastFetched) if(includeDatetime) else ""
         _lastSuccessfulFetchedString = ", lastSuccessfulFetched: " + str(self.lastSuccessfulFetched) if(includeDatetime) else ""
         _deletedString = ", deleted: " + str(self.deleted) if(includeDatetime) else ""
-        _datetimeAddedString = ", datetimeAdded: " + str(self.datetimeAdded) if(includeDatetime) else ""
+        _addedString = ", added: " + str(self.added) if(includeDatetime) else ""
         
         return "".join(map(str, ["name: ", self.name,
         _uriString,
@@ -50,5 +50,5 @@ class StreamSource:
         _lastSuccessfulFetchedString,
         ", backgroundContent: ", self.backgroundContent, 
         _deletedString,
-        _datetimeAddedString,
+        _addedString,
         _idString]))

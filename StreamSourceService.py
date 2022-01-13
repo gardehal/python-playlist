@@ -5,6 +5,7 @@ from typing import List
 
 from dotenv import load_dotenv
 from myutil.LocalJsonRepository import LocalJsonRepository
+from myutil.Util import *
 import validators
 from enums.StreamSourceType import StreamSourceTypeUtil
 
@@ -46,28 +47,47 @@ class StreamSourceService():
         else:
             return None
 
-    def get(self, id: str) -> T:
+    def get(self, id: str, includeSoftDeleted: bool = False) -> T:
         """
-        Get streamSource by ID.
+        Get StreamSource by ID.
 
         Args:
-            id (str): id of streamSource to get
+            id (str): ID of StreamSource to get
+            includeSoftDeleted (bool): should include soft-deleted entities
 
         Returns:
-            StreamSource: streamSource if any, else None
+            StreamSource: StreamSource if any, else None
         """
 
-        return self.streamSourceRepository.get(id)
+        _entity = self.streamSourceRepository.get(id)
+        
+        if(_entity.deleted != None and not includeSoftDeleted):
+            printS("StreamSource with ID ", _entity.id, " was soft deleted.", color=colors["WARNING"], doPrint = DEBUG)
+            return None
+        else:
+            return _entity
 
-    def getAll(self) -> List[T]:
+    def getAll(self, includeSoftDeleted: bool = False) -> List[T]:
         """
-        Get all streamSources.
+        Get all StreamSources.
+
+        Args:
+            includeSoftDeleted (bool): should include soft-deleted entities
 
         Returns:
-            List[StreamSource]: streamSources if any, else empty list
+            List[StreamSource]: list of StreamSources
         """
 
-        return self.streamSourceRepository.getAll()
+        _entities = self.streamSourceRepository.getAll()
+        _result = []
+        
+        for _entity in _entities:
+            if(_entity.deleted != None and not includeSoftDeleted):
+                printS("StreamSource with ID ", _entity.id, " was soft deleted.", color=colors["WARNING"], doPrint = DEBUG)
+            else:
+                _result.append(_entity)
+            
+        return _result
 
     def getAllIds(self) -> List[str]:
         """
@@ -98,12 +118,34 @@ class StreamSourceService():
         else:
             return None
 
-    def remove(self, id: str) -> T:
+    def delete(self, id: str) -> T:
         """
-        Remove streamSource.
+        (Soft) Delete a StreamSource.
 
         Args:
-            id (str): id of streamSource to remove
+            id (str): ID of StreamSource to delete
+
+        Returns:
+            StreamSource | None: returns StreamSource if success, else None
+        """
+
+        _entity = self.get(id)
+        if(_entity == None):
+            return None
+
+        _entity.deleted = datetime.now()
+        _result = self.update(_entity)
+        if(_result):
+            return _entity
+        else:
+            return None
+        
+    def remove(self, id: str) -> T:
+        """
+        Permanently remove a StreamSource.
+
+        Args:
+            id (str): ID of StreamSource to remove
 
         Returns:
             StreamSource | None: returns StreamSource if success, else None

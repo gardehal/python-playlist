@@ -44,28 +44,47 @@ class QueueStreamService():
         else:
             return None
 
-    def get(self, id: str) -> T:
+    def get(self, id: str, includeSoftDeleted: bool = False) -> T:
         """
-        Get queueStream by ID.
+        Get QueueStream by ID.
 
         Args:
-            id (str): id of queueStream to get
+            id (str): ID of QueueStream to get
+            includeSoftDeleted (bool): should include soft-deleted entities
 
         Returns:
-            QueueStream: queueStream if any, else None
+            QueueStream: QueueStream if any, else None
         """
 
-        return self.queueStreamRepository.get(id)
+        _entity = self.queueStreamRepository.get(id)
+        
+        if(_entity.deleted != None and not includeSoftDeleted):
+            printS("QueueStream with ID ", _entity.id, " was soft deleted.", color=colors["WARNING"], doPrint = DEBUG)
+            return None
+        else:
+            return _entity
 
-    def getAll(self) -> List[T]:
+    def getAll(self, includeSoftDeleted: bool = False) -> List[T]:
         """
-        Get all queueStreams.
+        Get all QueueStreams.
+
+        Args:
+            includeSoftDeleted (bool): should include soft-deleted entities
 
         Returns:
-            List[QueueStream]: queueStreams if any, else empty list
+            List[QueueStream]: list of QueueStreams
         """
 
-        return self.queueStreamRepository.getAll()
+        _entities = self.queueStreamRepository.getAll()
+        _result = []
+        
+        for _entity in _entities:
+            if(_entity.deleted != None and not includeSoftDeleted):
+                printS("QueueStream with ID ", _entity.id, " was soft deleted.", color=colors["WARNING"], doPrint = DEBUG)
+            else:
+                _result.append(_entity)
+            
+        return _result
     
     def getAllIds(self) -> List[str]:
         """
@@ -97,12 +116,34 @@ class QueueStreamService():
         else:
             return None
 
-    def remove(self, id: str) -> T:
+    def delete(self, id: str) -> T:
         """
-        Remove queueStream.
+        (Soft) Delete a QueueStream.
 
         Args:
-            id (str): id of queueStream to remove
+            id (str): ID of QueueStream to delete
+
+        Returns:
+            QueueStream | None: returns QueueStream if success, else None
+        """
+
+        _entity = self.get(id)
+        if(_entity == None):
+            return None
+
+        _entity.deleted = datetime.now()
+        _result = self.update(_entity)
+        if(_result):
+            return _entity
+        else:
+            return None
+        
+    def remove(self, id: str) -> T:
+        """
+        Permanently remove QueueStream.
+
+        Args:
+            id (str): ID of QueueStream to remove
 
         Returns:
             QueueStream | None: returns QueueStream if success, else None

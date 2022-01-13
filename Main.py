@@ -5,6 +5,7 @@ from typing import List
 
 from dotenv import load_dotenv
 from myutil.Util import *
+from PlaybackService import PlaybackService
 from QueueStreamService import QueueStreamService
 
 from FetchService import FetchService
@@ -52,7 +53,8 @@ listSettingsFlags = ["-settings", "-secrets", "-s"]
 
 class Main:
     fetchService = FetchService()
-    playlistService = PlaylistService(quitSwitches, skipSwitches, addCurrentToPlaylistSwitches)
+    playbackService = PlaybackService(quitSwitches, skipSwitches, addCurrentToPlaylistSwitches)
+    playlistService = PlaylistService()
     queueStreamService = QueueStreamService()
     streamSourceService = StreamSourceService()
 
@@ -88,7 +90,7 @@ class Main:
                 # Expected input: name, playWatchedStreams?, allowDuplicates?, streamSourceIds/indices?
                 _input = extractArgs(argIndex, argV)
                 _name = str(_input[0]) if len(_input) > 0 else "New Playlist"
-                _playWatchedStreams = eval(_input[1]) if len(_input) > 1 else True
+                _takeAfter = _input[_lenIds] if(len(_input) > _lenIds) else None
                 _allowDuplicates = eval(_input[2]) if len(_input) > 2 else True
                 _streamSourceIds = Main.getIdsFromInput(_input[3:], Main.playlistService.getAllIds(), Main.playlistService.getAll()) if len(_input) > 3 else []
 
@@ -143,7 +145,7 @@ class Main:
                 _includeUri = eval(_input[_lenIds]) if(len(_input) > _lenIds) else False
                 _includeId = eval(_input[_lenIds + 1]) if(len(_input) > _lenIds + 1) else False
                 _includeDatetime = eval(_input[_lenIds + 2]) if(len(_input) > _lenIds + 2) else False
-                _includeListCount = eval(_input[_lenIds + 3]) if(len(_input) > _lenIds + 3) else False
+                _includeListCount = eval(_input[_lenIds + 3]) if(len(_input) > _lenIds + 3) else True
                 
                 if(len(_ids) == 0):
                     printS("Failed to print details, missing playlistIds or indices.", color = colors["FAIL"])
@@ -231,19 +233,28 @@ class Main:
                 continue
 
             elif(arg in playFlags):
-                # Expected input: playlistId or index
+                # Expected input: playlistId or index, startIndex, shuffle, repeat
                 _input = extractArgs(argIndex, argV)
-                _ids = Main.getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll())
+                _ids = Main.getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll(), 1)
+                _startIndex = _input[1] if(len(_input) > 1) else 0
+                _shuffle = eval(_input[2]) if(len(_input) > 2) else False
+                _repeat = eval(_input[3]) if(len(_input) > 3) else False
                 
                 if(len(_ids) == 0):
-                    printS("Failed to prune playlists, missing playlistIds or indices.", color = colors["FAIL"])
+                    printS("Failed to play playlist, missing playlistIds or indices.", color = colors["FAIL"])
                     argIndex += len(_input) + 1
                     continue
-
-                _result = Main.playlistService.playCmd(_ids[0])
+                
+                if(not isNumber(_startIndex, intOnly = True)):
+                    printS("Failed to play playlist, input startIndex must be an integer.", color = colors["FAIL"])
+                    argIndex += len(_input) + 1
+                    continue
+                
+                _startIndex = int(float(_startIndex))
+                _result = Main.playbackService.play(_ids[0], _startIndex, _shuffle, _repeat)
                 if(not _result):
                     _playlist = Main.playlistService.get(_ids[0])
-                    printS("Failed to play playlist \"", _playlist.name, "\", please se error above.", color = colors["FAIL"])
+                    printS("Failed to play playlist \"", _playlist.name, "\".", color = colors["FAIL"])
 
                 argIndex += len(_input) + 1
                 continue

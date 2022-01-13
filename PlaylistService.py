@@ -33,17 +33,11 @@ class PlaylistService():
     playlistRepository: LocalJsonRepository = None
     queueStreamService: QueueStreamService = None
     streamSourceService: StreamSourceService = None
-    quitInputs: List[str] = None
-    skipInputs: List[str] = None
-    addToInputs: List[str] = None
 
-    def __init__(self, quitInputs: List[str] = ["quit"], skipInputs: List[str] = ["skip"], addToInputs: List[str] = ["addto"]):
+    def __init__(self):
         self.playlistRepository: LocalJsonRepository = LocalJsonRepository(T, self.debug, os.path.join(self.storagePath, "Playlist"))
         self.queueStreamService: QueueStreamService = QueueStreamService()
         self.streamSourceService: StreamSourceService = StreamSourceService()
-        self.quitInputs: List[str] = quitInputs
-        self.skipInputs: List[str] = skipInputs
-        self.addToInputs: List[str] = addToInputs
 
     def add(self, playlist: T) -> T:
         """
@@ -198,99 +192,6 @@ class PlaylistService():
             return self.add(playlist)
 
         return self.update(playlist)
-
-    def playCmd(self, playlistId: str, startIndex: int = 0, shuffle: bool = False, repeatPlaylist: bool = False) -> bool:
-        """
-        Start playing streams from this playlist.
-
-        Args:
-            playlistId (str): ID of playlist to play from
-            quitSymbols (List[str]): input from user which should end the playback. Defaults to ["quit"]
-            startIndex (int): index to start playing from
-            shuffle (bool): shuffle videos
-            repeatPlaylist (bool): repeat playlist once it reaches the end
-
-        Returns:
-            bool: finished = True
-        """
-
-        _playlist = self.get(playlistId)
-        if(_playlist == None):
-            return False
-
-        if(len(_playlist.streamIds) == 0):
-            printS("No streams found in playlist \"", _playlist.name, "\". Ending playback.")
-            return False
-
-        _streams = []
-        _rawStreams = self.getStreamsByPlaylistId(_playlist.id)
-
-        if(len(_rawStreams) == 0):
-            printS("Playlist \"", _playlist.name, "\" has ", len(_streams), " streams, but they could not be found in database (they may have been removed). Ending playback.")
-            return False
-
-        if(shuffle):
-            _streams = random.shuffle(_rawStreams)
-        else:
-            _streams = _rawStreams[startIndex:]
-
-        printS("Playing playlist ", _playlist.name, ".")
-        printS("Starting at stream number: ", (startIndex + 1), ", shuffle is ", ("on" if shuffle else "off"), ", repeat playlist is ", ("on" if repeatPlaylist else "off"), ", played videos set to watched is ", ("on" if PLAYED_ALWAYS_WATCHED else "off"), ".")
-
-        try:
-            for i, _stream in enumerate(_streams):
-                if(_stream.watched != None and not _playlist.playWatchedStreams):
-                    _checkLogsMessage = " Check your logs (" + WATCHED_LOG_FILEPATH + ") for date/time watched." if LOG_WATCHED else " Logging is disabled and date/time watched is not available."
-                    printS("Stream \"", _stream.name, "\" (ID: ", _stream.id, ") has been marked as watched.", _checkLogsMessage, color = colors["WARNING"])
-                    continue
-
-                subprocessStream = None
-                if(_stream.isWeb):
-                    subprocessStream = subprocess.Popen(f"call start {_stream.uri}", stdout=subprocess.PIPE, shell=True) # PID set by this is not PID of browser, just subprocess which opens browser
-                    
-                    # https://stackoverflow.com/questions/7989922/opening-a-process-with-popen-and-getting-the-pid
-                    # subprocessStream = subprocess.Popen([BROWSER_BIN, f"{_stream.uri}"], stdout=subprocess.PIPE, shell=False) # PID set by this SHOULD be browser, but is not
-                else:
-                    # TODO
-                    printS("Non-web streams currently not supported, skipping video ", _stream.name, color = colors["ERROR"])
-                    continue
-
-                printS(f"{i} - Now playing \"{_stream.name}\"" + ("..." if(i < (len(_streams) - 1)) else ". This is the last stream, press enter to finish."), color = colors["BOLD"])
-                _input = input("\tPress enter to play next, \"skip\" to skip video, or \"quit\" to quit playback: ")
-                if(len(self.quitInputs) > 0 and _input in self.quitInputs):
-                    printS("Ending playback due to user input.", color = colors["OKGREEN"])
-                    break
-                elif(len(self.skipInputs) > 0 and _input in self.skipInputs):
-                    printS("Skipping video, will not be marked as watched.", color = colors["OKGREEN"])
-                    continue
-                elif(len(self.addToInputs) > 0 and _input in self.addToInputs):
-                    # TODO add
-                    printS("Video added to x.", color = colors["OKGREEN"])
-                
-                # subprocessStream.terminate() # TODO Doesn't seem to work with browser, at least not new tabs
-                
-                now = datetime.now()
-                if(LOG_WATCHED and len(WATCHED_LOG_FILEPATH) > 0):
-                    logLine = f"{str(now)} - Playlist \"{_playlist.name}\" (ID: {_playlist.id}), watched video \"{_stream.name}\" (ID: {_stream.id})\n" 
-                    with open(WATCHED_LOG_FILEPATH, "a") as file:
-                        file.write(logLine)
-                        
-                if(PLAYED_ALWAYS_WATCHED):
-                    _stream.watched = now
-                    
-                    _updateSuccess = self.queueStreamService.update(_stream)
-                    if(not _updateSuccess):
-                        printS("Stream \"", _stream.name, "\" could not be updated as watched.", color=colors["WARNING"])
-        except:
-            if(self.debug): printS(sys.exc_info(), color=colors["WARNING"])
-            #printS("handleing of streams encountered an issue.", color=colors["WARNING"])
-
-        printS("Playlist \"", _playlist.name, "\" finished.")
-
-        if(repeatPlaylist):
-            self.playCmd(playlistId, startIndex, shuffle, repeatPlaylist)
-
-        return True
 
     def addStreams(self, playlistId: str, streams: List[QueueStream]) -> int:
         """

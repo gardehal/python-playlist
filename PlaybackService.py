@@ -98,14 +98,11 @@ class PlaybackService():
     
     def playCmd(self, playlist: Playlist, streams: List[QueueStream]) -> bool:
         """
-        Start playing streams from this playlist.
+        Use CLI when playing from playback.
 
         Args:
-            playlistId (str): ID of playlist to play from
-            quitSymbols (List[str]): input from user which should end the playback. Defaults to ["quit"]
-            startIndex (int): index to start playing from
-            shuffle (bool): shuffle videos
-            repeatPlaylist (bool): repeat playlist once it reaches the end
+            playlist (Playlist): Playlist which is currently playing
+            streams (List[QueueStream]): QueueStreams to play from Playlist playlist
 
         Returns:
             bool: finished = True
@@ -137,8 +134,9 @@ class PlaybackService():
                 printS("Skipping video, will not be marked as watched.", color = colors["OKGREEN"])
                 continue
             elif(len(self.addToInputs) > 0 and _input in self.addToInputs):
-                # TODO add
-                printS("Video added to x.", color = colors["OKGREEN"])
+                _crossAddPlaylistResult = self.addCurrentStreamToPlaylist(_input, stream)
+                printS("Stream added to Playlist \"", playlist.name, "\".", color = colors["OKGREEN"], doPrint = _crossAddPlaylistResult)
+                printS("Stream could not be added to Playlist \"", playlist.name, "\".", color = colors["FAIL"], doPrint = (not _crossAddPlaylistResult))
             
             # subprocessStream.terminate() # TODO Doesn't seem to work with browser, at least not new tabs
             
@@ -157,15 +155,21 @@ class PlaybackService():
                     
         return True
 
-    def addCurrentStreamToPlaylist(self, playlist: Playlist, queueStream: QueueStream) -> QueueStream:
+    def addCurrentStreamToPlaylist(self, playlistIdOrIndex: str, queueStream: QueueStream) -> bool:
         """
         Add the QueueStream currently playing in playback, to another Playlist.
 
         Args:
-            playlist (Playlist): [description]
-            queueStream (QueueStream): [description]
+            playlistIdOrIndex (str): ID or index of Playlist to add stream to
+            queueStream (QueueStream): QueueStream to add
 
         Returns:
-            QueueStream: [description]
+            QueueStream | None: returns QueueStream if success, else None
         """
-        return None
+        
+        # TODO get id from index
+        _playlistId = ""
+        
+        _addedStreams = self.playlistService.addStreams(_playlistId, [queueStream])
+        
+        return _addedStreams > 0

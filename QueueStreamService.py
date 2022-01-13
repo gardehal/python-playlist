@@ -24,20 +24,22 @@ class QueueStreamService():
 
     def add(self, queueStream: T) -> T:
         """
-        Add a new queueStream.
+        Add a new QueueStream.
 
         Args:
-            queueStream (QueueStream): queueStream to add
+            queueStream (QueueStream): QueueStream to add
 
         Returns:
             QueueStream | None: returns QueueStream if success, else None
         """
 
         _entity = queueStream
-        _entity.id = str(uuid.uuid4())
         _entity.isWeb = validators.url(_entity.uri)
-        _entity.added = datetime.now()
         _entity.watched = None
+        _entity.deleted = None
+        _entity.added = datetime.now()
+        _entity.id = str(uuid.uuid4())
+        
         _result = self.queueStreamRepository.add(_entity)
         if(_result):
             return _entity

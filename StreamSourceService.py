@@ -37,10 +37,12 @@ class StreamSourceService():
         """
 
         _entity = streamSource
-        _entity.id = str(uuid.uuid4())
         _entity.isWeb = validators.url(_entity.uri)
-        _entity.added = datetime.now()
         _entity.streamSourceTypeId = StreamSourceTypeUtil.strToStreamSourceType(_entity.uri).value
+        _entity.deleted = None
+        _entity.added = datetime.now()
+        _entity.id = str(uuid.uuid4())
+        
         _result = self.streamSourceRepository.add(_entity)
         if(_result):
             return _entity

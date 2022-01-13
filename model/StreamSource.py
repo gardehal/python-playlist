@@ -10,6 +10,8 @@ class StreamSource:
                  enableFetch: bool = None, 
                  lastFetched: datetime = None, 
                  lastSuccessfulFetched: datetime = None, 
+                 backgroundContent: bool = False, 
+                 deleted: datetime = None,
                  datetimeAdded: datetime = datetime.now(),
                  id: str = str(uuid.uuid4())):
         self.name: str = name
@@ -19,6 +21,8 @@ class StreamSource:
         self.enableFetch: bool = enableFetch
         self.lastFetched: datetime = lastFetched
         self.lastSuccessfulFetched: datetime = lastSuccessfulFetched
+        self.backgroundContent: bool = backgroundContent
+        self.deleted: datetime = deleted
         self.datetimeAdded: datetime = datetimeAdded
         self.id: str = id
 
@@ -34,6 +38,7 @@ class StreamSource:
         _idString = ", id: " + self.id if(includeId) else ""
         _lastFetchedString = ", lastFetched: " + str(self.lastFetched) if(includeDatetime) else ""
         _lastSuccessfulFetchedString = ", lastSuccessfulFetched: " + str(self.lastSuccessfulFetched) if(includeDatetime) else ""
+        _deletedString = ", deleted: " + str(self.deleted) if(includeDatetime) else ""
         _datetimeAddedString = ", datetimeAdded: " + str(self.datetimeAdded) if(includeDatetime) else ""
         
         return "".join(map(str, ["name: ", self.name,
@@ -43,5 +48,7 @@ class StreamSource:
         ", enableFetch: ", self.enableFetch,
         _lastFetchedString,
         _lastSuccessfulFetchedString,
+        ", backgroundContent: ", self.backgroundContent, 
+        _deletedString,
         _datetimeAddedString,
         _idString]))

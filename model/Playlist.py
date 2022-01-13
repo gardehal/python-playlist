@@ -12,6 +12,8 @@ class Playlist():
                  allowDuplicates: bool = True,
                  streamSourceIds: List[str] = List[str],
                  description: str = None,
+                 deleted: datetime = None,
+                 datetimeAdded: datetime = datetime.now(),
                  id: str = str(uuid.uuid4())):
         self.name: str = name
         self.streamIds: List[str] = streamIds
@@ -21,6 +23,8 @@ class Playlist():
         self.allowDuplicates: bool = allowDuplicates
         self.streamSourceIds: List[str] = streamSourceIds
         self.description: str = description
+        self.deleted: str = deleted
+        self.datetimeAdded: datetime = datetimeAdded
         self.id: str = id
 
     def summaryString(self):
@@ -32,8 +36,10 @@ class Playlist():
     def detailsString(self, includeUri: bool = True, includeId: bool = True, includeDatetime: bool = True, includeListCount: bool = True):
         _idString = ", id: " + self.id if(includeId) else ""
         _lastUpdatedString = ", lastUpdated: " + str(self.lastUpdated) if(includeDatetime) else ""
+        _deletedString = ", deleted: " + str(self.deleted) if(includeDatetime) else ""
         _lenStreamString = ", n streamIds: " + len(self.streamIds) if(includeListCount) else ""
         _lenStreamStreamString = ", n streamSourceIds: " + len(self.streamIds) if(includeListCount) else ""
+        _datetimeAddedString = ", datetimeAdded: " + str(self.datetimeAdded) if(includeDatetime) else ""
         
         return "".join(map(str, ["name: ", self.name, 
         _lenStreamString, 
@@ -43,4 +49,6 @@ class Playlist():
         ", allowDuplicates: ", self.allowDuplicates, 
         _lenStreamStreamString,
         ", description: ", self.description,
+        _deletedString,
+        _datetimeAddedString,
         _idString]))

@@ -29,7 +29,7 @@ helpFlags = ["-help", "-h"]
 testFlags = ["-test", "-t"]
 # Playlist
 addPlaylistFlags = ["-addplaylist", "-apl", "-ap"]
-removePlaylistFlags = ["-removeplaylist", "-rmpl", "-rpl", "-rmp", "-rp"]
+deletePlaylistFlags = ["-deleteplaylist", "-dpl"]
 listPlaylistFlags = ["-listplaylist", "-lpl", "-lp"]
 detailsPlaylistFlags = ["-detailsplaylist", "-dpl", "-dp"]
 fetchPlaylistSourcesFlags = ["-fetch", "-f", "-update", "-u"]
@@ -42,10 +42,10 @@ addCurrentToPlaylistSwitches = ["addto", "at"]
 
 # Stream
 addStreamFlags = ["-add", "-a"]
-removeStreamFlags = ["-remove", "-rm", "-r"]
+deleteStreamFlags = ["-delete", "-dm", "-d"]
 # Sources
 addSourcesFlags = ["-addsource", "-as"]
-removeSourceFlags = ["-removesource", "-rms", "-rs"]
+deleteSourceFlags = ["-deletesource", "-ds"]
 listSourcesFlags = ["-listsources", "-ls"]
 # Meta
 listSettingsFlags = ["-settings", "-secrets", "-s"]
@@ -102,22 +102,22 @@ class Main:
                 argIndex += len(_input) + 1
                 continue
 
-            elif(arg in removePlaylistFlags):
+            elif(arg in deletePlaylistFlags):
                 # Expected input: playlistIds or indices
                 _input = extractArgs(argIndex, argV)
                 _ids = Main.getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll())
                 
                 if(len(_ids) == 0):
-                    printS("Failed to remove playlists, missing playlistIds or indices.", color = colors["FAIL"])
+                    printS("Failed to delete playlists, missing playlistIds or indices.", color = colors["FAIL"])
                     argIndex += len(_input) + 1
                     continue
                 
                 for _id in _ids:
-                    _result = Main.playlistService.remove(_id)
+                    _result = Main.playlistService.delete(_id)
                     if(_result != None):
-                        printS("Playlist removed successfully.", color = colors["OKGREEN"])
+                        printS("Playlist deleted successfully.", color = colors["OKGREEN"])
                     else:
-                        printS("Failed to remove playlist. See rerun command with -help to see expected arguments.", color = colors["FAIL"])
+                        printS("Failed to delete playlist. See rerun command with -help to see expected arguments.", color = colors["FAIL"])
 
                 argIndex += len(_input) + 1
                 continue
@@ -204,9 +204,9 @@ class Main:
                     _result = Main.playlistService.prune(_id)
                     
                     if(len(_result) > 0):
-                        printS("Prune finished, removed ", len(_result), " streams from playlist (ID: \"", _id, "\").", color = colors["OKGREEN"])
+                        printS("Prune finished, deleted ", len(_result), " streams from playlist (ID: \"", _id, "\").", color = colors["OKGREEN"])
                     else:
-                        printS("Prune finished, could not remove any streams from playlist (ID: \"", _id, "\").", color = colors["FAIL"])
+                        printS("Prune finished, could not delete any streams from playlist (ID: \"", _id, "\").", color = colors["FAIL"])
 
                 argIndex += len(_input) + 1
                 continue
@@ -285,27 +285,27 @@ class Main:
                 if(_updateResult != None):
                     printS("QueueStream added successfully with ID \"", _addResult.id, "\".", color = colors["OKGREEN"])
                 else:
-                    # Try to remove added QueueStream if update playlist fails
-                    _removeResult = Main.queueStreamService.remove(_addResult.id)
-                    _removeMessage = "" if _removeResult != None else " QueueStream was not removed, ID: " + _addResult.id
-                    printS("Failed to add QueueStream to playlist.", _removeMessage, color = colors["FAIL"])
+                    # Try to delete added QueueStream if update playlist fails
+                    _deleteResult = Main.queueStreamService.delete(_addResult.id)
+                    _deleteMessage = "" if _deleteResult != None else " QueueStream was not deleted, ID: " + _addResult.id
+                    printS("Failed to add QueueStream to playlist.", _deleteMessage, color = colors["FAIL"])
 
                 argIndex += len(_input) + 1
                 continue
 
-            elif(arg in removeStreamFlags):
+            elif(arg in deleteStreamFlags):
                 # Expected input: playlistId or index, queueStreamIds or indices
                 _input = extractArgs(argIndex, argV)
 
                 _playlistIds = Main.getIdsFromInput(_input, Main.queueStreamService.getAllIds(), Main.queueStreamService.getAll(), 1)
                 if(len(_playlistIds) == 0):
-                    printS("Failed to remove streams, missing playlistId or index.", color = colors["FAIL"])
+                    printS("Failed to delete streams, missing playlistId or index.", color = colors["FAIL"])
                     argIndex += len(_input) + 1
                     continue
                 
                 _queueStreamIds = Main.getIdsFromInput(_input[1:], Main.queueStreamService.getAllIds(), Main.queueStreamService.getAll())
                 if(len(_queueStreamIds) == 0):
-                    printS("Failed to remove streams, missing queueStreamIds or indices.", color = colors["FAIL"])
+                    printS("Failed to delete streams, missing queueStreamIds or indices.", color = colors["FAIL"])
                     argIndex += len(_input) + 1
                     continue
                 
@@ -313,11 +313,11 @@ class Main:
                 # TODO should be ids, not indicies
                 printS("WIP", color = colors["OKGREEN"])
                 quit()
-                _result = Main.playlistService.removeStreams(_playlist.id, _queueStreamIds)
+                _result = Main.playlistService.deleteStreams(_playlist.id, _queueStreamIds)
                 if(len(_result) > 0):
-                    printS("Removed ", len(_result), " QueueStreams successfully from playlist \"", _playlist.name, "\".", color = colors["OKGREEN"])
+                    printS("deleted ", len(_result), " QueueStreams successfully from playlist \"", _playlist.name, "\".", color = colors["OKGREEN"])
                 else:
-                    printS("Failed to remove QueueStreams. See rerun command with -help to see expected arguments.", color = colors["FAIL"])
+                    printS("Failed to delete QueueStreams. See rerun command with -help to see expected arguments.", color = colors["FAIL"])
 
                 argIndex += len(_input) + 1
                 continue
@@ -361,30 +361,30 @@ class Main:
                 if(_updateResult != None):
                     printS("StreamSource added successfully with ID \"", _addResult.id, "\".", color = colors["OKGREEN"])
                 else:
-                    # Try to remove added StreamSource if update playlist fails
-                    _removeResult = Main.streamSourceService.remove(_addResult.id)
-                    _removeMessage = "" if _removeResult != None else " StreamSource was not removed, ID: " + _addResult.id
-                    printS("Failed to add StreamSource to playlist.", _removeMessage, color = colors["FAIL"])
+                    # Try to delete added StreamSource if update playlist fails
+                    _deleteResult = Main.streamSourceService.delete(_addResult.id)
+                    _deleteMessage = "" if _deleteResult != None else " StreamSource was not deleted, ID: " + _addResult.id
+                    printS("Failed to add StreamSource to playlist.", _deleteMessage, color = colors["FAIL"])
 
                 argIndex += len(_input) + 1
                 continue
 
-            elif(arg in removeSourceFlags):
+            elif(arg in deleteSourceFlags):
                 # Expected input: streamSourceIds or indices
                 _input = extractArgs(argIndex, argV)
                 _ids = Main.getIdsFromInput(_input, Main.streamSourceService.getAllIds(), Main.streamSourceService.getAll())
                 
                 if(len(_ids) == 0):
-                    printS("Failed to remove source, missing streamSourceIds or indices.", color = colors["FAIL"])
+                    printS("Failed to delete source, missing streamSourceIds or indices.", color = colors["FAIL"])
                     argIndex += len(_input) + 1
                     continue
                 
                 for _id in _ids:
-                    _result = Main.streamSourceService.remove(_id)
+                    _result = Main.streamSourceService.delete(_id)
                     if(_result != None):
-                        printS("StreamSource removed successfully (ID ", _result.id, ").", color = colors["OKGREEN"])
+                        printS("StreamSource deleted successfully (ID ", _result.id, ").", color = colors["OKGREEN"])
                     else:
-                        printS("Failed to remove StreamSource. See rerun command with -help to see expected arguments.", color = colors["FAIL"])
+                        printS("Failed to delete StreamSource. See rerun command with -help to see expected arguments.", color = colors["FAIL"])
 
                 argIndex += len(_input) + 1
                 continue
@@ -529,7 +529,7 @@ class Main:
     
     def resetPlaylistFetch(playlistIds: List[str]) -> int:
         """
-        Reset the fetch-status for sources of a playlist and removes all streams.
+        Reset the fetch-status for sources of a playlist and deletes all streams.
 
         Args:
             playlistIds (List[str]): list of playlistIds 
@@ -541,23 +541,23 @@ class Main:
         _result = 0
         for playlistId in playlistIds:            
             _playlist = Main.playlistService.get(playlistId)
-            _removeUpdateResult = True
+            _deleteUpdateResult = True
             
             for queueStreamId in _playlist.streamIds:
-                _removeStreamResult = Main.queueStreamService.remove(queueStreamId)
-                _removeUpdateResult = _removeUpdateResult and _removeStreamResult != None
+                _deleteStreamResult = Main.queueStreamService.delete(queueStreamId)
+                _deleteUpdateResult = _deleteUpdateResult and _deleteStreamResult != None
             
             _playlist.streamIds = []
             _updateplaylistResult = Main.playlistService.update(_playlist)
-            _removeUpdateResult = _removeUpdateResult and _updateplaylistResult != None
+            _deleteUpdateResult = _deleteUpdateResult and _updateplaylistResult != None
             
             for streamSourceId in _playlist.streamSourceIds:
                 _streamSource = Main.streamSourceService.get(streamSourceId)
                 _streamSource.lastFetched = None
                 _updateStreamResult = Main.streamSourceService.update(_streamSource)
-                _removeUpdateResult = _removeUpdateResult and _updateStreamResult != None
+                _deleteUpdateResult = _deleteUpdateResult and _updateStreamResult != None
             
-            if(_removeUpdateResult):
+            if(_deleteUpdateResult):
                 _result += 1
                 
         return _result
@@ -600,13 +600,13 @@ class Main:
 
         # Playlist
         printS(addPlaylistFlags, " [name: str] [? playWatchedStreams: bool] [? allowDuplicates: bool] [? streamSourceIds: list]: Add a playlist with name: name, playWatchedStreams: if playback should play watched streams, allowDuplicates: should playlist allow duplicate streams (only if the uri is the same), streamSourceIds: a list of sources.")
-        printS(removePlaylistFlags, " [playlistIds or indices: list]: Removes playlists indicated.")
+        printS(deletePlaylistFlags, " [playlistIds or indices: list]: deletes playlists indicated.")
         printS(listPlaylistFlags, ": List playlists with indices that can be used instead of IDs in other commands.")
         printS(detailsPlaylistFlags, " [playlistIds or indices: list] [? enableFetch: bool] [? enableFetch: bool]: Prints details about given playlist, with option for including streams and sources.")
         printS(fetchPlaylistSourcesFlags, " [playlistIds or indices: list] [? takeAfter: datetime] [? takeBefore: datetime]: Fetch new streams from sources in playlists indicated, e.g. if a playlist has a YouTube channel as a source, and the channel uploads a new video, this video will be added to the playlist. Optional arguments takeAfter: only fetch streams after this date, takeBefore: only fetch streams before this date. Dates formatted like \"2022-01-30\" (YYYY-MM-DD)")
         # printS(TODO, ": Create playlist from other playlists from e.g. Youtube", ": Creates a playlist from an existing playlist, e.g. YouTube.")
-        # printS(prunePlaylistFlags, " [playlistIds or indices: list]: Prune playlists indicated, removeing watched streams?, streams with no parent playlist, and links to stream in playlist if the stream cannot be found in the database.")
-        printS(resetPlaylistFetchFlags, " [playlistIds or indices: list]: Resets fetch status of sources in a playlist and removes streams from playlist.")
+        # printS(prunePlaylistFlags, " [playlistIds or indices: list]: Prune playlists indicated, deleteing watched streams?, streams with no parent playlist, and links to stream in playlist if the stream cannot be found in the database.")
+        printS(resetPlaylistFetchFlags, " [playlistIds or indices: list]: Resets fetch status of sources in a playlist and deletes streams from playlist.")
         printS(playFlags, " [playlistId: str] [? starindex: int] [? shuffle: bool] [? repeat: bool]: Start playing stream from a playlist, order and automation (like skipping already watched streams) depending on the input and playlist.")
         printS("\t", quitSwitches, ": End current playback and contintue the program without playing anymore streams in playlist. Only available while playlist is playing.")
         printS("\t", skipSwitches, ": Skip current stream playing. This stream will not be marked as watched. Only available while playlist is playing.")
@@ -614,10 +614,10 @@ class Main:
 
         # Stream
         printS(addStreamFlags, " [playlistId or index: str] [uri: string] [? name: str]: Add a stream to a playlist from ID or index, from uri: URL, and name: name (set automatically if not given).")
-        printS(removeStreamFlags, " [streamIds or indices: list]: Remove streams from playlist.")
+        printS(deleteStreamFlags, " [streamIds or indices: list]: delete streams from playlist.")
         # Sources
         printS(addSourcesFlags, " [playlistId or index: str] [uri: string] [? enableFetch: bool] [? name: str]: Add a source from uri: URL, enableFetch: if the playlist should fetch new stream from this source, and name: name (set automatically if not given).")
-        printS(removeSourceFlags, " [sourceId or index: str]: Removes source from database and playlist if used anywhere.")
+        printS(deleteSourceFlags, " [sourceId or index: str]: deletes source from database and playlist if used anywhere.")
         printS(listSourcesFlags, " [playlistId or index: str]: Lists sources with indices that can be used instead of IDs in other commands.")
         # Meta
         printS(listSettingsFlags, ": Lists settings currently used by program. These settings can also be found in the file named \".env\" with examples in the file \".env-example\"")

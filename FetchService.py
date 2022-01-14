@@ -125,7 +125,12 @@ class FetchService():
                     continue
 
             _sanitizedTitle = sanitize(yt.title)
-            _newStreams.append(QueueStream(_sanitizedTitle, yt.watch_url, True, None, datetime.now()))
+            _newStreams.append(QueueStream(name = _sanitizedTitle, 
+                                           uri = yt.watch_url, 
+                                           isWeb = True, 
+                                           watched = None,
+                                           backgroundContent = streamSource.backgroundContent,
+                                           added = datetime.now()))
 
             # Todo fetch batches using batchSize of videos instead of all 3000 videos in some cases taking 60 seconds+ to load
             if(i > batchSize):

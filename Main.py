@@ -285,7 +285,7 @@ class Main:
                     _name = "New stream"
                     printS("Could not automatically get the web name for this stream, will be named \"" , _name, "\".", color = colors["WARNING"])
 
-                _entity = QueueStream(name=_name, uri=_uri)
+                _entity = QueueStream(name = _name, uri = _uri)
                 _addResult = Main.queueStreamService.add(_entity)
                 if(_addResult == None):
                     printS("Failed to create QueueStream.", color = colors["FAIL"])
@@ -361,7 +361,7 @@ class Main:
                     _name = "New source"
                     printS("Could not automatically get the web name for this stream, will be named \"" , _name, "\".", color = colors["WARNING"])
 
-                _entity = StreamSource(name=_name, uri = _uri, enableFetch = _enableFetch)
+                _entity = StreamSource(name = _name, uri = _uri, enableFetch = _enableFetch)
                 _addResult = Main.streamSourceService.add(_entity)
                 if(_addResult == None):
                     printS("Failed to create StreamSource.", color = colors["FAIL"])
@@ -451,7 +451,7 @@ class Main:
                 _sourcesListString = f", unwatched streams: {len(_unwatchedStreams)}/{len(_playlist.streamIds)}"
                 _streamsListString = f", fetched sources: {len(_fetchedSources)}/{len(_playlist.streamSourceIds)}"
                 _playlistDetailsString += _sourcesListString + _streamsListString
-                            
+
             printS(_playlistDetailsString)
             
             printS("\tStreamSources", color = colors["BOLD"])

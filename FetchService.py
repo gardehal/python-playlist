@@ -6,10 +6,8 @@ from dotenv import load_dotenv
 from myutil.DateTimeObject import DateTimeObject
 from myutil.Util import *
 from pytube import Channel
-from pytube import YouTube
-import mechanize
 
-from enums.StreamSourceType import StreamSourceType, StreamSourceTypeUtil
+from enums.StreamSourceType import StreamSourceType
 from model.QueueStream import QueueStream
 from model.StreamSource import StreamSource
 from PlaylistService import PlaylistService
@@ -135,28 +133,38 @@ class FetchService():
                 break
 
         return _newStreams
-
-    def getPageTitle(self, url: str) -> str:
+    
+    def resetPlaylistFetch(self, playlistIds: List[str]) -> int:
         """
-        Get page title from the URL url, using mechanize or PyTube.
+        Reset the fetch-status for sources of a playlist and deletes all streams.
 
         Args:
-            url (str): URL to page to get title from
-
+            playlistIds (List[str]): list of playlistIds 
+            
         Returns:
-            str: Title of page
+            int: number of playlists reset
         """
-
-        _title = ""
         
-        _isYouTubeChannel = "user" in url or "channel" in url  
-        if(StreamSourceTypeUtil.strToStreamSourceType(url) == StreamSourceType.YOUTUBE and not _isYouTubeChannel):
-            _yt = YouTube(url)
-            _title = _yt.title
-        else:
-            _br = mechanize.Browser()
-            _br.open(url)
-            _title = _br.title()
-            _br.close()
-
-        return sanitize(_title)
+        _result = 0
+        for playlistId in playlistIds:            
+            _playlist = self.playlistService.get(playlistId)
+            _deleteUpdateResult = True
+            
+            for queueStreamId in _playlist.streamIds:
+                _deleteStreamResult = self.queueStreamService.delete(queueStreamId)
+                _deleteUpdateResult = _deleteUpdateResult and _deleteStreamResult != None
+            
+            _playlist.streamIds = []
+            _updateplaylistResult = self.playlistService.update(_playlist)
+            _deleteUpdateResult = _deleteUpdateResult and _updateplaylistResult != None
+            
+            for streamSourceId in _playlist.streamSourceIds:
+                _streamSource = self.streamSourceService.get(streamSourceId)
+                _streamSource.lastFetched = None
+                _updateStreamResult = self.streamSourceService.update(_streamSource)
+                _deleteUpdateResult = _deleteUpdateResult and _updateStreamResult != None
+            
+            if(_deleteUpdateResult):
+                _result += 1
+                
+        return _result

@@ -11,6 +11,7 @@ from QueueStreamService import QueueStreamService
 from FetchService import FetchService
 from PlaylistService import PlaylistService
 from StreamSourceService import StreamSourceService
+from Utility import Utility
 from model.Playlist import Playlist
 from model.QueueStream import QueueStream
 from model.StreamSource import StreamSource
@@ -57,6 +58,7 @@ class Main:
     playlistService = PlaylistService()
     queueStreamService = QueueStreamService()
     streamSourceService = StreamSourceService()
+    utility = Utility()
 
     def main():
         argC = len(sys.argv)
@@ -89,10 +91,10 @@ class Main:
             elif(arg in addPlaylistFlags):
                 # Expected input: name, playWatchedStreams?, allowDuplicates?, streamSourceIds/indices?
                 _input = extractArgs(argIndex, argV)
-                _name = str(_input[0]) if len(_input) > 0 else "New Playlist"
-                _takeAfter = _input[_lenIds] if(len(_input) > _lenIds) else None
-                _allowDuplicates = eval(_input[2]) if len(_input) > 2 else True
-                _streamSourceIds = Main.getIdsFromInput(_input[3:], Main.playlistService.getAllIds(), Main.playlistService.getAll()) if len(_input) > 3 else []
+                _name = str(_input[0]) if(len(_input) > 0) else "New Playlist"
+                _playWatchedStreams = eval(_input[1]) if(len(_input) > 1) else None
+                _allowDuplicates = eval(_input[2]) if(len(_input) > 2) else True
+                _streamSourceIds = Main.getIdsFromInput(_input[3:], Main.playlistService.getAllIds(), Main.playlistService.getAll()) if(len(_input) > 3) else []
 
                 _entity = Playlist(name = _name, playWatchedStreams = _playWatchedStreams, allowDuplicates = _allowDuplicates, streamSourceIds = _streamSourceIds)
                 _result = Main.playlistService.add(_entity)
@@ -107,7 +109,7 @@ class Main:
             elif(arg in deletePlaylistFlags):
                 # Expected input: playlistIds or indices
                 _input = extractArgs(argIndex, argV)
-                _ids = Main.getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll())
+                _ids = Main.utility.getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll())
                 
                 if(len(_ids) == 0):
                     printS("Failed to delete playlists, missing playlistIds or indices.", color = colors["FAIL"])
@@ -140,7 +142,7 @@ class Main:
             elif(arg in detailsPlaylistFlags):
                 # Expected input: playlistIds or indices, includeUrl, includeId
                 _input = extractArgs(argIndex, argV)
-                _ids = Main.getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll(), returnOnNonIds = True)
+                _ids = Main.utility.getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll(), returnOnNonIds = True)
                 _lenIds = len(_ids)
                 _includeUri = eval(_input[_lenIds]) if(len(_input) > _lenIds) else False
                 _includeId = eval(_input[_lenIds + 1]) if(len(_input) > _lenIds + 1) else False
@@ -164,7 +166,7 @@ class Main:
             elif(arg in fetchPlaylistSourcesFlags):
                 # Expected input: playlistIds or indices, fromDateTime?, toDatetime?
                 _input = extractArgs(argIndex, argV)
-                _ids = Main.getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll(), returnOnNonIds = True)
+                _ids = Main.utility.getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll(), returnOnNonIds = True)
                 _lenIds = len(_ids)
                 _takeAfter = _input[_lenIds] if(len(_input) > _lenIds) else None
                 _takeBefore = _input[_lenIds + 1] if(len(_input) > _lenIds + 1) else None
@@ -195,7 +197,7 @@ class Main:
             elif(arg in prunePlaylistFlags):
                 # Expected input: playlistIds or indices
                 _input = extractArgs(argIndex, argV)
-                _ids = Main.getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll())
+                _ids = Main.utility.getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll())
                 
                 if(len(_ids) == 0):
                     printS("Failed to prune playlists, missing playlistIds or indices.", color = colors["FAIL"])
@@ -216,7 +218,7 @@ class Main:
             elif(arg in resetPlaylistFetchFlags):
                 # Expected input: playlistIds or indices
                 _input = extractArgs(argIndex, argV)
-                _ids = Main.getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll())
+                _ids = Main.utility.getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll())
                 
                 if(len(_ids) == 0):
                     printS("Failed to reset fetch-status of playlists, missing playlistIds or indices.", color = colors["FAIL"])
@@ -235,7 +237,7 @@ class Main:
             elif(arg in playFlags):
                 # Expected input: playlistId or index, startIndex, shuffle, repeat
                 _input = extractArgs(argIndex, argV)
-                _ids = Main.getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll(), 1)
+                _ids = Main.utility.getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll(), 1)
                 _startIndex = _input[1] if(len(_input) > 1) else 0
                 _shuffle = eval(_input[2]) if(len(_input) > 2) else False
                 _repeat = eval(_input[3]) if(len(_input) > 3) else False
@@ -263,7 +265,7 @@ class Main:
             elif(arg in addStreamFlags):
                 # Expected input: playlistId or index, uri, name?
                 _input = extractArgs(argIndex, argV)
-                _ids = Main.getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll(), 1)
+                _ids = Main.utility.getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll(), 1)
                 _uri = _input[1] if len(_input) > 1 else None
                 _name = _input[2] if len(_input) > 2 else None
 
@@ -308,7 +310,7 @@ class Main:
                 # Expected input: playlistId or index, queueStreamIds or indices
                 _input = extractArgs(argIndex, argV)
 
-                _playlistIds = Main.getIdsFromInput(_input, Main.queueStreamService.getAllIds(), Main.queueStreamService.getAll(), 1)
+                _playlistIds = Main.utility.getIdsFromInput(_input, Main.queueStreamService.getAllIds(), Main.queueStreamService.getAll(), 1)
                 if(len(_playlistIds) == 0):
                     printS("Failed to delete streams, missing playlistId or index.", color = colors["FAIL"])
                     argIndex += len(_input) + 1
@@ -337,7 +339,7 @@ class Main:
             elif(arg in addSourcesFlags):
                 # Expected input: playlistId or index, uri, enableFetch?, name?
                 _input = extractArgs(argIndex, argV)
-                _ids = Main.getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll(), 1)
+                _ids = Main.utility.getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll(), 1)
                 _uri = _input[1] if len(_input) > 1 else None
                 _enableFetch = eval(_input[2]) if len(_input) > 2 else False
                 _name = _input[3] if len(_input) > 3 else None
@@ -383,7 +385,7 @@ class Main:
             elif(arg in deleteSourceFlags):
                 # Expected input: streamSourceIds or indices
                 _input = extractArgs(argIndex, argV)
-                _ids = Main.getIdsFromInput(_input, Main.streamSourceService.getAllIds(), Main.streamSourceService.getAll())
+                _ids = Main.utility.getIdsFromInput(_input, Main.streamSourceService.getAllIds(), Main.streamSourceService.getAll())
                 
                 if(len(_ids) == 0):
                     printS("Failed to delete source, missing streamSourceIds or indices.", color = colors["FAIL"])
@@ -424,61 +426,6 @@ class Main:
             else:
                 printS("Argument not recognized: \"", arg, "\", please see documentation or run with \"-help\" for help.", color = colors["WARNING"])
                 argIndex += 1
-
-    def getIdsFromInput(input: List[str], existingIds: List[str], indexList: List[any], limit: int = None, returnOnNonIds: bool = False) -> List[str]:
-        """
-        Get IDs from a list of inputs, whether they are raw IDs that must be checked via the database or indices (formatted "i[index]") of a list.
-
-        Args:
-            input (List[str]): input if IDs/indices
-            existingIds (List[str]): existing IDs to compare with
-            indexList (List[any]): List of object (must have field "id") to index from
-            limit (int): limit the numbers of arguments to parse
-            returnOnNonIds (bool): return valid input IDs if the current input is no an ID, to allow input from user to be something like \"id id id bool\" which allows unspecified IDs before other arguments 
-
-        Returns:
-            List[str]: List of existing IDs for input which can be found
-        """
-        
-        if(len(existingIds) == 0 or len(indexList) == 0):
-            if(DEBUG): printS("Length of input \"existingIds\" (", len(existingIds), ") or \"indexList\" (", len(indexList), ") was 0.", color = colors["WARNING"])
-            return []
-
-        _result = []
-        for i, _string in enumerate(input):
-            if(limit != None and i >= limit):
-                if(DEBUG): printS("Returning data before input ", _string, ", limit (", limit, ") reached.", color = colors["WARNING"])
-                break
-            
-            if(_string[0] == "i"):  # starts with "i", like index of "i2" is 2
-                if(not isNumber(_string[1])):
-                    if(returnOnNonIds):
-                        return _result
-                    
-                    printS("Argument ", _string, " is not a valid index format, must be \"i\" followed by an integer, like \"i0\". Argument not processed.", color = colors["FAIL"])
-                    continue
-
-                _index = int(float(_string[1]))
-                _indexedEntity = indexList[_index]
-
-                if(_indexedEntity != None):
-                    _result.append(_indexedEntity.id)
-                else:
-                    if(returnOnNonIds):
-                        return _result
-                    
-                    printS("Failed to get data for index ", _index, ", it is out of bounds.", color = colors["FAIL"])
-            else:  # Assume input is ID if it's not, users problem. Could also check if ID in getAllIds()
-                if(_string in existingIds):
-                    _result.append(_string)
-                else:
-                    if(returnOnNonIds):
-                        return _result
-                    
-                    printS("Failed to add playlist with ID \"", _string, "\", no such entity found in database.", color = colors["FAIL"])
-                    continue
-
-        return _result
 
     def printPlaylistDetails(playlistIds: List[str], includeUri: bool = False, includeId: bool = False, includeDatetime: bool = False, includeListCount: bool = False) -> int:
         """
@@ -538,41 +485,6 @@ class Main:
                 
         return _result
     
-    def resetPlaylistFetch(playlistIds: List[str]) -> int:
-        """
-        Reset the fetch-status for sources of a playlist and deletes all streams.
-
-        Args:
-            playlistIds (List[str]): list of playlistIds 
-            
-        Returns:
-            int: number of playlists reset
-        """
-        
-        _result = 0
-        for playlistId in playlistIds:            
-            _playlist = Main.playlistService.get(playlistId)
-            _deleteUpdateResult = True
-            
-            for queueStreamId in _playlist.streamIds:
-                _deleteStreamResult = Main.queueStreamService.delete(queueStreamId)
-                _deleteUpdateResult = _deleteUpdateResult and _deleteStreamResult != None
-            
-            _playlist.streamIds = []
-            _updateplaylistResult = Main.playlistService.update(_playlist)
-            _deleteUpdateResult = _deleteUpdateResult and _updateplaylistResult != None
-            
-            for streamSourceId in _playlist.streamSourceIds:
-                _streamSource = Main.streamSourceService.get(streamSourceId)
-                _streamSource.lastFetched = None
-                _updateStreamResult = Main.streamSourceService.update(_streamSource)
-                _deleteUpdateResult = _deleteUpdateResult and _updateStreamResult != None
-            
-            if(_deleteUpdateResult):
-                _result += 1
-                
-        return _result
-
     def printSettings():
         """
         Print settings in .env settings/secrets file.

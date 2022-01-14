@@ -6,9 +6,6 @@ import mechanize
 from pytube import YouTube
 from myutil.Util import *
 
-from QueueStreamService import QueueStreamService
-from PlaylistService import PlaylistService
-from StreamSourceService import StreamSourceService
 from enums.StreamSourceType import StreamSourceType, StreamSourceTypeUtil
 
 load_dotenv()
@@ -23,14 +20,6 @@ BROWSER_BIN = os.environ.get("BROWSER_BIN")
 
 class Utility():
     debug: bool = DEBUG
-
-    def __init__(self, quitInputs: List[str] = ["quit"], skipInputs: List[str] = ["skip"], addToInputs: List[str] = ["addto"]):
-        self.playlistService: PlaylistService = PlaylistService()
-        self.queueStreamService: QueueStreamService = QueueStreamService()
-        self.streamSourceService: StreamSourceService = StreamSourceService()
-        self.quitInputs: List[str] = quitInputs
-        self.skipInputs: List[str] = skipInputs
-        self.addToInputs: List[str] = addToInputs
 
     def getPageTitle(self, url: str) -> str:
         """
@@ -57,7 +46,7 @@ class Utility():
 
         return sanitize(_title)
     
-    def getIdsFromInput(input: List[str], existingIds: List[str], indexList: List[any], limit: int = None, returnOnNonIds: bool = False) -> List[str]:
+    def getIdsFromInput(self, input: List[str], existingIds: List[str], indexList: List[any], limit: int = None, returnOnNonIds: bool = False) -> List[str]:
         """
         Get IDs from a list of inputs, whether they are raw IDs that must be checked via the database or indices (formatted "i[index]") of a list.
 

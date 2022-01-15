@@ -326,7 +326,7 @@ class PlaylistService():
             if(_stream == None):
                 printS("A stream with ID: ", id, " was listed in Playlist \"", _playlist.name, "\", but was not found in the database. Consider removing running the purge command.")
             else:
-                _playlistStreams.append()
+                _playlistStreams.append(_stream)
 
         return _playlistStreams
     

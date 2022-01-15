@@ -187,7 +187,7 @@ class Main:
                     continue
                 
                 for _id in _ids:
-                    _result = Main.fetchService.fetch(_id, takeAfter = _takeAfter, takeBefore = _takeBefore)
+                    _result = Main.fetchService.fetch(_id, batchSize = 20, takeAfter = _takeAfter, takeBefore = _takeBefore)
                     _playlist = Main.playlistService.get(_id)
                     printS("Fetched ", _result, " for playlist \"", _playlist.name, "\" successfully.", color = colors["OKGREEN"])
 
@@ -280,7 +280,7 @@ class Main:
                     continue
 
                 if(_name == None and validators.url(_uri)):
-                    _name = Main.fetchService.getPageTitle(_uri)
+                    _name = Main.utility.getPageTitle(_uri)
                 elif(_name == None):
                     _name = "New stream"
                     printS("Could not automatically get the web name for this stream, will be named \"" , _name, "\".", color = colors["WARNING"])

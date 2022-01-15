@@ -408,6 +408,8 @@ class PlaylistService():
         
         if(playlist.name == None):
             playlist.name = sanitize(ytPlaylist.title)
+        if(playlist.description == None):
+            playlist.description = f"Playlist created from YouTube playlist: {url}"
         
         _streamsToAdd = []
         for videoUrl in ytPlaylist.video_urls:

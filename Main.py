@@ -311,22 +311,19 @@ class Main:
                 # Expected input: playlistId or index, queueStreamIds or indices
                 _input = extractArgs(argIndex, argV)
 
-                _playlistIds = Main.utility.getIdsFromInput(_input, Main.queueStreamService.getAllIds(), Main.queueStreamService.getAll(), 1)
+                _playlistIds = Main.utility.getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll(), 1)
                 if(len(_playlistIds) == 0):
                     printS("Failed to delete streams, missing playlistId or index.", color = colors["FAIL"])
                     argIndex += len(_input) + 1
                     continue
                 
-                _queueStreamIds = Main.getIdsFromInput(_input[1:], Main.queueStreamService.getAllIds(), Main.queueStreamService.getAll())
+                _playlist = Main.playlistService.get(_playlistIds[0])
+                _queueStreamIds = Main.utility.getIdsFromInput(_input[1:], _playlist.streamIds, Main.playlistService.getStreamsByPlaylistId(_playlist.id))
                 if(len(_queueStreamIds) == 0):
                     printS("Failed to delete streams, missing queueStreamIds or indices.", color = colors["FAIL"])
                     argIndex += len(_input) + 1
                     continue
                 
-                _playlist = Main.playlistService.get(_playlistIds[0])
-                # TODO should be ids, not indicies
-                printS("WIP", color = colors["OKGREEN"])
-                quit()
                 _result = Main.playlistService.deleteStreams(_playlist.id, _queueStreamIds)
                 if(len(_result) > 0):
                     printS("deleted ", len(_result), " QueueStreams successfully from playlist \"", _playlist.name, "\".", color = colors["OKGREEN"])

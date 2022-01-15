@@ -74,8 +74,8 @@ class PlaylistService():
 
         _entity = self.playlistRepository.get(id)
         
-        if(_entity.deleted != None and not includeSoftDeleted):
-            printS("Playlist with ID ", _entity.id, " was soft deleted.", color=colors["WARNING"], doPrint = DEBUG)
+        if(_entity != None and _entity.deleted != None and not includeSoftDeleted):
+            printS("Playlist with ID ", _entity.id, " was soft deleted.", color = colors["WARNING"], doPrint = DEBUG)
             return None
         else:
             return _entity
@@ -233,46 +233,46 @@ class PlaylistService():
         else:
             return 0
 
-    def removeStreams(self, playlistId: str, indices: List[int]) -> int:
+    def deleteStreams(self, playlistId: str, streamIds: List[str]) -> List[QueueStream]:
         """
-        Remove streams to playlist.
+        Delete streams from Playlist.
 
         Args:
-            playlistId (str): ID of playlist to remove from
-            indices (List[int]): indices to remove
+            playlistId (str): ID of Playlist to remove from
+            streamIds (List[str]): IDs of QueueStreams to remove
 
         Returns:
-            int: number of streams removed
+            List[QueueStream]: QueueStream deleted
         """
 
+        _removed = []
         _playlist = self.get(playlistId)
         if(_playlist == None):
-            return 0
+            return _removed
 
-        _listLength = len(_playlist.streamIds)
-        indices.sort(reverse=True)
-        _removed = 0
-        for index in indices:
-            if(index < 0 or index >= _listLength):
-                printS("Index ", index, " was out or range.", color=colors["WARNING"])
+        for id in streamIds:
+            _stream = self.queueStreamService.get(id)
+            if(_stream == None):
                 continue
             
-            _playlist.streamIds.pop(index)
-            _removed += 1
+            _removeResult = self.queueStreamService.delete(id)
+            if(_removeResult != None):
+                _playlist.streamIds.remove(_stream.id)
+                _removed.append(_stream)
 
         _playlist.updated = datetime.now()
         _updateResult = self.update(_playlist)
         if(_updateResult):
             return _removed
         else:
-            return 0
+            return []
 
     def moveStream(self, playlistId: str, fromIndex: int, toIndex: int) -> bool:
         """
-        Move streams in playlist.
+        Move streams internally in Playlist, by index.
 
         Args:
-            playlistId (str): ID of playlist to move in
+            playlistId (str): ID of Playlist to move in
             fromIndex (int): index move
             toIndex (int): index to move to
 

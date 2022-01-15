@@ -81,6 +81,7 @@ Program for queueing and playing videos from list or from sources like YouTube B
   - Close tab after video is watched not possible? killing selenium too slow, PID from Popen not same PID as browser tab  
   - download stream, play in subprocess VLC which sets video to watched when video finishes or VLC closes would be nice (easy for yt, third party without pytube-like packs much harder)
 
+- finish purge + command
 - skip/addto + ind will skip or add the floowing numbers of streams
 - playback list gives index of playing streams, not corresponding streaming playlist.streamIds, may need to ocnvert list to dict, id: stream or something
 - get stream sources by playlist id should be reworked like get queue streams by playlistid

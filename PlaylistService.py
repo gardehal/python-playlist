@@ -1,6 +1,4 @@
 import os
-import random
-import subprocess
 from datetime import datetime
 from typing import List
 import uuid
@@ -425,3 +423,15 @@ class PlaylistService():
         else:
             return []
         
+    def purge(self, playlistId: str) -> dict[List[StreamSource], List[QueueStream]]:
+        """
+        Purges the dangleing IDs, StreamSources, and QueueStreams from playlist given by ID.
+
+        Args:
+            playlistId (str): ID of Playlist to purge
+
+        Returns:
+            dict[List[StreamSource], List[QueueStream]]: dict with two lists, one for StreamSources removed, one for QueueStreams removed
+        """
+        
+        return None

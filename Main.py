@@ -35,7 +35,8 @@ deletePlaylistFlags = ["-deleteplaylist", "-dpl"]
 listPlaylistFlags = ["-listplaylist", "-lpl", "-lp"]
 detailsPlaylistFlags = ["-detailsplaylist", "-dpl", "-dp"]
 fetchPlaylistSourcesFlags = ["-fetch", "-f", "-update", "-u"]
-prunePlaylistFlags = ["-prune", "-pr"]
+prunePlaylistFlags = ["-prune"]
+purgePlaylistFlags = ["-purge"]
 resetPlaylistFetchFlags = ["-reset"]
 playFlags = ["-play", "-p"]
 quitSwitches = ["quit", "q", "exit", "end"]
@@ -522,25 +523,26 @@ class Main:
         printS(testFlags, ": A method of calling experimental code (when you want to test if something works).")
 
         # Playlist
-        printS(addPlaylistFlags, " [name: str] [? playWatchedStreams: bool] [? allowDuplicates: bool] [? streamSourceIds: list]: Add a playlist with name: name, playWatchedStreams: if playback should play watched streams, allowDuplicates: should playlist allow duplicate streams (only if the uri is the same), streamSourceIds: a list of sources.")
-        printS(deletePlaylistFlags, " [playlistIds or indices: list]: deletes playlists indicated.")
-        printS(listPlaylistFlags, ": List playlists with indices that can be used instead of IDs in other commands.")
+        printS(addPlaylistFlags, " [name: str] [? playWatchedStreams: bool] [? allowDuplicates: bool] [? streamSourceIds: list]: Add a Playlist with name: name, playWatchedStreams: if playback should play watched streams, allowDuplicates: should Playlist allow duplicate streams (only if the uri is the same), streamSourceIds: a list of sources.")
+        printS(deletePlaylistFlags, " [playlistIds or indices: list]: deletes Playlists indicated.")
+        printS(listPlaylistFlags, ": List Playlists with indices that can be used instead of IDs in other commands.")
         printS(detailsPlaylistFlags, " [playlistIds or indices: list] [? enableFetch: bool] [? enableFetch: bool]: Prints details about given playlist, with option for including streams and sources.")
-        printS(fetchPlaylistSourcesFlags, " [playlistIds or indices: list] [? takeAfter: datetime] [? takeBefore: datetime]: Fetch new streams from sources in playlists indicated, e.g. if a playlist has a YouTube channel as a source, and the channel uploads a new video, this video will be added to the playlist. Optional arguments takeAfter: only fetch streams after this date, takeBefore: only fetch streams before this date. Dates formatted like \"2022-01-30\" (YYYY-MM-DD)")
-        # printS(TODO, ": Create playlist from other playlists from e.g. Youtube", ": Creates a playlist from an existing playlist, e.g. YouTube.")
-        # printS(prunePlaylistFlags, " [playlistIds or indices: list]: Prune playlists indicated, deleteing watched streams?, streams with no parent playlist, and links to stream in playlist if the stream cannot be found in the database.")
-        printS(resetPlaylistFetchFlags, " [playlistIds or indices: list]: Resets fetch status of sources in a playlist and deletes streams from playlist.")
-        printS(playFlags, " [playlistId: str] [? starindex: int] [? shuffle: bool] [? repeat: bool]: Start playing stream from a playlist, order and automation (like skipping already watched streams) depending on the input and playlist.")
-        printS("\t", quitSwitches, ": End current playback and contintue the program without playing anymore streams in playlist. Only available while playlist is playing.")
-        printS("\t", skipSwitches, ": Skip current stream playing. This stream will not be marked as watched. Only available while playlist is playing.")
-        printS("\t", addCurrentToPlaylistSwitches, " [playlistId or index: str]: Add the current stream to another playlist indicated by ID on index. Only available while playlist is playing.")
+        printS(fetchPlaylistSourcesFlags, " [playlistIds or indices: list] [? takeAfter: datetime] [? takeBefore: datetime]: Fetch new streams from sources in Playlists indicated, e.g. if a Playlist has a YouTube channel as a source, and the channel uploads a new video, this video will be added to the Playlist. Optional arguments takeAfter: only fetch streams after this date, takeBefore: only fetch streams before this date. Dates formatted like \"2022-01-30\" (YYYY-MM-DD)")
+        # printS(TODO, ": Create playlist from other Playlists from e.g. Youtube", ": Creates a playlist from an existing playlist, e.g. YouTube.")
+        printS(prunePlaylistFlags, " [playlistIds or indices: list]: Prune Playlists indicated, deleteing watched streams.")
+        # printS(purgePlaylistFlags, " [playlistIds or indices: list]: Purge Playlists indicated, removing IDs with no corresponding relation and deleteing StreamSources and QueueStreams with no linked IDs in Playlist.")
+        printS(resetPlaylistFetchFlags, " [playlistIds or indices: list]: Resets fetch status of sources in a Playlist and deletes streams from Playlist.")
+        printS(playFlags, " [playlistId: str] [? starindex: int] [? shuffle: bool] [? repeat: bool]: Start playing stream from a Playlist, order and automation (like skipping already watched streams) depending on the input and Playlist.")
+        printS("\t", quitSwitches, ": End current playback and contintue the program without playing anymore streams in Playlist. Only available while Playlist is playing.")
+        printS("\t", skipSwitches, ": Skip current stream playing. This stream will not be marked as watched. Only available while Playlist is playing.")
+        printS("\t", addCurrentToPlaylistSwitches, " [playlistId or index: str]: Add the current stream to another Playlist indicated by ID on index. Only available while Playlist is playing.")
 
         # Stream
-        printS(addStreamFlags, " [playlistId or index: str] [uri: string] [? name: str]: Add a stream to a playlist from ID or index, from uri: URL, and name: name (set automatically if not given).")
-        printS(deleteStreamFlags, " [streamIds or indices: list]: delete streams from playlist.")
+        printS(addStreamFlags, " [playlistId or index: str] [uri: string] [? name: str]: Add a stream to a Playlist from ID or index, from uri: URL, and name: name (set automatically if not given).")
+        printS(deleteStreamFlags, " [streamIds or indices: list]: delete streams from Playlist.")
         # Sources
-        printS(addSourcesFlags, " [playlistId or index: str] [uri: string] [? enableFetch: bool] [? name: str]: Add a source from uri: URL, enableFetch: if the playlist should fetch new stream from this source, and name: name (set automatically if not given).")
-        printS(deleteSourceFlags, " [sourceId or index: str]: deletes source from database and playlist if used anywhere.")
+        printS(addSourcesFlags, " [playlistId or index: str] [uri: string] [? enableFetch: bool] [? name: str]: Add a source from uri: URL, enableFetch: if the Playlist should fetch new stream from this source, and name: name (set automatically if not given).")
+        printS(deleteSourceFlags, " [sourceId or index: str]: deletes source from database and Playlist if used anywhere.")
         printS(listSourcesFlags, " [playlistId or index: str]: Lists sources with indices that can be used instead of IDs in other commands.")
         # Meta
         printS(listSettingsFlags, ": Lists settings currently used by program. These settings can also be found in the file named \".env\" with examples in the file \".env-example\"")

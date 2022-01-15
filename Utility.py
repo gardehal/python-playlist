@@ -44,7 +44,7 @@ class Utility():
             _title = _br.title()
             _br.close()
 
-        return sanitize(_title)
+        return sanitize(_title).strip()
     
     def getIdsFromInput(self, input: List[str], existingIds: List[str], indexList: List[any], limit: int = None, returnOnNonIds: bool = False) -> List[str]:
         """

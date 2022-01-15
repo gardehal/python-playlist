@@ -10,6 +10,7 @@ import pytube
 
 from QueueStreamService import QueueStreamService
 from StreamSourceService import StreamSourceService
+from Utility import Utility
 from model.Playlist import Playlist
 from model.QueueStream import QueueStream
 from model.StreamSource import StreamSource
@@ -32,11 +33,13 @@ class PlaylistService():
     playlistRepository: LocalJsonRepository = None
     queueStreamService: QueueStreamService = None
     streamSourceService: StreamSourceService = None
+    utility: Utility = None
 
     def __init__(self):
         self.playlistRepository: LocalJsonRepository = LocalJsonRepository(T, self.debug, os.path.join(self.storagePath, "Playlist"))
         self.queueStreamService: QueueStreamService = QueueStreamService()
         self.streamSourceService: StreamSourceService = StreamSourceService()
+        self.utility: Utility = Utility()
 
     def add(self, playlist: T) -> T:
         """
@@ -387,11 +390,40 @@ class PlaylistService():
             Playlist: Playlist if created, else None
         """
         
+        if(playlist == None):
+            printS("Playlist was None.", color = colors["FAIL"])
+            return None
         
-        playlist = pytube.Playlist(url)
-        print('Number of videos in playlist: %s' % len(playlist.video_urls))
-        print(playlist.title)
+        if(not validators.url(url)):
+            printS("URL \"", url, "\" was not an accepted, absolute URL.", color = colors["FAIL"])
+            return None
         
+        ytPlaylist = pytube.Playlist(url)
+        try:
+            # For some reasons the property call just fails for invalid playlist, instead of being None. Except = fail.
+            ytPlaylist.title == None
+        except:
+            printS("YouTube playlist given by URL \"", url, "\" was not found. It could be set to private or deleted.", color = colors["FAIL"])
+            return None
+        
+        print("playlist.name == None")
+        print(playlist.name == None)
+        if(playlist.name == None):
+            playlist.name == self.utility.getPageTitle(url) # ytPlaylist.title always None
+            print(playlist.name)
+        
+        _streamsToAdd = []
+        for videoUrl in ytPlaylist.video_urls:
+            _video = pytube.YouTube(videoUrl)
+            _stream = QueueStream(name = sanitize(_video.title), uri = _video.watch_url)
+            _streamsToAdd.append(_stream)
+        
+        _addPlaylistResult = self.add(playlist)
+        if(_addPlaylistResult != None):
+            _addStreamsResult = self.addStreams(_addPlaylistResult.id, _streamsToAdd)
+            if(_addStreamsResult > 0):
+                return _addPlaylistResult
+            
         return None
     
     def prune(self, playlistId: str) -> List[QueueStream]:

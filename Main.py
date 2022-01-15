@@ -119,7 +119,7 @@ class Main:
                 _entity = Playlist(name = _name, playWatchedStreams = _playWatchedStreams, allowDuplicates = _allowDuplicates)
                 _result = Main.playlistService.addYouTubePlaylist(_entity, _url)
                 if(_result != None):
-                    printS("Playlist added successfully with ID \"", _result.id, "\".", color = colors["OKGREEN"])
+                    printS("Playlist added successfully from YouTube playlist, with ", _result.streamIds.count(), " streams, ID \"", _result.id, "\".", color = colors["OKGREEN"])
                 else:
                     printS("Failed to create Playlist. See rerun command with -help to see expected arguments.", color = colors["FAIL"])
 

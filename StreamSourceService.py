@@ -63,7 +63,7 @@ class StreamSourceService():
 
         _entity = self.streamSourceRepository.get(id)
         
-        if(_entity.deleted != None and not includeSoftDeleted):
+        if(_entity != None and _entity.deleted != None and not includeSoftDeleted):
             printS("StreamSource with ID ", _entity.id, " was soft deleted.", color=colors["WARNING"], doPrint = DEBUG)
             return None
         else:

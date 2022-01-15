@@ -60,7 +60,7 @@ class QueueStreamService():
 
         _entity = self.queueStreamRepository.get(id)
         
-        if(_entity.deleted != None and not includeSoftDeleted):
+        if(_entity != None and _entity.deleted != None and not includeSoftDeleted):
             printS("QueueStream with ID ", _entity.id, " was soft deleted.", color=colors["WARNING"], doPrint = DEBUG)
             return None
         else:

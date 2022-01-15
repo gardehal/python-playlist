@@ -31,6 +31,7 @@ helpFlags = ["-help", "-h"]
 testFlags = ["-test", "-t"]
 # Playlist
 addPlaylistFlags = ["-addplaylist", "-apl", "-ap"]
+addPlaylistFromYouTubeFlags = ["-addplaylistfromyoutube", "-apfy", "-fromyoutube", "-fyt", "-fy"]
 deletePlaylistFlags = ["-deleteplaylist", "-dpl"]
 listPlaylistFlags = ["-listplaylist", "-lpl", "-lp"]
 detailsPlaylistFlags = ["-detailsplaylist", "-dpl", "-dp"]
@@ -92,13 +93,31 @@ class Main:
             elif(arg in addPlaylistFlags):
                 # Expected input: name, playWatchedStreams?, allowDuplicates?, streamSourceIds/indices?
                 _input = extractArgs(argIndex, argV)
-                _name = str(_input[0]) if(len(_input) > 0) else "New Playlist"
+                _name = _input[0] if(len(_input) > 0) else "New Playlist"
                 _playWatchedStreams = eval(_input[1]) if(len(_input) > 1) else None
                 _allowDuplicates = eval(_input[2]) if(len(_input) > 2) else True
                 _streamSourceIds = Main.getIdsFromInput(_input[3:], Main.playlistService.getAllIds(), Main.playlistService.getAll()) if(len(_input) > 3) else []
 
                 _entity = Playlist(name = _name, playWatchedStreams = _playWatchedStreams, allowDuplicates = _allowDuplicates, streamSourceIds = _streamSourceIds)
                 _result = Main.playlistService.add(_entity)
+                if(_result != None):
+                    printS("Playlist added successfully with ID \"", _result.id, "\".", color = colors["OKGREEN"])
+                else:
+                    printS("Failed to create Playlist. See rerun command with -help to see expected arguments.", color = colors["FAIL"])
+
+                argIndex += len(_input) + 1
+                continue
+            
+            elif(arg in addPlaylistFromYouTubeFlags):
+                # Expected input: youTubePlaylistUrl, name?, playWatchedStreams?, allowDuplicates?
+                _input = extractArgs(argIndex, argV)
+                _url = _input[0] if(len(_input) > 0) else None
+                _name = _input[1] if(len(_input) > 1) else None
+                _playWatchedStreams = eval(_input[2]) if(len(_input) > 2) else None
+                _allowDuplicates = eval(_input[3]) if(len(_input) > 3) else True
+
+                _entity = Playlist(name = _name, playWatchedStreams = _playWatchedStreams, allowDuplicates = _allowDuplicates)
+                _result = Main.playlistService.addYouTubePlaylist(_entity, _url)
                 if(_result != None):
                     printS("Playlist added successfully with ID \"", _result.id, "\".", color = colors["OKGREEN"])
                 else:
@@ -521,6 +540,7 @@ class Main:
 
         # Playlist
         printS(addPlaylistFlags, " [name: str] [? playWatchedStreams: bool] [? allowDuplicates: bool] [? streamSourceIds: list]: Add a Playlist with name: name, playWatchedStreams: if playback should play watched streams, allowDuplicates: should Playlist allow duplicate streams (only if the uri is the same), streamSourceIds: a list of sources.")
+        printS(addPlaylistFromYouTubeFlags, " [youTubePlaylistUrl: str] [? name: str] [? playWatchedStreams: bool] [? allowDuplicates: bool]: Add a Playlist and populate it with QueueStreams from given YouTube playlist youTubePlaylistUrl, with name: name, playWatchedStreams: if playback should play watched streams, allowDuplicates: should Playlist allow duplicate streams (only if the uri is the same).")
         printS(deletePlaylistFlags, " [playlistIds or indices: list]: deletes Playlists indicated.")
         printS(listPlaylistFlags, ": List Playlists with indices that can be used instead of IDs in other commands.")
         printS(detailsPlaylistFlags, " [playlistIds or indices: list] [? enableFetch: bool] [? enableFetch: bool]: Prints details about given playlist, with option for including streams and sources.")

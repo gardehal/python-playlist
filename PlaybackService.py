@@ -39,9 +39,7 @@ class PlaybackService():
         self.streamSourceService: StreamSourceService = StreamSourceService()
         self.quitInputs: List[str] = quitInputs
         self.skipInputs: List[str] = skipInputs
-        self.addToInputs: List[str] = addToInputs
-        
-        
+        self.addToInputs: List[str] = addToInputs       
 
     def play(self, playlistId: str, startIndex: int = 0, shuffle: bool = False, repeatPlaylist: bool = False) -> bool:
         """

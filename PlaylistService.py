@@ -6,6 +6,7 @@ import uuid
 from dotenv import load_dotenv
 from myutil.LocalJsonRepository import LocalJsonRepository
 from myutil.Util import *
+import pytube
 
 from QueueStreamService import QueueStreamService
 from StreamSourceService import StreamSourceService
@@ -374,20 +375,22 @@ class PlaylistService():
 
         return _playlistSources
 
-    def createFromYouTubePlaylist(self, url: str) -> T:
+    def addYouTubePlaylist(self, playlist: Playlist, url: str) -> T:
         """
         Create a Playlist, using a YouTube playlist as the starting point. Videos will be added as streams in the playlist TODO? and source will be the playlist.
 
         Args:
+            playlist (Playlist): Playlist to save to
             url (str): URI to YouTube playlist
 
         Returns:
             Playlist: Playlist if created, else None
         """
         
-        _sanitizedTitle = ""
-        _entity = Playlist(_sanitizedTitle, [], )
-        self.add(_entity)
+        
+        playlist = pytube.Playlist(url)
+        print('Number of videos in playlist: %s' % len(playlist.video_urls))
+        print(playlist.title)
         
         return None
     

@@ -119,7 +119,7 @@ class Main:
                 _entity = Playlist(name = _name, playWatchedStreams = _playWatchedStreams, allowDuplicates = _allowDuplicates)
                 _result = Main.playlistService.addYouTubePlaylist(_entity, _url)
                 if(_result != None):
-                    printS("Playlist added successfully from YouTube playlist, with ", _result.streamIds.count(), " streams, ID \"", _result.id, "\".", color = colors["OKGREEN"])
+                    printS("Playlist \"", _result.name, "\" added successfully from YouTube playlist.", color = colors["OKGREEN"])
                 else:
                     printS("Failed to create Playlist. See rerun command with -help to see expected arguments.", color = colors["FAIL"])
 
@@ -545,7 +545,6 @@ class Main:
         printS(listPlaylistFlags, ": List Playlists with indices that can be used instead of IDs in other commands.")
         printS(detailsPlaylistFlags, " [playlistIds or indices: list] [? enableFetch: bool] [? enableFetch: bool]: Prints details about given playlist, with option for including streams and sources.")
         printS(fetchPlaylistSourcesFlags, " [playlistIds or indices: list] [? takeAfter: datetime] [? takeBefore: datetime]: Fetch new streams from sources in Playlists indicated, e.g. if a Playlist has a YouTube channel as a source, and the channel uploads a new video, this video will be added to the Playlist. Optional arguments takeAfter: only fetch streams after this date, takeBefore: only fetch streams before this date. Dates formatted like \"2022-01-30\" (YYYY-MM-DD)")
-        # printS(TODO, ": Create playlist from other Playlists from e.g. Youtube", ": Creates a playlist from an existing playlist, e.g. YouTube.")
         printS(prunePlaylistFlags, " [playlistIds or indices: list]: Prune Playlists indicated, deleteing watched streams.")
         # printS(purgePlaylistFlags, " [playlistIds or indices: list]: Purge Playlists indicated, removing IDs with no corresponding relation and deleteing StreamSources and QueueStreams with no linked IDs in Playlist.")
         printS(resetPlaylistFetchFlags, " [playlistIds or indices: list]: Resets fetch status of sources in a Playlist and deletes streams from Playlist.")

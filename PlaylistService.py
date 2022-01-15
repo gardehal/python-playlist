@@ -406,11 +406,8 @@ class PlaylistService():
             printS("YouTube playlist given by URL \"", url, "\" was not found. It could be set to private or deleted.", color = colors["FAIL"])
             return None
         
-        print("playlist.name == None")
-        print(playlist.name == None)
         if(playlist.name == None):
-            playlist.name == self.utility.getPageTitle(url) # ytPlaylist.title always None
-            print(playlist.name)
+            playlist.name = sanitize(ytPlaylist.title)
         
         _streamsToAdd = []
         for videoUrl in ytPlaylist.video_urls:

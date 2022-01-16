@@ -10,6 +10,9 @@ from myutil.Util import *
 from QueueStreamService import QueueStreamService
 from PlaylistService import PlaylistService
 from StreamSourceService import StreamSourceService
+from Utility import Utility
+from exception.ExceptBreak import ExceptBreak
+from exception.ExceptContinue import ExceptContinue
 from model.Playlist import Playlist
 from model.QueueStream import QueueStream
 
@@ -29,6 +32,7 @@ class PlaybackService():
     playlistService: PlaylistService = None
     queueStreamService: QueueStreamService = None
     streamSourceService: StreamSourceService = None
+    utility: Utility = None
     quitInputs: List[str] = None
     skipInputs: List[str] = None
     addToInputs: List[str] = None
@@ -37,6 +41,7 @@ class PlaybackService():
         self.playlistService: PlaylistService = PlaylistService()
         self.queueStreamService: QueueStreamService = QueueStreamService()
         self.streamSourceService: StreamSourceService = StreamSourceService()
+        self.utility: Utility = Utility()
         self.quitInputs: List[str] = quitInputs
         self.skipInputs: List[str] = skipInputs
         self.addToInputs: List[str] = addToInputs       
@@ -123,18 +128,17 @@ class PlaybackService():
                 printS("Non-web streams currently not supported, skipping video ", stream.name, color = colors["ERROR"])
                 continue
 
-            printS(f"{i} - Now playing \"{stream.name}\"" + ("..." if(i < (len(streams) - 1)) else ". This is the last stream, press enter to finish."), color = colors["BOLD"])
-            _input = input("\tPress enter to play next, \"skip\" to skip video, or \"quit\" to quit playback: ")
-            if(len(self.quitInputs) > 0 and _input in self.quitInputs):
-                printS("Ending playback due to user input.", color = colors["OKGREEN"])
-                break
-            elif(len(self.skipInputs) > 0 and _input in self.skipInputs):
-                printS("Skipping video, will not be marked as watched.", color = colors["OKGREEN"])
+            printS(f"{i} - Now playing \"{stream.name}\"" + ("..." if(i < (len(streams) - 1)) else ". This is the last stream in this playback, press enter to finish."), color = colors["BOLD"])
+            _inputHandleing = self.handlePlaybackInput(playlist, stream)
+            if(_inputHandleing == 0):
+                printS("An error occurred while parsing inputs.", color = colors["ERROR"])
+                return False
+            elif(_inputHandleing == 1):
+                pass
+            elif(_inputHandleing == 2):
                 continue
-            elif(len(self.addToInputs) > 0 and _input in self.addToInputs):
-                _crossAddPlaylistResult = self.addCurrentStreamToPlaylist(_input, stream)
-                printS("Stream added to Playlist \"", playlist.name, "\".", color = colors["OKGREEN"], doPrint = _crossAddPlaylistResult)
-                printS("Stream could not be added to Playlist \"", playlist.name, "\".", color = colors["FAIL"], doPrint = (not _crossAddPlaylistResult))
+            elif(_inputHandleing == 3):
+                break
             
             # subprocessStream.terminate() # TODO Doesn't seem to work with browser, at least not new tabs
             
@@ -153,21 +157,68 @@ class PlaybackService():
                     
         return True
 
-    def addCurrentStreamToPlaylist(self, playlistIdOrIndex: str, queueStream: QueueStream) -> bool:
+    def handlePlaybackInput(self, playlist: Playlist, stream: QueueStream) -> int:
+        """
+        Handles user input and returns an int code for what the calling method should do regarding it's own loop.
+        
+        Args:
+            playlist (Playlist): Playlist currently playing
+            stream (QueueStream): QueueStream currently playing
+            
+        Return codes: 
+        0 - Error, internal loop failed to return any other code
+        1 - No action needed, parent loop should be allowed to finish as normal
+        2 - continue parent loop
+        3 - break parent loop 
+        """
+        
+        while 1: # Infinite loop until a return is hit
+            _inputMessage = "\tPress enter to play next, \"skip\" to skip video, or \"quit\" to quit playback: "
+            _input = input(_inputMessage)
+                
+            if(_input.strip() == ""):
+                return 1
+            elif(len(self.quitInputs) > 0 and _input in self.quitInputs):
+                printS("Ending playback due to user input.", color = colors["OKGREEN"])
+                return 3
+            elif(len(self.skipInputs) > 0 and _input in self.skipInputs):
+                printS("Skipping video, will not be marked as watched.", color = colors["OKGREEN"])
+                return 2
+            elif(len(self.addToInputs) > 0 and " " in _input and _input.split(" ")[0] in self.addToInputs):
+                _idsIndices = _input.split(" ")[1:]
+                _crossAddPlaylistResult = self.addPlaybackStreamToPlaylist(stream, _idsIndices)
+                printS("Stream added to Playlist \"", playlist.name, "\".", color = colors["OKGREEN"], doPrint = (_crossAddPlaylistResult > 0))
+                printS("Stream could not be added to Playlist \"", playlist.name, "\".", color = colors["FAIL"], doPrint = (_crossAddPlaylistResult == 0))
+            else:
+                printS("Argument(s) not recognized: \"", _input, "\".", color = colors["WARNING"])
+        
+        return 0
+
+    def addPlaybackStreamToPlaylist(self, queueStream: QueueStream, idsIndices: List[str]) -> int:
         """
         Add the QueueStream currently playing in playback, to another Playlist.
 
         Args:
-            playlistIdOrIndex (str): ID or index of Playlist to add stream to
             queueStream (QueueStream): QueueStream to add
+            idsIndices (List[str]): ID or index of Playlist to add stream to
 
         Returns:
-            QueueStream | None: returns QueueStream if success, else None
+            int: number of Playlists stream was added to
         """
         
-        # TODO get id from index
-        _playlistId = ""
+        if(len(idsIndices) < 1):
+            printS("Missing arguments, cross-adding stream requires IDs of Playlists to add to.", color=colors["WARNING"])
+            return 0
         
-        _addedStreams = self.playlistService.addStreams(_playlistId, [queueStream])
+        _ids = self.utility.getIdsFromInput(idsIndices, self.playlistService.getAllIds(), self.playlistService.getAll())
+        if(len(_ids) == 0):
+            printS("Failed to add cross-add streams, missing playlistIds or indices.", color = colors["WARNING"])
+            return 0
         
-        return _addedStreams > 0
+        _result = 0
+        for _id in _ids:
+            _addResult = self.playlistService.addStreams(_id, [queueStream])
+            if(_addResult):
+                _result += 1
+        
+        return _result

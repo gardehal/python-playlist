@@ -174,7 +174,7 @@ class PlaybackService():
         
         while 1: # Infinite loop until a return is hit
             _inputMessage = "\tPress enter to play next, \"skip\" to skip video, or \"quit\" to quit playback: "
-            _input = input(_inputMessage)
+            _input = sanitize(input(_inputMessage), mode = 2)
                 
             if(_input.strip() == ""):
                 return 1
@@ -187,10 +187,11 @@ class PlaybackService():
             elif(len(self.addToInputs) > 0 and " " in _input and _input.split(" ")[0] in self.addToInputs):
                 _idsIndices = _input.split(" ")[1:]
                 _crossAddPlaylistResult = self.addPlaybackStreamToPlaylist(stream, _idsIndices)
-                printS("Stream added to Playlist \"", playlist.name, "\".", color = colors["OKGREEN"], doPrint = (_crossAddPlaylistResult > 0))
-                printS("Stream could not be added to Playlist \"", playlist.name, "\".", color = colors["FAIL"], doPrint = (_crossAddPlaylistResult == 0))
+                printS("Stream \"", stream.name, "\" added to new Playlist.", color = colors["OKGREEN"], doPrint = (_crossAddPlaylistResult > 0))
+                printS("Stream \"", stream.name, "\" could not be added to new Playlist.", color = colors["FAIL"], doPrint = (_crossAddPlaylistResult == 0))
             else:
-                printS("Argument(s) not recognized: \"", _input, "\".", color = colors["WARNING"])
+                print(_input)
+                printS("Argument(s) not recognized: \"", _input, "\". Please refrain from using arrows to navigate in the CLI as it adds hidden characters.", color = colors["WARNING"])
         
         return 0
 

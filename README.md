@@ -1,6 +1,6 @@
 # Python Video Queue
 
-Program for queueing and playing videos from list or from sources like YouTube BitChute, Rumble.... 
+Program for queueing and playing videos from list or from sources like channels on YouTube, BitChute, Rumble. Data stored locally in JSON files.
 
 - Using [MyUtil](https://github.com/grdall/python-packages)
 - Using [Python with pip and VS Code](https://github.com/grdall/shared-documentation/blob/main/python-pip-vscode.md)

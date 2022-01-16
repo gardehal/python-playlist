@@ -1,0 +1,2 @@
+class ExceptContinue(Exception):
+    pass

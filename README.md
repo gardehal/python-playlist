@@ -25,7 +25,7 @@ Program for queueing and playing videos from list or from sources like channels 
 
 - All commands can be seen by entering the command "-help".
 - Sources currently supported for fetch: YouTube (channels)
-- All data is stored locally in human readable JSON files in the path specified in the .env setting LOCAL_STORAGE_PATH. This defaults to "data", in the same folder as the rest of the program. To edit data, it's easier to change these text files directly, as long as you adhere to the JSON format.
+- All data is stored locally in human readable JSON files in the path specified in the .env setting LOCAL_STORAGE_PATH. This defaults to "C:/python/playlists", in the same folder as the rest of the program. To edit data, it's easier to change these text files directly, as long as you adhere to the JSON format.
 
 
 ## Examples
@@ -91,7 +91,6 @@ Program for queueing and playing videos from list or from sources like channels 
 - search streams and sources in playlist by name?
 - fetch for sources by id or indexs
 - error with add/remove/move streams functions in playlistservice, should be IDs, always, not indices
-- edit parts of object, like playWatchedStreams bool in Playlist
 - restore command for soft deleted
 - some print results, listing sources should list playlist (ID or name), adding/removing anything with relations should specify relation
 - adding sources, check for duplicates on url (warning on duplicate name?)

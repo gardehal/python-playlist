@@ -13,7 +13,10 @@ Program for queueing and playing videos from list or from sources like channels 
 1. Create the usable .env-file for setting and secrets:
   - Copy and paste the file .env-example.
   - Rename the file to ".env".
-  - Change the values to your liking. The value "BROWSER_BIN" can be left blank. Values which are booleans must be Python parsable, "True", "False", "1", "0" etc.
+  - Change the values to your liking:
+      - The value "BROWSER_BIN" can be left blank. 
+      - Values which are booleans must be Python parsable, "True", "False", "1", "0" etc.
+      - Paths should be absolute, otherwise they will only work from that relative folder.
 1. Confirm install by entering the help command:
   - ```$ python main.py -help```
   - Verify that the program prints an overview of commands, arguments, flags, and a description of what they do.
@@ -82,9 +85,7 @@ Program for queueing and playing videos from list or from sources like channels 
   - download stream, play in subprocess VLC which sets video to watched when video finishes or VLC closes would be nice (easy for yt, third party without pytube-like packs much harder)
 
 - finish purge + command
-- skip/addto + ind will skip or add the floowing numbers of streams
 - playback list gives index of playing streams, not corresponding streaming playlist.streamIds, may need to ocnvert list to dict, id: stream or something
-- paths are relative, only works inside dir with data/... folders
 - backgroundContent - implementation
 - Playlist list with uris watched to avoid getting duplicates? this is likely edge case due to testing functionality. also duplicate of watchlog function basically
 - search streams and sources in playlist by name?

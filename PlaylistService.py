@@ -326,9 +326,10 @@ class PlaylistService():
         for id in _playlist.streamIds:
             _stream = self.queueStreamService.get(id)
             if(_stream == None):
-                printS("A stream with ID: ", id, " was listed in Playlist \"", _playlist.name, "\", but was not found in the database. Consider removing running the purge command.")
-            else:
-                _playlistStreams.append(_stream)
+                printS("A QueueStream with ID: ", id, " was listed in Playlist \"", _playlist.name, "\", but was not found in the database. Consider removing it by running the purge command.", color = colors["WARNING"])
+                continue
+            
+            _playlistStreams.append(_stream)
 
         return _playlistStreams
     
@@ -347,10 +348,14 @@ class PlaylistService():
         if(_playlist == None):
             return 0
 
-        _all = self.queueStreamService.getAll()
         _playlistStreams = []
-        for _stream in _all:
-            if(_stream.id in _playlist.streamIds and _stream.watched == None):
+        for id in _playlist.streamIds:
+            _stream = self.queueStreamService.get(id)
+            if(_stream == None):
+                printS("A QueueStream with ID: ", id, " was listed in Playlist \"", _playlist.name, "\", but was not found in the database. Consider removing it by running the purge command.", color = colors["WARNING"])
+                continue
+            
+            if(_stream.watched == None):
                 _playlistStreams.append(_stream)
 
         return _playlistStreams    
@@ -370,10 +375,14 @@ class PlaylistService():
         if(_playlist == None):
             return 0
 
-        _all = self.streamSourceService.getAll()
         _playlistSources = []
-        for _source in _all:
-            if(_source.id in _playlist.streamSourceIds and _source.enableFetch == True):
+        for id in _playlist.streamSourceIds:
+            _source = self.streamSourceService.get(id)
+            if(_source == None):
+                printS("A StreamSource with ID: ", id, " was listed in Playlist \"", _playlist.name, "\", but was not found in the database. Consider removing it by running the purge command.", color = colors["WARNING"])
+                continue
+            
+            if(_source.enableFetch == True):
                 _playlistSources.append(_source)
 
         return _playlistSources

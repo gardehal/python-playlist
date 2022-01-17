@@ -27,6 +27,9 @@ BROWSER_BIN = os.environ.get("BROWSER_BIN")
 
 T = Playlist
 
+affirmative = ["yes", "y", "1"]
+negative = ["no", "n", "0"]
+
 class PlaylistService():
     debug: bool = DEBUG
     storagePath: str = LOCAL_STORAGE_PATH
@@ -466,15 +469,50 @@ class PlaylistService():
         else:
             return []
         
-    def purge(self, playlistId: str) -> dict[List[StreamSource], List[QueueStream]]:
+    def purge(self) -> dict[List[StreamSource], List[QueueStream]]:
         """
-        Purges the dangleing IDs, StreamSources, and QueueStreams from playlist given by ID.
-
-        Args:
-            playlistId (str): ID of Playlist to purge
+        Purges the dangling IDs, StreamSources, and QueueStreams from Playlists.
 
         Returns:
             dict[List[StreamSource], List[QueueStream]]: dict with two lists, one for StreamSources removed, one for QueueStreams removed
         """
         
-        return None
+        _playlists = self.getAll()
+        _streamsIds = self.queueStreamService.getAllIds()
+        _sourcesIds = self.streamSourceService.getAllIds()
+        
+        _playlistStreams = []
+        _playlistSources = []
+        _danglingStreamIds = []
+        _unlinkedStreams = []
+        _danglingSourceIds = []
+        _unlinkedSources = []
+        
+        for _playlist in _playlists:
+            _playlistStreams.append(_playlist.streamIds)
+            _playlistSources.append(_playlist.streamSourceIds)
+        
+        for _id in _streamsIds:
+            if(not _id in _playlistStreams):
+                _entity = self.queueStreamService.get(_id)
+                _unlinkedStreams.append(_entity)
+        for _id in _sourcesIds:
+            if(not _id in _playlistSources):
+                _entity = self.streamSourceService.get(_id)
+                _unlinkedSources.append(_entity)
+        
+        for e in _unlinkedStreams:
+            print(e.id + " " + e.name)
+        for e in _unlinkedSources:
+            print(e.id + " " + e.name)
+        
+        printS("Purge summary, the following data will be PERMANENTLY REMOVED:", color = colors["WARNING"])
+        
+        printS("Removing ", len(_unlinkedStreams), " unlinked streams, ", len(_unlinkedSources), " sources.")
+        printS("Removing ", len(_danglingStreamIds), " dangling stream IDs, ", len(_danglingSourceIds), " dangling source IDs.")
+        _input = input("Do you want to permanently remove this data? (y/n):")
+        if(_input in affirmative):
+            print("TODO purge", color = colors["OKGREEN"])
+            
+        printS("Purge aborted.", color = colors["OKGREEN"])
+        return {[], []}

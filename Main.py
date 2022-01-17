@@ -236,15 +236,15 @@ class Main:
                 continue
             
             elif(arg in purgePlaylistFlags):
-                # Expected input: accept changes-input
+                # Expected input: "accept changes" input within purge method
                 
                 _result = Main.playlistService.purge()
-                if(len(_result) > 0):
-                    printS("Purge finished, deleted ", len(_result), " items.", color = colors["OKGREEN"])
+                if(len(_result["QueueStream"]) > 0 or len(_result["StreamSource"]) > 0):
+                    printS("Purge finished, deleted ", len(_result["QueueStream"]), " QueueStreams and ", len(_result["StreamSource"]), " StreamSources.", color = colors["OKGREEN"])
                 else:
-                    printS("Prune failed..", color = colors["FAIL"])
+                    printS("Purge failed.", color = colors["FAIL"])
 
-                argIndex += len(_input) + 1
+                argIndex += 1
                 continue
             
             elif(arg in resetPlaylistFetchFlags):

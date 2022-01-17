@@ -469,14 +469,15 @@ class PlaylistService():
         else:
             return []
         
-    def purge(self) -> dict[List[StreamSource], List[QueueStream]]:
+    def purge(self) -> dict[List[QueueStream], List[StreamSource]]:
         """
         Purges the dangling IDs, StreamSources, and QueueStreams from Playlists.
 
         Returns:
-            dict[List[StreamSource], List[QueueStream]]: dict with two lists, one for StreamSources removed, one for QueueStreams removed
+            dict[List[QueueStream], List[StreamSource]]: dict with two lists, one for StreamSources removed, one for QueueStreams removed
         """
         
+        _deletedData = {"QueueStream": [], "StreamSource": []}
         _playlists = self.getAll()
         _streamsIds = self.queueStreamService.getAllIds()
         _sourcesIds = self.streamSourceService.getAllIds()
@@ -501,6 +502,9 @@ class PlaylistService():
                 _entity = self.streamSourceService.get(_id)
                 _unlinkedSources.append(_entity)
         
+        _deletedData[0] = _unlinkedStreams
+        _deletedData[1] = _unlinkedSources
+        
         for e in _unlinkedStreams:
             print(e.id + " " + e.name)
         for e in _unlinkedSources:
@@ -508,11 +512,12 @@ class PlaylistService():
         
         printS("Purge summary, the following data will be PERMANENTLY REMOVED:", color = colors["WARNING"])
         
-        printS("Removing ", len(_unlinkedStreams), " unlinked streams, ", len(_unlinkedSources), " sources.")
-        printS("Removing ", len(_danglingStreamIds), " dangling stream IDs, ", len(_danglingSourceIds), " dangling source IDs.")
+        printS("Removing ", len(_unlinkedStreams), " unlinked QueueStreams, ", len(_unlinkedSources), " StreamSources.")
+        printS("Removing ", len(_danglingStreamIds), " dangling QueueStream IDs, ", len(_danglingSourceIds), " dangling StreamSource IDs.")
         _input = input("Do you want to permanently remove this data? (y/n):")
         if(_input in affirmative):
-            print("TODO purge", color = colors["OKGREEN"])
+            printS("TODO purge", color = colors["OKGREEN"])
+            return _deletedData
             
-        printS("Purge aborted.", color = colors["OKGREEN"])
-        return {[], []}
+        printS("Purge aborted by user.", color = colors["WARNING"])
+        return {"QueueStream": [], "StreamSource": []}

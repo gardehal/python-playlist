@@ -477,43 +477,51 @@ class PlaylistService():
             dict[List[QueueStream], List[StreamSource]]: dict with two lists, one for StreamSources removed, one for QueueStreams removed
         """
         
-        _deletedData = {"QueueStream": [], "StreamSource": []}
+        _deletedData = {"QueueStream": [], "StreamSource": [], "DanglingQueueStreamId": [], "DanglingStreamSourceId": []}
         _playlists = self.getAll()
         _streamsIds = self.queueStreamService.getAllIds()
         _sourcesIds = self.streamSourceService.getAllIds()
         
         _playlistStreams = []
         _playlistSources = []
-        _danglingStreamIds = []
-        _unlinkedStreams = []
-        _danglingSourceIds = []
-        _unlinkedSources = []
-        
         for _playlist in _playlists:
-            _playlistStreams.append(_playlist.streamIds)
-            _playlistSources.append(_playlist.streamSourceIds)
+            _playlistStreams.extend(_playlist.streamIds)
+            _playlistSources.extend(_playlist.streamSourceIds)
         
         for _id in _streamsIds:
             if(not _id in _playlistStreams):
                 _entity = self.queueStreamService.get(_id)
-                _unlinkedStreams.append(_entity)
+                _deletedData["QueueStream"].append(_entity)
         for _id in _sourcesIds:
             if(not _id in _playlistSources):
                 _entity = self.streamSourceService.get(_id)
-                _unlinkedSources.append(_entity)
+                _deletedData["StreamSource"].append(_entity)
+                
+        # TODO get dangle ids
         
-        _deletedData[0] = _unlinkedStreams
-        _deletedData[1] = _unlinkedSources
+        printS("\nQueueStream", color = colors["BOLD"])
+        printS("\nNo nQueueStreams will be removed", doPrint = len(_deletedData["QueueStream"]) == 0)
+        for e in _deletedData["QueueStream"]:
+            print(e.id + " - " + e.name)
+            
+        printS("\nStreamSource", color = colors["BOLD"])
+        printS("\nNo nStreamSources will be removed", doPrint = len(_deletedData["StreamSource"]) == 0)
+        for e in _deletedData["StreamSource"]:
+            print(e.id + " - " + e.name)
+            
+        printS("\nDangling QueueStream IDs", color = colors["BOLD"])
+        printS("\nNo IDs will be removed", doPrint = len(_deletedData["DanglingQueueStreamId"]) == 0)
+        for e in _deletedData["DanglingQueueStreamId"]:
+            print(e.id + " - " + e.name)
+            
+        printS("\nDangling StreamSource IDs", color = colors["BOLD"])
+        printS("\nNo IDs will be removed", doPrint = len(_deletedData["DanglingStreamSourceId"]) == 0)
+        for e in _deletedData["DanglingStreamSourceId"]:
+            print(e.id + " - " + e.name)
         
-        for e in _unlinkedStreams:
-            print(e.id + " " + e.name)
-        for e in _unlinkedSources:
-            print(e.id + " " + e.name)
-        
-        printS("Purge summary, the following data will be PERMANENTLY REMOVED:", color = colors["WARNING"])
-        
-        printS("Removing ", len(_unlinkedStreams), " unlinked QueueStreams, ", len(_unlinkedSources), " StreamSources.")
-        printS("Removing ", len(_danglingStreamIds), " dangling QueueStream IDs, ", len(_danglingSourceIds), " dangling StreamSource IDs.")
+        printS("\nPurge summary, the following data will be PERMANENTLY REMOVED:", color = colors["WARNING"])
+        printS("Removing ", len(_deletedData["QueueStream"]), " unlinked QueueStreams, ", len(_deletedData["StreamSource"]), " StreamSources.")
+        printS("Removing ", len(_deletedData["DanglingQueueStreamId"]), " dangling QueueStream IDs, ", len(_deletedData["DanglingStreamSourceId"]), " dangling StreamSource IDs.")
         _input = input("Do you want to permanently remove this data? (y/n):")
         if(_input in affirmative):
             printS("TODO purge", color = colors["OKGREEN"])

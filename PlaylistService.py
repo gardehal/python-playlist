@@ -471,17 +471,18 @@ class PlaylistService():
         
     def purge(self, removeSoftDeleted: bool = False, permanentlyDelete: bool = False) -> dict[List[QueueStream], List[StreamSource]]:
         """
-        Purges the dangling IDs, StreamSources, and QueueStreams from Playlists.
+        Purges the dangling IDs from Playlists, and purge unlinked StreamSources and QueueStreams.
 
         Args:
             removeSoftDeleted (bool): should soft-deleted entities be deleted
             permanentlyDelete (bool): should entities be permanently deleted
             
         Returns:
-            dict[List[QueueStream], List[StreamSource]]: dict with two lists, one for StreamSources removed, one for QueueStreams removed
+            dict[List[QueueStream], List[StreamSource], List[DanglingQueueStreamId], List[DanglingStreamSourceId]]: dict with four lists, one for StreamSources removed, QueueStreams removed, DanglingQueueStreamId removed from playlists, and DanglingStreamSourceId removed
         """
         
-        _deletedData = {"QueueStream": [], "StreamSource": [], "DanglingQueueStreamId": [], "DanglingStreamSourceId": []}
+        _deletedDataEmpty = {"QueueStream": [], "StreamSource": [], "DanglingQueueStreamId": [], "DanglingStreamSourceId": []}
+        _deletedData = _deletedDataEmpty
         _playlists = self.getAll(removeSoftDeleted)
         _streamsIds = self.queueStreamService.getAllIds()
         _sourcesIds = self.streamSourceService.getAllIds()
@@ -503,15 +504,28 @@ class PlaylistService():
                 _deletedData["StreamSource"].append(_entity)
                 
         for _playlist in _playlists:
+            _streamIdsToRemove = []
+            _sourceIdsToRemove = []
+            
             for _id in _playlist.streamIds:
                 _stream = self.queueStreamService.get(_id, removeSoftDeleted)
                 if(_stream == None):
-                    _deletedData["DanglingQueueStreamId"].append(_id)
+                    _streamIdsToRemove.append(_id)
                     
             for _id in _playlist.streamSourceIds:
                 _source = self.streamSourceService.get(_id, removeSoftDeleted)
                 if(_source == None):
-                    _deletedData["DanglingStreamSourceId"].append(_id)
+                    _sourceIdsToRemove.append(_id)
+                    
+            if(len(_streamIdsToRemove) > 0 or len(_sourceIdsToRemove) > 0):
+                for _id in _streamIdsToRemove:
+                    _playlist.streamIds.remove(_id)
+                for _id in _sourceIdsToRemove:
+                    _playlist.streamSourceIds.remove(_id)
+                
+                _streamIdsToRemove.extend(_deletedData["DanglingQueueStreamId"])
+                _sourceIdsToRemove.extend(_deletedData["DanglingStreamSourceId"])
+                _updatedPlaylists.append(_playlist)
         
         printS("\nPurge summary, the following data will be", (" PERMANENTLY REMOVED" if permanentlyDelete else " DELETED"), " :", color = colors["WARNING"])
         
@@ -540,7 +554,6 @@ class PlaylistService():
         printS("Do you want to", (" PERMANENTLY REMOVE" if permanentlyDelete else " DELETE"), " this data?", color = colors["WARNING"])
         _input = input("(y/n):")
         if(_input in affirmative):
-            printS("TODO purge", color = colors["OKGREEN"])
             for _ in _deletedData["QueueStream"]:
                 if(permanentlyDelete):
                     self.queueStreamService.remove(_.id)
@@ -553,10 +566,10 @@ class PlaylistService():
                 else:
                     self.streamSourceService.delete(_.id)
             
-            
-            
-            
+            # for _playlist in _updatedPlaylists:
+            #     self.update(_playlist)
+                
             return _deletedData
             
         printS("Purge aborted by user.", color = colors["WARNING"])
-        return {"QueueStream": [], "StreamSource": []}
+        return _deletedDataEmpty

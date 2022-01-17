@@ -236,9 +236,12 @@ class Main:
                 continue
             
             elif(arg in purgePlaylistFlags):
-                # Expected input: "accept changes" input within purge method
+                # Expected input: removeSoftDeleted, permanentlyDelete, "accept changes" input within purge method
+                _input = extractArgs(argIndex, argV)
+                _removeSoftDeleted = eval(_input[0]) if(len(_input) > 0) else False
+                _permanentlyDelete = eval(_input[1]) if(len(_input) > 1) else False
                 
-                _result = Main.playlistService.purge()
+                _result = Main.playlistService.purge(_removeSoftDeleted, _permanentlyDelete)
                 if(len(_result["QueueStream"]) > 0 or len(_result["StreamSource"]) > 0):
                     printS("Purge finished, deleted ", len(_result["QueueStream"]), " QueueStreams and ", len(_result["StreamSource"]), " StreamSources.", color = colors["OKGREEN"])
                 else:
@@ -558,7 +561,7 @@ class Main:
         printS(detailsPlaylistFlags, " [playlistIds or indices: list] [? enableFetch: bool] [? enableFetch: bool]: Prints details about given playlist, with option for including streams and sources.")
         printS(fetchPlaylistSourcesFlags, " [playlistIds or indices: list] [? takeAfter: datetime] [? takeBefore: datetime]: Fetch new streams from sources in Playlists indicated, e.g. if a Playlist has a YouTube channel as a source, and the channel uploads a new video, this video will be added to the Playlist. Optional arguments takeAfter: only fetch streams after this date, takeBefore: only fetch streams before this date. Dates formatted like \"2022-01-30\" (YYYY-MM-DD)")
         printS(prunePlaylistFlags, " [playlistIds or indices: list]: Prune Playlists indicated, deleteing watched streams.")
-        printS(purgePlaylistFlags, ": Purge database indicated, removing IDs with no corresponding relation and deleteing StreamSources and QueueStreams with no linked IDs in Playlists.")
+        printS(purgePlaylistFlags, "[? removeSoftDeleted: bool] [? permanentlyDelete: bool]: Purge database indicated, removing IDs with no corresponding relation and deleteing StreamSources and QueueStreams with no linked IDs in Playlists.")
         printS(resetPlaylistFetchFlags, " [playlistIds or indices: list]: Resets fetch status of sources in a Playlist and deletes streams from Playlist.")
         printS(playFlags, " [playlistId: str] [? starindex: int] [? shuffle: bool] [? repeat: bool]: Start playing stream from a Playlist, order and automation (like skipping already watched streams) depending on the input and Playlist.")
         printS("\t", quitSwitches, ": End current playback and contintue the program without playing anymore streams in Playlist. Only available while Playlist is playing.")

@@ -102,9 +102,7 @@ class Main:
                     continue
 
                 filepath = os.path.join(LOCAL_STORAGE_PATH, "Playlist", _ids[0] + ".json")
-                print(filepath)
                 filepath = str(filepath).replace("\\", "/")
-                print(filepath)
                 os.startfile(filepath)
                     
                 argIndex += len(_input) + 1
@@ -390,12 +388,13 @@ class Main:
 
             # Sources
             elif(arg in addSourcesFlags):
-                # Expected input: playlistId or index, uri, enableFetch?, name?
+                # Expected input: playlistId or index, uri, enableFetch?, backgroundContent?, name?
                 _input = extractArgs(argIndex, argV)
                 _ids = Main.utility.getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll(), 1)
                 _uri = _input[1] if len(_input) > 1 else None
                 _enableFetch = eval(_input[2]) if len(_input) > 2 else False
-                _name = _input[3] if len(_input) > 3 else None
+                _bgContent = eval(_input[3]) if len(_input) > 3 else False
+                _name = _input[4] if len(_input) > 4 else None
 
                 if(len(_ids) == 0):
                     printS("Failed to add StreamSource, missing playlistId or index.", color = colors["FAIL"])
@@ -409,7 +408,7 @@ class Main:
                     continue
 
                 if(_name == None):
-                    _name = Main.fetchService.getPageTitle(_uri)
+                    _name = Main.utility.getPageTitle(_uri)
                 else:
                     _name = "New source"
                     printS("Could not automatically get the web name for this stream, will be named \"" , _name, "\".", color = colors["WARNING"])
@@ -573,6 +572,7 @@ class Main:
         # General
         printS(helpFlags, ": Prints this information about input arguments.")
         printS(testFlags, ": A method of calling experimental code (when you want to test if something works).")
+        printS(editFlags, " [playlistId or index: str]: Opens the file with Playlist.")
 
         # Playlist
         printS(addPlaylistFlags, " [name: str] [? playWatchedStreams: bool] [? allowDuplicates: bool] [? streamSourceIds: list]: Add a Playlist with name: name, playWatchedStreams: if playback should play watched streams, allowDuplicates: should Playlist allow duplicate streams (only if the uri is the same), streamSourceIds: a list of sources.")
@@ -594,6 +594,7 @@ class Main:
         printS(deleteStreamFlags, " [streamIds or indices: list]: delete streams from Playlist.")
         # Sources
         printS(addSourcesFlags, " [playlistId or index: str] [uri: string] [? enableFetch: bool] [? name: str]: Add a source from uri: URL, enableFetch: if the Playlist should fetch new stream from this source, and name: name (set automatically if not given).")
+        # printS(addSourcesFlags, " [playlistId or index: str] [uri: string] [? enableFetch: bool] [? backgroundContent: bool] [? name: str]: Add a source from uri: URL, enableFetch: if the Playlist should fetch new stream from this source, backgroundContent; if the streams from this source are things you would play in the background, and name: name (set automatically if not given).")
         printS(deleteSourceFlags, " [sourceId or index: str]: deletes source from database and Playlist if used anywhere.")
         printS(listSourcesFlags, " [playlistId or index: str]: Lists sources with indices that can be used instead of IDs in other commands.")
         # Meta

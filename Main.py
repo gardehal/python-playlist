@@ -29,6 +29,8 @@ BROWSER_BIN = os.environ.get("BROWSER_BIN")
 # General
 helpFlags = ["-help", "-h"]
 testFlags = ["-test", "-t"]
+editFlags = ["-edit", "-e"]
+
 # Playlist
 addPlaylistFlags = ["-addplaylist", "-apl", "-ap"]
 addPlaylistFromYouTubeFlags = ["-addplaylistfromyoutube", "-apfy", "-fromyoutube", "-fyt", "-fy"]
@@ -87,7 +89,26 @@ class Main:
                 if(1):
                     printS("testing code here")
                     
-                quit()
+                quit()            
+                
+            elif(arg in editFlags):
+                # Expected input: playlistId or index
+                _input = extractArgs(argIndex, argV)
+                
+                _ids = Main.utility.getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll())
+                if(len(_ids) == 0):
+                    printS("Failed to edit, missing playlistId or index.", color = colors["FAIL"])
+                    argIndex += len(_input) + 1
+                    continue
+
+                filepath = os.path.join(LOCAL_STORAGE_PATH, "Playlist", _ids[0] + ".json")
+                print(filepath)
+                filepath = str(filepath).replace("\\", "/")
+                print(filepath)
+                os.startfile(filepath)
+                    
+                argIndex += len(_input) + 1
+                continue
 
             # Playlist
             elif(arg in addPlaylistFlags):

@@ -45,6 +45,7 @@ playFlags = ["-play", "-p"]
 quitSwitches = ["quit", "q", "exit", "end"]
 skipSwitches = ["skip", "s"]
 addCurrentToPlaylistSwitches = ["addto", "at"]
+printPlaybackDetailsSwitches = ["detailsprint", "details", "print", "dp"]
 
 # Stream
 addStreamFlags = ["-add", "-a"]
@@ -58,7 +59,7 @@ listSettingsFlags = ["-settings", "-secrets", "-s"]
 
 class Main:
     fetchService = FetchService()
-    playbackService = PlaybackService(quitSwitches, skipSwitches, addCurrentToPlaylistSwitches)
+    playbackService = PlaybackService(quitSwitches, skipSwitches, addCurrentToPlaylistSwitches, printPlaybackDetailsSwitches)
     playlistService = PlaylistService()
     queueStreamService = QueueStreamService()
     streamSourceService = StreamSourceService()

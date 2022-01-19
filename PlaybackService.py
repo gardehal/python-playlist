@@ -192,7 +192,7 @@ class PlaybackService():
                 printS("Stream \"", stream.name, "\" added to new Playlist.", color = colors["OKGREEN"], doPrint = (_crossAddPlaylistResult > 0))
                 printS("Stream \"", stream.name, "\" could not be added to new Playlist.", color = colors["FAIL"], doPrint = (_crossAddPlaylistResult == 0))
             elif(len(self.printDetailsInputs) > 0 and _input in self.printDetailsInputs):
-                print("TODO")
+                self.playlistService.printPlaylistDetails([playlist.id])
             else:
                 print(_input)
                 printS("Argument(s) not recognized: \"", _input, "\". Please refrain from using arrows to navigate in the CLI as it adds hidden characters.", color = colors["WARNING"])

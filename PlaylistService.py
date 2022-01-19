@@ -573,3 +573,62 @@ class PlaylistService():
             
         printS("Purge aborted by user.", color = colors["WARNING"])
         return _deletedDataEmpty
+    
+        
+    def printPlaylistDetails(self, playlistIds: List[str], includeUri: bool = False, includeId: bool = False, includeDatetime: bool = False, includeListCount: bool = False) -> int:
+        """
+        Print detailed info for Playlist, including details for related StreamSources and QueueStreams.
+
+        Args:
+            playlistIds (List[str]): list of playlistIds to print details of
+            includeUri (bool, optional): should print include URI if any. Defaults to False
+            includeId (bool, optional): should print include IDs. Defaults to False
+            
+        Returns:
+            int: number of playlists printed for
+        """
+        
+        _result = 0
+        for _id in playlistIds:
+            _playlist = self.get(_id)
+              
+            _playlistDetailsString = _playlist.detailsString(includeUri, includeId, includeDatetime, includeListCount = False)
+            if(includeListCount):
+                _unwatchedStreams = self.getUnwatchedStreamsByPlaylistId(_playlist.id)
+                _fetchedSources = self.getFetchedSourcesByPlaylistId(_playlist.id)
+                _sourcesListString = f", unwatched streams: {len(_unwatchedStreams)}/{len(_playlist.streamIds)}"
+                _streamsListString = f", fetched sources: {len(_fetchedSources)}/{len(_playlist.streamSourceIds)}"
+                _playlistDetailsString += _sourcesListString + _streamsListString
+
+            printS(_playlistDetailsString)
+            
+            printS("\tStreamSources", color = colors["BOLD"])
+            if(len(_playlist.streamSourceIds) == 0):
+                printS("\tNo sources added yet.")
+            
+            for i, _sourceId in enumerate(_playlist.streamSourceIds):
+                _source = self.streamSourceService.get(_sourceId)
+                if(_source == None):
+                    printS("\\tSource not found (ID: \"", _sourceId, "\").", color = colors["FAIL"])
+                    continue
+                
+                _color = "WHITE" if i % 2 == 0 else "GREYBG"
+                printS("\t", str(i), " - ", _source.detailsString(includeUri, includeId, includeDatetime, includeListCount), color = colors[_color])
+            
+            print("\n")
+            printS("\tQueueStreams", color = colors["BOLD"])
+            if(len(_playlist.streamIds) == 0):
+                printS("\tNo streams added yet.")
+            
+            for i, _streamId in enumerate(_playlist.streamIds):
+                _stream = self.queueStreamService.get(_streamId)
+                if(_stream == None):
+                    printS("\tStream not found (ID: \"", _streamId, "\").", color = colors["FAIL"])
+                    continue
+                
+                _color = "WHITE" if i % 2 == 0 else "GREYBG"
+                printS("\t", str(i), " - ", _stream.detailsString(includeUri, includeId, includeDatetime, includeListCount), color = colors[_color])
+                
+            _result += 1
+                
+        return _result

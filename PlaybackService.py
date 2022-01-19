@@ -36,15 +36,17 @@ class PlaybackService():
     quitInputs: List[str] = None
     skipInputs: List[str] = None
     addToInputs: List[str] = None
+    printDetailsInputs: List[str] = None
 
-    def __init__(self, quitInputs: List[str] = ["quit"], skipInputs: List[str] = ["skip"], addToInputs: List[str] = ["addto"]):
+    def __init__(self, quitInputs: List[str] = ["quit"], skipInputs: List[str] = ["skip"], addToInputs: List[str] = ["addto"], printDetailsInputs: List[str] = ["detailsprint"]):
         self.playlistService: PlaylistService = PlaylistService()
         self.queueStreamService: QueueStreamService = QueueStreamService()
         self.streamSourceService: StreamSourceService = StreamSourceService()
         self.utility: Utility = Utility()
         self.quitInputs: List[str] = quitInputs
         self.skipInputs: List[str] = skipInputs
-        self.addToInputs: List[str] = addToInputs       
+        self.addToInputs: List[str] = addToInputs
+        self.printDetailsInputs: List[str] = printDetailsInputs       
 
     def play(self, playlistId: str, startIndex: int = 0, shuffle: bool = False, repeatPlaylist: bool = False) -> bool:
         """
@@ -189,6 +191,8 @@ class PlaybackService():
                 _crossAddPlaylistResult = self.addPlaybackStreamToPlaylist(stream, _idsIndices)
                 printS("Stream \"", stream.name, "\" added to new Playlist.", color = colors["OKGREEN"], doPrint = (_crossAddPlaylistResult > 0))
                 printS("Stream \"", stream.name, "\" could not be added to new Playlist.", color = colors["FAIL"], doPrint = (_crossAddPlaylistResult == 0))
+            elif(len(self.printDetailsInputs) > 0 and _input in self.printDetailsInputs):
+                print("TODO")
             else:
                 print(_input)
                 printS("Argument(s) not recognized: \"", _input, "\". Please refrain from using arrows to navigate in the CLI as it adds hidden characters.", color = colors["WARNING"])

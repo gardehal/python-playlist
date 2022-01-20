@@ -164,18 +164,19 @@ class PlaylistService():
         else:
             return None
         
-    def remove(self, id: str) -> T:
+    def remove(self, id: str, includeSoftDeleted: bool = False) -> T:
         """
         Permanently remove a Playlist.
 
         Args:
             id (str): ID of Playlist to remove
+            includeSoftDeleted (bool): should include soft-deleted entities
 
         Returns:
             Playlist | None: returns Playlist if success, else None
         """
 
-        _entity = self.get(id)
+        _entity = self.get(id, includeSoftDeleted)
         if(_entity == None):
             return None
         
@@ -465,10 +466,10 @@ class PlaylistService():
             _stream = self.queueStreamService.get(_id, includeSoftDeleted)
             if(_stream.watched != None):
                 _removedStreams.append(_stream)
-                self.queueStreamService.remove(_id)
+                self.queueStreamService.remove(_id, includeSoftDeleted)
             
         for _stream in _removedStreams:
-            _playlist.streamIds.remove(_stream.id)
+            _playlist.streamIds.remove(_stream.id, includeSoftDeleted)
             
         _updateResult = self.update(_playlist)
         if(_updateResult != None):
@@ -491,8 +492,8 @@ class PlaylistService():
         _deletedDataEmpty = {"QueueStream": [], "StreamSource": [], "DanglingQueueStreamId": [], "DanglingStreamSourceId": []}
         _deletedData = _deletedDataEmpty
         _playlists = self.getAll(includeSoftDeleted)
-        _streamsIds = self.queueStreamService.getAllIds()
-        _sourcesIds = self.streamSourceService.getAllIds()
+        _streamsIds = self.queueStreamService.getAllIds(includeSoftDeleted)
+        _sourcesIds = self.streamSourceService.getAllIds(includeSoftDeleted)
         
         _playlistStreams = []
         _playlistSources = []
@@ -561,19 +562,19 @@ class PlaylistService():
         printS("Do you want to", (" PERMANENTLY REMOVE" if permanentlyDelete else " DELETE"), " this data?", color = colors["WARNING"])
         _input = input("(y/n):")
         if(_input in affirmative):
-            if(len(_deletedData["QueueStream"]) == 0 or len(_deletedData["StreamSource"]) == 0 or len(_deletedData["DanglingQueueStreamId"]) == 0 or len(_deletedData["DanglingStreamSourceId"]) == 0):
+            if(len(_deletedData["QueueStream"]) == 0 and len(_deletedData["StreamSource"]) == 0 and len(_deletedData["DanglingQueueStreamId"]) == 0 and len(_deletedData["DanglingStreamSourceId"]) == 0):
                 printS("No data was available.", color = colors["WARNING"])
                 return _deletedData
                 
             for _ in _deletedData["QueueStream"]:
                 if(permanentlyDelete):
-                    self.queueStreamService.remove(_.id)
+                    self.queueStreamService.remove(_.id, includeSoftDeleted)
                 else:
                     self.queueStreamService.delete(_.id)
                     
             for _ in _deletedData["StreamSource"]:
                 if(permanentlyDelete):
-                    self.streamSourceService.remove(_.id)
+                    self.streamSourceService.remove(_.id, includeSoftDeleted)
                 else:
                     self.streamSourceService.delete(_.id)
             

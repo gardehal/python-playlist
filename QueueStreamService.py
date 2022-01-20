@@ -143,18 +143,19 @@ class QueueStreamService():
         else:
             return None
         
-    def remove(self, id: str) -> T:
+    def remove(self, id: str, includeSoftDeleted: bool = False) -> T:
         """
         Permanently remove QueueStream.
 
         Args:
             id (str): ID of QueueStream to remove
+            includeSoftDeleted (bool): should include soft-deleted entities
 
         Returns:
             QueueStream | None: returns QueueStream if success, else None
         """
 
-        _entity = self.get(id)
+        _entity = self.get(id, includeSoftDeleted)
         if(_entity == None):
             return None
         

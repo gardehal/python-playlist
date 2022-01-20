@@ -564,7 +564,7 @@ class PlaylistService():
         if(_input in affirmative):
             if(len(_deletedData["QueueStream"]) == 0 and len(_deletedData["StreamSource"]) == 0 and len(_deletedData["DanglingQueueStreamId"]) == 0 and len(_deletedData["DanglingStreamSourceId"]) == 0):
                 printS("No data was available.", color = colors["WARNING"])
-                return _deletedData
+                return _deletedDataEmpty
                 
             for _ in _deletedData["QueueStream"]:
                 if(permanentlyDelete):

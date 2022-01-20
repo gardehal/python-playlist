@@ -530,12 +530,12 @@ class PlaylistService():
         printS("\nPurge summary, the following data will be", (" PERMANENTLY REMOVED" if permanentlyDelete else " DELETED"), ":", color = colors["WARNING"])
         
         printS("\nQueueStream", color = colors["BOLD"])
-        printS("No nQueueStreams will be", (" permanently" if permanentlyDelete else ""), " removed", doPrint = len(_deletedData["QueueStream"]) == 0)
+        printS("No QueueStreams will be", (" permanently" if permanentlyDelete else ""), " removed", doPrint = len(_deletedData["QueueStream"]) == 0)
         for _ in _deletedData["QueueStream"]:
             print(_.id + " - " + _.name)
             
         printS("\nStreamSource", color = colors["BOLD"])
-        printS("No nStreamSources will be removed", doPrint = len(_deletedData["StreamSource"]) == 0)
+        printS("No StreamSources will be removed", doPrint = len(_deletedData["StreamSource"]) == 0)
         for _ in _deletedData["StreamSource"]:
             print(_.id + " - " + _.name)
             
@@ -554,6 +554,10 @@ class PlaylistService():
         printS("Do you want to", (" PERMANENTLY REMOVE" if permanentlyDelete else " DELETE"), " this data?", color = colors["WARNING"])
         _input = input("(y/n):")
         if(_input in affirmative):
+            if(len(_deletedData["QueueStream"]) == 0 or len(_deletedData["StreamSource"]) == 0 or len(_deletedData["DanglingQueueStreamId"]) == 0 or len(_deletedData["DanglingStreamSourceId"]) == 0):
+                printS("No data was available.", color = colors["WARNING"])
+                return _deletedData
+                
             for _ in _deletedData["QueueStream"]:
                 if(permanentlyDelete):
                     self.queueStreamService.remove(_.id)

@@ -109,15 +109,18 @@ class PlaylistService():
             
         return _result
         
-    def getAllIds(self) -> List[str]:
+    def getAllIds(self, includeSoftDeleted: bool = False) -> List[str]:
         """
         Get all IDs of playlists.
+
+        Args:
+            includeSoftDeleted (bool): should include soft-deleted entities
 
         Returns:
             List[str]: playlists IDs if any, else empty list
         """
         
-        _all = self.getAll()
+        _all = self.getAll(includeSoftDeleted)
         return [_.id for _ in _all]
 
     def update(self, playlist: T) -> T:
@@ -310,24 +313,25 @@ class PlaylistService():
         _playlist.updated = datetime.now()
         return self.update(_playlist)
 
-    def getStreamsByPlaylistId(self, playlistId: str) -> List[QueueStream]:
+    def getStreamsByPlaylistId(self, playlistId: str, includeSoftDeleted: bool = False) -> List[QueueStream]:
         """
         Get all QueueStreams in playlist from playlistId.
 
         Args:
             playlistId (str): ID of playlist to add to
+            includeSoftDeleted (bool): should include soft-deleted entities
 
         Returns:
             List[QueueStream]: QueueStreams if any, else empty list
         """
 
-        _playlist = self.get(playlistId)
+        _playlist = self.get(playlistId, includeSoftDeleted)
         if(_playlist == None):
             return 0
 
         _playlistStreams = []
         for id in _playlist.streamIds:
-            _stream = self.queueStreamService.get(id)
+            _stream = self.queueStreamService.get(id, includeSoftDeleted)
             if(_stream == None):
                 printS("A QueueStream with ID: ", id, " was listed in Playlist \"", _playlist.name, "\", but was not found in the database. Consider removing it by running the purge command.", color = colors["WARNING"])
                 continue
@@ -336,24 +340,25 @@ class PlaylistService():
 
         return _playlistStreams
     
-    def getUnwatchedStreamsByPlaylistId(self, playlistId: str) -> List[QueueStream]:
+    def getUnwatchedStreamsByPlaylistId(self, playlistId: str, includeSoftDeleted: bool = False) -> List[QueueStream]:
         """
         Get unwatched QueueStreams in playlist from playlistId.
 
         Args:
             playlistId (str): ID of playlist to get from
+            includeSoftDeleted (bool): should include soft-deleted entities
 
         Returns:
             List[QueueStream]: QueueStreams if any, else empty list
         """
 
-        _playlist = self.get(playlistId)
+        _playlist = self.get(playlistId, includeSoftDeleted)
         if(_playlist == None):
             return 0
 
         _playlistStreams = []
         for id in _playlist.streamIds:
-            _stream = self.queueStreamService.get(id)
+            _stream = self.queueStreamService.get(id, includeSoftDeleted)
             if(_stream == None):
                 printS("A QueueStream with ID: ", id, " was listed in Playlist \"", _playlist.name, "\", but was not found in the database. Consider removing it by running the purge command.", color = colors["WARNING"])
                 continue
@@ -363,24 +368,25 @@ class PlaylistService():
 
         return _playlistStreams    
     
-    def getFetchedSourcesByPlaylistId(self, playlistId: str) -> List[StreamSource]:
+    def getFetchedSourcesByPlaylistId(self, playlistId: str, includeSoftDeleted: bool = False) -> List[StreamSource]:
         """
         Get StreamSources where fetch is enabled in playlist from playlistId.
 
         Args:
             playlistId (str): ID of playlist to get from
+            includeSoftDeleted (bool): should include soft-deleted entities
 
         Returns:
             List[StreamSource]: StreamSources if any, else empty list
         """
 
-        _playlist = self.get(playlistId)
+        _playlist = self.get(playlistId, includeSoftDeleted)
         if(_playlist == None):
             return 0
 
         _playlistSources = []
         for id in _playlist.streamSourceIds:
-            _source = self.streamSourceService.get(id)
+            _source = self.streamSourceService.get(id, includeSoftDeleted)
             if(_source == None):
                 printS("A StreamSource with ID: ", id, " was listed in Playlist \"", _playlist.name, "\", but was not found in the database. Consider removing it by running the purge command.", color = colors["WARNING"])
                 continue
@@ -437,12 +443,13 @@ class PlaylistService():
             
         return None
     
-    def prune(self, playlistId: str) -> List[QueueStream]:
+    def prune(self, playlistId: str, includeSoftDeleted: bool = False) -> List[QueueStream]:
         """
         Removes watched streams from a Playlist if it does not allow replaying of already played streams (playWatchedStreams == False).
 
         Args:
             playlistId (str): ID of playlist to prune
+            includeSoftDeleted (bool): should include soft-deleted entities
 
         Returns:
             List[QueueStream]: QueueStreams removed
@@ -450,12 +457,12 @@ class PlaylistService():
         
         _removedStreams = []
 
-        _playlist = self.get(playlistId)
+        _playlist = self.get(playlistId, includeSoftDeleted)
         if(_playlist == None or _playlist.playWatchedStreams == True):
             return _removedStreams
         
         for _id in _playlist.streamIds:
-            _stream = self.queueStreamService.get(_id)
+            _stream = self.queueStreamService.get(_id, includeSoftDeleted)
             if(_stream.watched != None):
                 _removedStreams.append(_stream)
                 self.queueStreamService.remove(_id)

@@ -88,7 +88,8 @@ class Main:
                 printS("Test", color = colors["OKBLUE"])
 
                 if(1):
-                    printS("testing code here")
+                    x = Main.queueStreamService.get("e54cde08-5c09-4558-9f4f-2bfcb062ac3f", 1)
+                    print(x)
                     
                 quit()            
                 

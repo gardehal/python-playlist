@@ -88,15 +88,18 @@ class QueueStreamService():
             
         return _result
     
-    def getAllIds(self) -> List[str]:
+    def getAllIds(self, includeSoftDeleted: bool = False) -> List[str]:
         """
         Get all IDs of queueStreams.
+
+        Args:
+            includeSoftDeleted (bool): should include soft-deleted entities
 
         Returns:
             List[str]: queueStreams IDs if any, else empty list
         """
         
-        _all = self.getAll()
+        _all = self.getAll(includeSoftDeleted)
         return [_.id for _ in _all]
 
     def update(self, queueStream: T) -> T:

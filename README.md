@@ -83,6 +83,7 @@ Program for queueing and playing videos from list or from sources like channels 
   - Close tab after video is watched not possible? killing selenium too slow, PID from Popen not same PID as browser tab  
   - download stream, play in subprocess VLC which sets video to watched when video finishes or VLC closes would be nice (easy for yt, third party without pytube-like packs much harder)
 
+- prune/delete should have confirmation input and list removed/soft deleted content
 - prune remove stream IDs, fails to remove if entities have been removed, but not ids
 - automatic play, somewhat more annoying with an external hosting site like YT, but playback can wait for time legnth of stream listen to input, and play next when time is up. Ads, loading etc. must be taken into account, setting for buffer time?
 - add more data to -listplaylists, total number of streams, sources, playlists, softdelete option

@@ -462,15 +462,18 @@ class PlaylistService():
         if(_playlist == None or _playlist.playWatchedStreams == True):
             return _removedStreams
         
+        printS("Pruning streams", color = colors["WARNING"], doPrint = DEBUG)
         for _id in _playlist.streamIds:
             _stream = self.queueStreamService.get(_id, includeSoftDeleted)
-            if(_stream.watched != None):
+            if(_stream != None and _stream.watched != None):
                 _removedStreams.append(_stream)
                 self.queueStreamService.remove(_id, includeSoftDeleted)
             
+        printS("Pruning streamIds list", color = colors["WARNING"], doPrint = DEBUG)
         for _stream in _removedStreams:
-            _playlist.streamIds.remove(_stream.id, includeSoftDeleted)
+            _playlist.streamIds.remove(_stream.id)
             
+        printS("Pruning, update", color = colors["WARNING"], doPrint = DEBUG)
         _updateResult = self.update(_playlist)
         if(_updateResult != None):
             return _removedStreams

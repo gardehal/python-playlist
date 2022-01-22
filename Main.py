@@ -236,9 +236,12 @@ class Main:
                 continue
 
             elif(arg in prunePlaylistFlags):
-                # Expected input: playlistIds or indices
+                # Expected input: playlistIds or indices, includeSoftDeleted, permanentlyDelete, "accept changes" input within purge method
                 _input = extractArgs(argIndex, argV)
                 _ids = Main.utility.getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll())
+                _lenIds = len(_ids)
+                _includeSoftDeleted = eval(_input[_lenIds]) if(len(_input) > _lenIds) else False
+                _permanentlyDelete = eval(_input[_lenIds + 1]) if(len(_input) > _lenIds + 1) else False
                 
                 if(len(_ids) == 0):
                     printS("Failed to prune playlists, missing playlistIds or indices.", color = colors["FAIL"])
@@ -246,10 +249,10 @@ class Main:
                     continue
                 
                 for _id in _ids:
-                    _result = Main.playlistService.prune(_id)
+                    _result = Main.playlistService.prune(_id, _includeSoftDeleted, _permanentlyDelete)
                     
-                    if(len(_result) > 0):
-                        printS("Prune finished, deleted ", len(_result), " streams from playlist (ID: \"", _id, "\").", color = colors["OKGREEN"])
+                    if(len(_result["QueueStream"]) > 0 and len(_result["QueueStreamId"]) > 0):
+                        printS("Prune finished, deleted ", len(_result["QueueStream"]), " streams, ", len(_result["QueueStreamId"]), " IDs from playlist (ID: \"", _id, "\").", color = colors["OKGREEN"])
                     else:
                         printS("Prune failed, could not delete any streams from playlist (ID: \"", _id, "\").", color = colors["FAIL"])
 
@@ -263,8 +266,8 @@ class Main:
                 _permanentlyDelete = eval(_input[1]) if(len(_input) > 1) else False
                 
                 _result = Main.playlistService.purge(_includeSoftDeleted, _permanentlyDelete)
-                if(len(_result["QueueStream"]) > 0 or len(_result["StreamSource"]) > 0 or len(_result["DanglingQueueStreamId"]) > 0 or len(_result["DanglingStreamSourceId"]) > 0):
-                    printS("Purge finished, deleted ", len(_result["QueueStream"]), " QueueStreams, ", len(_result["StreamSource"]), " StreamSources, and ", len(_result["DanglingQueueStreamId"]) + len(_result["DanglingStreamSourceId"]), " IDs.", color = colors["OKGREEN"])
+                if(len(_result["QueueStream"]) > 0 or len(_result["StreamSource"]) > 0 or len(_result["QueueStreamId"]) > 0 or len(_result["StreamSourceId"]) > 0):
+                    printS("Purge finished, deleted ", len(_result["QueueStream"]), " QueueStreams, ", len(_result["StreamSource"]), " StreamSources, and ", len(_result["QueueStreamId"]) + len(_result["StreamSourceId"]), " IDs.", color = colors["OKGREEN"])
                 else:
                     printS("Purge failed.", color = colors["FAIL"])
 

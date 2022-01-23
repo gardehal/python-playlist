@@ -1,20 +1,20 @@
-from datetime import datetime
 import os
 import sys
-from typing import List
+from datetime import datetime
 
 from dotenv import load_dotenv
 from myutil.Util import *
-from PlaybackService import PlaybackService
-from QueueStreamService import QueueStreamService
 
 from FetchService import FetchService
-from PlaylistService import PlaylistService
-from StreamSourceService import StreamSourceService
-from Utility import Utility
 from model.Playlist import Playlist
 from model.QueueStream import QueueStream
 from model.StreamSource import StreamSource
+from PlaybackService import PlaybackService
+from PlaylistService import PlaylistService
+from QueueStreamService import QueueStreamService
+from SharedService import SharedService
+from StreamSourceService import StreamSourceService
+from Utility import Utility
 
 load_dotenv()
 DEBUG = eval(os.environ.get("DEBUG"))
@@ -63,6 +63,7 @@ class Main:
     playbackService = PlaybackService(quitSwitches, skipSwitches, addCurrentToPlaylistSwitches, printPlaybackDetailsSwitches)
     playlistService = PlaylistService()
     queueStreamService = QueueStreamService()
+    sharedService = SharedService()
     streamSourceService = StreamSourceService()
     utility = Utility()
 
@@ -114,10 +115,14 @@ class Main:
             elif(arg in searchFlags):
                 # Expected input: searchTerm, includeSoftDeleted?
                 _input = extractArgs(argIndex, argV)
-                _searchTerm = eval(_input[0]) if(len(_input) > 0) else ""
+                _searchTerm = _input[0] if(len(_input) > 0) else ""
                 _includeSoftDeleted = eval(_input[1]) if(len(_input) > 1) else False
 
+                _result = Main.sharedService.search(_searchTerm, _includeSoftDeleted)
+                if(len(_result["QueueStream"]) > 0 or len(_result["StreamSource"]) > 0 or len(_result["Playlist"]) > 0):
+                    print("")
                 
+                Main.utility.printLists([*_result.values()], [*_result.keys()])
 
                 argIndex += len(_input) + 1
                 continue

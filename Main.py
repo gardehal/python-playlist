@@ -30,6 +30,7 @@ BROWSER_BIN = os.environ.get("BROWSER_BIN")
 helpFlags = ["-help", "-h"]
 testFlags = ["-test", "-t"]
 editFlags = ["-edit", "-e"]
+searchFlags = ["-search", "-s"]
 
 # Playlist
 addPlaylistFlags = ["-addplaylist", "-apl", "-ap"]
@@ -55,7 +56,7 @@ addSourcesFlags = ["-addsource", "-as"]
 deleteSourceFlags = ["-deletesource", "-ds"]
 listSourcesFlags = ["-listsources", "-ls"]
 # Meta
-listSettingsFlags = ["-settings", "-secrets", "-s"]
+listSettingsFlags = ["-settings", "-secrets"]
 
 class Main:
     fetchService = FetchService()
@@ -110,6 +111,17 @@ class Main:
                 argIndex += len(_input) + 1
                 continue
 
+            elif(arg in searchFlags):
+                # Expected input: searchTerm, includeSoftDeleted?
+                _input = extractArgs(argIndex, argV)
+                _searchTerm = eval(_input[0]) if(len(_input) > 0) else ""
+                _includeSoftDeleted = eval(_input[1]) if(len(_input) > 1) else False
+
+                
+
+                argIndex += len(_input) + 1
+                continue
+            
             # Playlist
             elif(arg in addPlaylistFlags):
                 # Expected input: name, playWatchedStreams?, allowDuplicates?, streamSourceIds/indices?
@@ -527,6 +539,7 @@ class Main:
         printS(helpFlags, ": Prints this information about input arguments.")
         printS(testFlags, ": A method of calling experimental code (when you want to test if something works).")
         printS(editFlags, " [playlistId or index: str]: Opens the file with Playlist.")
+        printS(searchFlags, " [searchTerm: str] [? includeSoftDeleted: bool]: Search all Playlists, QueueStreams, and StreamQueues, uri and names where available. Supports Regex.")
 
         # Playlist
         printS(addPlaylistFlags, " [name: str] [? playWatchedStreams: bool] [? allowDuplicates: bool] [? streamSourceIds: list]: Add a Playlist with name: name, playWatchedStreams: if playback should play watched streams, allowDuplicates: should Playlist allow duplicate streams (only if the uri is the same), streamSourceIds: a list of sources.")

@@ -298,4 +298,24 @@ class SharedService():
             self.playlistService.update(_playlist)
             
         return _deletedData
-      
+    
+    def search(self, searchTerm: str, includeSoftDeleted: bool = False) -> dict[List[QueueStream], List[StreamSource], List[Playlist]]:
+        """
+        Search names and uris for Regex-term searchTerm and returns a dict with results.
+
+        Args:
+            searchTerm (str): Regex-enabled term to search for
+            includeSoftDeleted (bool, optional): Should include soft deleted entities. Defaults to False.
+
+        Returns:
+            dict[List[QueueStream], List[StreamSource], List[Playlist]]: A dict of lists with entities that matched the searchTerm
+        """
+        
+        _deletedDataEmpty = {"QueueStream": [], "StreamSource": [], "Playlist": []}
+        _deletedData = _deletedDataEmpty
+        
+        _queueStreams = self.queueStreamService.getAll()
+        _streamSources = self.streamSourceService.getAll()
+        _playlists = self.playlistService.getAll()
+        
+        return _deletedData 

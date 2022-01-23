@@ -119,11 +119,11 @@ class Main:
                 _includeSoftDeleted = eval(_input[1]) if(len(_input) > 1) else False
 
                 _result = Main.sharedService.search(_searchTerm, _includeSoftDeleted)
-                if(len(_result["QueueStream"]) > 0 or len(_result["StreamSource"]) > 0 or len(_result["Playlist"]) > 0):
-                    print("")
                 
-                Main.utility.printLists([*_result.values()], [*_result.keys()])
-
+                _resultList = [[" - ".join([e.id, e.name, e.uri]) for e in l] for l in [*_result.values()]]
+                # list of list, for each list, for each entry, join id, name, uri if exists, then join back to list of lists of strings, send to printslists
+                Main.utility.printLists(_resultList, [*_result.keys()])
+                    
                 argIndex += len(_input) + 1
                 continue
             

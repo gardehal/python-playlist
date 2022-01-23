@@ -114,8 +114,9 @@ class Utility():
         """
         
         for i, dataList in enumerate(data):
-            print("\n")
             printS(titles[i], color = colors["BOLD"])
+            printS("No data.", color = colors["WARNING"], doPrint = len(dataList) == 0) 
+            
             for j, entry in enumerate(dataList):
                 _color = "WHITE" if j % 2 == 0 else "GREYBG"
                 printS(entry, color = colors[_color]) 

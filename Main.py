@@ -120,8 +120,9 @@ class Main:
 
                 _result = Main.sharedService.search(_searchTerm, _includeSoftDeleted)
                 
+                # _result is a dict of string keys, list values, get values from [*_result.values()]
+                # list of list, for each list, for each entry, str.join id, name, and uri, then join back to list of lists of strings, ready for printLists
                 _resultList = [[" - ".join([e.id, e.name, e.uri]) for e in l] for l in [*_result.values()]]
-                # list of list, for each list, for each entry, join id, name, uri if exists, then join back to list of lists of strings, send to printslists
                 Main.utility.printLists(_resultList, [*_result.keys()])
                     
                 argIndex += len(_input) + 1

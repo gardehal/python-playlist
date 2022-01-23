@@ -328,7 +328,7 @@ class SharedService():
             if(self.searchFields(searchTerm, _entity.name) > 0):
                 _data["Playlist"].append(_entity)
         
-        _found = len(_data["QueueStream"]) > 0 and len(_data["StreamSource"]) > 0 and len(_data["Playlist"]) > 0
+        _found = len(_data["QueueStream"]) > 0 or len(_data["StreamSource"]) > 0 or len(_data["Playlist"]) > 0
         printS("DEBUG: search - no results", color = colors["WARNING"], doPrint = not _found)
         
         return _data 
@@ -345,7 +345,7 @@ class SharedService():
         """
         
         for i, field in enumerate(fields):
-            if(re.search(searchTerm, field)):
+            if(re.search(searchTerm, field, re.IGNORECASE)):
                 return i + 1
         
         return 0

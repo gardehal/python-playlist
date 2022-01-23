@@ -88,8 +88,6 @@ Program for queueing and playing videos from list or from sources like channels 
 - automatic play, somewhat more annoying with an external hosting site like YT, but playback can wait for time legnth of stream listen to input, and play next when time is up. Ads, loading etc. must be taken into account, setting for buffer time?
 - index not working, just lucky testing with small list?
 - backgroundContent - implementation - group bgc and play at the end or start? option to only play bgc?
-- Playlist list with uris watched to avoid getting duplicates? this is likely edge case due to testing functionality. also duplicate of watchlog function basically
-- search for streams and sources in playlist by name (regex)?
 - fetch for sources by ids or indices
 - restore command for soft deleted
 - adding sources, check for duplicates on url (warning on duplicate name?)

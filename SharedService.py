@@ -1,4 +1,5 @@
 import os
+import re
 from typing import List
 
 from dotenv import load_dotenv
@@ -310,8 +311,8 @@ class SharedService():
             dict[List[QueueStream], List[StreamSource], List[Playlist]]: A dict of lists with entities that matched the searchTerm
         """
         
-        _deletedDataEmpty = {"QueueStream": [], "StreamSource": [], "Playlist": []}
-        _deletedData = _deletedDataEmpty
+        _dataEmpty = {"QueueStream": [], "StreamSource": [], "Playlist": []}
+        _data = _dataEmpty
         
         _queueStreams = self.queueStreamService.getAll()
         _streamSources = self.streamSourceService.getAll()
@@ -319,18 +320,18 @@ class SharedService():
         
         for _entity in _queueStreams:
             if(self.searchFields(searchTerm, _entity.name, _entity.uri) > 0):
-                _deletedData["QueueStream"].append(_entity)
+                _data["QueueStream"].append(_entity)
         for _entity in _streamSources:
             if(self.searchFields(searchTerm, _entity.name, _entity.uri) > 0):
-                _deletedData["StreamSource"].append(_entity)
+                _data["StreamSource"].append(_entity)
         for _entity in _playlists:
             if(self.searchFields(searchTerm, _entity.name) > 0):
-                _deletedData["Playlist"].append(_entity)
+                _data["Playlist"].append(_entity)
         
-        _found = len(_deletedData["QueueStream"]) > 0 and len(_deletedData["StreamSource"]) > 0 and len(_deletedData["Playlist"]) > 0
+        _found = len(_data["QueueStream"]) > 0 and len(_data["StreamSource"]) > 0 and len(_data["Playlist"]) > 0
         printS("DEBUG: search - no results", color = colors["WARNING"], doPrint = not _found)
         
-        return _deletedData 
+        return _data 
     
     def searchFields(self, searchTerm: str, *fields) -> int:
         """
@@ -340,7 +341,11 @@ class SharedService():
             searchTerm (str): Regex-enabled term to search for
 
         Returns:
-            int: int of field found in, 0 = not found, 1 = first field-argument etc.
+            int: int of field first found in, 0 = not found, 1 = first field-argument etc.
         """
+        
+        for i, field in enumerate(fields):
+            if(re.search(searchTerm, field)):
+                return i + 1
         
         return 0

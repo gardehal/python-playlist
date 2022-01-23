@@ -100,3 +100,24 @@ class Utility():
                     continue
 
         return _result
+    
+    def printLists(self, data: List[List[str]], titles: List[str]) -> bool:
+        """
+        Prints all lists in data, with title before corresponding list.
+
+        Args:
+            data (List[List[str]]): List if Lists to print
+            titles (List[str]): List of titles, index 0 is title for data List index 0 etc.
+
+        Returns:
+            bool: true = success
+        """
+        
+        for i, dataList in enumerate(data):
+            print("\n")
+            printS(titles[i], color = colors["BOLD"])
+            for j, entry in enumerate(dataList):
+                _color = "WHITE" if j % 2 == 0 else "GREYBG"
+                printS(entry, color = colors[_color]) 
+                
+        return True

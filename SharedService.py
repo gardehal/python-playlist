@@ -3,15 +3,14 @@ from typing import List
 
 from dotenv import load_dotenv
 from myutil.Util import *
-import pytube
-from PlaylistService import PlaylistService
 
-from QueueStreamService import QueueStreamService
-from StreamSourceService import StreamSourceService
-from Utility import Utility
 from model.Playlist import Playlist
 from model.QueueStream import QueueStream
 from model.StreamSource import StreamSource
+from PlaylistService import PlaylistService
+from QueueStreamService import QueueStreamService
+from StreamSourceService import StreamSourceService
+from Utility import Utility
 
 load_dotenv()
 DEBUG = eval(os.environ.get("DEBUG"))
@@ -318,4 +317,30 @@ class SharedService():
         _streamSources = self.streamSourceService.getAll()
         _playlists = self.playlistService.getAll()
         
+        for _entity in _queueStreams:
+            if(self.searchFields(searchTerm, _entity.name, _entity.uri) > 0):
+                _deletedData["QueueStream"].append(_entity)
+        for _entity in _streamSources:
+            if(self.searchFields(searchTerm, _entity.name, _entity.uri) > 0):
+                _deletedData["StreamSource"].append(_entity)
+        for _entity in _playlists:
+            if(self.searchFields(searchTerm, _entity.name) > 0):
+                _deletedData["Playlist"].append(_entity)
+        
+        _found = len(_deletedData["QueueStream"]) > 0 and len(_deletedData["StreamSource"]) > 0 and len(_deletedData["Playlist"]) > 0
+        printS("DEBUG: search - no results", color = colors["WARNING"], doPrint = not _found)
+        
         return _deletedData 
+    
+    def searchFields(self, searchTerm: str, *fields) -> int:
+        """
+        Searchs *fields for Regex-enabled searchTerm.
+
+        Args:
+            searchTerm (str): Regex-enabled term to search for
+
+        Returns:
+            int: int of field found in, 0 = not found, 1 = first field-argument etc.
+        """
+        
+        return 0

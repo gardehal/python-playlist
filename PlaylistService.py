@@ -268,7 +268,7 @@ class PlaylistService():
 
     def deleteStreams(self, playlistId: str, streamIds: List[str]) -> List[QueueStream]:
         """
-        Delete streams from Playlist.
+        Delete QueueStreams from Playlist.
 
         Args:
             playlistId (str): ID of Playlist to remove from
@@ -278,10 +278,10 @@ class PlaylistService():
             List[QueueStream]: QueueStream deleted
         """
 
-        _removed = []
+        _return = []
         _playlist = self.get(playlistId)
         if(_playlist == None):
-            return _removed
+            return _return
 
         for id in streamIds:
             _stream = self.queueStreamService.get(id)
@@ -291,12 +291,44 @@ class PlaylistService():
             _removeResult = self.queueStreamService.delete(id)
             if(_removeResult != None):
                 _playlist.streamIds.remove(_stream.id)
-                _removed.append(_stream)
+                _return.append(_stream)
 
-        _playlist.updated = datetime.now()
         _updateResult = self.update(_playlist)
         if(_updateResult):
-            return _removed
+            return _return
+        else:
+            return []
+        
+    def restoreStreams(self, playlistId: str, streamIds: List[str]) -> List[QueueStream]:
+        """
+        Restore QueueStreams to Playlist.
+
+        Args:
+            playlistId (str): ID of Playlist to remove from
+            streamIds (List[str]): IDs of QueueStreams to remove
+
+        Returns:
+            List[QueueStream]: QueueStream restored
+        """
+
+        _return = []
+        _playlist = self.get(playlistId, includeSoftDeleted = True)
+        if(_playlist == None):
+            return _return
+
+        for id in streamIds:
+            _stream = self.queueStreamService.get(id, includeSoftDeleted = True)
+            if(_stream == None):
+                continue
+            
+            _result = self.queueStreamService.restore(id)
+            if(_result != None):
+                _playlist.streamIds.append(_stream.id)
+                _return.append(_stream)
+
+        _updateResult = self.update(_playlist)
+        if(_updateResult):
+            return _return
         else:
             return []
 

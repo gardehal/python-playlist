@@ -456,10 +456,7 @@ class Main:
                     argIndex += len(_input) + 1
                     continue
                 
-                # TODO restoreStreams
-                print("WIP")
-                quit()
-                # _result = Main.playlistService.restoreStreams(_playlist.id, _queueStreamIds)
+                _result = Main.playlistService.restoreStreams(_playlist.id, _queueStreamIds)
                 if(len(_result) > 0):
                     printS("Restored ", len(_result), " QueueStreams successfully from playlist \"", _playlist.name, "\".", color = colors["OKGREEN"])
                 else:

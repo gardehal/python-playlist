@@ -52,7 +52,7 @@ printPlaybackDetailsSwitches = ["detailsprint", "details", "print", "dp"]
 # Stream
 addStreamFlags = ["-add", "-a"]
 deleteStreamFlags = ["-delete", "-dm", "-d"]
-restorePlaylistFlags = ["-restore", "-r"]
+restoreStreamFlags = ["-restore", "-r"]
 # Sources
 addSourcesFlags = ["-addsource", "-as"]
 deleteSourceFlags = ["-deletesource", "-ds"]
@@ -174,7 +174,7 @@ class Main:
                 _ids = Main.utility.getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll())
                 
                 if(len(_ids) == 0):
-                    printS("Failed to delete playlists, missing playlistIds or indices.", color = colors["FAIL"])
+                    printS("Failed to delete Playlists, missing playlistIds or indices.", color = colors["FAIL"])
                     argIndex += len(_input) + 1
                     continue
                 
@@ -183,7 +183,27 @@ class Main:
                     if(_result != None):
                         printS("Playlist deleted successfully.", color = colors["OKGREEN"])
                     else:
-                        printS("Failed to delete playlist. See rerun command with -help to see expected arguments.", color = colors["FAIL"])
+                        printS("Failed to delete Playlist. See rerun command with -help to see expected arguments.", color = colors["FAIL"])
+
+                argIndex += len(_input) + 1
+                continue
+            
+            elif(arg in restorePlaylistFlags):
+                # Expected input: playlistIds or indices
+                _input = extractArgs(argIndex, argV)
+                _ids = Main.utility.getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll())
+                
+                if(len(_ids) == 0):
+                    printS("Failed to restore Playlists, missing playlistIds or indices.", color = colors["FAIL"])
+                    argIndex += len(_input) + 1
+                    continue
+                
+                for _id in _ids:
+                    _result = Main.playlistService.restore(_id)
+                    if(_result != None):
+                        printS("Playlist restore successfully.", color = colors["OKGREEN"])
+                    else:
+                        printS("Failed to restore Playlist. See rerun command with -help to see expected arguments.", color = colors["FAIL"])
 
                 argIndex += len(_input) + 1
                 continue
@@ -399,22 +419,51 @@ class Main:
 
                 _playlistIds = Main.utility.getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll(), 1)
                 if(len(_playlistIds) == 0):
-                    printS("Failed to delete streams, missing playlistId or index.", color = colors["FAIL"])
+                    printS("Failed to delete QueueStreams, missing playlistId or index.", color = colors["FAIL"])
                     argIndex += len(_input) + 1
                     continue
                 
                 _playlist = Main.playlistService.get(_playlistIds[0])
                 _queueStreamIds = Main.utility.getIdsFromInput(_input[1:], _playlist.streamIds, Main.playlistService.getStreamsByPlaylistId(_playlist.id))
                 if(len(_queueStreamIds) == 0):
-                    printS("Failed to delete streams, missing queueStreamIds or indices.", color = colors["FAIL"])
+                    printS("Failed to delete QueueStreams, missing queueStreamIds or indices.", color = colors["FAIL"])
                     argIndex += len(_input) + 1
                     continue
                 
                 _result = Main.playlistService.deleteStreams(_playlist.id, _queueStreamIds)
                 if(len(_result) > 0):
-                    printS("deleted ", len(_result), " QueueStreams successfully from playlist \"", _playlist.name, "\".", color = colors["OKGREEN"])
+                    printS("Deleted ", len(_result), " QueueStreams successfully from playlist \"", _playlist.name, "\".", color = colors["OKGREEN"])
                 else:
                     printS("Failed to delete QueueStreams. See rerun command with -help to see expected arguments.", color = colors["FAIL"])
+
+                argIndex += len(_input) + 1
+                continue
+            
+            elif(arg in restoreStreamFlags):
+                # Expected input: playlistId or index, queueStreamIds or indices
+                _input = extractArgs(argIndex, argV)
+
+                _playlistIds = Main.utility.getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll(), 1)
+                if(len(_playlistIds) == 0):
+                    printS("Failed to restore QueueStreams, missing playlistId or index.", color = colors["FAIL"])
+                    argIndex += len(_input) + 1
+                    continue
+                
+                _playlist = Main.playlistService.get(_playlistIds[0])
+                _queueStreamIds = Main.utility.getIdsFromInput(_input[1:], _playlist.streamIds, Main.playlistService.getStreamsByPlaylistId(_playlist.id))
+                if(len(_queueStreamIds) == 0):
+                    printS("Failed to restore QueueStreams, missing queueStreamIds or indices.", color = colors["FAIL"])
+                    argIndex += len(_input) + 1
+                    continue
+                
+                # TODO restoreStreams
+                print("WIP")
+                quit()
+                # _result = Main.playlistService.restoreStreams(_playlist.id, _queueStreamIds)
+                if(len(_result) > 0):
+                    printS("Restored ", len(_result), " QueueStreams successfully from playlist \"", _playlist.name, "\".", color = colors["OKGREEN"])
+                else:
+                    printS("Failed to restore QueueStreams. See rerun command with -help to see expected arguments.", color = colors["FAIL"])
 
                 argIndex += len(_input) + 1
                 continue
@@ -473,10 +522,36 @@ class Main:
                 _ids = Main.utility.getIdsFromInput(_input, Main.streamSourceService.getAllIds(), Main.streamSourceService.getAll())
                 
                 if(len(_ids) == 0):
-                    printS("Failed to delete source, missing streamSourceIds or indices.", color = colors["FAIL"])
+                    printS("Failed to delete StreamSource, missing streamSourceIds or indices.", color = colors["FAIL"])
                     argIndex += len(_input) + 1
                     continue
                 
+                # TODO deleteSources
+                print("WIP")
+                quit()
+                for _id in _ids:
+                    _result = Main.streamSourceService.delete(_id)
+                    if(_result != None):
+                        printS("StreamSource deleted successfully (ID ", _result.id, ").", color = colors["OKGREEN"])
+                    else:
+                        printS("Failed to delete StreamSource. See rerun command with -help to see expected arguments.", color = colors["FAIL"])
+
+                argIndex += len(_input) + 1
+                continue
+            
+            elif(arg in restoreSourceFlags):
+                # Expected input: streamSourceIds or indices
+                _input = extractArgs(argIndex, argV)
+                _ids = Main.utility.getIdsFromInput(_input, Main.streamSourceService.getAllIds(), Main.streamSourceService.getAll())
+                
+                if(len(_ids) == 0):
+                    printS("Failed to restore StreamSource, missing streamSourceIds or indices.", color = colors["FAIL"])
+                    argIndex += len(_input) + 1
+                    continue
+                
+                # TODO restoreSources
+                print("WIP")
+                quit()
                 for _id in _ids:
                     _result = Main.streamSourceService.delete(_id)
                     if(_result != None):
@@ -554,14 +629,14 @@ class Main:
         printS(addPlaylistFlags, " [name: str] [? playWatchedStreams: bool] [? allowDuplicates: bool] [? streamSourceIds: list]: Add a Playlist with name: name, playWatchedStreams: if playback should play watched QueueStreams, allowDuplicates: should Playlist allow duplicate QueueStreams (only if the uri is the same), streamSourceIds: a list of StreamSources.")
         printS(addPlaylistFromYouTubeFlags, " [youTubePlaylistUrl: str] [? name: str] [? playWatchedStreams: bool] [? allowDuplicates: bool]: Add a Playlist and populate it with QueueStreams from given YouTube playlist youTubePlaylistUrl, with name: name, playWatchedStreams: if playback should play watched streams, allowDuplicates: should Playlist allow duplicate QueueStreams (only if the uri is the same).")
         printS(deletePlaylistFlags, " [playlistIds or indices: list]: deletes Playlists indicated.")
-        # printS(restoreSourceFlags, " [playlistIds or index: str]: restore soft deleted Playlist from database.")
+        printS(restoreSourceFlags, " [playlistIds or index: str]: restore soft deleted Playlist from database.")
         printS(listPlaylistFlags, " [? includeSoftDeleted: bool]: List Playlists with indices that can be used instead of IDs in other commands.")
         printS(detailsPlaylistFlags, " [playlistIds or indices: list] [? enableFetch: bool] [? enableFetch: bool]: Prints details about given playlist, with option for including StreamSources and QueueStreams.")
         printS(fetchPlaylistSourcesFlags, " [playlistIds or indices: list] [? takeAfter: datetime] [? takeBefore: datetime]: Fetch new streams from StreamSources in Playlists indicated, e.g. if a Playlist has a YouTube channel as a source, and the channel uploads a new video, this video will be added to the Playlist. Optional arguments takeAfter: only fetch QueueStreams after this date, takeBefore: only fetch QueueStreams before this date. Dates formatted like \"2022-01-30\" (YYYY-MM-DD)")
         printS(prunePlaylistFlags, " [playlistIds or indices: list]: Prune Playlists indicated, deleteing watched QueueStreams.")
         printS(purgePlaylistFlags, " [? includeSoftDeleted: bool] [? permanentlyDelete: bool]: Purge database indicated, removing IDs with no corresponding relation and deleteing StreamSources and QueueStreams with no linked IDs in Playlists.")
         printS(resetPlaylistFetchFlags, " [playlistIds or indices: list]: Resets fetch status of StreamSources in a Playlist and deletes QueueStreams from Playlist.")
-        printS(playFlags, " [playlistId: str] [? starindex: int] [? shuffle: bool] [? repeat: bool]: Start playing stream from a Playlist, order and automation (like skipping already watched QueueStreams) depending on the input and Playlist.")
+        printS(playFlags, " [playlistId or index: str] [? starindex: int] [? shuffle: bool] [? repeat: bool]: Start playing stream from a Playlist, order and automation (like skipping already watched QueueStreams) depending on the input and Playlist.")
         printS("\t", quitSwitches, ": End current playback and contintue the program without playing anymore QueueStreams in Playlist. Only available while Playlist is playing.")
         printS("\t", skipSwitches, ": Skip current QueueStream playing. This QueueStream will not be marked as watched. Only available while Playlist is playing.")
         printS("\t", addCurrentToPlaylistSwitches, " [playlistId or index: str]: Add the current QueueStream to another Playlist indicated by ID on index. Only available while Playlist is playing.")
@@ -569,13 +644,13 @@ class Main:
 
         # Stream
         printS(addStreamFlags, " [playlistId or index: str] [uri: string] [? name: str]: Add a stream to a Playlist from ID or index, from uri: URL, and name: name (set automatically if not given).")
-        printS(deleteStreamFlags, " [streamIds or indices: list]: delete QueueStreams from Playlist.")
-        # printS(restoreSourceFlags, " [streamIds or index: str]: restore soft deleted QueueStreams from database.")
+        printS(deleteStreamFlags, " [playlistId or index: str] [streamIds or indices: list]: delete QueueStreams from Playlist.")
+        printS(restoreStreamFlags, " [playlistId or index: str] [streamIds or indices: str]: restore soft deleted QueueStreams from database.")
         # Sources
         printS(addSourcesFlags, " [playlistId or index: str] [uri: string] [? enableFetch: bool] [? name: str]: Add a StreamSources from uri: URL, enableFetch: if the Playlist should fetch new stream from this StreamSource, and name: name (set automatically if not given).")
         # printS(addSourcesFlags, " [playlistId or index: str] [uri: string] [? enableFetch: bool] [? backgroundContent: bool] [? name: str]: Add a StreamSources from uri: URL, enableFetch: if the Playlist should fetch new QueueStream from this StreamSource, backgroundContent; if the QueueStream from this source are things you would play in the background, and name: name (set automatically if not given).")
-        printS(deleteSourceFlags, " [sourceIds or index: str]: deletes StreamSources from database and Playlist if used anywhere.")
-        # printS(restoreSourceFlags, " [sourceId or index: str]: restore soft deleted StreamSources from database.")
+        printS(deleteSourceFlags, " [playlistId or index: str] [sourceIds or indices: str]: deletes StreamSources from database and Playlist if used anywhere.")
+        printS(restoreSourceFlags, " [playlistId or index: str] [sourceIds or indices: str]: restore soft deleted StreamSources from database.")
         printS(listSourcesFlags, " [playlistId or index: str]: Lists StreamSources with indices that can be used instead of IDs in other commands.")
         # Meta
         printS(listSettingsFlags, ": Lists settings currently used by program. These settings can also be found in the file named \".env\" with examples in the file \".env-example\"")

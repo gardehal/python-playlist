@@ -145,6 +145,28 @@ class StreamSourceService():
         else:
             return None
         
+    def restore(self, id: str) -> T:
+        """
+        Restore a (soft) deleted StreamSource.
+
+        Args:
+            id (str): ID of StreamSource to restore
+
+        Returns:
+            StreamSource | None: returns StreamSource if success, else None
+        """
+
+        _entity = self.get(id, includeSoftDeleted = True)
+        if(_entity == None):
+            return None
+
+        _entity.deleted = None
+        _result = self.update(_entity)
+        if(_result):
+            return _entity
+        else:
+            return None
+        
     def remove(self, id: str, includeSoftDeleted: bool = False) -> T:
         """
         Permanently remove a StreamSource.

@@ -164,6 +164,28 @@ class PlaylistService():
         else:
             return None
         
+    def restore(self, id: str) -> T:
+        """
+        Restore a (soft) deleted Playlist.
+
+        Args:
+            id (str): ID of Playlist to restore
+
+        Returns:
+            Playlist | None: returns Playlist if success, else None
+        """
+
+        _entity = self.get(id, includeSoftDeleted = True)
+        if(_entity == None):
+            return None
+
+        _entity.deleted = None
+        _result = self.update(_entity)
+        if(_result):
+            return _entity
+        else:
+            return None
+        
     def remove(self, id: str, includeSoftDeleted: bool = False) -> T:
         """
         Permanently remove a Playlist.

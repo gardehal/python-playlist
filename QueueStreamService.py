@@ -143,6 +143,28 @@ class QueueStreamService():
         else:
             return None
         
+    def restore(self, id: str) -> T:
+        """
+        Restore a (soft) deleted QueueStream.
+
+        Args:
+            id (str): ID of QueueStream to restore
+
+        Returns:
+            QueueStream | None: returns QueueStream if success, else None
+        """
+
+        _entity = self.get(id, includeSoftDeleted = True)
+        if(_entity == None):
+            return None
+
+        _entity.deleted = None
+        _result = self.update(_entity)
+        if(_result):
+            return _entity
+        else:
+            return None
+        
     def remove(self, id: str, includeSoftDeleted: bool = False) -> T:
         """
         Permanently remove QueueStream.

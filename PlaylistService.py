@@ -268,7 +268,7 @@ class PlaylistService():
 
     def deleteStreams(self, playlistId: str, streamIds: List[str]) -> List[QueueStream]:
         """
-        Delete QueueStreams from Playlist.
+        (Soft) Delete QueueStreams from Playlist.
 
         Args:
             playlistId (str): ID of Playlist to remove from
@@ -304,8 +304,8 @@ class PlaylistService():
         Restore QueueStreams to Playlist.
 
         Args:
-            playlistId (str): ID of Playlist to remove from
-            streamIds (List[str]): IDs of QueueStreams to remove
+            playlistId (str): ID of Playlist to restore to
+            streamIds (List[str]): IDs of QueueStreams to restore
 
         Returns:
             List[QueueStream]: QueueStream restored
@@ -367,6 +367,72 @@ class PlaylistService():
 
         _playlist.updated = datetime.now()
         return self.update(_playlist)
+    
+    def deleteStreamSources(self, playlistId: str, streamSourceIds: List[str]) -> List[StreamSource]:
+        """
+        (Soft) Delete StreamSources from Playlist.
+
+        Args:
+            playlistId (str): ID of Playlist to delete from
+            streamSourceIds (List[str]): IDs of StreamSources to delete
+
+        Returns:
+            List[StreamSource]: StreamSources deleted
+        """
+
+        _return = []
+        _playlist = self.get(playlistId)
+        if(_playlist == None):
+            return _return
+
+        for id in streamSourceIds:
+            _source = self.streamSourceService.get(id)
+            if(_source == None):
+                continue
+            
+            _removeResult = self.streamSourceService.delete(id)
+            if(_removeResult != None):
+                _playlist.streamSourceIds.remove(_source.id)
+                _return.append(_source)
+
+        _updateResult = self.update(_playlist)
+        if(_updateResult):
+            return _return
+        else:
+            return []
+        
+    def restoreStreamSources(self, playlistId: str, streamSourceIds: List[str]) -> List[StreamSource]:
+        """
+        Restore StreamSources to Playlist.
+
+        Args:
+            playlistId (str): ID of Playlist to restore to
+            streamSourceIds (List[str]): IDs of StreamSources to restore
+
+        Returns:
+            List[StreamSource]: StreamSource restored
+        """
+
+        _return = []
+        _playlist = self.get(playlistId, includeSoftDeleted = True)
+        if(_playlist == None):
+            return _return
+
+        for id in streamSourceIds:
+            _source = self.streamSourceService.get(id, includeSoftDeleted = True)
+            if(_source == None):
+                continue
+            
+            _result = self.streamSourceService.restore(id)
+            if(_result != None):
+                _playlist.streamSourceIds.append(_source.id)
+                _return.append(_source)
+
+        _updateResult = self.update(_playlist)
+        if(_updateResult):
+            return _return
+        else:
+            return []
 
     def getStreamsByPlaylistId(self, playlistId: str, includeSoftDeleted: bool = False) -> List[QueueStream]:
         """

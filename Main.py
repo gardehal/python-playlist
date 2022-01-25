@@ -488,9 +488,6 @@ class Main:
 
                 if(_name == None):
                     _name = Main.utility.getPageTitle(_uri)
-                else:
-                    _name = "New source"
-                    printS("Could not automatically get the web name for this stream, will be named \"" , _name, "\".", color = colors["WARNING"])
 
                 _entity = StreamSource(name = _name, uri = _uri, enableFetch = _enableFetch)
                 _addResult = Main.streamSourceService.add(_entity)
@@ -566,9 +563,11 @@ class Main:
                 continue
 
             elif(arg in listSourcesFlags):
-                # Expected input: None
+                # Expected input: includeSoftDeleted
+                _input = extractArgs(argIndex, argV)
+                _includeSoftDeleted = eval(_input[0]) if(len(_input) > 0) else False
 
-                _result = Main.streamSourceService.getAll()
+                _result = Main.streamSourceService.getAll(_includeSoftDeleted)
                 if(len(_result) > 0):
                     for (i, _entry) in enumerate(_result):
                         printS(i, " - ", _entry.summaryString())
@@ -654,7 +653,7 @@ class Main:
         # printS(addSourcesFlags, " [playlistId or index: str] [uri: string] [? enableFetch: bool] [? backgroundContent: bool] [? name: str]: Add a StreamSources from uri: URL, enableFetch: if the Playlist should fetch new QueueStream from this StreamSource, backgroundContent; if the QueueStream from this source are things you would play in the background, and name: name (set automatically if not given).")
         printS(deleteSourceFlags, " [playlistId or index: str] [sourceIds or indices: str]: deletes StreamSources from database and Playlist if used anywhere.")
         printS(restoreSourceFlags, " [playlistId or index: str] [sourceIds or indices: str]: restore soft deleted StreamSources from database.")
-        printS(listSourcesFlags, " [playlistId or index: str]: Lists StreamSources with indices that can be used instead of IDs in other commands.")
+        printS(listSourcesFlags, " [? includeSoftDeleted: bool]: Lists StreamSources with indices that can be used instead of IDs in other commands.")
         # Meta
         printS(listSettingsFlags, ": Lists settings currently used by program. These settings can also be found in the file named \".env\" with examples in the file \".env-example\"")
 

@@ -489,6 +489,36 @@ class PlaylistService():
 
         return _playlistStreams    
     
+    def getSourcesByPlaylistId(self, playlistId: str, getFetchEnabledOnly: bool = False, includeSoftDeleted: bool = False) -> List[StreamSource]:
+        """
+        Get StreamSources in playlist from playlistId.
+
+        Args:
+            playlistId (str): ID of playlist to get from
+            includeSoftDeleted (bool): should include soft-deleted entities
+
+        Returns:
+            List[StreamSource]: StreamSources if any, else empty list
+        """
+
+        _playlist = self.get(playlistId, includeSoftDeleted)
+        if(_playlist == None):
+            return 0
+
+        _playlistSources = []
+        for id in _playlist.streamSourceIds:
+            _source = self.streamSourceService.get(id, includeSoftDeleted)
+            if(_source == None):
+                printS("A StreamSource with ID: ", id, " was listed in Playlist \"", _playlist.name, "\", but was not found in the database. Consider removing it by running the purge command.", color = colors["WARNING"])
+                continue
+            
+            if(getFetchEnabledOnly and not _source.enableFetch):
+                continue
+                
+            _playlistSources.append(_source)
+
+        return _playlistSources
+      
     def getFetchedSourcesByPlaylistId(self, playlistId: str, includeSoftDeleted: bool = False) -> List[StreamSource]:
         """
         Get StreamSources where fetch is enabled in playlist from playlistId.

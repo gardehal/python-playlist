@@ -450,7 +450,7 @@ class Main:
                     continue
                 
                 _playlist = Main.playlistService.get(_playlistIds[0])
-                _queueStreamIds = Main.utility.getIdsFromInput(_input[1:], _playlist.streamIds, Main.playlistService.getStreamsByPlaylistId(_playlist.id))
+                _queueStreamIds = Main.utility.getIdsFromInput(_input[1:], _playlist.streamIds, Main.playlistService.getStreamsByPlaylistId(_playlist.id, includeSoftDeleted = True))
                 if(len(_queueStreamIds) == 0):
                     printS("Failed to restore QueueStreams, missing queueStreamIds or indices.", color = colors["FAIL"])
                     argIndex += len(_input) + 1
@@ -514,47 +514,53 @@ class Main:
                 continue
 
             elif(arg in deleteSourceFlags):
-                # Expected input: streamSourceIds or indices
+                # Expected input: playlistId or index, streamSourceIds or indices
                 _input = extractArgs(argIndex, argV)
-                _ids = Main.utility.getIdsFromInput(_input, Main.streamSourceService.getAllIds(), Main.streamSourceService.getAll())
-                
-                if(len(_ids) == 0):
-                    printS("Failed to delete StreamSource, missing streamSourceIds or indices.", color = colors["FAIL"])
+
+                _playlistIds = Main.utility.getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll(), 1)
+                if(len(_playlistIds) == 0):
+                    printS("Failed to delete StreamSources, missing playlistId or index.", color = colors["FAIL"])
                     argIndex += len(_input) + 1
                     continue
                 
-                # TODO deleteSources
-                print("WIP")
-                quit()
-                for _id in _ids:
-                    _result = Main.streamSourceService.delete(_id)
-                    if(_result != None):
-                        printS("StreamSource deleted successfully (ID ", _result.id, ").", color = colors["OKGREEN"])
-                    else:
-                        printS("Failed to delete StreamSource. See rerun command with -help to see expected arguments.", color = colors["FAIL"])
+                _playlist = Main.playlistService.get(_playlistIds[0])
+                _streamSourceIds = Main.utility.getIdsFromInput(_input[1:], _playlist.streamSourceIds, Main.playlistService.getSourcesByPlaylistId(_playlist.id))
+                if(len(_streamSourceIds) == 0):
+                    printS("Failed to delete StreamSources, missing streamSourceIds or indices.", color = colors["FAIL"])
+                    argIndex += len(_input) + 1
+                    continue
+                
+                _result = Main.playlistService.deleteStreamSources(_playlist.id, _streamSourceIds)
+                if(len(_result) > 0):
+                    printS("Deleted ", len(_result), " StreamSources successfully from playlist \"", _playlist.name, "\".", color = colors["OKGREEN"])
+                else:
+                    printS("Failed to delete StreamSources. See rerun command with -help to see expected arguments.", color = colors["FAIL"])
 
                 argIndex += len(_input) + 1
                 continue
             
             elif(arg in restoreSourceFlags):
-                # Expected input: streamSourceIds or indices
+                # Expected input: playlistId or index, streamSourceIds or indices
                 _input = extractArgs(argIndex, argV)
-                _ids = Main.utility.getIdsFromInput(_input, Main.streamSourceService.getAllIds(), Main.streamSourceService.getAll())
-                
-                if(len(_ids) == 0):
-                    printS("Failed to restore StreamSource, missing streamSourceIds or indices.", color = colors["FAIL"])
+
+                _playlistIds = Main.utility.getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll(), 1)
+                if(len(_playlistIds) == 0):
+                    printS("Failed to restore StreamSources, missing playlistId or index.", color = colors["FAIL"])
                     argIndex += len(_input) + 1
                     continue
                 
-                # TODO restoreSources
-                print("WIP")
-                quit()
-                for _id in _ids:
-                    _result = Main.streamSourceService.delete(_id)
-                    if(_result != None):
-                        printS("StreamSource deleted successfully (ID ", _result.id, ").", color = colors["OKGREEN"])
-                    else:
-                        printS("Failed to delete StreamSource. See rerun command with -help to see expected arguments.", color = colors["FAIL"])
+                _playlist = Main.playlistService.get(_playlistIds[0])
+                _streamSourceIds = Main.utility.getIdsFromInput(_input[1:], _playlist.streamSourceIds, Main.playlistService.getSourcesByPlaylistId(_playlist.id, includeSoftDeleted = True))
+                if(len(_streamSourceIds) == 0):
+                    printS("Failed to restore StreamSources, missing streamSourceIds or indices.", color = colors["FAIL"])
+                    argIndex += len(_input) + 1
+                    continue
+                
+                _result = Main.playlistService.restoreStreamSources(_playlist.id, _streamSourceIds)
+                if(len(_result) > 0):
+                    printS("Restored ", len(_result), " StreamSources successfully from playlist \"", _playlist.name, "\".", color = colors["OKGREEN"])
+                else:
+                    printS("Failed to restore StreamSources. See rerun command with -help to see expected arguments.", color = colors["FAIL"])
 
                 argIndex += len(_input) + 1
                 continue

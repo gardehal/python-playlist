@@ -339,6 +339,7 @@ class SharedService():
 
         Args:
             searchTerm (str): Regex-enabled term to search for
+            fields (any): fields to search
 
         Returns:
             int: int of field first found in, 0 = not found, 1 = first field-argument etc.
@@ -349,3 +350,30 @@ class SharedService():
                 return i + 1
         
         return 0
+    
+    def getAllSoftDeleted(self) -> dict[List[QueueStream], List[StreamSource], List[Playlist]]:
+        """
+        Returns a dict with lists of all soft deleted entities.
+
+        Returns:
+            dict[List[QueueStream], List[StreamSource], List[Playlist]]: A dict of lists with entities that matched the searchTerm
+        """
+        
+        _dataEmpty = {"QueueStream": [], "StreamSource": [], "Playlist": []}
+        _data = _dataEmpty
+        
+        _queueStreams = self.queueStreamService.getAll(includeSoftDeleted = True)
+        _streamSources = self.streamSourceService.getAll(includeSoftDeleted = True)
+        _playlists = self.playlistService.getAll(includeSoftDeleted = True)
+        
+        for _entity in _queueStreams:
+            if(_entity.deleted != None):
+                _data["QueueStream"].append(_entity)
+        for _entity in _streamSources:
+            if(_entity.deleted != None):
+                _data["StreamSource"].append(_entity)
+        for _entity in _playlists:
+            if(_entity.deleted != None):
+                _data["Playlist"].append(_entity)
+        
+        return _data

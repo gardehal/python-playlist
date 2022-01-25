@@ -592,11 +592,13 @@ class Main:
                 _input = extractArgs(argIndex, argV)
                 _simplified = eval(_input[0]) if(len(_input) > 0) else False
                 
-                _result = Main.sharedService.getAllSoftDeleted(_simplified)
-                if(len(_result) > 0):
-                    printS("No entities were soft deleted.", color = colors["WARNING"])
-                else:
-                    Main.utility.printLists(_result, [])
+                _result = Main.sharedService.getAllSoftDeleted()
+                if(_simplified):
+                    _resultList = [[e.summaryString() for e in l] for l in [*_result.values()]]
+                else: 
+                    _resultList = [[e.detailsString() for e in l] for l in [*_result.values()]]
+                    
+                Main.utility.printLists(_resultList, [*_result.keys()])
 
                 argIndex += len(_input) + 1
                 continue

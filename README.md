@@ -89,7 +89,6 @@ Program for queueing and playing videos from list or from sources like channels 
 - replace getFetchedSourcesByPlaylistId with getSourcesByPlaylistId + fetch = True
 - look for and simplify x == True if checks
 
-- list all soft deleted command
 - fetch, add debug, prints everything AFTER fetch of all is done, why?
 - debug + method name in debug prints, implement doPrint
 - remove more IDs in non-debug, add names where only IDs currently shown

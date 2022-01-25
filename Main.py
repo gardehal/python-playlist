@@ -60,6 +60,7 @@ restoreSourceFlags = ["-restoresource", "-rs"]
 listSourcesFlags = ["-listsources", "-ls"]
 # Meta
 listSettingsFlags = ["-settings", "-secrets"]
+listSoftDeletedFlags = ["-listsoftdeleted", "-listdeleted", "-lsd", "-ld"]
 
 class Main:
     fetchService = FetchService()
@@ -574,14 +575,30 @@ class Main:
                 else:
                     printS("No QueueStreams found.", color = colors["WARNING"])
 
-                argIndex += 1
+                argIndex += len(_input) + 1
                 continue
 
-            # Settings
+            # Meta
             elif(arg in listSettingsFlags):
+                # Expected input: none
+                
                 Main.printSettings()
 
                 argIndex += 1
+                continue
+            
+            elif(arg in listSoftDeletedFlags):
+                # Expected input: simplified
+                _input = extractArgs(argIndex, argV)
+                _simplified = eval(_input[0]) if(len(_input) > 0) else False
+                
+                _result = Main.sharedService.getAllSoftDeleted(_simplified)
+                if(len(_result) > 0):
+                    printS("No entities were soft deleted.", color = colors["WARNING"])
+                else:
+                    Main.utility.printLists(_result, [])
+
+                argIndex += len(_input) + 1
                 continue
 
             # Invalid
@@ -655,7 +672,8 @@ class Main:
         printS(restoreSourceFlags, " [playlistId or index: str] [sourceIds or indices: str]: restore soft deleted StreamSources from database.")
         printS(listSourcesFlags, " [? includeSoftDeleted: bool]: Lists StreamSources with indices that can be used instead of IDs in other commands.")
         # Meta
-        printS(listSettingsFlags, ": Lists settings currently used by program. These settings can also be found in the file named \".env\" with examples in the file \".env-example\"")
+        printS(listSettingsFlags, ": Lists settings currently used by program. These settings can also be found in the file named \".env\" with examples in the file \".env-example\".")
+        printS(listSoftDeletedFlags, " [? simplified: bool]: Lists all soft deleted entities. Option for simplified, less verbose list.")
 
 if __name__ == "__main__":
     Main.main()

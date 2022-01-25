@@ -85,15 +85,10 @@ Program for queueing and playing videos from list or from sources like channels 
   - Close tab after video is watched not possible? Have to guess with time, can't account for pauses
   - download stream, play in subprocess VLC which sets video to watched when video finishes or VLC closes would be nice (easy for yt, third party without pytube-like packs much harder)
 
-- restore command for soft deleted
-- replace getFetchedSourcesByPlaylistId with getSourcesByPlaylistId + fetch = True
-- look for and simplify x == True if checks
-
 - fetch, add debug, prints everything AFTER fetch of all is done, why?
-- debug + method name in debug prints, implement doPrint
+- "DEBUG: method name - message" in debug prints
 - remove more IDs in non-debug, add names where only IDs currently shown
 - automatic play, somewhat more annoying with an external hosting site like YT, but playback can wait for time length of stream listen to input, and play next when time is up. Ads, loading etc. must be taken into account, setting for buffer time?
-- index not working, just lucky testing with small list?
 - backgroundContent - implementation - group bgc and play at the end or start? option to only play bgc?
 - fetch for sources by ids or indices
 - adding sources, check for duplicates on url (warning on duplicate name?)

@@ -19,7 +19,6 @@ WATCHED_LOG_FILEPATH = os.environ.get("WATCHED_LOG_FILEPATH")
 BROWSER_BIN = os.environ.get("BROWSER_BIN")
 
 class Utility():
-    debug: bool = DEBUG
 
     def getPageTitle(self, url: str) -> str:
         """
@@ -62,24 +61,24 @@ class Utility():
         """
         
         if(len(existingIds) == 0 or len(indexList) == 0):
-            if(DEBUG): printS("Length of input \"existingIds\" (", len(existingIds), ") or \"indexList\" (", len(indexList), ") was 0.", color = colors["WARNING"])
+            printS("Length of input \"existingIds\" (", len(existingIds), ") or \"indexList\" (", len(indexList), ") was 0.", color = colors["WARNING"], doPrint = DEBUG)
             return []
 
         _result = []
         for i, _string in enumerate(input):
             if(limit != None and i >= limit):
-                if(DEBUG): printS("Returning data before input ", _string, ", limit (", limit, ") reached.", color = colors["WARNING"])
+                printS("Returning data before input ", _string, ", limit (", limit, ") reached.", color = colors["WARNING"], doPrint = DEBUG)
                 break
             
             if(_string[0] == "i"):  # starts with "i", like index of "i2" is 2
-                if(not isNumber(_string[1])):
+                if(not isNumber(_string[1:])):
                     if(returnOnNonIds):
                         return _result
                     
                     printS("Argument ", _string, " is not a valid index format, must be \"i\" followed by an integer, like \"i0\". Argument not processed.", color = colors["FAIL"])
                     continue
 
-                _index = int(float(_string[1]))
+                _index = int(float(_string[1:]))
                 _indexedEntity = indexList[_index]
 
                 if(_indexedEntity != None):

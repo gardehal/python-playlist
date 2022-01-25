@@ -451,7 +451,7 @@ class Main:
                     continue
                 
                 _playlist = Main.playlistService.get(_playlistIds[0])
-                _queueStreamIds = Main.utility.getIdsFromInput(_input[1:], _playlist.streamIds, Main.playlistService.getStreamsByPlaylistId(_playlist.id, includeSoftDeleted = True))
+                _queueStreamIds = Main.utility.getIdsFromInput(_input[1:], Main.queueStreamService.getAllIds(includeSoftDeleted = True), Main.playlistService.getStreamsByPlaylistId(_playlist.id, includeSoftDeleted = True))
                 if(len(_queueStreamIds) == 0):
                     printS("Failed to restore QueueStreams, missing queueStreamIds or indices.", color = colors["FAIL"])
                     argIndex += len(_input) + 1
@@ -548,7 +548,7 @@ class Main:
                     continue
                 
                 _playlist = Main.playlistService.get(_playlistIds[0])
-                _streamSourceIds = Main.utility.getIdsFromInput(_input[1:], _playlist.streamSourceIds, Main.playlistService.getSourcesByPlaylistId(_playlist.id, includeSoftDeleted = True))
+                _streamSourceIds = Main.utility.getIdsFromInput(_input[1:], Main.streamSourceService.getAllIds(includeSoftDeleted = True), Main.playlistService.getSourcesByPlaylistId(_playlist.id, includeSoftDeleted = True))
                 if(len(_streamSourceIds) == 0):
                     printS("Failed to restore StreamSources, missing streamSourceIds or indices.", color = colors["FAIL"])
                     argIndex += len(_input) + 1

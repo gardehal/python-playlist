@@ -52,7 +52,7 @@ class FetchService():
         for _sourceId in _playlist.streamSourceIds:
             _source = self.streamSourceService.get(_sourceId)
             if(_source == None):
-                printS("StreamSource with ID ", _sourceId, " could not be found. Consider removing it using the purge commands.", color = colors["WARNING"], doPrint = DEBUG)
+                printS("DEBUG: fetch - StreamSource with ID ", _sourceId, " could not be found. Consider removing it using the purge commands.", color = colors["WARNING"], doPrint = DEBUG)
                 continue
 
             if(not _source.enableFetch):
@@ -100,21 +100,20 @@ class FetchService():
             List[QueueStream]: List of QueueStream
         """
 
-        printS("fetchYoutube start, fetching channel source...", doPrint = DEBUG)
+        printS("DEBUG: fetchYoutube - start, fetching channel source...", doPrint = DEBUG)
         _channel = Channel(streamSource.uri)
 
         if(_channel == None or _channel.channel_name == None):
             printS("Channel \"", streamSource.name, "\" (URL: ", streamSource.uri, ") could not be found or is not valid. Please remove it and add it back.", color = colors["ERROR"])
             return []
 
-        printS("Fetching videos from ", _channel.channel_name, "...", doPrint = DEBUG)
+        printS("DEBUG: fetchYoutube - Fetching videos from ", _channel.channel_name, "...", doPrint = DEBUG)
         if(len(_channel.video_urls) < 1):
             printS("Channel \"", _channel.channel_name, "\" has no videos.", color = colors["WARNING"])
             return []
 
         _newStreams = []
         for i, yt in enumerate(_channel.videos):
-            print(yt.publish_date)
             if(takeAfter != None):
                 if(yt.publish_date < takeAfter):
                     break

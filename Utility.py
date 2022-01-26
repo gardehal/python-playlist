@@ -35,9 +35,11 @@ class Utility():
         
         _isYouTubeChannel = "user" in url or "channel" in url  
         if(StreamSourceTypeUtil.strToStreamSourceType(url) == StreamSourceType.YOUTUBE and not _isYouTubeChannel):
+            printS("DEBUG: getPageTitle - Getting title from pytube.", color = colors["WARNING"], doPrint = DEBUG)
             _yt = YouTube(url)
             _title = _yt.title
         else:
+            printS("DEBUG: getPageTitle - Getting title from mechanize.", color = colors["WARNING"], doPrint = DEBUG)
             _br = mechanize.Browser()
             _br.open(url)
             _title = _br.title()
@@ -61,16 +63,16 @@ class Utility():
         """
         
         if(len(existingIds) == 0 or len(indexList) == 0):
-            printS("Length of input \"existingIds\" (", len(existingIds), ") or \"indexList\" (", len(indexList), ") was 0.", color = colors["WARNING"], doPrint = DEBUG)
+            printS("DEBUG: getIdsFromInput - Length of input \"existingIds\" (", len(existingIds), ") or \"indexList\" (", len(indexList), ") was 0.", color = colors["WARNING"], doPrint = DEBUG)
             return []
 
         _result = []
         for i, _string in enumerate(input):
             if(limit != None and i >= limit):
-                printS("Returning data before input ", _string, ", limit (", limit, ") reached.", color = colors["WARNING"], doPrint = DEBUG)
+                printS("DEBUG: getIdsFromInput - Returning data before input ", _string, ", limit (", limit, ") reached.", color = colors["WARNING"], doPrint = DEBUG)
                 break
             
-            if(_string[0] == "i"):  # starts with "i", like index of "i2" is 2
+            if(_string[0] == "i"):  # Starts with "i", like index of "i2" is 2, "i123" is 123 etc.
                 if(not isNumber(_string[1:])):
                     if(returnOnNonIds):
                         return _result

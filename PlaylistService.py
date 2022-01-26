@@ -81,7 +81,7 @@ class PlaylistService():
         _entity = self.playlistRepository.get(id)
         
         if(_entity != None and _entity.deleted != None and not includeSoftDeleted):
-            printS("Playlist with ID ", _entity.id, " was soft deleted.", color = colors["WARNING"], doPrint = DEBUG)
+            printS("DEBUG: get - Playlist with ID ", _entity.id, " was soft deleted.", color = colors["WARNING"], doPrint = DEBUG)
             return None
         else:
             return _entity
@@ -102,7 +102,7 @@ class PlaylistService():
         
         for _entity in _entities:
             if(_entity.deleted != None and not includeSoftDeleted):
-                printS("Playlist with ID ", _entity.id, " was soft deleted.", color=colors["WARNING"], doPrint = DEBUG)
+                printS("DEBUG: getAll - Playlist with ID ", _entity.id, " was soft deleted.", color=colors["WARNING"], doPrint = DEBUG)
             else:
                 _result.append(_entity)
             
@@ -350,7 +350,7 @@ class PlaylistService():
 
         _listLength = len(_playlist.streamIds)
         if(fromIndex == toIndex):
-            printS("Index from and to were the same. No update needed.", color=colors["WARNING"], doPrint = DEBUG)
+            printS("DEBUG: moveStream - Index from and to were the same. No update needed.", color=colors["WARNING"], doPrint = DEBUG)
             return True
         if(fromIndex < 0 or fromIndex >= _listLength):
             printS("Index to move from (", fromIndex, ") was out or range.", color=colors["WARNING"])

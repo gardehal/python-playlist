@@ -60,7 +60,7 @@ class QueueStreamService():
         _entity = self.queueStreamRepository.get(id)
         
         if(_entity != None and _entity.deleted != None and not includeSoftDeleted):
-            printS("QueueStream with ID ", _entity.id, " was soft deleted.", color=colors["WARNING"], doPrint = DEBUG)
+            printS("DEBUG: get - QueueStream with ID ", _entity.id, " was soft deleted.", color=colors["WARNING"], doPrint = DEBUG)
             return None
         else:
             return _entity
@@ -81,7 +81,7 @@ class QueueStreamService():
         
         for _entity in _entities:
             if(_entity.deleted != None and not includeSoftDeleted):
-                printS("QueueStream with ID ", _entity.id, " was soft deleted.", color=colors["WARNING"], doPrint = DEBUG)
+                printS("DEBUG: getAll - QueueStream with ID ", _entity.id, " was soft deleted.", color=colors["WARNING"], doPrint = DEBUG)
             else:
                 _result.append(_entity)
             

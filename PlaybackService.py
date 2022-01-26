@@ -90,7 +90,7 @@ class PlaybackService():
             if(True): # Playlist mode
                 _playResult = self.playCmd(_playlist, _streams)
         except:
-            printS(sys.exc_info(), color=colors["WARNING"], doPrint = DEBUG)
+            printS("DEBUG: play - \n", sys.exc_info(), color=colors["WARNING"], doPrint = DEBUG)
             #printS("handleing of streams encountered an issue.", color=colors["WARNING"])
 
         printS("Playlist \"", _playlist.name, "\" finished.")

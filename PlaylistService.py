@@ -31,7 +31,6 @@ affirmative = ["yes", "y", "1"]
 negative = ["no", "n", "0"]
 
 class PlaylistService():
-    debug: bool = DEBUG
     storagePath: str = LOCAL_STORAGE_PATH
     playlistRepository: LocalJsonRepository = None
     queueStreamService: QueueStreamService = None
@@ -39,7 +38,7 @@ class PlaylistService():
     utility: Utility = None
 
     def __init__(self):
-        self.playlistRepository: LocalJsonRepository = LocalJsonRepository(T, self.debug, os.path.join(self.storagePath, "Playlist"))
+        self.playlistRepository: LocalJsonRepository = LocalJsonRepository(T, DEBUG, os.path.join(self.storagePath, "Playlist"))
         self.queueStreamService: QueueStreamService = QueueStreamService()
         self.streamSourceService: StreamSourceService = StreamSourceService()
         self.utility: Utility = Utility()
@@ -351,7 +350,7 @@ class PlaylistService():
 
         _listLength = len(_playlist.streamIds)
         if(fromIndex == toIndex):
-            if(self.debug): printS("Index from and to were the same. No update needed.", color=colors["WARNING"])
+            printS("Index from and to were the same. No update needed.", color=colors["WARNING"], doPrint = DEBUG)
             return True
         if(fromIndex < 0 or fromIndex >= _listLength):
             printS("Index to move from (", fromIndex, ") was out or range.", color=colors["WARNING"])
@@ -518,34 +517,6 @@ class PlaylistService():
             _playlistSources.append(_source)
 
         return _playlistSources
-      
-    def getFetchedSourcesByPlaylistId(self, playlistId: str, includeSoftDeleted: bool = False) -> List[StreamSource]:
-        """
-        Get StreamSources where fetch is enabled in playlist from playlistId.
-
-        Args:
-            playlistId (str): ID of playlist to get from
-            includeSoftDeleted (bool): should include soft-deleted entities
-
-        Returns:
-            List[StreamSource]: StreamSources if any, else empty list
-        """
-
-        _playlist = self.get(playlistId, includeSoftDeleted)
-        if(_playlist == None):
-            return 0
-
-        _playlistSources = []
-        for id in _playlist.streamSourceIds:
-            _source = self.streamSourceService.get(id, includeSoftDeleted)
-            if(_source == None):
-                printS("A StreamSource with ID: ", id, " was listed in Playlist \"", _playlist.name, "\", but was not found in the database. Consider removing it by running the purge command.", color = colors["WARNING"])
-                continue
-            
-            if(_source.enableFetch == True):
-                _playlistSources.append(_source)
-
-        return _playlistSources
 
     def addYouTubePlaylist(self, playlist: Playlist, url: str) -> T:
         """
@@ -611,7 +582,7 @@ class PlaylistService():
         _deletedData = _deletedDataEmpty
 
         _playlist = self.get(playlistId, includeSoftDeleted)
-        if(_playlist == None or _playlist.playWatchedStreams == True):
+        if(_playlist == None or _playlist.playWatchedStreams):
             return _deletedDataEmpty
         
         for _id in _playlist.streamIds:
@@ -790,7 +761,7 @@ class PlaylistService():
             _playlistDetailsString = _playlist.detailsString(includeUri, includeId, includeDatetime, includeListCount = False)
             if(includeListCount):
                 _unwatchedStreams = self.getUnwatchedStreamsByPlaylistId(_playlist.id)
-                _fetchedSources = self.getFetchedSourcesByPlaylistId(_playlist.id)
+                _fetchedSources = self.getSourcesByPlaylistId(_playlist.id, getFetchEnabledOnly = True)
                 _sourcesListString = f", unwatched streams: {len(_unwatchedStreams)}/{len(_playlist.streamIds)}"
                 _streamsListString = f", fetched sources: {len(_fetchedSources)}/{len(_playlist.streamSourceIds)}"
                 _playlistDetailsString += _sourcesListString + _streamsListString

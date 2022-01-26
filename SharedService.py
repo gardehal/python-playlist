@@ -27,7 +27,6 @@ affirmative = ["yes", "y", "1"]
 negative = ["no", "n", "0"]
 
 class SharedService():
-    debug: bool = DEBUG
     storagePath: str = LOCAL_STORAGE_PATH
     playlistService: PlaylistService = None
     queueStreamService: QueueStreamService = None
@@ -118,7 +117,7 @@ class SharedService():
                 printS("A StreamSource with ID: ", id, " was listed in Playlist \"", _playlist.name, "\", but was not found in the database. Consider removing it by running the purge command.", color = colors["WARNING"])
                 continue
             
-            if(_source.enableFetch == True):
+            if(_source.enableFetch):
                 _playlistSources.append(_source)
 
         return _playlistSources
@@ -140,7 +139,7 @@ class SharedService():
         _deletedData = _deletedDataEmpty
 
         _playlist = self.playlistService.get(playlistId, includeSoftDeleted)
-        if(_playlist == None or _playlist.playWatchedStreams == True):
+        if(_playlist == None or _playlist.playWatchedStreams):
             return _deletedDataEmpty
         
         for _id in _playlist.streamIds:
@@ -329,7 +328,7 @@ class SharedService():
                 _data["Playlist"].append(_entity)
         
         _found = len(_data["QueueStream"]) > 0 or len(_data["StreamSource"]) > 0 or len(_data["Playlist"]) > 0
-        printS("DEBUG: search - no results", color = colors["WARNING"], doPrint = not _found)
+        printS("DEBUG: search - no results", color = colors["WARNING"], doPrint = DEBUG and not _found)
         
         return _data 
     

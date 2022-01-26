@@ -27,7 +27,6 @@ WATCHED_LOG_FILEPATH = os.environ.get("WATCHED_LOG_FILEPATH")
 BROWSER_BIN = os.environ.get("BROWSER_BIN")
 
 class PlaybackService():
-    debug: bool = DEBUG
     storagePath: str = LOCAL_STORAGE_PATH
     playlistService: PlaylistService = None
     queueStreamService: QueueStreamService = None
@@ -91,7 +90,7 @@ class PlaybackService():
             if(True): # Playlist mode
                 _playResult = self.playCmd(_playlist, _streams)
         except:
-            if(self.debug): printS(sys.exc_info(), color=colors["WARNING"])
+            printS(sys.exc_info(), color=colors["WARNING"], doPrint = DEBUG)
             #printS("handleing of streams encountered an issue.", color=colors["WARNING"])
 
         printS("Playlist \"", _playlist.name, "\" finished.")

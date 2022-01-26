@@ -18,12 +18,11 @@ LOCAL_STORAGE_PATH = os.environ.get("LOCAL_STORAGE_PATH")
 T = StreamSource
 
 class StreamSourceService():
-    debug: bool = DEBUG
     storagePath: str = LOCAL_STORAGE_PATH
     streamSourceRepository: LocalJsonRepository = None
 
     def __init__(self):
-        self.streamSourceRepository: str = LocalJsonRepository(T, self.debug, os.path.join(self.storagePath, "StreamSource"))
+        self.streamSourceRepository: str = LocalJsonRepository(T, DEBUG, os.path.join(self.storagePath, "StreamSource"))
 
     def add(self, streamSource: T) -> T:
         """

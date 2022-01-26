@@ -19,7 +19,6 @@ DEBUG = eval(os.environ.get("DEBUG"))
 LOCAL_STORAGE_PATH = os.environ.get("LOCAL_STORAGE_PATH")
 
 class FetchService():
-    debug: bool = DEBUG
     storagePath: str = LOCAL_STORAGE_PATH
     playlistService: PlaylistService = None
     queueStreamService: QueueStreamService = None
@@ -53,8 +52,7 @@ class FetchService():
         for _sourceId in _playlist.streamSourceIds:
             _source = self.streamSourceService.get(_sourceId)
             if(_source == None):
-                if(self.debug):
-                    printS("StreamSource with ID ", _sourceId, " could not be found. Consider removing it using the purge commands.", color = colors["WARNING"])
+                printS("StreamSource with ID ", _sourceId, " could not be found. Consider removing it using the purge commands.", color = colors["WARNING"], doPrint = DEBUG)
                 continue
 
             if(not _source.enableFetch):
@@ -102,14 +100,14 @@ class FetchService():
             List[QueueStream]: List of QueueStream
         """
 
-        if(self.debug): printS("fetchYoutube start, fetching channel source...")
+        printS("fetchYoutube start, fetching channel source...", doPrint = DEBUG)
         _channel = Channel(streamSource.uri)
 
         if(_channel == None or _channel.channel_name == None):
             printS("Channel \"", streamSource.name, "\" (URL: ", streamSource.uri, ") could not be found or is not valid. Please remove it and add it back.", color = colors["ERROR"])
             return []
 
-        if(self.debug): printS("Fetching videos from ", _channel.channel_name, "...")
+        printS("Fetching videos from ", _channel.channel_name, "...", doPrint = DEBUG)
         if(len(_channel.video_urls) < 1):
             printS("Channel \"", _channel.channel_name, "\" has no videos.", color = colors["WARNING"])
             return []

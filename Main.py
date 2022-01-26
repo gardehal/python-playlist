@@ -478,7 +478,7 @@ class Main:
 
                 if(len(_ids) == 0):
                     printS("Failed to add StreamSource, missing playlistId or index.", color = colors["FAIL"])
-                    if(DEBUG): printS("IDs: ", _ids, color = colors["WARNING"])
+                    printS("IDs: ", _ids, color = colors["WARNING"], doPrint = DEBUG)
                     argIndex += len(_input) + 1
                     continue
 

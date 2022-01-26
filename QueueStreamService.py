@@ -13,12 +13,11 @@ LOCAL_STORAGE_PATH = os.environ.get("LOCAL_STORAGE_PATH")
 T = QueueStream
 
 class QueueStreamService():
-    debug: bool = DEBUG
     storagePath: str = LOCAL_STORAGE_PATH
     queueStreamRepository: LocalJsonRepository = None
 
     def __init__(self):
-        self.queueStreamRepository: str = LocalJsonRepository(T, self.debug, os.path.join(self.storagePath, "QueueStream"))
+        self.queueStreamRepository: str = LocalJsonRepository(T, DEBUG, os.path.join(self.storagePath, "QueueStream"))
 
         mkdir(self.storagePath)
 

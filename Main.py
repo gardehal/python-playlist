@@ -128,7 +128,7 @@ class Main:
                 # list of list, for each list, for each entry, str.join id, name, and uri, then join back to list of lists of strings, ready for printLists
                 _resultList = [[" - ".join([e.id, e.name, e.uri]) for e in l] for l in [*_result.values()]]
                 Main.utility.printLists(_resultList, [*_result.keys()])
-                    
+                
                 argIndex += len(_input) + 1
                 continue
             
@@ -144,9 +144,9 @@ class Main:
                 _entity = Playlist(name = _name, playWatchedStreams = _playWatchedStreams, allowDuplicates = _allowDuplicates, streamSourceIds = _streamSourceIds)
                 _result = Main.playlistService.add(_entity)
                 if(_result != None):
-                    printS("Playlist added successfully with ID \"", _result.id, "\".", color = colors["OKGREEN"])
+                    printS("Playlist \"", _result.name, "\" added successfully.", color = colors["OKGREEN"])
                 else:
-                    printS("Failed to create Playlist. See rerun command with -help to see expected arguments.", color = colors["FAIL"])
+                    printS("Failed to create Playlist.", color = colors["FAIL"])
 
                 argIndex += len(_input) + 1
                 continue
@@ -164,7 +164,7 @@ class Main:
                 if(_result != None):
                     printS("Playlist \"", _result.name, "\" added successfully from YouTube playlist.", color = colors["OKGREEN"])
                 else:
-                    printS("Failed to create Playlist. See rerun command with -help to see expected arguments.", color = colors["FAIL"])
+                    printS("Failed to create Playlist.", color = colors["FAIL"])
 
                 argIndex += len(_input) + 1
                 continue
@@ -182,9 +182,9 @@ class Main:
                 for _id in _ids:
                     _result = Main.playlistService.delete(_id)
                     if(_result != None):
-                        printS("Playlist deleted successfully.", color = colors["OKGREEN"])
+                        printS("Playlist \"", _result.name, "\" deleted successfully.", color = colors["OKGREEN"])
                     else:
-                        printS("Failed to delete Playlist. See rerun command with -help to see expected arguments.", color = colors["FAIL"])
+                        printS("Failed to delete Playlist.", color = colors["FAIL"])
 
                 argIndex += len(_input) + 1
                 continue
@@ -202,9 +202,9 @@ class Main:
                 for _id in _ids:
                     _result = Main.playlistService.restore(_id)
                     if(_result != None):
-                        printS("Playlist restore successfully.", color = colors["OKGREEN"])
+                        printS("Playlist \"", _result.name, "\" restore successfully.", color = colors["OKGREEN"])
                     else:
-                        printS("Failed to restore Playlist. See rerun command with -help to see expected arguments.", color = colors["FAIL"])
+                        printS("Failed to restore Playlist.", color = colors["FAIL"])
 
                 argIndex += len(_input) + 1
                 continue
@@ -246,7 +246,7 @@ class Main:
                 
                 _result = Main.playlistService.printPlaylistDetails(_ids, _includeUri, _includeId, _includeDatetime, _includeListCount)
                 if(_result):
-                    printS("Finished printing details.", color = colors["OKGREEN"])
+                    printS("Finished printing ", _result, " details.", color = colors["OKGREEN"])
                 else:
                     printS("Failed print details.", color = colors["FAIL"])
                         
@@ -299,11 +299,12 @@ class Main:
                 
                 for _id in _ids:
                     _result = Main.playlistService.prune(_id, _includeSoftDeleted, _permanentlyDelete)
+                    _playlist = Main.playlistService.get(_id)
                     
                     if(len(_result["QueueStream"]) > 0 and len(_result["QueueStreamId"]) > 0):
-                        printS("Prune finished, deleted ", len(_result["QueueStream"]), " streams, ", len(_result["QueueStreamId"]), " IDs from playlist (ID: \"", _id, "\").", color = colors["OKGREEN"])
+                        printS("Prune finished, deleted ", len(_result["QueueStream"]), " streams, ", len(_result["QueueStreamId"]), " IDs from Playlist \"", _playlist.name, "\".", color = colors["OKGREEN"])
                     else:
-                        printS("Prune failed, could not delete any streams from playlist (ID: \"", _id, "\").", color = colors["FAIL"])
+                        printS("Prune failed, could not delete any streams from Playlist \"", _playlist.name, "\".", color = colors["FAIL"])
 
                 argIndex += len(_input) + 1
                 continue
@@ -333,11 +334,12 @@ class Main:
                     argIndex += len(_input) + 1
                     continue
                     
-                _result = Main.resetPlaylistFetch(_ids)
+                _result = Main.fetchService.resetPlaylistFetch(_ids)
+                _playlist = Main.playlistService.get(_id)
                 if(_result):
-                    printS("Finished resetting fetch statuses for sources in playlists.", color = colors["OKGREEN"])
+                    printS("Finished resetting fetch statuses for sources in Playlist \"", _playlist.name, "\".", color = colors["OKGREEN"])
                 else:
-                    printS("Failed to reset fetch statuses for sources in playlists.", color = colors["FAIL"])
+                    printS("Failed to reset fetch statuses for sources in Playlist \"", _playlist.name, "\".", color = colors["FAIL"])
 
                 argIndex += len(_input) + 1
                 continue
@@ -364,7 +366,7 @@ class Main:
                 _result = Main.playbackService.play(_ids[0], _startIndex, _shuffle, _repeat)
                 if(not _result):
                     _playlist = Main.playlistService.get(_ids[0])
-                    printS("Failed to play playlist \"", _playlist.name, "\".", color = colors["FAIL"])
+                    printS("Failed to play Playlist \"", _playlist.name, "\".", color = colors["FAIL"])
 
                 argIndex += len(_input) + 1
                 continue
@@ -404,12 +406,12 @@ class Main:
                 _playlist.streamIds.append(_addResult.id)
                 _updateResult = Main.playlistService.update(_playlist)
                 if(_updateResult != None):
-                    printS("QueueStream added successfully with ID \"", _addResult.id, "\".", color = colors["OKGREEN"])
+                    printS("QueueStream \"", _addResult.name, "\" added successfully.", color = colors["OKGREEN"])
                 else:
                     # Try to delete added QueueStream if update playlist fails
                     _deleteResult = Main.queueStreamService.delete(_addResult.id)
-                    _deleteMessage = "" if _deleteResult != None else " QueueStream was not deleted, ID: " + _addResult.id
-                    printS("Failed to add QueueStream to playlist.", _deleteMessage, color = colors["FAIL"])
+                    _deleteMessage = "" if _deleteResult != None else " QueueStream \"", _addResult.name, "\" was not deleted, ID: " + _addResult.id
+                    printS("Failed to add QueueStream to Playlist \"", _playlist.name, "\".", _deleteMessage, color = colors["FAIL"])
 
                 argIndex += len(_input) + 1
                 continue
@@ -433,9 +435,9 @@ class Main:
                 
                 _result = Main.playlistService.deleteStreams(_playlist.id, _queueStreamIds)
                 if(len(_result) > 0):
-                    printS("Deleted ", len(_result), " QueueStreams successfully from playlist \"", _playlist.name, "\".", color = colors["OKGREEN"])
+                    printS("Deleted ", len(_result), " QueueStreams successfully from Playlist \"", _playlist.name, "\".", color = colors["OKGREEN"])
                 else:
-                    printS("Failed to delete QueueStreams. See rerun command with -help to see expected arguments.", color = colors["FAIL"])
+                    printS("Failed to delete QueueStreams.", color = colors["FAIL"])
 
                 argIndex += len(_input) + 1
                 continue
@@ -459,9 +461,9 @@ class Main:
                 
                 _result = Main.playlistService.restoreStreams(_playlist.id, _queueStreamIds)
                 if(len(_result) > 0):
-                    printS("Restored ", len(_result), " QueueStreams successfully from playlist \"", _playlist.name, "\".", color = colors["OKGREEN"])
+                    printS("Restored ", len(_result), " QueueStreams successfully from Playlist \"", _playlist.name, "\".", color = colors["OKGREEN"])
                 else:
-                    printS("Failed to restore QueueStreams. See rerun command with -help to see expected arguments.", color = colors["FAIL"])
+                    printS("Failed to restore QueueStreams.", color = colors["FAIL"])
 
                 argIndex += len(_input) + 1
                 continue
@@ -500,12 +502,12 @@ class Main:
                 _playlist.streamSourceIds.append(_addResult.id)
                 _updateResult = Main.playlistService.update(_playlist)
                 if(_updateResult != None):
-                    printS("StreamSource added successfully with ID \"", _addResult.id, "\".", color = colors["OKGREEN"])
+                    printS("StreamSource \"", _addResult.name, "\" added successfully.", color = colors["OKGREEN"])
                 else:
                     # Try to delete added StreamSource if update playlist fails
                     _deleteResult = Main.streamSourceService.delete(_addResult.id)
-                    _deleteMessage = "" if _deleteResult != None else " StreamSource was not deleted, ID: " + _addResult.id
-                    printS("Failed to add StreamSource to playlist.", _deleteMessage, color = colors["FAIL"])
+                    _deleteMessage = "" if _deleteResult != None else " StreamSource \"", _addResult.name, "\" was not deleted, ID: " + _addResult.id
+                    printS("Failed to add StreamSource to Playlist \"", _playlist.name, "\".", _deleteMessage, color = colors["FAIL"])
 
                 argIndex += len(_input) + 1
                 continue
@@ -531,7 +533,7 @@ class Main:
                 if(len(_result) > 0):
                     printS("Deleted ", len(_result), " StreamSources successfully from playlist \"", _playlist.name, "\".", color = colors["OKGREEN"])
                 else:
-                    printS("Failed to delete StreamSources. See rerun command with -help to see expected arguments.", color = colors["FAIL"])
+                    printS("Failed to delete StreamSources.", color = colors["FAIL"])
 
                 argIndex += len(_input) + 1
                 continue
@@ -555,9 +557,9 @@ class Main:
                 
                 _result = Main.playlistService.restoreStreamSources(_playlist.id, _streamSourceIds)
                 if(len(_result) > 0):
-                    printS("Restored ", len(_result), " StreamSources successfully from playlist \"", _playlist.name, "\".", color = colors["OKGREEN"])
+                    printS("Restored ", len(_result), " StreamSources successfully from Playlist \"", _playlist.name, "\".", color = colors["OKGREEN"])
                 else:
-                    printS("Failed to restore StreamSources. See rerun command with -help to see expected arguments.", color = colors["FAIL"])
+                    printS("Failed to restore StreamSources.", color = colors["FAIL"])
 
                 argIndex += len(_input) + 1
                 continue

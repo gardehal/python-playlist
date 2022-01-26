@@ -37,7 +37,7 @@ Program for queueing and playing videos from list or from sources like channels 
     - $ `python main -lp`
     - Will return something like this, where the ID is a randomly generated UUID:
       - `0 - Name: YouTube favourites, ID: 12345678-1234-1234-1234-123456789012, Streams: 0, Sources: 0`
-1. Using the index (idex + 0 = "i0") from the overview, add [this](https://youtu.be/jNQXAC9IVRw) video from youtube to this playlist:
+1. Using the index (index + 0 = "i0") from the overview, add [this](https://youtu.be/jNQXAC9IVRw) video from youtube to this playlist:
     - $ `python main -a i0 https://youtu.be/jNQXAC9IVRw`
 1. Check result in overview of playlists:
     - $ `python main -lp`
@@ -52,7 +52,7 @@ Program for queueing and playing videos from list or from sources like channels 
       - `Press enter to play next, "skip" to skip video, or "quit" to quit playback.`
     - Pressing enter would continue the playback and play the next stream, but since this is the last one, pressing enter will finish the playback:
       - `Playlist "YouTube feed" finished.` 
-1. Since the option to re-watch streams in playlist is turned off, we can prune out playlist to remove watched streams:
+1. Since the option to re-watch streams in playlist is turned off, we can prune our playlist to remove watched streams:
     - $ `python main -prune i0`
     - Will return prune result:
       - `Prune finished, removed 1 streams from playlist (ID: "12345678-1234-1234-1234-123456789012").`
@@ -64,13 +64,13 @@ Program for queueing and playing videos from list or from sources like channels 
 1. Instruct the program to fetch all videos from this channel uploaded after 31st of december, 2021:
     - $ `python main -f i0 2021-12-31`
     - This may take some time, depending on the videos available on the channel since given date. Updates will be given when available. This message will be given when finished:
-      - `Fetched 3 for playlist "YouTube feed" successfully.`
+      - `Fetched 3 for playlist "YouTube favourites" successfully.`
 1. Check the detailed print of the playlist, here including ALL information available:
     - $ `python main -dp i0 True True True True`
 1. Or less verbose details, which has most of the information a user needs:
     - $ `python main -dp i0`
     - The print would look something like this:
-      - `name: YouTube feed, lastWatchedIndex: 1, playWatchedStreams: False, allowDuplicates: False, description: `
+      - `name: YouTube favourites, lastWatchedIndex: 1, playWatchedStreams: False, allowDuplicates: False, description: `
       - `   StreamSources`
       - `   0 - name: SmarterEveryDay - YouTube, isWeb: True, streamSourceTypeId: 2, enableFetch: True`
       - `   `
@@ -85,6 +85,7 @@ Program for queueing and playing videos from list or from sources like channels 
   - Close tab after video is watched not possible? Have to guess with time, can't account for pauses
   - download stream, play in subprocess VLC which sets video to watched when video finishes or VLC closes would be nice (easy for yt, third party without pytube-like packs much harder)
 
+- fetch seem to skip some videos
 - fetch, add debug, prints everything AFTER fetch of all is done, why?
 - "DEBUG: method name - message" in debug prints
 - remove more IDs in non-debug, add names where only IDs currently shown

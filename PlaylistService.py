@@ -259,7 +259,7 @@ class PlaylistService():
 
         _playlist.updated = datetime.now()
         _updateResult = self.update(_playlist)
-        if(_updateResult):
+        if(len(_added) > 0 and _updateResult != None):
             return _added
         else:
             # TODO delete streams on error
@@ -386,12 +386,12 @@ class PlaylistService():
         _playlistStreamSourceUris = []
         _playlistStreamSourceNames = []
         if(not _playlist.allowDuplicates):
-            _playlistStreams = self.getStreamsByPlaylistId(_playlist.id)
+            _playlistStreams = self.getSourcesByPlaylistId(_playlist.id)
             _playlistStreamSourceUris = [_.uri for _ in _playlistStreams]
             _playlistStreamSourceNames = [_.name for _ in _playlistStreams]
             
         _added = []
-        for source in streamSources:            
+        for source in streamSources:
             if(not _playlist.allowDuplicates and (source.uri in _playlistStreamSourceUris or source.name in _playlistStreamSourceNames)):
                 printS("StreamSource \"", source.name, "\" / ", source.uri, " already exists in Playlist \"", _playlist.name, "\" and allow duplicates for this Playlist is disabled.", color = colors["WARNING"])
                 continue
@@ -406,7 +406,7 @@ class PlaylistService():
 
         _playlist.updated = datetime.now()
         _updateResult = self.update(_playlist)
-        if(_updateResult):
+        if(len(_added) > 0 and _updateResult != None):
             return _added
         else:
             # TODO delete sources on error

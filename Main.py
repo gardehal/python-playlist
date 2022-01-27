@@ -399,7 +399,7 @@ class Main:
                 _entity = QueueStream(name = _name, uri = _uri)
                 _addResult = Main.playlistService.addStreams(_playlist.id, [_entity])
                 if(_addResult != None):
-                    printS("QueueStream \"", _addResult.name, "\" added successfully.", color = colors["OKGREEN"])
+                    printS("QueueStream \"", _addResult[0].name, "\" added successfully.", color = colors["OKGREEN"])
                 else:
                     printS("Failed to create QueueStream.", color = colors["FAIL"])
 
@@ -488,7 +488,7 @@ class Main:
                 _entity = StreamSource(name = _name, uri = _uri, enableFetch = _enableFetch, backgroundContent = _bgContent)
                 _addResult = Main.playlistService.addStreamSources(_playlist.id, [_entity])
                 if(_addResult != None):
-                    printS("StreamSource \"", _addResult.name, "\" added successfully.", color = colors["OKGREEN"])
+                    printS("StreamSource \"", _addResult[0].name, "\" added successfully.", color = colors["OKGREEN"])
                 else:
                     printS("Failed to create StreamSource.", color = colors["FAIL"])
 

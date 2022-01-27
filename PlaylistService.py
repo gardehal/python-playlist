@@ -220,7 +220,7 @@ class PlaylistService():
 
         return self.update(playlist)
 
-    def addStreams(self, playlistId: str, streams: List[QueueStream]) -> int:
+    def addStreams(self, playlistId: str, streams: List[QueueStream]) -> List[QueueStream]:
         """
         Add QueueStreams to Playlist.
 
@@ -229,7 +229,7 @@ class PlaylistService():
             streams (List[QueueStream]): QueueStreams to add
 
         Returns:
-            int: number of QueueStreams added
+            List[QueueStream]: QueueStreams added
         """
 
         _playlist = self.get(playlistId)
@@ -243,7 +243,7 @@ class PlaylistService():
             _playlistStreamUris = [_.uri for _ in _playlistStreams]
             _playlistStreamNames = [_.name for _ in _playlistStreams]
             
-        _added = 0
+        _added = []
         for stream in streams:            
             if(not _playlist.allowDuplicates and (stream.uri in _playlistStreamUris or stream.name in _playlistStreamNames)):
                 printS("QueueStream \"", stream.name, "\" / ", stream.uri, " already exists in Playlist \"", _playlist.name, "\" and allow duplicates for this Playlist is disabled.", color = colors["WARNING"])
@@ -255,14 +255,15 @@ class PlaylistService():
                 continue
 
             _playlist.streamIds.append(stream.id)
-            _added += 1
+            _added.append(_addResult)
 
         _playlist.updated = datetime.now()
         _updateResult = self.update(_playlist)
         if(_updateResult):
             return _added
         else:
-            return 0
+            # TODO delete streams on error
+            return []
 
     def deleteStreams(self, playlistId: str, streamIds: List[str]) -> List[QueueStream]:
         """
@@ -366,7 +367,7 @@ class PlaylistService():
         _playlist.updated = datetime.now()
         return self.update(_playlist)
     
-    def addStreamSources(self, playlistId: str, streamSources: List[StreamSource]) -> int:
+    def addStreamSources(self, playlistId: str, streamSources: List[StreamSource]) -> List[StreamSource]:
         """
         Add StreamSources to Playlist.
 
@@ -375,7 +376,7 @@ class PlaylistService():
             streamSources (List[StreamSource]): StreamSources to add
 
         Returns:
-            int: number of StreamSources added
+            List[StreamSource]: StreamSources added
         """
 
         _playlist = self.get(playlistId)
@@ -389,7 +390,7 @@ class PlaylistService():
             _playlistStreamSourceUris = [_.uri for _ in _playlistStreams]
             _playlistStreamSourceNames = [_.name for _ in _playlistStreams]
             
-        _added = 0
+        _added = []
         for source in streamSources:            
             if(not _playlist.allowDuplicates and (source.uri in _playlistStreamSourceUris or source.name in _playlistStreamSourceNames)):
                 printS("StreamSource \"", source.name, "\" / ", source.uri, " already exists in Playlist \"", _playlist.name, "\" and allow duplicates for this Playlist is disabled.", color = colors["WARNING"])
@@ -401,14 +402,15 @@ class PlaylistService():
                 continue
 
             _playlist.streamSourceIds.append(source.id)
-            _added += 1
+            _added.append(_addResult)
 
         _playlist.updated = datetime.now()
         _updateResult = self.update(_playlist)
         if(_updateResult):
             return _added
         else:
-            return 0
+            # TODO delete sources on error
+            return []
     
     def deleteStreamSources(self, playlistId: str, streamSourceIds: List[str]) -> List[StreamSource]:
         """

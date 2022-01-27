@@ -391,27 +391,17 @@ class Main:
 
                 if(_name == None and validators.url(_uri)):
                     _name = Main.utility.getPageTitle(_uri)
-                elif(_name == None):
-                    _name = "New stream"
-                    printS("Could not automatically get the web name for this stream, will be named \"" , _name, "\".", color = colors["WARNING"])
+                if(_name == None):
+                    _name = "New QueueStream"
+                    printS("Could not automatically get the web name for this QueueStream, will be named \"" , _name, "\".", color = colors["WARNING"])
 
-                _entity = QueueStream(name = _name, uri = _uri)
-                _addResult = Main.queueStreamService.add(_entity)
-                if(_addResult == None):
-                    printS("Failed to create QueueStream.", color = colors["FAIL"])
-                    argIndex += len(_input) + 1
-                    continue
-                    
                 _playlist = Main.playlistService.get(_ids[0])
-                _playlist.streamIds.append(_addResult.id)
-                _updateResult = Main.playlistService.update(_playlist)
-                if(_updateResult != None):
+                _entity = QueueStream(name = _name, uri = _uri)
+                _addResult = Main.playlistService.addStreams(_playlist.id, [_entity])
+                if(_addResult != None):
                     printS("QueueStream \"", _addResult.name, "\" added successfully.", color = colors["OKGREEN"])
                 else:
-                    # Try to delete added QueueStream if update playlist fails
-                    _deleteResult = Main.queueStreamService.delete(_addResult.id)
-                    _deleteMessage = "" if _deleteResult != None else " QueueStream \"", _addResult.name, "\" was not deleted, ID: " + _addResult.id
-                    printS("Failed to add QueueStream to Playlist \"", _playlist.name, "\".", _deleteMessage, color = colors["FAIL"])
+                    printS("Failed to create QueueStream.", color = colors["FAIL"])
 
                 argIndex += len(_input) + 1
                 continue
@@ -490,24 +480,17 @@ class Main:
 
                 if(_name == None):
                     _name = Main.utility.getPageTitle(_uri)
-
-                _entity = StreamSource(name = _name, uri = _uri, enableFetch = _enableFetch)
-                _addResult = Main.streamSourceService.add(_entity)
-                if(_addResult == None):
-                    printS("Failed to create StreamSource.", color = colors["FAIL"])
-                    argIndex += len(_input) + 1
-                    continue
-                
+                if(_name == None):
+                    _name = "New StreamSource"
+                    printS("Could not automatically get the web name for this StreamSource, will be named \"" , _name, "\".", color = colors["WARNING"])                  
+                    
                 _playlist = Main.playlistService.get(_ids[0])
-                _playlist.streamSourceIds.append(_addResult.id)
-                _updateResult = Main.playlistService.update(_playlist)
-                if(_updateResult != None):
+                _entity = StreamSource(name = _name, uri = _uri, enableFetch = _enableFetch, backgroundContent = _bgContent)
+                _addResult = Main.playlistService.addStreamSources(_playlist.id, [_entity])
+                if(_addResult != None):
                     printS("StreamSource \"", _addResult.name, "\" added successfully.", color = colors["OKGREEN"])
                 else:
-                    # Try to delete added StreamSource if update playlist fails
-                    _deleteResult = Main.streamSourceService.delete(_addResult.id)
-                    _deleteMessage = "" if _deleteResult != None else " StreamSource \"", _addResult.name, "\" was not deleted, ID: " + _addResult.id
-                    printS("Failed to add StreamSource to Playlist \"", _playlist.name, "\".", _deleteMessage, color = colors["FAIL"])
+                    printS("Failed to create StreamSource.", color = colors["FAIL"])
 
                 argIndex += len(_input) + 1
                 continue

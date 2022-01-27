@@ -298,7 +298,7 @@ class Main:
                     continue
                 
                 for _id in _ids:
-                    _result = Main.playlistService.prune(_id, _includeSoftDeleted, _permanentlyDelete)
+                    _result = Main.sharedService.prune(_id, _includeSoftDeleted, _permanentlyDelete)
                     _playlist = Main.playlistService.get(_id)
                     
                     if(len(_result["QueueStream"]) > 0 and len(_result["QueueStreamId"]) > 0):
@@ -315,7 +315,7 @@ class Main:
                 _includeSoftDeleted = eval(_input[0]) if(len(_input) > 0) else False
                 _permanentlyDelete = eval(_input[1]) if(len(_input) > 1) else False
                 
-                _result = Main.playlistService.purge(_includeSoftDeleted, _permanentlyDelete)
+                _result = Main.sharedService.purge(_includeSoftDeleted, _permanentlyDelete)
                 if(len(_result["QueueStream"]) > 0 or len(_result["StreamSource"]) > 0 or len(_result["QueueStreamId"]) > 0 or len(_result["StreamSourceId"]) > 0):
                     printS("Purge finished, deleted ", len(_result["QueueStream"]), " QueueStreams, ", len(_result["StreamSource"]), " StreamSources, and ", len(_result["QueueStreamId"]) + len(_result["StreamSourceId"]), " IDs.", color = colors["OKGREEN"])
                 else:

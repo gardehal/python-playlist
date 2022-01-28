@@ -262,7 +262,10 @@ class PlaylistService():
         if(len(_added) > 0 and _updateResult != None):
             return _added
         else:
-            # TODO delete streams on error
+            # Delete added QueueStreams if update of Playlist failed
+            for stream in _added:
+                self.queueStreamService.remove(stream.id, includeSoftDeleted = True)
+            
             return []
 
     def deleteStreams(self, playlistId: str, streamIds: List[str]) -> List[QueueStream]:
@@ -409,7 +412,9 @@ class PlaylistService():
         if(len(_added) > 0 and _updateResult != None):
             return _added
         else:
-            # TODO delete sources on error
+            # Delete added StreamSources if update of Playlist failed
+            for source in _added:
+                self.streamSourceService.remove(source.id, includeSoftDeleted = True)
             return []
     
     def deleteStreamSources(self, playlistId: str, streamSourceIds: List[str]) -> List[StreamSource]:

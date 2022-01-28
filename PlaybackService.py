@@ -222,7 +222,7 @@ class PlaybackService():
         _result = 0
         for _id in _ids:
             _addResult = self.playlistService.addStreams(_id, [queueStream])
-            if(_addResult):
+            if(len(_addResult) > 0):
                 _result += 1
         
         return _result

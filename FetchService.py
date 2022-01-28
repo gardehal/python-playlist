@@ -82,7 +82,7 @@ class FetchService():
                 printS("Could not update source \"", _source.name, "\" (ID: ", _source.id, "), streams could not be added: \n", _fetchedStreams, color = colors["WARNING"])
 
         _updateResult = self.playlistService.addStreams(_playlist.id, _newStreams)
-        if(_updateResult > 0):
+        if(len(_updateResult) > 0):
             return len(_newStreams)
         else:
             return 0

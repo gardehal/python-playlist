@@ -610,7 +610,7 @@ class PlaylistService():
         _addPlaylistResult = self.add(playlist)
         if(_addPlaylistResult != None):
             _addStreamsResult = self.addStreams(_addPlaylistResult.id, _streamsToAdd)
-            if(_addStreamsResult > 0):
+            if(len(_addStreamsResult) > 0):
                 return _addPlaylistResult
             
         return None

@@ -1,6 +1,7 @@
 import os
 import sys
 from datetime import datetime
+import threading
 
 from dotenv import load_dotenv
 from myutil.Util import *
@@ -93,9 +94,11 @@ class Main:
                 _input = extractArgs(argIndex, argV)
                 printS("Test", color = colors["OKBLUE"])
 
+                if(0):
+                    Main.printSpinner()
+                    
                 if(1):
-                    x = Main.queueStreamService.get("e54cde08-5c09-4558-9f4f-2bfcb062ac3f", 1)
-                    print(x)
+                    Main.runFunctionWithProgressBar(function=Main.testLongMethod, arguments=("hello from start", "this is the end"))
                     
                 quit()            
                 
@@ -591,6 +594,66 @@ class Main:
             else:
                 printS("Argument not recognized: \"", arg, "\", please see documentation or run with \"-help\" for help.", color = colors["WARNING"])
                 argIndex += 1
+
+    def testLongMethod(start, end):
+        
+        print(start)
+        
+        time.sleep(10)
+        
+        print(end)
+
+    def printSpinner() -> None:
+        """
+        Print a spinner to inform the user that the program is working.
+        """
+        
+        i = 0
+        pause = 0.2
+        while(1):
+            if(i == 0):
+                print(" - ", end = "\r")
+            elif(i == 1):
+                print(" \\ ", end = "\r")
+            elif(i == 2):
+                print(" | ", end = "\r")
+            elif(i == 3):
+                print(" / ", end = "\r")
+            else:
+                i = 0
+                continue
+            
+            i += 1
+            time.sleep(pause)
+            sys.stdout.flush()
+    
+    def printProgressBar(current: float, total: float, bar_length: int = 20) -> None:
+        """
+        Print a progress bar.
+        Source: https://stackoverflow.com/questions/6169217/replace-console-output-in-python
+
+        Args:
+            current (float): Current progress status
+            total (float): Total progress goal
+            bar_length (int, optional): Total displayed length. Defaults to 20.
+        """
+        
+        percent = float(current) * 100 / total
+        arrow   = "-" * int(percent/100 * bar_length - 1) + ">"
+        spaces  = " " * (bar_length - len(arrow))
+
+        print("Progress: [%s%s] %d %%" % (arrow, spaces, percent), end = "\r")
+        sys.stdout.flush()
+    
+    def runFunctionWithProgressBar(function: any, arguments: tuple[()]) -> None:
+        
+        funcThread = threading.Thread(target = function, args = arguments)
+        funcThread.start()
+        
+        barTarget = 100
+        while funcThread.is_alive():
+            Main.printSpinner()
+            # Main.printProgressBar(barTarget) # How to update?
 
     def printSettings():
         """

@@ -599,35 +599,32 @@ class Main:
         
         print(start)
         
-        time.sleep(10)
+        time.sleep(5)
         
         print(end)
 
-    def printSpinner() -> None:
+    def printSpinner(pause: float = 0.2) -> None:
         """
-        Print a spinner to inform the user that the program is working.
+        Print one rotation of a spinner to inform the user that the program is working. This method must be constantly called to keep the spinner going.
+        
+        Args:
+            pause (float): Pause between between change in the spinner
         """
         
-        i = 0
-        pause = 0.2
-        while(1):
-            if(i == 0):
-                print(" - ", end = "\r")
-            elif(i == 1):
-                print(" \\ ", end = "\r")
-            elif(i == 2):
-                print(" | ", end = "\r")
-            elif(i == 3):
-                print(" / ", end = "\r")
-            else:
-                i = 0
-                continue
-            
-            i += 1
-            time.sleep(pause)
-            sys.stdout.flush()
+        print(" - ", end = "\r")
+        sys.stdout.flush()
+        time.sleep(pause)
+        print(" \\ ", end = "\r")
+        sys.stdout.flush()
+        time.sleep(pause)
+        print(" | ", end = "\r")
+        sys.stdout.flush()
+        time.sleep(pause)
+        print(" / ", end = "\r")
+        sys.stdout.flush()
+        time.sleep(pause)
     
-    def printProgressBar(current: float, total: float, bar_length: int = 20) -> None:
+    def printProgressBar(current: float, total: float, barLength: int = 20) -> None:
         """
         Print a progress bar.
         Source: https://stackoverflow.com/questions/6169217/replace-console-output-in-python
@@ -635,15 +632,26 @@ class Main:
         Args:
             current (float): Current progress status
             total (float): Total progress goal
-            bar_length (int, optional): Total displayed length. Defaults to 20.
+            barLength (int, optional): Total displayed length. Defaults to 20.
         """
         
         percent = float(current) * 100 / total
-        arrow   = "-" * int(percent/100 * bar_length - 1) + ">"
-        spaces  = " " * (bar_length - len(arrow))
+        arrow   = "-" * int(percent/100 * barLength - 1) + ">"
+        spaces  = " " * (barLength - len(arrow))
 
-        print("Progress: [%s%s] %d %%" % (arrow, spaces, percent), end = "\r")
+        print(f"Progress: [{arrow}{spaces}] {int(percent)}%", end = "\r")
         sys.stdout.flush()
+        
+    def printFinishedProgressBar(barLength: int = 20) -> None:
+        """
+        Print a finished progress bar for display purposes.
+        Source: https://stackoverflow.com/questions/6169217/replace-console-output-in-python
+
+        Args:
+            barLength (int, optional): Total displayed length. Defaults to 20.
+        """
+        
+        Main.printProgressBar(100, 100, barLength)
     
     def runFunctionWithProgressBar(function: any, arguments: tuple[()]) -> None:
         
@@ -652,8 +660,10 @@ class Main:
         
         barTarget = 100
         while funcThread.is_alive():
-            Main.printSpinner()
-            # Main.printProgressBar(barTarget) # How to update?
+            # Main.printSpinner()
+            
+            Main.printProgressBar(10, barTarget)
+        Main.printFinishedProgressBar()
 
     def printSettings():
         """

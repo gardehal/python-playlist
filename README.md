@@ -86,8 +86,10 @@ Program for queueing and playing videos from list or from sources like channels 
   - download stream, play in subprocess VLC which sets video to watched when video finishes or VLC closes would be nice (easy for yt, third party without pytube-like packs much harder)
 - Main input revamp, redo input to command (without -) + positional arguments + arguments (like "-turnXoff" or similar)
 
+- implement pypac 1.0.0
+- default to i0 when no index or id given
 - print help in playback
-- add source id to stream if it was fetched that way, add source name/id when printing queuestrteams?
+- add source id to stream if it was fetched that way, add source name/id when printing queuestreams?
 - fetch seem to skip some videos, prints everything AFTER fetch of all is done, why?
 - backgroundContent - implementation - group bgc and play at the end or start? option to only play bgc?
 - fetch for sources by ids or indices

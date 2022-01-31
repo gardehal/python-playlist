@@ -87,7 +87,7 @@ class Utility():
     
     def getIdsFromInput(self, input: List[str], existingIds: List[str], indexList: List[any], limit: int = None, returnOnNonIds: bool = False) -> List[str]:
         """
-        Get IDs from a list of inputs, whether they are raw IDs that must be checked via the database or indices (formatted "i[index]") of a list.
+        Get IDs from a list of inputs, whether they are raw IDs that must be checked via the database or indices (formatted "i[index]") of a list. This defaults to the first element in existingIds if input is empty.
 
         Args:
             input (List[str]): input if IDs/indices
@@ -105,6 +105,11 @@ class Utility():
             return []
 
         _result = []
+        
+        if(len(input) == 0):
+            _result.append(existingIds[0])
+            return _result
+
         for i, _string in enumerate(input):
             if(limit != None and i >= limit):
                 printS("DEBUG: getIdsFromInput - Returning data before input ", _string, ", limit (", limit, ") reached.", color = colors["WARNING"], doPrint = DEBUG)

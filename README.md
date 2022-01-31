@@ -84,7 +84,6 @@ Program for queueing and playing videos from list or from sources like channels 
   - Open different browser can be killed by PID, but clumsy
   - Close tab after video is watched not possible? Have to guess with time, can't account for pauses
   - download stream, play in subprocess VLC which sets video to watched when video finishes or VLC closes would be nice (easy for yt, third party without pytube-like packs much harder)
-- Main input revamp, redo input to command (without -) + positional arguments + arguments (like "-turnXoff" or similar)
 
 - implement pypac 1.0.0
 - default to i0 when no index or id given

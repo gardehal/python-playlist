@@ -20,46 +20,9 @@ load_dotenv()
 LOCAL_STORAGE_PATH = os.environ.get("LOCAL_STORAGE_PATH")
 WATCHED_LOG_FILEPATH = os.environ.get("WATCHED_LOG_FILEPATH")
 
-# General
-helpFlags = ["-help", "-h"]
-testFlags = ["-test", "-t"]
-editFlags = ["-edit", "-e"]
-searchFlags = ["-search", "-s"]
-
-# Playlist
-addPlaylistFlags = ["-addplaylist", "-apl", "-ap"]
-addPlaylistFromYouTubeFlags = ["-addplaylistfromyoutube", "-apfy", "-fromyoutube", "-fyt", "-fy"]
-deletePlaylistFlags = ["-deleteplaylist", "-dpl"]
-restorePlaylistFlags = ["-restoreplaylist", "-rpl", "-rp"]
-listPlaylistFlags = ["-listplaylist", "-lpl", "-lp"]
-detailsPlaylistFlags = ["-detailsplaylist", "-dpl", "-dp"]
-fetchPlaylistSourcesFlags = ["-fetch", "-f", "-update", "-u"]
-prunePlaylistFlags = ["-prune"]
-purgePlaylistFlags = ["-purge"]
-resetPlaylistFetchFlags = ["-reset"]
-playFlags = ["-play", "-p"]
-quitSwitches = ["quit", "q", "exit", "end"]
-skipSwitches = ["skip", "s"]
-addCurrentToPlaylistSwitches = ["addto", "at"]
-printPlaybackDetailsSwitches = ["detailsprint", "details", "print", "dp"]
-helpSwitches = ["help", "h"]
-
-# Stream
-addStreamFlags = ["-add", "-a"]
-deleteStreamFlags = ["-delete", "-dm", "-d"]
-restoreStreamFlags = ["-restore", "-r"]
-# Sources
-addSourcesFlags = ["-addsource", "-as"]
-deleteSourceFlags = ["-deletesource", "-ds"]
-restoreSourceFlags = ["-restoresource", "-rs"]
-listSourcesFlags = ["-listsources", "-ls"]
-# Meta
-listSettingsFlags = ["-settings", "-secrets"]
-listSoftDeletedFlags = ["-listsoftdeleted", "-listdeleted", "-lsd", "-ld"]
-
 class Main:
     fetchService = FetchService()
-    playbackService = PlaybackService(quitSwitches, skipSwitches, addCurrentToPlaylistSwitches, printPlaybackDetailsSwitches) #, helpSwitches)
+    playbackService = PlaybackService()
     playlistService = PlaylistService()
     queueStreamService = QueueStreamService()
     sharedService = SharedService()
@@ -80,20 +43,20 @@ class Main:
         while argIndex < argC:
             arg = sys.argv[argIndex].lower()
 
-            if(arg in helpFlags):
+            if(arg in Main.utility.helpCommands):
                 _help = Main.utility.getHelpString()
                 printS(_help)
                 
                 argIndex += 1
                 continue
 
-            elif(arg in testFlags):
+            elif(arg in Main.utility.testCommands):
                 _input = extractArgs(argIndex, argV)
                 printS("Test", color = colors["OKBLUE"])
                     
                 quit()            
                 
-            elif(arg in editFlags):
+            elif(arg in Main.utility.editCommands):
                 # Expected input: playlistId or index
                 _input = extractArgs(argIndex, argV)
                 
@@ -110,7 +73,7 @@ class Main:
                 argIndex += len(_input) + 1
                 continue
 
-            elif(arg in searchFlags):
+            elif(arg in Main.utility.searchCommands):
                 # Expected input: searchTerm, includeSoftDeleted?
                 _input = extractArgs(argIndex, argV)
                 _searchTerm = _input[0] if(len(_input) > 0) else ""
@@ -127,7 +90,7 @@ class Main:
                 continue
             
             # Playlist
-            elif(arg in addPlaylistFlags):
+            elif(arg in Main.utility.addPlaylistCommands):
                 # Expected input: name, playWatchedStreams?, allowDuplicates?, streamSourceIds/indices?
                 _input = extractArgs(argIndex, argV)
                 _name = _input[0] if(len(_input) > 0) else "New Playlist"
@@ -145,7 +108,7 @@ class Main:
                 argIndex += len(_input) + 1
                 continue
             
-            elif(arg in addPlaylistFromYouTubeFlags):
+            elif(arg in Main.utility.addPlaylistFromYouTubeCommands):
                 # Expected input: youTubePlaylistUrl, name?, playWatchedStreams?, allowDuplicates?
                 _input = extractArgs(argIndex, argV)
                 _url = _input[0] if(len(_input) > 0) else None
@@ -163,7 +126,7 @@ class Main:
                 argIndex += len(_input) + 1
                 continue
 
-            elif(arg in deletePlaylistFlags):
+            elif(arg in Main.utility.deletePlaylistCommands):
                 # Expected input: playlistIds or indices
                 _input = extractArgs(argIndex, argV)
                 _ids = Main.utility.getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll())
@@ -183,7 +146,7 @@ class Main:
                 argIndex += len(_input) + 1
                 continue
             
-            elif(arg in restorePlaylistFlags):
+            elif(arg in Main.utility.restorePlaylistCommands):
                 # Expected input: playlistIds or indices
                 _input = extractArgs(argIndex, argV)
                 _ids = Main.utility.getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll())
@@ -203,7 +166,7 @@ class Main:
                 argIndex += len(_input) + 1
                 continue
 
-            elif(arg in listPlaylistFlags):
+            elif(arg in Main.utility.listPlaylistCommands):
                 # Expected input: includeSoftDeleted?
                 _input = extractArgs(argIndex, argV)
                 _includeSoftDeleted = eval(_input[0]) if(len(_input) > 0) else False
@@ -223,7 +186,7 @@ class Main:
                 argIndex += len(_input) + 1
                 continue
             
-            elif(arg in detailsPlaylistFlags):
+            elif(arg in Main.utility.detailsPlaylistCommands):
                 # Expected input: playlistIds or indices, includeUrl, includeId
                 _input = extractArgs(argIndex, argV)
                 _ids = Main.utility.getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll(), returnOnNonIds = True)
@@ -247,7 +210,7 @@ class Main:
                 argIndex += len(_input) + 1
                 continue
 
-            elif(arg in fetchPlaylistSourcesFlags):
+            elif(arg in Main.utility.fetchPlaylistSourcesCommands):
                 # Expected input: playlistIds or indices, fromDateTime?, toDatetime?
                 _input = extractArgs(argIndex, argV)
                 _ids = Main.utility.getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll(), returnOnNonIds = True)
@@ -278,7 +241,7 @@ class Main:
                 argIndex += len(_input) + 1
                 continue
 
-            elif(arg in prunePlaylistFlags):
+            elif(arg in Main.utility.prunePlaylistCommands):
                 # Expected input: playlistIds or indices, includeSoftDeleted, permanentlyDelete, "accept changes" input within purge method
                 _input = extractArgs(argIndex, argV)
                 _ids = Main.utility.getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll())
@@ -303,7 +266,7 @@ class Main:
                 argIndex += len(_input) + 1
                 continue
             
-            elif(arg in purgePlaylistFlags):
+            elif(arg in Main.utility.purgePlaylistCommands):
                 # Expected input: includeSoftDeleted, permanentlyDelete, "accept changes" input within purge method
                 _input = extractArgs(argIndex, argV)
                 _includeSoftDeleted = eval(_input[0]) if(len(_input) > 0) else False
@@ -318,7 +281,7 @@ class Main:
                 argIndex += len(_input) + 1
                 continue
             
-            elif(arg in resetPlaylistFetchFlags):
+            elif(arg in Main.utility.resetPlaylistFetchCommands):
                 # Expected input: playlistIds or indices
                 _input = extractArgs(argIndex, argV)
                 _ids = Main.utility.getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll())
@@ -338,7 +301,7 @@ class Main:
                 argIndex += len(_input) + 1
                 continue
 
-            elif(arg in playFlags):
+            elif(arg in Main.utility.playCommands):
                 # Expected input: playlistId or index, startIndex, shuffle, repeat
                 _input = extractArgs(argIndex, argV)
                 _ids = Main.utility.getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll(), 1)
@@ -366,7 +329,7 @@ class Main:
                 continue
 
             # Streams
-            elif(arg in addStreamFlags):
+            elif(arg in Main.utility.addStreamCommands):
                 # Expected input: playlistId or index, uri, name?
                 _input = extractArgs(argIndex, argV)
                 _ids = Main.utility.getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll(), 1)
@@ -400,7 +363,7 @@ class Main:
                 argIndex += len(_input) + 1
                 continue
 
-            elif(arg in deleteStreamFlags):
+            elif(arg in Main.utility.deleteStreamCommands):
                 # Expected input: playlistId or index, queueStreamIds or indices
                 _input = extractArgs(argIndex, argV)
 
@@ -426,7 +389,7 @@ class Main:
                 argIndex += len(_input) + 1
                 continue
             
-            elif(arg in restoreStreamFlags):
+            elif(arg in Main.utility.restoreStreamCommands):
                 # Expected input: playlistId or index, queueStreamIds or indices
                 _input = extractArgs(argIndex, argV)
 
@@ -453,7 +416,7 @@ class Main:
                 continue
 
             # Sources
-            elif(arg in addSourcesFlags):
+            elif(arg in Main.utility.addSourcesCommands):
                 # Expected input: playlistId or index, uri, enableFetch?, backgroundContent?, name?
                 _input = extractArgs(argIndex, argV)
                 _ids = Main.utility.getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll(), 1)
@@ -489,7 +452,7 @@ class Main:
                 argIndex += len(_input) + 1
                 continue
 
-            elif(arg in deleteSourceFlags):
+            elif(arg in Main.utility.deleteSourceCommands):
                 # Expected input: playlistId or index, streamSourceIds or indices
                 _input = extractArgs(argIndex, argV)
 
@@ -515,7 +478,7 @@ class Main:
                 argIndex += len(_input) + 1
                 continue
             
-            elif(arg in restoreSourceFlags):
+            elif(arg in Main.utility.restoreSourceCommands):
                 # Expected input: playlistId or index, streamSourceIds or indices
                 _input = extractArgs(argIndex, argV)
 
@@ -541,7 +504,7 @@ class Main:
                 argIndex += len(_input) + 1
                 continue
 
-            elif(arg in listSourcesFlags):
+            elif(arg in Main.utility.listSourcesCommands):
                 # Expected input: includeSoftDeleted
                 _input = extractArgs(argIndex, argV)
                 _includeSoftDeleted = eval(_input[0]) if(len(_input) > 0) else False
@@ -557,7 +520,7 @@ class Main:
                 continue
 
             # Meta
-            elif(arg in listSettingsFlags):
+            elif(arg in Main.utility.listSettingsCommands):
                 # Expected input: none
                 
                 _result = Main.utility.getAllSettingsAsString()
@@ -566,7 +529,7 @@ class Main:
                 argIndex += 1
                 continue
             
-            elif(arg in listSoftDeletedFlags):
+            elif(arg in Main.utility.listSoftDeletedCommands):
                 # Expected input: simplified
                 _input = extractArgs(argIndex, argV)
                 _simplified = eval(_input[0]) if(len(_input) > 0) else False

@@ -72,7 +72,8 @@ class Main:
         argIndex = 1
 
         if(argC < 2):
-            Main.printHelp()
+            _help = Main.utility.getHelpString()
+            printS(_help)
 
         makeFiles(WATCHED_LOG_FILEPATH)
 
@@ -80,7 +81,9 @@ class Main:
             arg = sys.argv[argIndex].lower()
 
             if(arg in helpFlags):
-                Main.printHelp()
+                _help = Main.utility.getHelpString()
+                printS(_help)
+                
                 argIndex += 1
                 continue
 
@@ -583,58 +586,6 @@ class Main:
             else:
                 printS("Argument not recognized: \"", arg, "\", please see documentation or run with \"-help\" for help.", color = colors["WARNING"])
                 argIndex += 1
-
-    def printHelp():
-        """
-        A simple console print that informs user of program arguments.
-
-        Returns:
-            None: None
-        """
-
-        print("--- Help ---")
-        print("Arguments marked with ? are optional.")
-        print("All arguments that triggers a function start with dash(-).")
-        print("All arguments must be separated by space only.")
-        print("When using an index or indices, format with with an \"i\" followed by the index, like \"i0\".")
-        print("\n")
-
-        # General
-        printS(helpFlags, ": Prints this information about input arguments.")
-        printS(testFlags, ": A method of calling experimental code (when you want to test if something works).")
-        printS(editFlags, " [playlistId or index: str]: Opens the file with Playlist.")
-        printS(searchFlags, " [searchTerm: str] [? includeSoftDeleted: bool]: Search all Playlists, QueueStreams, and StreamQueues, uri and names where available. Supports Regex.")
-
-        # Playlist
-        printS(addPlaylistFlags, " [name: str] [? playWatchedStreams: bool] [? allowDuplicates: bool] [? streamSourceIds: list]: Add a Playlist with name: name, playWatchedStreams: if playback should play watched QueueStreams, allowDuplicates: should Playlist allow duplicate QueueStreams (only if the uri is the same), streamSourceIds: a list of StreamSources.")
-        printS(addPlaylistFromYouTubeFlags, " [youTubePlaylistUrl: str] [? name: str] [? playWatchedStreams: bool] [? allowDuplicates: bool]: Add a Playlist and populate it with QueueStreams from given YouTube playlist youTubePlaylistUrl, with name: name, playWatchedStreams: if playback should play watched streams, allowDuplicates: should Playlist allow duplicate QueueStreams (only if the uri is the same).")
-        printS(deletePlaylistFlags, " [playlistIds or indices: list]: deletes Playlists indicated.")
-        printS(restoreSourceFlags, " [playlistIds or index: str]: restore soft deleted Playlist from database.")
-        printS(listPlaylistFlags, " [? includeSoftDeleted: bool]: List Playlists with indices that can be used instead of IDs in other commands.")
-        printS(detailsPlaylistFlags, " [playlistIds or indices: list] [? enableFetch: bool] [? enableFetch: bool]: Prints details about given playlist, with option for including StreamSources and QueueStreams.")
-        printS(fetchPlaylistSourcesFlags, " [playlistIds or indices: list] [? takeAfter: datetime] [? takeBefore: datetime]: Fetch new streams from StreamSources in Playlists indicated, e.g. if a Playlist has a YouTube channel as a source, and the channel uploads a new video, this video will be added to the Playlist. Optional arguments takeAfter: only fetch QueueStreams after this date, takeBefore: only fetch QueueStreams before this date. Dates formatted like \"2022-01-30\" (YYYY-MM-DD)")
-        printS(prunePlaylistFlags, " [playlistIds or indices: list]: Prune Playlists indicated, deleteing watched QueueStreams.")
-        printS(purgePlaylistFlags, " [? includeSoftDeleted: bool] [? permanentlyDelete: bool]: Purge database indicated, removing IDs with no corresponding relation and deleteing StreamSources and QueueStreams with no linked IDs in Playlists.")
-        printS(resetPlaylistFetchFlags, " [playlistIds or indices: list]: Resets fetch status of StreamSources in a Playlist and deletes QueueStreams from Playlist.")
-        printS(playFlags, " [playlistId or index: str] [? starindex: int] [? shuffle: bool] [? repeat: bool]: Start playing stream from a Playlist, order and automation (like skipping already watched QueueStreams) depending on the input and Playlist.")
-        printS("\t", quitSwitches, ": End current playback and contintue the program without playing anymore QueueStreams in Playlist. Only available while Playlist is playing.")
-        printS("\t", skipSwitches, ": Skip current QueueStream playing. This QueueStream will not be marked as watched. Only available while Playlist is playing.")
-        printS("\t", addCurrentToPlaylistSwitches, " [playlistId or index: str]: Add the current QueueStream to another Playlist indicated by ID on index. Only available while Playlist is playing.")
-        printS("\t", printPlaybackDetailsSwitches, ": Prints details of current playing Playlist,")
-
-        # Stream
-        printS(addStreamFlags, " [playlistId or index: str] [uri: string] [? name: str]: Add a stream to a Playlist from ID or index, from uri: URL, and name: name (set automatically if not given).")
-        printS(deleteStreamFlags, " [playlistId or index: str] [streamIds or indices: list]: delete QueueStreams from Playlist.")
-        printS(restoreStreamFlags, " [playlistId or index: str] [streamIds or indices: str]: restore soft deleted QueueStreams from database.")
-        # Sources
-        printS(addSourcesFlags, " [playlistId or index: str] [uri: string] [? enableFetch: bool] [? name: str]: Add a StreamSources from uri: URL, enableFetch: if the Playlist should fetch new stream from this StreamSource, and name: name (set automatically if not given).")
-        # printS(addSourcesFlags, " [playlistId or index: str] [uri: string] [? enableFetch: bool] [? backgroundContent: bool] [? name: str]: Add a StreamSources from uri: URL, enableFetch: if the Playlist should fetch new QueueStream from this StreamSource, backgroundContent; if the QueueStream from this source are things you would play in the background, and name: name (set automatically if not given).")
-        printS(deleteSourceFlags, " [playlistId or index: str] [sourceIds or indices: str]: deletes StreamSources from database and Playlist if used anywhere.")
-        printS(restoreSourceFlags, " [playlistId or index: str] [sourceIds or indices: str]: restore soft deleted StreamSources from database.")
-        printS(listSourcesFlags, " [? includeSoftDeleted: bool]: Lists StreamSources with indices that can be used instead of IDs in other commands.")
-        # Meta
-        printS(listSettingsFlags, ": Lists settings currently used by program. These settings can also be found in the file named \".env\" with examples in the file \".env-example\".")
-        printS(listSoftDeletedFlags, " [? simplified: bool]: Lists all soft deleted entities. Option for simplified, less verbose list.")
 
 if __name__ == "__main__":
     Main.main()

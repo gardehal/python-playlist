@@ -188,9 +188,13 @@ class Utility():
 
         _result = ""
         _result += self.getGeneralHelpString()
+        _result += "\n"
         _result += self.getPlaylistHelpString()
+        _result += "\n"
         _result += self.getQueueStreamHelpString()
+        _result += "\n"
         _result += self.getStreamSourceHelpString()
+        _result += "\n"
         _result += self.getMetaHelpString()
         
         return _result
@@ -211,10 +215,10 @@ class Utility():
         _result += "\nWhen using an index or indices, format with with an \"i\" followed by the index, like \"i0\"."
         _result += "\n\n"
 
-        _result += "\n" + helpCommands + ": Prints this information about input arguments."
-        _result += "\n" + testCommands + ": A method of calling experimental code (when you want to test if something works)."
-        _result += "\n" + editCommands + " [playlistId or index: str]: Opens the file with Playlist."
-        _result += "\n" + searchCommands + " [searchTerm: str] [? includeSoftDeleted: bool]: Search all Playlists, QueueStreams, and StreamQueues, uri and names where available. Supports Regex."
+        _result += "\n" + str(helpCommands) + ": Prints this information about input arguments."
+        _result += "\n" + str(testCommands) + ": A method of calling experimental code (when you want to test if something works)."
+        _result += "\n" + str(editCommands) + " [playlistId or index: str]: Opens the file with Playlist."
+        _result += "\n" + str(searchCommands) + " [searchTerm: str] [? includeSoftDeleted: bool]: Search all Playlists, QueueStreams, and StreamQueues, uri and names where available. Supports Regex."
 
         return _result
     
@@ -227,17 +231,17 @@ class Utility():
         """
 
         _result = ""
-        _result += "\n" + addPlaylistCommands + " [name: str] [? playWatchedStreams: bool] [? allowDuplicates: bool] [? streamSourceIds: list]: Add a Playlist with name: name, playWatchedStreams: if playback should play watched QueueStreams, allowDuplicates: should Playlist allow duplicate QueueStreams (only if the uri is the same), streamSourceIds: a list of StreamSources."
-        _result += "\n" + addPlaylistFromYouTubeCommands + " [youTubePlaylistUrl: str] [? name: str] [? playWatchedStreams: bool] [? allowDuplicates: bool]: Add a Playlist and populate it with QueueStreams from given YouTube playlist youTubePlaylistUrl, with name: name, playWatchedStreams: if playback should play watched streams, allowDuplicates: should Playlist allow duplicate QueueStreams (only if the uri is the same)."
-        _result += "\n" + deletePlaylistCommands + " [playlistIds or indices: list]: deletes Playlists indicated."
-        _result += "\n" + restoreSourceCommands + " [playlistIds or index: str]: restore soft deleted Playlist from database."
-        _result += "\n" + listPlaylistCommands + " [? includeSoftDeleted: bool]: List Playlists with indices that can be used instead of IDs in other commands."
-        _result += "\n" + detailsPlaylistCommands + " [playlistIds or indices: list] [? enableFetch: bool] [? enableFetch: bool]: Prints details about given playlist, with option for including StreamSources and QueueStreams."
-        _result += "\n" + fetchPlaylistSourcesCommands + " [playlistIds or indices: list] [? takeAfter: datetime] [? takeBefore: datetime]: Fetch new streams from StreamSources in Playlists indicated, e.g. if a Playlist has a YouTube channel as a source, and the channel uploads a new video, this video will be added to the Playlist. Optional arguments takeAfter: only fetch QueueStreams after this date, takeBefore: only fetch QueueStreams before this date. Dates formatted like \"2022-01-30\" (YYYY-MM-DD)."
-        _result += "\n" + prunePlaylistCommands + " [playlistIds or indices: list]: Prune Playlists indicated, deleteing watched QueueStreams."
-        _result += "\n" + purgePlaylistCommands + " [? includeSoftDeleted: bool] [? permanentlyDelete: bool]: Purge database indicated, removing IDs with no corresponding relation and deleteing StreamSources and QueueStreams with no linked IDs in Playlists."
-        _result += "\n" + resetPlaylistFetchCommands + " [playlistIds or indices: list]: Resets fetch status of StreamSources in a Playlist and deletes QueueStreams from Playlist."
-        _result += "\n" + playCommands + " [playlistId or index: str] [? starindex: int] [? shuffle: bool] [? repeat: bool]: Start playing stream from a Playlist, order and automation (like skipping already watched QueueStreams) depending on the input and Playlist."
+        _result += "\n" + str(addPlaylistCommands) + " [name: str] [? playWatchedStreams: bool] [? allowDuplicates: bool] [? streamSourceIds: list]: Add a Playlist with name: name, playWatchedStreams: if playback should play watched QueueStreams, allowDuplicates: should Playlist allow duplicate QueueStreams (only if the uri is the same), streamSourceIds: a list of StreamSources."
+        _result += "\n" + str(addPlaylistFromYouTubeCommands) + " [youTubePlaylistUrl: str] [? name: str] [? playWatchedStreams: bool] [? allowDuplicates: bool]: Add a Playlist and populate it with QueueStreams from given YouTube playlist youTubePlaylistUrl, with name: name, playWatchedStreams: if playback should play watched streams, allowDuplicates: should Playlist allow duplicate QueueStreams (only if the uri is the same)."
+        _result += "\n" + str(deletePlaylistCommands) + " [playlistIds or indices: list]: deletes Playlists indicated."
+        _result += "\n" + str(restoreSourceCommands) + " [playlistIds or index: str]: restore soft deleted Playlist from database."
+        _result += "\n" + str(listPlaylistCommands) + " [? includeSoftDeleted: bool]: List Playlists with indices that can be used instead of IDs in other commands."
+        _result += "\n" + str(detailsPlaylistCommands) + " [playlistIds or indices: list] [? enableFetch: bool] [? enableFetch: bool]: Prints details about given playlist, with option for including StreamSources and QueueStreams."
+        _result += "\n" + str(fetchPlaylistSourcesCommands) + " [playlistIds or indices: list] [? takeAfter: datetime] [? takeBefore: datetime]: Fetch new streams from StreamSources in Playlists indicated, e.g. if a Playlist has a YouTube channel as a source, and the channel uploads a new video, this video will be added to the Playlist. Optional arguments takeAfter: only fetch QueueStreams after this date, takeBefore: only fetch QueueStreams before this date. Dates formatted like \"2022-01-30\" (YYYY-MM-DD)."
+        _result += "\n" + str(prunePlaylistCommands) + " [playlistIds or indices: list]: Prune Playlists indicated, deleteing watched QueueStreams."
+        _result += "\n" + str(purgePlaylistCommands) + " [? includeSoftDeleted: bool] [? permanentlyDelete: bool]: Purge database indicated, removing IDs with no corresponding relation and deleteing StreamSources and QueueStreams with no linked IDs in Playlists."
+        _result += "\n" + str(resetPlaylistFetchCommands) + " [playlistIds or indices: list]: Resets fetch status of StreamSources in a Playlist and deletes QueueStreams from Playlist."
+        _result += "\n" + str(playCommands) + " [playlistId or index: str] [? starindex: int] [? shuffle: bool] [? repeat: bool]: Start playing stream from a Playlist, order and automation (like skipping already watched QueueStreams) depending on the input and Playlist."
         _result += self.getPlaylistArgumentsHelpString()
         
         return _result
@@ -251,10 +255,10 @@ class Utility():
         """
 
         _result = ""
-        _result += "\n\t" + quitArguments + ": End current playback and contintue the program without playing anymore QueueStreams in Playlist. Only available while Playlist is playing."
-        _result += "\n\t" + skipArguments + ": Skip current QueueStream playing. This QueueStream will not be marked as watched. Only available while Playlist is playing."
-        _result += "\n\t" + addCurrentToPlaylistArguments + " [playlistId or index: str]: Add the current QueueStream to another Playlist indicated by ID on index. Only available while Playlist is playing."
-        _result += "\n\t" + printPlaybackDetailsArguments + ": Prints details of current playing Playlist."
+        _result += "\n\t" + str(quitArguments) + ": End current playback and contintue the program without playing anymore QueueStreams in Playlist. Only available while Playlist is playing."
+        _result += "\n\t" + str(skipArguments) + ": Skip current QueueStream playing. This QueueStream will not be marked as watched. Only available while Playlist is playing."
+        _result += "\n\t" + str(addCurrentToPlaylistArguments) + " [playlistId or index: str]: Add the current QueueStream to another Playlist indicated by ID on index. Only available while Playlist is playing."
+        _result += "\n\t" + str(printPlaybackDetailsArguments) + ": Prints details of current playing Playlist."
         
         return _result
         
@@ -267,9 +271,9 @@ class Utility():
         """
 
         _result = ""
-        _result += "\n" + addStreamCommands + " [playlistId or index: str] [uri: string] [? name: str]: Add a stream to a Playlist from ID or index, from uri: URL, and name: name (set automatically if not given)."
-        _result += "\n" + deleteStreamCommands + " [playlistId or index: str] [streamIds or indices: list]: delete QueueStreams from Playlist.")
-        _result += "\n" + restoreStreamCommands + " [playlistId or index: str] [streamIds or indices: str]: restore soft deleted QueueStreams from database.")
+        _result += "\n" + str(addStreamCommands) + " [playlistId or index: str] [uri: string] [? name: str]: Add a stream to a Playlist from ID or index, from uri: URL, and name: name (set automatically if not given)."
+        _result += "\n" + str(deleteStreamCommands) + " [playlistId or index: str] [streamIds or indices: list]: delete QueueStreams from Playlist."
+        _result += "\n" + str(restoreStreamCommands) + " [playlistId or index: str] [streamIds or indices: str]: restore soft deleted QueueStreams from database."
 
         return _result
     
@@ -282,11 +286,11 @@ class Utility():
         """
 
         _result = ""
-        _result += "\n" + addSourcesCommands + " [playlistId or index: str] [uri: string] [? enableFetch: bool] [? name: str]: Add a StreamSources from uri: URL, enableFetch: if the Playlist should fetch new stream from this StreamSource, and name: name (set automatically if not given)."
-        # _result += "\n" + addSourcesCommands + " [playlistId or index: str] [uri: string] [? enableFetch: bool] [? backgroundContent: bool] [? name: str]: Add a StreamSources from uri: URL, enableFetch: if the Playlist should fetch new QueueStream from this StreamSource, backgroundContent; if the QueueStream from this source are things you would play in the background, and name: name (set automatically if not given)."
-        _result += "\n" + deleteSourceCommands + " [playlistId or index: str] [sourceIds or indices: str]: deletes StreamSources from database and Playlist if used anywhere."
-        _result += "\n" + restoreSourceCommands + " [playlistId or index: str] [sourceIds or indices: str]: restore soft deleted StreamSources from database."
-        _result += "\n" + listSourcesCommands + " [? includeSoftDeleted: bool]: Lists StreamSources with indices that can be used instead of IDs in other commands."
+        _result += "\n" + str(addSourcesCommands) + " [playlistId or index: str] [uri: string] [? enableFetch: bool] [? name: str]: Add a StreamSources from uri: URL, enableFetch: if the Playlist should fetch new stream from this StreamSource, and name: name (set automatically if not given)."
+        # _result += "\n" + str(addSourcesCommands) + " [playlistId or index: str] [uri: string] [? enableFetch: bool] [? backgroundContent: bool] [? name: str]: Add a StreamSources from uri: URL, enableFetch: if the Playlist should fetch new QueueStream from this StreamSource, backgroundContent; if the QueueStream from this source are things you would play in the background, and name: name (set automatically if not given)."
+        _result += "\n" + str(deleteSourceCommands) + " [playlistId or index: str] [sourceIds or indices: str]: deletes StreamSources from database and Playlist if used anywhere."
+        _result += "\n" + str(restoreSourceCommands) + " [playlistId or index: str] [sourceIds or indices: str]: restore soft deleted StreamSources from database."
+        _result += "\n" + str(listSourcesCommands) + " [? includeSoftDeleted: bool]: Lists StreamSources with indices that can be used instead of IDs in other commands."
 
         return _result
     
@@ -299,7 +303,7 @@ class Utility():
         """
 
         _result = ""
-        _result += "\n" + listSettingsCommands + ": Lists settings currently used by program. These settings can also be found in the file named \".env\" with examples in the file \".env-example\"."
-        _result += "\n" + listSoftDeletedCommands + " [? simplified: bool]: Lists all soft deleted entities. Option for simplified, less verbose list."
+        _result += "\n" + str(listSettingsCommands) + ": Lists settings currently used by program. These settings can also be found in the file named \".env\" with examples in the file \".env-example\"."
+        _result += "\n" + str(listSoftDeletedCommands) + " [? simplified: bool]: Lists all soft deleted entities. Option for simplified, less verbose list."
 
         return _result

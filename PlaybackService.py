@@ -27,25 +27,26 @@ WATCHED_LOG_FILEPATH = os.environ.get("WATCHED_LOG_FILEPATH")
 BROWSER_BIN = os.environ.get("BROWSER_BIN")
 
 class PlaybackService():
+    utility: Utility = None
     storagePath: str = LOCAL_STORAGE_PATH
     playlistService: PlaylistService = None
     queueStreamService: QueueStreamService = None
     streamSourceService: StreamSourceService = None
-    utility: Utility = None
     quitInputs: List[str] = None
     skipInputs: List[str] = None
     addToInputs: List[str] = None
     printDetailsInputs: List[str] = None
 
-    def __init__(self, quitInputs: List[str] = ["quit"], skipInputs: List[str] = ["skip"], addToInputs: List[str] = ["addto"], printDetailsInputs: List[str] = ["detailsprint"]):
+    def __init__(self):
         self.playlistService: PlaylistService = PlaylistService()
         self.queueStreamService: QueueStreamService = QueueStreamService()
         self.streamSourceService: StreamSourceService = StreamSourceService()
         self.utility: Utility = Utility()
-        self.quitInputs: List[str] = quitInputs
-        self.skipInputs: List[str] = skipInputs
-        self.addToInputs: List[str] = addToInputs
-        self.printDetailsInputs: List[str] = printDetailsInputs       
+        self.quitInputs: List[str] = self.utility.quitArguments
+        self.skipInputs: List[str] = self.utility.skipArguments
+        self.addToInputs: List[str] = self.utility.addCurrentToPlaylistArguments
+        self.printDetailsInputs: List[str] = self.utility.printPlaybackDetailsArguments
+        self.printHelpInputs: List[str] = self.utility.printPlaybackHelpArguments
 
     def play(self, playlistId: str, startIndex: int = 0, shuffle: bool = False, repeatPlaylist: bool = False) -> bool:
         """
@@ -192,6 +193,9 @@ class PlaybackService():
                 printS("Stream \"", stream.name, "\" could not be added to new Playlist.", color = colors["FAIL"], doPrint = (_crossAddPlaylistResult == 0))
             elif(len(self.printDetailsInputs) > 0 and _input in self.printDetailsInputs):
                 self.playlistService.printPlaylistDetails([playlist.id])
+            elif(len(self.printHelpInputs) > 0 and _input in self.printHelpInputs):
+                _help = self.utility.getPlaylistArgumentsHelpString()
+                printS(_help)
             else:
                 print(_input)
                 printS("Argument(s) not recognized: \"", _input, "\". Please refrain from using arrows to navigate in the CLI as it adds hidden characters.", color = colors["WARNING"])

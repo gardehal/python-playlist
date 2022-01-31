@@ -43,7 +43,7 @@ class Utility():
         self.skipArguments = ["-skip", "-s"]
         self.addCurrentToPlaylistArguments = ["-addto", "-at"]
         self.printPlaybackDetailsArguments = ["-detailsprint", "-details", "-print", "-dp"]
-        self.helpArguments = ["-help", "-h"]
+        self.printPlaybackHelpArguments = ["-help", "-h"]
 
         # Stream
         self.addStreamCommands = ["add", "a"]
@@ -260,6 +260,7 @@ class Utility():
         _result += "\n\t" + str(self.skipArguments) + ": Skip current QueueStream playing. This QueueStream will not be marked as watched. Only available while Playlist is playing."
         _result += "\n\t" + str(self.addCurrentToPlaylistArguments) + " [playlistId or index: str]: Add the current QueueStream to another Playlist indicated by ID on index. Only available while Playlist is playing."
         _result += "\n\t" + str(self.printPlaybackDetailsArguments) + ": Prints details of current playing Playlist."
+        _result += "\n\t" + str(self.printPlaybackHelpArguments) + ": Prints relevant help during playback."
         
         return _result
         

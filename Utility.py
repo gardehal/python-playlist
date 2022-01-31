@@ -123,3 +123,20 @@ class Utility():
                 printS(entry, color = colors[_color]) 
                 
         return True
+    
+    def getAllSettingsAsString(self):
+        """
+        Print settings in .env settings/secrets file.
+
+        Returns:
+            None: None
+        """
+
+        printS("DEBUG: ", DEBUG,
+               "\n", "LOCAL_STORAGE_PATH: ", LOCAL_STORAGE_PATH,
+               "\n", "LOG_WATCHED: ", LOG_WATCHED,
+               "\n", "DOWNLOAD_WEB_STREAMS: ", DOWNLOAD_WEB_STREAMS,
+               "\n", "REMOVE_WATCHED_ON_FETCH: ", REMOVE_WATCHED_ON_FETCH,
+               "\n", "PLAYED_ALWAYS_WATCHED: ", PLAYED_ALWAYS_WATCHED,
+               "\n", "WATCHED_LOG_FILEPATH: ", WATCHED_LOG_FILEPATH,
+               "\n", "BROWSER_BIN: ", BROWSER_BIN)

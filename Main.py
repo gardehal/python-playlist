@@ -1,7 +1,6 @@
 import os
 import sys
 from datetime import datetime
-import threading
 
 from dotenv import load_dotenv
 from myutil.Util import *
@@ -18,14 +17,8 @@ from StreamSourceService import StreamSourceService
 from Utility import Utility
 
 load_dotenv()
-DEBUG = eval(os.environ.get("DEBUG"))
 LOCAL_STORAGE_PATH = os.environ.get("LOCAL_STORAGE_PATH")
-LOG_WATCHED = eval(os.environ.get("LOG_WATCHED"))
-DOWNLOAD_WEB_STREAMS = eval(os.environ.get("DOWNLOAD_WEB_STREAMS"))
-REMOVE_WATCHED_ON_FETCH = eval(os.environ.get("REMOVE_WATCHED_ON_FETCH"))
-PLAYED_ALWAYS_WATCHED = eval(os.environ.get("PLAYED_ALWAYS_WATCHED"))
 WATCHED_LOG_FILEPATH = os.environ.get("WATCHED_LOG_FILEPATH")
-BROWSER_BIN = os.environ.get("BROWSER_BIN")
 
 # General
 helpFlags = ["-help", "-h"]
@@ -49,6 +42,7 @@ quitSwitches = ["quit", "q", "exit", "end"]
 skipSwitches = ["skip", "s"]
 addCurrentToPlaylistSwitches = ["addto", "at"]
 printPlaybackDetailsSwitches = ["detailsprint", "details", "print", "dp"]
+helpSwitches = ["help", "h"]
 
 # Stream
 addStreamFlags = ["-add", "-a"]
@@ -65,7 +59,7 @@ listSoftDeletedFlags = ["-listsoftdeleted", "-listdeleted", "-lsd", "-ld"]
 
 class Main:
     fetchService = FetchService()
-    playbackService = PlaybackService(quitSwitches, skipSwitches, addCurrentToPlaylistSwitches, printPlaybackDetailsSwitches)
+    playbackService = PlaybackService(quitSwitches, skipSwitches, addCurrentToPlaylistSwitches, printPlaybackDetailsSwitches) #, helpSwitches)
     playlistService = PlaylistService()
     queueStreamService = QueueStreamService()
     sharedService = SharedService()
@@ -93,12 +87,6 @@ class Main:
             elif(arg in testFlags):
                 _input = extractArgs(argIndex, argV)
                 printS("Test", color = colors["OKBLUE"])
-
-                if(0):
-                    Main.printSpinner()
-                    
-                if(1):
-                    Main.runFunctionWithProgressBar(function=Main.testLongMethod, arguments=("hello from start", "this is the end"))
                     
                 quit()            
                 
@@ -569,7 +557,8 @@ class Main:
             elif(arg in listSettingsFlags):
                 # Expected input: none
                 
-                Main.printSettings()
+                _result = Main.utility.getAllSettingsAsString()
+                print(_result)
 
                 argIndex += 1
                 continue
@@ -594,93 +583,6 @@ class Main:
             else:
                 printS("Argument not recognized: \"", arg, "\", please see documentation or run with \"-help\" for help.", color = colors["WARNING"])
                 argIndex += 1
-
-    def testLongMethod(start, end):
-        
-        print(start)
-        
-        time.sleep(5)
-        
-        print(end)
-
-    def printSpinner(pause: float = 0.2) -> None:
-        """
-        Print one rotation of a spinner to inform the user that the program is working. This method must be constantly called to keep the spinner going.
-        
-        Args:
-            pause (float): Pause between between change in the spinner
-        """
-        
-        print(" - ", end = "\r")
-        sys.stdout.flush()
-        time.sleep(pause)
-        print(" \\ ", end = "\r")
-        sys.stdout.flush()
-        time.sleep(pause)
-        print(" | ", end = "\r")
-        sys.stdout.flush()
-        time.sleep(pause)
-        print(" / ", end = "\r")
-        sys.stdout.flush()
-        time.sleep(pause)
-    
-    def printProgressBar(current: float, total: float, barLength: int = 20) -> None:
-        """
-        Print a progress bar.
-        Source: https://stackoverflow.com/questions/6169217/replace-console-output-in-python
-
-        Args:
-            current (float): Current progress status
-            total (float): Total progress goal
-            barLength (int, optional): Total displayed length. Defaults to 20.
-        """
-        
-        percent = float(current) * 100 / total
-        arrow   = "-" * int(percent/100 * barLength - 1) + ">"
-        spaces  = " " * (barLength - len(arrow))
-
-        print(f"Progress: [{arrow}{spaces}] {int(percent)}%", end = "\r")
-        sys.stdout.flush()
-        
-    def printFinishedProgressBar(barLength: int = 20) -> None:
-        """
-        Print a finished progress bar for display purposes.
-        Source: https://stackoverflow.com/questions/6169217/replace-console-output-in-python
-
-        Args:
-            barLength (int, optional): Total displayed length. Defaults to 20.
-        """
-        
-        Main.printProgressBar(100, 100, barLength)
-    
-    def runFunctionWithProgressBar(function: any, arguments: tuple[()]) -> None:
-        
-        funcThread = threading.Thread(target = function, args = arguments)
-        funcThread.start()
-        
-        barTarget = 100
-        while funcThread.is_alive():
-            # Main.printSpinner()
-            
-            Main.printProgressBar(10, barTarget)
-        Main.printFinishedProgressBar()
-
-    def printSettings():
-        """
-        Print settings in .env settings/secrets file.
-
-        Returns:
-            None: None
-        """
-
-        printS("DEBUG: ", DEBUG,
-               "\n", "LOCAL_STORAGE_PATH: ", LOCAL_STORAGE_PATH,
-               "\n", "LOG_WATCHED: ", LOG_WATCHED,
-               "\n", "DOWNLOAD_WEB_STREAMS: ", DOWNLOAD_WEB_STREAMS,
-               "\n", "REMOVE_WATCHED_ON_FETCH: ", REMOVE_WATCHED_ON_FETCH,
-               "\n", "PLAYED_ALWAYS_WATCHED: ", PLAYED_ALWAYS_WATCHED,
-               "\n", "WATCHED_LOG_FILEPATH: ", WATCHED_LOG_FILEPATH,
-               "\n", "BROWSER_BIN: ", BROWSER_BIN)
 
     def printHelp():
         """

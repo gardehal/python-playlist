@@ -124,7 +124,8 @@ class FetchService():
             _sanitizedTitle = sanitize(yt.title)
             _newStreams.append(QueueStream(name = _sanitizedTitle, 
                                            uri = yt.watch_url, 
-                                           isWeb = True, 
+                                           isWeb = True,
+                                           streamSourceId = streamSource.id,
                                            watched = None,
                                            backgroundContent = streamSource.backgroundContent,
                                            added = datetime.now()))

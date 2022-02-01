@@ -6,6 +6,7 @@ class QueueStream:
                  name: str = None, 
                  uri: str = None, 
                  isWeb: bool = False, 
+                 streamSourceId: str = None, 
                  watched: datetime = None, 
                  backgroundContent: bool = False, 
                  deleted: datetime = None,
@@ -14,6 +15,7 @@ class QueueStream:
         self.name: str = name
         self.uri: str = uri
         self.isWeb: bool = isWeb
+        self.streamSourceId: str = streamSourceId
         self.watched: datetime = watched
         self.backgroundContent: bool = backgroundContent
         self.deleted: datetime = deleted
@@ -27,6 +29,7 @@ class QueueStream:
 
     def detailsString(self, includeUri: bool = True, includeId: bool = True, includeDatetime: bool = True, includeListCount: bool = True):
         _uriString = ", uri: " + self.uri if(includeUri) else ""
+        _streamSourceIdString = ", streamSourceId: " + self.streamSourceId if(includeId) else ""
         _idString = ", id: " + self.id if(includeId) else ""
         _watchedString = ", watched: " + str(self.watched) if(includeDatetime) else ""
         _deletedString = ", deleted: " + str(self.deleted) if(includeDatetime) else ""
@@ -35,6 +38,7 @@ class QueueStream:
         return "".join(map(str, ["name: ", self.name,
         _uriString,
         ", isWeb: ", self.isWeb, 
+        _streamSourceIdString,
         _watchedString, 
         ", backgroundContent: ", self.backgroundContent, 
         _deletedString,

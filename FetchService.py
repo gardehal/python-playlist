@@ -48,6 +48,7 @@ class FetchService():
         if(_playlist == None):
             return 0
 
+        _datetimeStarted = datetime.now()
         _newStreams = []
         for _sourceId in _playlist.streamSourceIds:
             _source = self.streamSourceService.get(_sourceId)
@@ -72,14 +73,16 @@ class FetchService():
                 continue
 
             if(len(_fetchedStreams) > 0):
-                _source.lastSuccessfulFetched = datetime.now()
+                _source.lastSuccessfulFetched = _datetimeStarted
             
-            _source.lastFetched = datetime.now()
+            _source.lastFetched = _datetimeStarted
             _updateSuccess = self.streamSourceService.update(_source)
             if(_updateSuccess):
                 _newStreams += _fetchedStreams
             else:
                 printS("Could not update source \"", _source.name, "\" (ID: ", _source.id, "), streams could not be added: \n", _fetchedStreams, color = colors["WARNING"])
+                
+            sys.stdout.flush()
 
         _updateResult = self.playlistService.addStreams(_playlist.id, _newStreams)
         if(len(_updateResult) > 0):
@@ -100,14 +103,13 @@ class FetchService():
             List[QueueStream]: List of QueueStream
         """
 
-        printS("DEBUG: fetchYoutube - start, fetching channel source...", doPrint = DEBUG)
         _channel = Channel(streamSource.uri)
 
         if(_channel == None or _channel.channel_name == None):
             printS("Channel \"", streamSource.name, "\" (URL: ", streamSource.uri, ") could not be found or is not valid. Please remove it and add it back.", color = colors["ERROR"])
             return []
 
-        printS("DEBUG: fetchYoutube - Fetching videos from ", _channel.channel_name, "...", doPrint = DEBUG)
+        printS("Fetching videos from ", _channel.channel_name, "...")
         if(len(_channel.video_urls) < 1):
             printS("Channel \"", _channel.channel_name, "\" has no videos.", color = colors["WARNING"])
             return []

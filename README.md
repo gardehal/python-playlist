@@ -90,5 +90,4 @@ Program for queueing and playing videos from list or from sources like channels 
 - fetch seem to skip some YT videos - if 2 videos uploaded with hours pause, fetch done after first before second will only get first? due to YT date not time. add counter and keep track of int videos, update if based on if new call finds more vids than tracked locally?
 - backgroundContent - implementation - group bgc and play at the end or start? option to only play bgc?
 - fetch for sources by ids or indices
-- adding sources, check for duplicates on url (warning on duplicate name?)
 - tests for core functions like fetch and play?

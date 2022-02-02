@@ -85,6 +85,8 @@ Program for queueing and playing videos from list or from sources like channels 
   - Close tab after video is watched not possible? Have to guess with time, can't account for pauses
   - download stream, play in subprocess VLC which sets video to watched when video finishes or VLC closes would be nice (easy for yt, third party without pytube-like packs much harder)
 
+- more names fewer IDs. name or name and ID, never only ID
+- use util print table in details etc.?
 - implement pypac 1.0.0
 - add source id to stream if it was fetched that way, add source name/id when printing queuestreams?
 - fetch seem to skip some YT videos - if 2 videos uploaded with hours pause, fetch done after first before second will only get first? due to YT date not time. add counter and keep track of int videos, update if based on if new call finds more vids than tracked locally?

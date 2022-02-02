@@ -53,7 +53,7 @@ class Main:
             elif(arg in Main.utility.testCommands):
                 _input = extractArgs(argIndex, argV)
                 printS("Test", color = colors["OKBLUE"])
-                    
+                
                 quit()            
                 
             elif(arg in Main.utility.editCommands):
@@ -187,7 +187,7 @@ class Main:
                 continue
             
             elif(arg in Main.utility.detailsPlaylistCommands):
-                # Expected input: playlistIds or indices, includeUrl, includeId
+                # Expected input: playlistIds or indices, includeUri, includeId, includeDatertime, includeListCount, includeSource
                 _input = extractArgs(argIndex, argV)
                 _ids = Main.utility.getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll(), returnOnNonIds = True)
                 _lenIds = len(_ids)
@@ -195,13 +195,14 @@ class Main:
                 _includeId = eval(_input[_lenIds + 1]) if(len(_input) > _lenIds + 1) else False
                 _includeDatetime = eval(_input[_lenIds + 2]) if(len(_input) > _lenIds + 2) else False
                 _includeListCount = eval(_input[_lenIds + 3]) if(len(_input) > _lenIds + 3) else True
+                _includeSource = eval(_input[_lenIds + 4]) if(len(_input) > _lenIds + 4) else True
                 
                 if(len(_ids) == 0):
                     printS("Failed to print details, missing playlistIds or indices.", color = colors["FAIL"])
                     argIndex += len(_input) + 1
                     continue
                 
-                _result = Main.playlistService.printPlaylistDetails(_ids, _includeUri, _includeId, _includeDatetime, _includeListCount)
+                _result = Main.playlistService.printPlaylistDetails(_ids, _includeUri, _includeId, _includeDatetime, _includeListCount, _includeSource)
                 if(_result):
                     printS("Finished printing ", _result, " details.", color = colors["OKGREEN"])
                 else:

@@ -39,11 +39,11 @@ class Utility():
         self.purgePlaylistCommands = ["purge"]
         self.resetPlaylistFetchCommands = ["reset"]
         self.playCommands = ["play", "p"]
-        self.quitArguments = ["-quit", "-q", "-exit", "-end"]
-        self.skipArguments = ["-skip", "-s"]
-        self.addCurrentToPlaylistArguments = ["-addto", "-at"]
-        self.printPlaybackDetailsArguments = ["-detailsprint", "-details", "-print", "-dp"]
-        self.printPlaybackHelpArguments = ["-help", "-h"]
+        self.quitArguments = ["quit", "q", "exit", "end"]
+        self.skipArguments = ["skip", "s"]
+        self.addCurrentToPlaylistArguments = ["addto", "at"]
+        self.printPlaybackDetailsArguments = ["detailsprint", "details", "print", "dp"]
+        self.printPlaybackHelpArguments = ["help", "h"]
 
         # Stream
         self.addStreamCommands = ["add", "a"]

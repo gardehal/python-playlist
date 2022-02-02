@@ -615,7 +615,7 @@ class PlaylistService():
             
         return None
     
-    def printPlaylistDetails(self, playlistIds: List[str], includeUri: bool = False, includeId: bool = False, includeDatetime: bool = False, includeListCount: bool = False) -> int:
+    def printPlaylistDetails(self, playlistIds: List[str], includeUri: bool = False, includeId: bool = False, includeDatetime: bool = False, includeListCount: bool = False, includeSource: bool = True) -> int:
         """
         Print detailed info for Playlist, including details for related StreamSources and QueueStreams.
 
@@ -623,6 +623,7 @@ class PlaylistService():
             playlistIds (List[str]): list of playlistIds to print details of
             includeUri (bool, optional): should print include URI if any. Defaults to False
             includeId (bool, optional): should print include IDs. Defaults to False
+            includeSource (bool, optional): should print include StreamSource this was fetched from. Defaults to True
             
         Returns:
             int: number of playlists printed for
@@ -667,7 +668,11 @@ class PlaylistService():
                     continue
                 
                 _color = "WHITE" if i % 2 == 0 else "GREYBG"
-                printS("\t", str(i), " - ", _stream.detailsString(includeUri, includeId, includeDatetime, includeListCount), color = colors[_color])
+                _sourceString = ""
+                if(includeSource and _stream.streamSourceId != None):
+                    _streamSource = self.streamSourceService.get(_stream.streamSourceId)
+                    _sourceString = ", StreamSource: \"" + _streamSource.name + "\"" 
+                printS("\t", str(i), " - ", _stream.detailsString(includeUri, includeId, includeDatetime, includeListCount), _sourceString, color = colors[_color])
                 
             _result += 1
                 

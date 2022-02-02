@@ -29,7 +29,7 @@ class QueueStream:
 
     def detailsString(self, includeUri: bool = True, includeId: bool = True, includeDatetime: bool = True, includeListCount: bool = True):
         _uriString = ", uri: " + self.uri if(includeUri) else ""
-        _streamSourceIdString = ", streamSourceId: " + self.streamSourceId if(includeId) else ""
+        _streamSourceIdString = ", streamSourceId: " + str(self.streamSourceId) if(includeId) else ""
         _idString = ", id: " + self.id if(includeId) else ""
         _watchedString = ", watched: " + str(self.watched) if(includeDatetime) else ""
         _deletedString = ", deleted: " + str(self.deleted) if(includeDatetime) else ""

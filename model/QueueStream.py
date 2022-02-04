@@ -27,6 +27,11 @@ class QueueStream:
         ", ID: ", self.id, 
         ", URI: ", self.uri]))
 
+    def simpleString(self):
+        return "".join(map(str, ["\"", self.name, "\"",
+        ", watched" if(self.watched) else "",
+        ", is web" if(self.isWeb) else ""]))
+
     def detailsString(self, includeUri: bool = True, includeId: bool = True, includeDatetime: bool = True, includeListCount: bool = True):
         _uriString = ", uri: " + self.uri if(includeUri) else ""
         _streamSourceIdString = ", streamSourceId: " + str(self.streamSourceId) if(includeId) else ""

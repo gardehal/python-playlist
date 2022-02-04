@@ -33,6 +33,12 @@ class StreamSource:
         ", Enable fetch: ", self.enableFetch,
         ", Last fetch: ", self.lastSuccessfulFetched]))
 
+    def simpleString(self):
+        return "".join(map(str, ["\"", self.name, "\"",
+        ", fetch enabled" if(self.enableFetch) else "",
+        ", is web" if(self.isWeb) else "",
+        ", Last fetch: ", self.lastSuccessfulFetched]))
+
     def detailsString(self, includeUri: bool = True, includeId: bool = True, includeDatetime: bool = True, includeListCount: bool = True):
         _uriString = ", uri: " + self.uri if(includeUri) else ""
         _idString = ", id: " + self.id if(includeId) else ""

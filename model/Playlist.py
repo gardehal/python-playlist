@@ -33,6 +33,11 @@ class Playlist():
         ", Streams: ", len(self.streamIds),
         ", Sources: ", len(self.streamSourceIds)]))
 
+    def simpleString(self):
+        return "".join(map(str, ["\"", self.name, "\"",
+        ", ", len(self.streamIds), " StreamSources",
+        ", ", len(self.streamSourceIds), " SourceSources",]))
+
     def detailsString(self, includeUri: bool = True, includeId: bool = True, includeDatetime: bool = True, includeListCount: bool = True):
         _idString = ", id: " + self.id if(includeId) else ""
         _deletedString = ", deleted: " + str(self.deleted) if(includeDatetime) else ""

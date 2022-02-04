@@ -131,6 +131,8 @@ class FetchService():
                                            watched = None,
                                            backgroundContent = streamSource.backgroundContent,
                                            added = datetime.now()))
+            
+            printS("\tAdded a QueueStream with name \"", _sanitizedTitle, "\".")
 
             # Todo fetch batches using batchSize of videos instead of all 3000 videos in some cases taking 60 seconds+ to load
             if(i > batchSize):

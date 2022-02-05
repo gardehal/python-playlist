@@ -189,7 +189,7 @@ class PlaybackService():
             elif(len(self.addToInputs) > 0 and " " in _input and _input.split(" ")[0] in self.addToInputs):
                 _idsIndices = _input.split(" ")[1:]
                 _crossAddPlaylistResult = self.addPlaybackStreamToPlaylist(stream, _idsIndices)
-                printS("Stream \"", stream.name, "\" added to new Playlist.", color = colors["OKGREEN"], doPrint = (_crossAddPlaylistResult > 0))
+                printS("Stream \"", stream.name, "\" added to new Playlist \"", _crossAddPlaylistResult[0].name, "\".", color = colors["OKGREEN"], doPrint = (_crossAddPlaylistResult > 0))
                 printS("Stream \"", stream.name, "\" could not be added to new Playlist.", color = colors["FAIL"], doPrint = (_crossAddPlaylistResult == 0))
             elif(len(self.printDetailsInputs) > 0 and _input in self.printDetailsInputs):
                 self.playlistService.printPlaylistDetails([playlist.id])
@@ -202,7 +202,7 @@ class PlaybackService():
         
         return 0
 
-    def addPlaybackStreamToPlaylist(self, queueStream: QueueStream, idsIndices: List[str]) -> int:
+    def addPlaybackStreamToPlaylist(self, queueStream: QueueStream, idsIndices: List[str]) -> List[Playlist]:
         """
         Add the QueueStream currently playing in playback, to another Playlist.
 
@@ -211,7 +211,7 @@ class PlaybackService():
             idsIndices (List[str]): ID or index of Playlist to add stream to
 
         Returns:
-            int: number of Playlists stream was added to
+            Playlist: Playlist the stream was added to
         """
         
         if(len(idsIndices) < 1):
@@ -223,10 +223,11 @@ class PlaybackService():
             printS("Failed to add cross-add streams, missing playlistIds or indices.", color = colors["WARNING"])
             return 0
         
-        _result = 0
+        _result = []
         for _id in _ids:
             _addResult = self.playlistService.addStreams(_id, [queueStream])
             if(len(_addResult) > 0):
-                _result += 1
+                _playlist = self.playlistService.get(_id)
+                _result.append(_playlist)
         
         return _result

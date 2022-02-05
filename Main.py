@@ -2,8 +2,12 @@ import os
 import sys
 from datetime import datetime
 
+import validators
 from dotenv import load_dotenv
-from myutil.Util import *
+from myutil.BashColor import BashColor
+from myutil.FileUtil import makeFiles
+from myutil.InputUtil import extractArgs, isNumber
+from myutil.PrintUtil import printS
 
 from FetchService import FetchService
 from model.Playlist import Playlist
@@ -52,7 +56,7 @@ class Main:
 
             elif(arg in Main.utility.testCommands):
                 _input = extractArgs(argIndex, argV)
-                printS("Test", color = colors["OKBLUE"])
+                printS("Test", color = BashColor.OKBLUE)
                 
                 quit()            
                 
@@ -62,7 +66,7 @@ class Main:
                 
                 _ids = Main.utility.getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll())
                 if(len(_ids) == 0):
-                    printS("Failed to edit, missing playlistId or index.", color = colors["FAIL"])
+                    printS("Failed to edit, missing playlistId or index.", color = BashColor.FAIL)
                     argIndex += len(_input) + 1
                     continue
 
@@ -101,9 +105,9 @@ class Main:
                 _entity = Playlist(name = _name, playWatchedStreams = _playWatchedStreams, allowDuplicates = _allowDuplicates, streamSourceIds = _streamSourceIds)
                 _result = Main.playlistService.add(_entity)
                 if(_result != None):
-                    printS("Playlist \"", _result.name, "\" added successfully.", color = colors["OKGREEN"])
+                    printS("Playlist \"", _result.name, "\" added successfully.", color = BashColor.OKGREEN)
                 else:
-                    printS("Failed to create Playlist.", color = colors["FAIL"])
+                    printS("Failed to create Playlist.", color = BashColor.FAIL)
 
                 argIndex += len(_input) + 1
                 continue
@@ -119,9 +123,9 @@ class Main:
                 _entity = Playlist(name = _name, playWatchedStreams = _playWatchedStreams, allowDuplicates = _allowDuplicates)
                 _result = Main.playlistService.addYouTubePlaylist(_entity, _url)
                 if(_result != None):
-                    printS("Playlist \"", _result.name, "\" added successfully from YouTube playlist.", color = colors["OKGREEN"])
+                    printS("Playlist \"", _result.name, "\" added successfully from YouTube playlist.", color = BashColor.OKGREEN)
                 else:
-                    printS("Failed to create Playlist.", color = colors["FAIL"])
+                    printS("Failed to create Playlist.", color = BashColor.FAIL)
 
                 argIndex += len(_input) + 1
                 continue
@@ -132,16 +136,16 @@ class Main:
                 _ids = Main.utility.getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll())
                 
                 if(len(_ids) == 0):
-                    printS("Failed to delete Playlists, missing playlistIds or indices.", color = colors["FAIL"])
+                    printS("Failed to delete Playlists, missing playlistIds or indices.", color = BashColor.FAIL)
                     argIndex += len(_input) + 1
                     continue
                 
                 for _id in _ids:
                     _result = Main.playlistService.delete(_id)
                     if(_result != None):
-                        printS("Playlist \"", _result.name, "\" deleted successfully.", color = colors["OKGREEN"])
+                        printS("Playlist \"", _result.name, "\" deleted successfully.", color = BashColor.OKGREEN)
                     else:
-                        printS("Failed to delete Playlist.", color = colors["FAIL"])
+                        printS("Failed to delete Playlist.", color = BashColor.FAIL)
 
                 argIndex += len(_input) + 1
                 continue
@@ -152,16 +156,16 @@ class Main:
                 _ids = Main.utility.getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll())
                 
                 if(len(_ids) == 0):
-                    printS("Failed to restore Playlists, missing playlistIds or indices.", color = colors["FAIL"])
+                    printS("Failed to restore Playlists, missing playlistIds or indices.", color = BashColor.FAIL)
                     argIndex += len(_input) + 1
                     continue
                 
                 for _id in _ids:
                     _result = Main.playlistService.restore(_id)
                     if(_result != None):
-                        printS("Playlist \"", _result.name, "\" restore successfully.", color = colors["OKGREEN"])
+                        printS("Playlist \"", _result.name, "\" restore successfully.", color = BashColor.OKGREEN)
                     else:
-                        printS("Failed to restore Playlist.", color = colors["FAIL"])
+                        printS("Failed to restore Playlist.", color = BashColor.FAIL)
 
                 argIndex += len(_input) + 1
                 continue
@@ -181,7 +185,7 @@ class Main:
                     for (i, _entry) in enumerate(_result):
                         printS(i, " - ", _entry.summaryString())
                 else:
-                    printS("No Playlists found.", color = colors["WARNING"])
+                    printS("No Playlists found.", color = BashColor.WARNING)
 
                 argIndex += len(_input) + 1
                 continue
@@ -198,15 +202,15 @@ class Main:
                 _includeSource = eval(_input[_lenIds + 4]) if(len(_input) > _lenIds + 4) else True
                 
                 if(len(_ids) == 0):
-                    printS("Failed to print details, missing playlistIds or indices.", color = colors["FAIL"])
+                    printS("Failed to print details, missing playlistIds or indices.", color = BashColor.FAIL)
                     argIndex += len(_input) + 1
                     continue
                 
                 _result = Main.playlistService.printPlaylistDetails(_ids, _includeUri, _includeId, _includeDatetime, _includeListCount, _includeSource)
                 if(_result):
-                    printS("Finished printing ", _result, " details.", color = colors["OKGREEN"])
+                    printS("Finished printing ", _result, " details.", color = BashColor.OKGREEN)
                 else:
-                    printS("Failed print details.", color = colors["FAIL"])
+                    printS("Failed print details.", color = BashColor.FAIL)
                         
                 argIndex += len(_input) + 1
                 continue
@@ -220,7 +224,7 @@ class Main:
                 _takeBefore = _input[_lenIds + 1] if(len(_input) > _lenIds + 1) else None
                 
                 if(len(_ids) == 0):
-                    printS("Failed to fetch sources, missing playlistIds or indices.", color = colors["FAIL"])
+                    printS("Failed to fetch sources, missing playlistIds or indices.", color = BashColor.FAIL)
                     argIndex += len(_input) + 1
                     continue
                 
@@ -230,14 +234,14 @@ class Main:
                     if(_takeBefore != None):
                         _takeBefore = datetime.strptime(_takeBefore, "%Y-%m-%d")
                 except:
-                    printS("Dates for takeAfter and takeBefore were not valid, see -help print for format.", color = colors["FAIL"])
+                    printS("Dates for takeAfter and takeBefore were not valid, see -help print for format.", color = BashColor.FAIL)
                     argIndex += len(_input) + 1
                     continue
                 
                 for _id in _ids:
                     _result = Main.fetchService.fetch(_id, batchSize = 20, takeAfter = _takeAfter, takeBefore = _takeBefore)
                     _playlist = Main.playlistService.get(_id)
-                    printS("Fetched ", _result, " for playlist \"", _playlist.name, "\" successfully.", color = colors["OKGREEN"])
+                    printS("Fetched ", _result, " for playlist \"", _playlist.name, "\" successfully.", color = BashColor.OKGREEN)
 
                 argIndex += len(_input) + 1
                 continue
@@ -251,7 +255,7 @@ class Main:
                 _permanentlyDelete = eval(_input[_lenIds + 1]) if(len(_input) > _lenIds + 1) else False
                 
                 if(len(_ids) == 0):
-                    printS("Failed to prune playlists, missing playlistIds or indices.", color = colors["FAIL"])
+                    printS("Failed to prune playlists, missing playlistIds or indices.", color = BashColor.FAIL)
                     argIndex += len(_input) + 1
                     continue
                 
@@ -260,9 +264,9 @@ class Main:
                     _playlist = Main.playlistService.get(_id)
                     
                     if(len(_result["QueueStream"]) > 0 and len(_result["QueueStreamId"]) > 0):
-                        printS("Prune finished, deleted ", len(_result["QueueStream"]), " streams, ", len(_result["QueueStreamId"]), " IDs from Playlist \"", _playlist.name, "\".", color = colors["OKGREEN"])
+                        printS("Prune finished, deleted ", len(_result["QueueStream"]), " streams, ", len(_result["QueueStreamId"]), " IDs from Playlist \"", _playlist.name, "\".", color = BashColor.OKGREEN)
                     else:
-                        printS("Prune failed, could not delete any streams from Playlist \"", _playlist.name, "\".", color = colors["FAIL"])
+                        printS("Prune failed, could not delete any streams from Playlist \"", _playlist.name, "\".", color = BashColor.FAIL)
 
                 argIndex += len(_input) + 1
                 continue
@@ -275,9 +279,9 @@ class Main:
                 
                 _result = Main.sharedService.purge(_includeSoftDeleted, _permanentlyDelete)
                 if(len(_result["QueueStream"]) > 0 or len(_result["StreamSource"]) > 0 or len(_result["QueueStreamId"]) > 0 or len(_result["StreamSourceId"]) > 0):
-                    printS("Purge finished, deleted ", len(_result["QueueStream"]), " QueueStreams, ", len(_result["StreamSource"]), " StreamSources, and ", len(_result["QueueStreamId"]) + len(_result["StreamSourceId"]), " IDs.", color = colors["OKGREEN"])
+                    printS("Purge finished, deleted ", len(_result["QueueStream"]), " QueueStreams, ", len(_result["StreamSource"]), " StreamSources, and ", len(_result["QueueStreamId"]) + len(_result["StreamSourceId"]), " IDs.", color = BashColor.OKGREEN)
                 else:
-                    printS("Purge failed.", color = colors["FAIL"])
+                    printS("Purge failed.", color = BashColor.FAIL)
 
                 argIndex += len(_input) + 1
                 continue
@@ -288,16 +292,16 @@ class Main:
                 _ids = Main.utility.getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll())
                 
                 if(len(_ids) == 0):
-                    printS("Failed to reset fetch-status of playlists, missing playlistIds or indices.", color = colors["FAIL"])
+                    printS("Failed to reset fetch-status of playlists, missing playlistIds or indices.", color = BashColor.FAIL)
                     argIndex += len(_input) + 1
                     continue
                     
                 _result = Main.fetchService.resetPlaylistFetch(_ids)
                 _playlist = Main.playlistService.get(_id)
                 if(_result):
-                    printS("Finished resetting fetch statuses for sources in Playlist \"", _playlist.name, "\".", color = colors["OKGREEN"])
+                    printS("Finished resetting fetch statuses for sources in Playlist \"", _playlist.name, "\".", color = BashColor.OKGREEN)
                 else:
-                    printS("Failed to reset fetch statuses for sources in Playlist \"", _playlist.name, "\".", color = colors["FAIL"])
+                    printS("Failed to reset fetch statuses for sources in Playlist \"", _playlist.name, "\".", color = BashColor.FAIL)
 
                 argIndex += len(_input) + 1
                 continue
@@ -311,12 +315,12 @@ class Main:
                 _repeat = eval(_input[3]) if(len(_input) > 3) else False
                 
                 if(len(_ids) == 0):
-                    printS("Failed to play playlist, missing playlistIds or indices.", color = colors["FAIL"])
+                    printS("Failed to play playlist, missing playlistIds or indices.", color = BashColor.FAIL)
                     argIndex += len(_input) + 1
                     continue
                 
                 if(not isNumber(_startIndex, intOnly = True)):
-                    printS("Failed to play playlist, input startIndex must be an integer.", color = colors["FAIL"])
+                    printS("Failed to play playlist, input startIndex must be an integer.", color = BashColor.FAIL)
                     argIndex += len(_input) + 1
                     continue
                 
@@ -324,7 +328,7 @@ class Main:
                 _result = Main.playbackService.play(_ids[0], _startIndex, _shuffle, _repeat)
                 if(not _result):
                     _playlist = Main.playlistService.get(_ids[0])
-                    printS("Failed to play Playlist \"", _playlist.name, "\".", color = colors["FAIL"])
+                    printS("Failed to play Playlist \"", _playlist.name, "\".", color = BashColor.FAIL)
 
                 argIndex += len(_input) + 1
                 continue
@@ -338,12 +342,12 @@ class Main:
                 _name = _input[2] if len(_input) > 2 else None
 
                 if(len(_ids) == 0):
-                    printS("Failed to add QueueStream, missing playlistId or index.", color = colors["FAIL"])
+                    printS("Failed to add QueueStream, missing playlistId or index.", color = BashColor.FAIL)
                     argIndex += len(_input) + 1
                     continue
 
                 if(_uri == None):
-                    printS("Failed to add QueueStream, missing uri.", color = colors["FAIL"])
+                    printS("Failed to add QueueStream, missing uri.", color = BashColor.FAIL)
                     argIndex += len(_input) + 1
                     continue
 
@@ -351,15 +355,15 @@ class Main:
                     _name = Main.utility.getPageTitle(_uri)
                 if(_name == None):
                     _name = "New QueueStream"
-                    printS("Could not automatically get the web name for this QueueStream, will be named \"" , _name, "\".", color = colors["WARNING"])
+                    printS("Could not automatically get the web name for this QueueStream, will be named \"" , _name, "\".", color = BashColor.WARNING)
 
                 _playlist = Main.playlistService.get(_ids[0])
                 _entity = QueueStream(name = _name, uri = _uri)
                 _addResult = Main.playlistService.addStreams(_playlist.id, [_entity])
                 if(len(_addResult) > 0):
-                    printS("QueueStream \"", _addResult[0].name, "\" added successfully.", color = colors["OKGREEN"])
+                    printS("QueueStream \"", _addResult[0].name, "\" added successfully.", color = BashColor.OKGREEN)
                 else:
-                    printS("Failed to create QueueStream.", color = colors["FAIL"])
+                    printS("Failed to create QueueStream.", color = BashColor.FAIL)
 
                 argIndex += len(_input) + 1
                 continue
@@ -370,22 +374,22 @@ class Main:
 
                 _playlistIds = Main.utility.getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll(), 1)
                 if(len(_playlistIds) == 0):
-                    printS("Failed to delete QueueStreams, missing playlistId or index.", color = colors["FAIL"])
+                    printS("Failed to delete QueueStreams, missing playlistId or index.", color = BashColor.FAIL)
                     argIndex += len(_input) + 1
                     continue
                 
                 _playlist = Main.playlistService.get(_playlistIds[0])
                 _queueStreamIds = Main.utility.getIdsFromInput(_input[1:], _playlist.streamIds, Main.playlistService.getStreamsByPlaylistId(_playlist.id))
                 if(len(_queueStreamIds) == 0):
-                    printS("Failed to delete QueueStreams, missing queueStreamIds or indices.", color = colors["FAIL"])
+                    printS("Failed to delete QueueStreams, missing queueStreamIds or indices.", color = BashColor.FAIL)
                     argIndex += len(_input) + 1
                     continue
                 
                 _result = Main.playlistService.deleteStreams(_playlist.id, _queueStreamIds)
                 if(len(_result) > 0):
-                    printS("Deleted ", len(_result), " QueueStreams successfully from Playlist \"", _playlist.name, "\".", color = colors["OKGREEN"])
+                    printS("Deleted ", len(_result), " QueueStreams successfully from Playlist \"", _playlist.name, "\".", color = BashColor.OKGREEN)
                 else:
-                    printS("Failed to delete QueueStreams.", color = colors["FAIL"])
+                    printS("Failed to delete QueueStreams.", color = BashColor.FAIL)
 
                 argIndex += len(_input) + 1
                 continue
@@ -396,22 +400,22 @@ class Main:
 
                 _playlistIds = Main.utility.getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll(), 1)
                 if(len(_playlistIds) == 0):
-                    printS("Failed to restore QueueStreams, missing playlistId or index.", color = colors["FAIL"])
+                    printS("Failed to restore QueueStreams, missing playlistId or index.", color = BashColor.FAIL)
                     argIndex += len(_input) + 1
                     continue
                 
                 _playlist = Main.playlistService.get(_playlistIds[0])
                 _queueStreamIds = Main.utility.getIdsFromInput(_input[1:], Main.queueStreamService.getAllIds(includeSoftDeleted = True), Main.playlistService.getStreamsByPlaylistId(_playlist.id, includeSoftDeleted = True))
                 if(len(_queueStreamIds) == 0):
-                    printS("Failed to restore QueueStreams, missing queueStreamIds or indices.", color = colors["FAIL"])
+                    printS("Failed to restore QueueStreams, missing queueStreamIds or indices.", color = BashColor.FAIL)
                     argIndex += len(_input) + 1
                     continue
                 
                 _result = Main.playlistService.restoreStreams(_playlist.id, _queueStreamIds)
                 if(len(_result) > 0):
-                    printS("Restored ", len(_result), " QueueStreams successfully from Playlist \"", _playlist.name, "\".", color = colors["OKGREEN"])
+                    printS("Restored ", len(_result), " QueueStreams successfully from Playlist \"", _playlist.name, "\".", color = BashColor.OKGREEN)
                 else:
-                    printS("Failed to restore QueueStreams.", color = colors["FAIL"])
+                    printS("Failed to restore QueueStreams.", color = BashColor.FAIL)
 
                 argIndex += len(_input) + 1
                 continue
@@ -427,12 +431,12 @@ class Main:
                 _name = _input[4] if len(_input) > 4 else None
 
                 if(len(_ids) == 0):
-                    printS("Failed to add StreamSource, missing playlistId or index.", color = colors["FAIL"])
+                    printS("Failed to add StreamSource, missing playlistId or index.", color = BashColor.FAIL)
                     argIndex += len(_input) + 1
                     continue
 
                 if(_uri == None):
-                    printS("Failed to add StreamSource, missing uri.", color = colors["FAIL"])
+                    printS("Failed to add StreamSource, missing uri.", color = BashColor.FAIL)
                     argIndex += len(_input) + 1
                     continue
 
@@ -440,15 +444,15 @@ class Main:
                     _name = Main.utility.getPageTitle(_uri)
                 if(_name == None):
                     _name = "New StreamSource"
-                    printS("Could not automatically get the web name for this StreamSource, will be named \"" , _name, "\".", color = colors["WARNING"])                  
+                    printS("Could not automatically get the web name for this StreamSource, will be named \"" , _name, "\".", color = BashColor.WARNING)                  
                     
                 _playlist = Main.playlistService.get(_ids[0])
                 _entity = StreamSource(name = _name, uri = _uri, enableFetch = _enableFetch, backgroundContent = _bgContent)
                 _addResult = Main.playlistService.addStreamSources(_playlist.id, [_entity])
                 if(len(_addResult) > 0):
-                    printS("StreamSource \"", _addResult[0].name, "\" added successfully.", color = colors["OKGREEN"])
+                    printS("StreamSource \"", _addResult[0].name, "\" added successfully.", color = BashColor.OKGREEN)
                 else:
-                    printS("Failed to create StreamSource.", color = colors["FAIL"])
+                    printS("Failed to create StreamSource.", color = BashColor.FAIL)
 
                 argIndex += len(_input) + 1
                 continue
@@ -459,22 +463,22 @@ class Main:
 
                 _playlistIds = Main.utility.getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll(), 1)
                 if(len(_playlistIds) == 0):
-                    printS("Failed to delete StreamSources, missing playlistId or index.", color = colors["FAIL"])
+                    printS("Failed to delete StreamSources, missing playlistId or index.", color = BashColor.FAIL)
                     argIndex += len(_input) + 1
                     continue
                 
                 _playlist = Main.playlistService.get(_playlistIds[0])
                 _streamSourceIds = Main.utility.getIdsFromInput(_input[1:], _playlist.streamSourceIds, Main.playlistService.getSourcesByPlaylistId(_playlist.id))
                 if(len(_streamSourceIds) == 0):
-                    printS("Failed to delete StreamSources, missing streamSourceIds or indices.", color = colors["FAIL"])
+                    printS("Failed to delete StreamSources, missing streamSourceIds or indices.", color = BashColor.FAIL)
                     argIndex += len(_input) + 1
                     continue
                 
                 _result = Main.playlistService.deleteStreamSources(_playlist.id, _streamSourceIds)
                 if(len(_result) > 0):
-                    printS("Deleted ", len(_result), " StreamSources successfully from playlist \"", _playlist.name, "\".", color = colors["OKGREEN"])
+                    printS("Deleted ", len(_result), " StreamSources successfully from playlist \"", _playlist.name, "\".", color = BashColor.OKGREEN)
                 else:
-                    printS("Failed to delete StreamSources.", color = colors["FAIL"])
+                    printS("Failed to delete StreamSources.", color = BashColor.FAIL)
 
                 argIndex += len(_input) + 1
                 continue
@@ -485,22 +489,22 @@ class Main:
 
                 _playlistIds = Main.utility.getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll(), 1)
                 if(len(_playlistIds) == 0):
-                    printS("Failed to restore StreamSources, missing playlistId or index.", color = colors["FAIL"])
+                    printS("Failed to restore StreamSources, missing playlistId or index.", color = BashColor.FAIL)
                     argIndex += len(_input) + 1
                     continue
                 
                 _playlist = Main.playlistService.get(_playlistIds[0])
                 _streamSourceIds = Main.utility.getIdsFromInput(_input[1:], Main.streamSourceService.getAllIds(includeSoftDeleted = True), Main.playlistService.getSourcesByPlaylistId(_playlist.id, includeSoftDeleted = True))
                 if(len(_streamSourceIds) == 0):
-                    printS("Failed to restore StreamSources, missing streamSourceIds or indices.", color = colors["FAIL"])
+                    printS("Failed to restore StreamSources, missing streamSourceIds or indices.", color = BashColor.FAIL)
                     argIndex += len(_input) + 1
                     continue
                 
                 _result = Main.playlistService.restoreStreamSources(_playlist.id, _streamSourceIds)
                 if(len(_result) > 0):
-                    printS("Restored ", len(_result), " StreamSources successfully from Playlist \"", _playlist.name, "\".", color = colors["OKGREEN"])
+                    printS("Restored ", len(_result), " StreamSources successfully from Playlist \"", _playlist.name, "\".", color = BashColor.OKGREEN)
                 else:
-                    printS("Failed to restore StreamSources.", color = colors["FAIL"])
+                    printS("Failed to restore StreamSources.", color = BashColor.FAIL)
 
                 argIndex += len(_input) + 1
                 continue
@@ -515,7 +519,7 @@ class Main:
                     for (i, _entry) in enumerate(_result):
                         printS(i, " - ", _entry.summaryString())
                 else:
-                    printS("No QueueStreams found.", color = colors["WARNING"])
+                    printS("No QueueStreams found.", color = BashColor.WARNING)
 
                 argIndex += len(_input) + 1
                 continue
@@ -548,7 +552,7 @@ class Main:
 
             # Invalid
             else:
-                printS("Argument not recognized: \"", arg, "\", please see documentation or run with \"-help\" for help.", color = colors["WARNING"])
+                printS("Argument not recognized: \"", arg, "\", please see documentation or run with \"-help\" for help.", color = BashColor.WARNING)
                 argIndex += 1
 
 if __name__ == "__main__":

@@ -71,17 +71,17 @@ class SharedService():
             
         printS("\nPrune summary, the following data will be", (" PERMANENTLY REMOVED" if permanentlyDelete else " DELETED"), ":", color = BashColor.WARNING)
             
-        printS("\QueueStream", color = BashColor.BOLD)
+        printS("\nQueueStream(s)", color = BashColor.BOLD)
         printS("No QueueStreams will be removed", doPrint = len(_deletedData["QueueStream"]) == 0)
         for _stream in _deletedData["QueueStream"]:
             print(_stream.id + " - " + _stream.name)
             
-        printS("\nQueueStream IDs", color = BashColor.BOLD)
+        printS("\nQueueStream ID(s)", color = BashColor.BOLD)
         printS("No IDs will be removed", doPrint = len(_deletedData["QueueStreamId"]) == 0)
         for _id in _deletedData["QueueStreamId"]:
             print(_id)
             
-        printS("\nRemoving ", len(_deletedData["QueueStream"]), " watched QueueStreams and ", len(_deletedData["QueueStreamId"]), " IDs in Playlist \"", _playlist.name, "\".")
+        printS("\nRemoving ", len(_deletedData["QueueStream"]), " watched QueueStream(s) and ", len(_deletedData["QueueStreamId"]), " ID(s) in Playlist \"", _playlist.name, "\".")
         printS("Do you want to", (" PERMANENTLY REMOVE" if permanentlyDelete else " DELETE"), " this data?", color = BashColor.WARNING)
         _input = input("(y/n):")
         if(_input not in affirmative):
@@ -167,28 +167,28 @@ class SharedService():
         
         printS("\nPurge summary, the following data will be", (" PERMANENTLY REMOVED" if permanentlyDelete else " DELETED"), ":", color = BashColor.WARNING)
         
-        printS("\nQueueStream", color = BashColor.BOLD)
-        printS("No QueueStreams will be", (" permanently" if permanentlyDelete else ""), " removed", doPrint = len(_deletedData["QueueStream"]) == 0)
+        printS("\nQueueStream(s)", color = BashColor.BOLD)
+        printS("No QueueStream(s) will be", (" permanently" if permanentlyDelete else ""), " removed", doPrint = len(_deletedData["QueueStream"]) == 0)
         for _ in _deletedData["QueueStream"]:
             print(_.id + " - " + _.name)
             
-        printS("\nStreamSource", color = BashColor.BOLD)
-        printS("No StreamSources will be removed", doPrint = len(_deletedData["StreamSource"]) == 0)
+        printS("\nStreamSource(s)", color = BashColor.BOLD)
+        printS("No StreamSource(s) will be removed", doPrint = len(_deletedData["StreamSource"]) == 0)
         for _ in _deletedData["StreamSource"]:
             print(_.id + " - " + _.name)
             
-        printS("\nDangling QueueStream IDs", color = BashColor.BOLD)
-        printS("No IDs will be removed", doPrint = len(_deletedData["QueueStreamId"]) == 0)
+        printS("\nDangling QueueStream ID(s)", color = BashColor.BOLD)
+        printS("No ID(s) will be removed", doPrint = len(_deletedData["QueueStreamId"]) == 0)
         for _ in _deletedData["QueueStreamId"]:
             print(_.id + " - " + _.name)
             
-        printS("\nDangling StreamSource IDs", color = BashColor.BOLD)
-        printS("No IDs will be removed", doPrint = len(_deletedData["StreamSourceId"]) == 0)
+        printS("\nDangling StreamSource ID(s)", color = BashColor.BOLD)
+        printS("No ID(s) will be removed", doPrint = len(_deletedData["StreamSourceId"]) == 0)
         for _ in _deletedData["StreamSourceId"]:
             print(_.id + " - " + _.name)
         
-        printS("\nRemoving ", len(_deletedData["QueueStream"]), " unlinked QueueStreams, ", len(_deletedData["StreamSource"]), " StreamSources.")
-        printS("Removing ", len(_deletedData["QueueStreamId"]), " dangling QueueStream IDs, ", len(_deletedData["StreamSourceId"]), " dangling StreamSource IDs.")
+        printS("\nRemoving ", len(_deletedData["QueueStream"]), " unlinked QueueStream(s), ", len(_deletedData["StreamSource"]), " unlinked StreamSource(s).")
+        printS("Removing ", len(_deletedData["QueueStreamId"]), " dangling QueueStream ID(s), ", len(_deletedData["StreamSourceId"]), " dangling StreamSource ID(s).")
         printS("Do you want to", (" PERMANENTLY REMOVE" if permanentlyDelete else " DELETE"), " this data?", color = BashColor.WARNING)
         _input = input("(y/n):")
         if(_input not in affirmative):
@@ -218,7 +218,7 @@ class SharedService():
     
     def search(self, searchTerm: str, includeSoftDeleted: bool = False) -> dict[List[QueueStream], List[StreamSource], List[Playlist]]:
         """
-        Search names and uris for Regex-term searchTerm and returns a dict with results.
+        Search names and URIs for Regex-term searchTerm and returns a dict with results.
 
         Args:
             searchTerm (str): Regex-enabled term to search for

@@ -32,7 +32,7 @@ Program for queueing and playing videos from list or from sources like channels 
 #### Add a playlist, stream to the playlist, and play it
 
 1. Add a playlist, named "YouTube favourites" which will not play streams already watched and not allow duplicates (of URLs):
-    - $ `python main -ap "YouTube favourites" False False`
+    - $ `python main ap "YouTube favourites" False False`
 1. See an overview of playlists:
     - $ `python main lp`
     - Will return something like this, where the ID is a randomly generated UUID:
@@ -54,8 +54,21 @@ Program for queueing and playing videos from list or from sources like channels 
       - `Playlist "YouTube feed" finished.` 
 1. Since the option to re-watch streams in playlist is turned off, we can prune our playlist to remove watched streams:
     - $ `python main prune i0`
-    - Will return prune result:
-      - `Prune finished, removed 1 streams from playlist (ID: "12345678-1234-1234-1234-123456789012").`
+    - This will bring up a summary:
+      - `Prune summary, the following data will be DELETED:`
+      - `QueueStream(s)`
+      - `abcdefgh-12ab-12ab-12ab-abcdefghijkl - Me at the zoo`
+      - ` `
+      - `QueueStream ID(s)`
+      - `abcdefgh-12ab-12ab-12ab-abcdefghijkl`
+      - ` `
+      - `(y/n):`
+      - `Removing 1 watched QueueStream(s) and 1 IDs in Playlist "YouTube favourites".`
+      - `Do you want to DELETE this data?`
+      - `(y/n):`
+    - Enter "yes" or just "y":
+      - `(y/n):yes`
+      - `Prune finished, deleted 1 QueueStream(s), 1 ID(s) from Playlist "YouTube favourites".`
 
 #### Add a source to a playlist and fetch streams
 
@@ -85,5 +98,6 @@ Program for queueing and playing videos from list or from sources like channels 
   - Close tab after video is watched not possible? Have to guess with time, can't account for pauses
   - download stream, play in subprocess VLC which sets video to watched when video finishes or VLC closes would be nice (easy for yt, third party without pytube-like packs much harder)
 
+- minor print issues and wording/use of IDs
 - fetch seem to skip some YT videos - if 2 videos uploaded with hours pause, fetch done after first before second will only get first? due to YT date not time. add counter and keep track of int videos, update if based on if new call finds more vids than tracked locally?
 - tests for core functions like fetch and play?

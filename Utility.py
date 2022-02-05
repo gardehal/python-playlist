@@ -43,6 +43,7 @@ class Utility():
         self.playCommands = ["play", "p"]
         self.quitArguments = ["quit", "q", "exit", "end"]
         self.skipArguments = ["skip", "s"]
+        self.listPlaylistArguments = ["listplaylists", "lp"]
         self.addCurrentToPlaylistArguments = ["addto", "at"]
         self.printPlaybackDetailsArguments = ["detailsprint", "details", "print", "dp"]
         self.printPlaybackHelpArguments = ["help", "h"]
@@ -265,6 +266,7 @@ class Utility():
         _result = ""
         _result += "\n\t" + str(self.quitArguments) + ": End current playback and contintue the program without playing anymore QueueStreams in Playlist. Only available while Playlist is playing."
         _result += "\n\t" + str(self.skipArguments) + ": Skip current QueueStream playing. This QueueStream will not be marked as watched. Only available while Playlist is playing."
+        _result += "\n\t" + str(self.listPlaylistArguments) + ": List Playlists."
         _result += "\n\t" + str(self.addCurrentToPlaylistArguments) + " [playlistId or index: str]: Add the current QueueStream to another Playlist indicated by ID on index. Only available while Playlist is playing."
         _result += "\n\t" + str(self.printPlaybackDetailsArguments) + ": Prints details of current playing Playlist."
         _result += "\n\t" + str(self.printPlaybackHelpArguments) + ": Prints relevant help during playback."
@@ -316,3 +318,4 @@ class Utility():
         _result += "\n" + str(self.listSoftDeletedCommands) + " [? simplified: bool]: Lists all soft deleted entities. Option for simplified, less verbose list."
 
         return _result
+    

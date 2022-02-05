@@ -180,12 +180,13 @@ class Main:
                     _nPlaylists = len(_result)
                     _nQueueStreams = len(Main.queueStreamService.getAll(_includeSoftDeleted))
                     _nStreamSources = len(Main.streamSourceService.getAll(_includeSoftDeleted))
-                    printS(_nPlaylists, " Playlists, ", _nQueueStreams, " QueueStreams, ", _nStreamSources, " StreamSources.")
+                    _titles = [str(_nPlaylists) + " Playlists, " + str(_nQueueStreams) + " QueueStreams, " + str(_nStreamSources) + " StreamSources."]
                     
+                    _data = []
                     for (i, _entry) in enumerate(_result):
-                        printS(i, " - ", _entry.summaryString())
-                else:
-                    printS("No Playlists found.", color = BashColor.WARNING)
+                        _data.append(str(i) + " - " + _entry.summaryString())
+                        
+                    Main.utility.printLists([_data], _titles)
 
                 argIndex += len(_input) + 1
                 continue
@@ -264,9 +265,9 @@ class Main:
                     _playlist = Main.playlistService.get(_id)
                     
                     if(len(_result["QueueStream"]) > 0 and len(_result["QueueStreamId"]) > 0):
-                        printS("Prune finished, deleted ", len(_result["QueueStream"]), " streams, ", len(_result["QueueStreamId"]), " IDs from Playlist \"", _playlist.name, "\".", color = BashColor.OKGREEN)
+                        printS("Prune finished, deleted ", len(_result["QueueStream"]), " QueueStream(s), ", len(_result["QueueStreamId"]), " ID(s) from Playlist \"", _playlist.name, "\".", color = BashColor.OKGREEN)
                     else:
-                        printS("Prune failed, could not delete any streams from Playlist \"", _playlist.name, "\".", color = BashColor.FAIL)
+                        printS("Prune failed, could not delete any QueueStream(s) from Playlist \"", _playlist.name, "\".", color = BashColor.FAIL)
 
                 argIndex += len(_input) + 1
                 continue
@@ -279,7 +280,7 @@ class Main:
                 
                 _result = Main.sharedService.purge(_includeSoftDeleted, _permanentlyDelete)
                 if(len(_result["QueueStream"]) > 0 or len(_result["StreamSource"]) > 0 or len(_result["QueueStreamId"]) > 0 or len(_result["StreamSourceId"]) > 0):
-                    printS("Purge finished, deleted ", len(_result["QueueStream"]), " QueueStreams, ", len(_result["StreamSource"]), " StreamSources, and ", len(_result["QueueStreamId"]) + len(_result["StreamSourceId"]), " IDs.", color = BashColor.OKGREEN)
+                    printS("Purge finished, deleted ", len(_result["QueueStream"]), " QueueStream(s), ", len(_result["StreamSource"]), " StreamSource(s), and ", len(_result["QueueStreamId"]) + len(_result["StreamSourceId"]), " ID(s).", color = BashColor.OKGREEN)
                 else:
                     printS("Purge failed.", color = BashColor.FAIL)
 

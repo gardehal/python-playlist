@@ -45,6 +45,7 @@ class PlaybackService():
         self.utility: Utility = Utility()
         self.quitInputs: List[str] = self.utility.quitArguments
         self.skipInputs: List[str] = self.utility.skipArguments
+        self.listPlaylistInputs: List[str] = self.utility.listPlaylistArguments
         self.addToInputs: List[str] = self.utility.addCurrentToPlaylistArguments
         self.printDetailsInputs: List[str] = self.utility.printPlaybackDetailsArguments
         self.printHelpInputs: List[str] = self.utility.printPlaybackHelpArguments
@@ -187,6 +188,19 @@ class PlaybackService():
             elif(len(self.skipInputs) > 0 and _input in self.skipInputs):
                 printS("Skipping video, will not be marked as watched.", color = BashColor.OKGREEN)
                 return 2
+            elif(len(self.listPlaylistInputs) > 0 and _input in self.listPlaylistInputs):
+                _result = self.playlistService.getAll()
+                if(len(_result) > 0):
+                    _nPlaylists = len(_result)
+                    _titles = [str(_nPlaylists) + " Playlist(s)."]
+                    
+                    _data = []
+                    for (i, _entry) in enumerate(_result):
+                        _data.append(str(i) + " - " + _entry.summaryString())
+                        
+                    self.utility.printLists([_data], [_titles])
+                else:
+                    printS("No Playlists found.", color = BashColor.WARNING)
             elif(len(self.addToInputs) > 0 and " " in _input and _input.split(" ")[0] in self.addToInputs):
                 _idsIndices = _input.split(" ")[1:]
                 _crossAddPlaylistResult = self.addPlaybackStreamToPlaylist(stream, _idsIndices)

@@ -3,12 +3,13 @@ import uuid
 from datetime import datetime
 from typing import List
 
-from dotenv import load_dotenv
-from myutil.LocalJsonRepository import LocalJsonRepository
-from myutil.Util import *
 import validators
-from enums.StreamSourceType import StreamSourceTypeUtil
+from dotenv import load_dotenv
+from myutil.BashColor import BashColor
+from myutil.LocalJsonRepository import LocalJsonRepository
+from myutil.PrintUtil import printS
 
+from enums.StreamSourceType import StreamSourceTypeUtil
 from model.StreamSource import StreamSource
 
 load_dotenv()
@@ -63,7 +64,7 @@ class StreamSourceService():
         _entity = self.streamSourceRepository.get(id)
         
         if(_entity != None and _entity.deleted != None and not includeSoftDeleted):
-            printS("DEBUG: get - StreamSource with ID ", _entity.id, " was soft deleted.", color=colors["WARNING"], doPrint = DEBUG)
+            printS("DEBUG: get - StreamSource with ID ", _entity.id, " was soft deleted.", color  =BashColor.WARNING, doPrint = DEBUG)
             return None
         else:
             return _entity
@@ -84,7 +85,7 @@ class StreamSourceService():
         
         for _entity in _entities:
             if(_entity.deleted != None and not includeSoftDeleted):
-                printS("DEBUG: getAll - StreamSource with ID ", _entity.id, " was soft deleted.", color=colors["WARNING"], doPrint = DEBUG)
+                printS("DEBUG: getAll - StreamSource with ID ", _entity.id, " was soft deleted.", color = BashColor.WARNING, doPrint = DEBUG)
             else:
                 _result.append(_entity)
             

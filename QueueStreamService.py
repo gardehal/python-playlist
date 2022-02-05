@@ -1,10 +1,16 @@
-from datetime import datetime
+import os
 import uuid
-from myutil.LocalJsonRepository import LocalJsonRepository
-from myutil.Util import *
+from datetime import datetime
 from typing import List
-from model.QueueStream import QueueStream
+
+import validators
 from dotenv import load_dotenv
+from myutil.BashColor import BashColor
+from myutil.FileUtil import mkdir
+from myutil.LocalJsonRepository import LocalJsonRepository
+from myutil.PrintUtil import printS
+
+from model.QueueStream import QueueStream
 
 load_dotenv()
 DEBUG = eval(os.environ.get("DEBUG"))
@@ -60,7 +66,7 @@ class QueueStreamService():
         _entity = self.queueStreamRepository.get(id)
         
         if(_entity != None and _entity.deleted != None and not includeSoftDeleted):
-            printS("DEBUG: get - QueueStream with ID ", _entity.id, " was soft deleted.", color=colors["WARNING"], doPrint = DEBUG)
+            printS("DEBUG: get - QueueStream with ID ", _entity.id, " was soft deleted.", color = BashColor.WARNING, doPrint = DEBUG)
             return None
         else:
             return _entity
@@ -81,7 +87,7 @@ class QueueStreamService():
         
         for _entity in _entities:
             if(_entity.deleted != None and not includeSoftDeleted):
-                printS("DEBUG: getAll - QueueStream with ID ", _entity.id, " was soft deleted.", color=colors["WARNING"], doPrint = DEBUG)
+                printS("DEBUG: getAll - QueueStream with ID ", _entity.id, " was soft deleted.", color = BashColor.WARNING, doPrint = DEBUG)
             else:
                 _result.append(_entity)
             

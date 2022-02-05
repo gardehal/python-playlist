@@ -1,19 +1,22 @@
 import os
+import uuid
 from datetime import datetime
 from typing import List
-import uuid
 
-from dotenv import load_dotenv
-from myutil.LocalJsonRepository import LocalJsonRepository
-from myutil.Util import *
 import pytube
+from dotenv import load_dotenv
+from myutil.BashColor import BashColor
+from myutil.InputUtil import sanitize
+from myutil.LocalJsonRepository import LocalJsonRepository
+from myutil.PrintUtil import printS
+import validators
 
-from QueueStreamService import QueueStreamService
-from StreamSourceService import StreamSourceService
-from Utility import Utility
 from model.Playlist import Playlist
 from model.QueueStream import QueueStream
 from model.StreamSource import StreamSource
+from QueueStreamService import QueueStreamService
+from StreamSourceService import StreamSourceService
+from Utility import Utility
 
 load_dotenv()
 DEBUG = eval(os.environ.get("DEBUG"))
@@ -78,7 +81,7 @@ class PlaylistService():
         _entity = self.playlistRepository.get(id)
         
         if(_entity != None and _entity.deleted != None and not includeSoftDeleted):
-            printS("DEBUG: get - Playlist with ID ", _entity.id, " was soft deleted.", color = colors["WARNING"], doPrint = DEBUG)
+            printS("DEBUG: get - Playlist with ID ", _entity.id, " was soft deleted.", color = BashColor.WARNING, doPrint = DEBUG)
             return None
         else:
             return _entity
@@ -99,7 +102,7 @@ class PlaylistService():
         
         for _entity in _entities:
             if(_entity.deleted != None and not includeSoftDeleted):
-                printS("DEBUG: getAll - Playlist with ID ", _entity.id, " was soft deleted.", color=colors["WARNING"], doPrint = DEBUG)
+                printS("DEBUG: getAll - Playlist with ID ", _entity.id, " was soft deleted.", color = BashColor.WARNING, doPrint = DEBUG)
             else:
                 _result.append(_entity)
             
@@ -246,12 +249,12 @@ class PlaylistService():
         _added = []
         for stream in streams:            
             if(not _playlist.allowDuplicates and (stream.uri in _playlistStreamUris or stream.name in _playlistStreamNames)):
-                printS("QueueStream \"", stream.name, "\" / ", stream.uri, " already exists in Playlist \"", _playlist.name, "\" and allow duplicates for this Playlist is disabled.", color = colors["WARNING"])
+                printS("QueueStream \"", stream.name, "\" / ", stream.uri, " already exists in Playlist \"", _playlist.name, "\" and allow duplicates for this Playlist is disabled.", color = BashColor.WARNING)
                 continue
 
             _addResult = self.queueStreamService.add(stream)            
             if(_addResult == None):
-                printS("QueueStream \"", stream.name, "\" could not be added.", color = colors["FAIL"])
+                printS("QueueStream \"", stream.name, "\" could not be added.", color = BashColor.FAIL)
                 continue
 
             _playlist.streamIds.append(stream.id)
@@ -353,13 +356,13 @@ class PlaylistService():
 
         _listLength = len(_playlist.streamIds)
         if(fromIndex == toIndex):
-            printS("DEBUG: moveStream - Index from and to were the same. No update needed.", color=colors["WARNING"], doPrint = DEBUG)
+            printS("DEBUG: moveStream - Index from and to were the same. No update needed.", color=BashColor.WARNING, doPrint = DEBUG)
             return True
         if(fromIndex < 0 or fromIndex >= _listLength):
-            printS("Index to move from (", fromIndex, ") was out or range.", color=colors["WARNING"])
+            printS("Index to move from (", fromIndex, ") was out or range.", color=BashColor.WARNING)
             return False
         if(toIndex < 0 or toIndex >= _listLength):
-            printS("Index to move to (", toIndex, ") was out or range.", color=colors["WARNING"])
+            printS("Index to move to (", toIndex, ") was out or range.", color=BashColor.WARNING)
             return False
 
         ## TODO check before/after and how stuff moves?
@@ -396,12 +399,12 @@ class PlaylistService():
         _added = []
         for source in streamSources:
             if(not _playlist.allowDuplicates and (source.uri in _playlistStreamSourceUris or source.name in _playlistStreamSourceNames)):
-                printS("StreamSource \"", source.name, "\" / ", source.uri, " already exists in Playlist \"", _playlist.name, "\" and allow duplicates for this Playlist is disabled.", color = colors["WARNING"])
+                printS("StreamSource \"", source.name, "\" / ", source.uri, " already exists in Playlist \"", _playlist.name, "\" and allow duplicates for this Playlist is disabled.", color = BashColor.WARNING)
                 continue
 
             _addResult = self.streamSourceService.add(source)            
             if(_addResult == None):
-                printS("StreamSource \"", source.name, "\" could not be added.", color = colors["FAIL"])
+                printS("StreamSource \"", source.name, "\" could not be added.", color = BashColor.FAIL)
                 continue
 
             _playlist.streamSourceIds.append(source.id)
@@ -503,7 +506,7 @@ class PlaylistService():
         for id in _playlist.streamIds:
             _stream = self.queueStreamService.get(id, includeSoftDeleted)
             if(_stream == None):
-                printS("A QueueStream with ID: ", id, " was listed in Playlist \"", _playlist.name, "\", but was not found in the database. Consider removing it by running the purge command.", color = colors["WARNING"])
+                printS("A QueueStream with ID: ", id, " was listed in Playlist \"", _playlist.name, "\", but was not found in the database. Consider removing it by running the purge command.", color = BashColor.WARNING)
                 continue
             
             _playlistStreams.append(_stream)
@@ -530,7 +533,7 @@ class PlaylistService():
         for id in _playlist.streamIds:
             _stream = self.queueStreamService.get(id, includeSoftDeleted)
             if(_stream == None):
-                printS("A QueueStream with ID: ", id, " was listed in Playlist \"", _playlist.name, "\", but was not found in the database. Consider removing it by running the purge command.", color = colors["WARNING"])
+                printS("A QueueStream with ID: ", id, " was listed in Playlist \"", _playlist.name, "\", but was not found in the database. Consider removing it by running the purge command.", color = BashColor.WARNING)
                 continue
             
             if(_stream.watched == None):
@@ -558,7 +561,7 @@ class PlaylistService():
         for id in _playlist.streamSourceIds:
             _source = self.streamSourceService.get(id, includeSoftDeleted)
             if(_source == None):
-                printS("A StreamSource with ID: ", id, " was listed in Playlist \"", _playlist.name, "\", but was not found in the database. Consider removing it by running the purge command.", color = colors["WARNING"])
+                printS("A StreamSource with ID: ", id, " was listed in Playlist \"", _playlist.name, "\", but was not found in the database. Consider removing it by running the purge command.", color = BashColor.WARNING)
                 continue
             
             if(getFetchEnabledOnly and not _source.enableFetch):
@@ -581,11 +584,11 @@ class PlaylistService():
         """
         
         if(playlist == None):
-            printS("Playlist was None.", color = colors["FAIL"])
+            printS("Playlist was None.", color = BashColor.FAIL)
             return None
         
         if(not validators.url(url)):
-            printS("URL \"", url, "\" was not an accepted, absolute URL.", color = colors["FAIL"])
+            printS("URL \"", url, "\" was not an accepted, absolute URL.", color = BashColor.FAIL)
             return None
         
         ytPlaylist = pytube.Playlist(url)
@@ -593,7 +596,7 @@ class PlaylistService():
             # For some reasons the property call just fails for invalid playlist, instead of being None. Except = fail.
             ytPlaylist.title == None
         except:
-            printS("YouTube playlist given by URL \"", url, "\" was not found. It could be set to private or deleted.", color = colors["FAIL"])
+            printS("YouTube playlist given by URL \"", url, "\" was not found. It could be set to private or deleted.", color = BashColor.FAIL)
             return None
         
         if(playlist.name == None):
@@ -643,28 +646,28 @@ class PlaylistService():
 
             printS(_playlistDetailsString)
             
-            printS("\tStreamSources", color = colors["BOLD"])
+            printS("\tStreamSources", color = BashColor.BOLD)
             if(len(_playlist.streamSourceIds) == 0):
                 printS("\tNo sources added yet.")
             
             for i, _sourceId in enumerate(_playlist.streamSourceIds):
                 _source = self.streamSourceService.get(_sourceId)
                 if(_source == None):
-                    printS("\\tSource not found (ID: \"", _sourceId, "\").", color = colors["FAIL"])
+                    printS("\\tSource not found (ID: \"", _sourceId, "\").", color = BashColor.FAIL)
                     continue
                 
                 _color = "WHITE" if i % 2 == 0 else "GREYBG"
-                printS("\t", str(i), " - ", _source.detailsString(includeUri, includeId, includeDatetime, includeListCount), color = colors[_color])
+                printS("\t", str(i), " - ", _source.detailsString(includeUri, includeId, includeDatetime, includeListCount), color = BashColor[_color])
             
             print("\n")
-            printS("\tQueueStreams", color = colors["BOLD"])
+            printS("\tQueueStreams", color = BashColor.BOLD)
             if(len(_playlist.streamIds) == 0):
                 printS("\tNo streams added yet.")
             
             for i, _streamId in enumerate(_playlist.streamIds):
                 _stream = self.queueStreamService.get(_streamId)
                 if(_stream == None):
-                    printS("\tStream not found (ID: \"", _streamId, "\").", color = colors["FAIL"])
+                    printS("\tStream not found (ID: \"", _streamId, "\").", color = BashColor.FAIL)
                     continue
                 
                 _color = "WHITE" if i % 2 == 0 else "GREYBG"
@@ -672,7 +675,7 @@ class PlaylistService():
                 if(includeSource and _stream.streamSourceId != None):
                     _streamSource = self.streamSourceService.get(_stream.streamSourceId)
                     _sourceString = ", StreamSource: \"" + _streamSource.name + "\"" 
-                printS("\t", str(i), " - ", _stream.detailsString(includeUri, includeId, includeDatetime, includeListCount), _sourceString, color = colors[_color])
+                printS("\t", str(i), " - ", _stream.detailsString(includeUri, includeId, includeDatetime, includeListCount), _sourceString, color = BashColor[_color])
                 
             _result += 1
                 

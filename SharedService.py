@@ -3,7 +3,8 @@ import re
 from typing import List
 
 from dotenv import load_dotenv
-from myutil.Util import *
+from myutil.BashColor import BashColor
+from myutil.PrintUtil import printS
 
 from model.Playlist import Playlist
 from model.QueueStream import QueueStream
@@ -68,30 +69,30 @@ class SharedService():
         for _stream in _deletedData["QueueStream"]:
             _deletedData["QueueStreamId"].append(_stream.id)
             
-        printS("\nPrune summary, the following data will be", (" PERMANENTLY REMOVED" if permanentlyDelete else " DELETED"), ":", color = colors["WARNING"])
+        printS("\nPrune summary, the following data will be", (" PERMANENTLY REMOVED" if permanentlyDelete else " DELETED"), ":", color = BashColor.WARNING)
             
-        printS("\QueueStream", color = colors["BOLD"])
+        printS("\QueueStream", color = BashColor.BOLD)
         printS("No QueueStreams will be removed", doPrint = len(_deletedData["QueueStream"]) == 0)
         for _stream in _deletedData["QueueStream"]:
             print(_stream.id + " - " + _stream.name)
             
-        printS("\nQueueStream IDs", color = colors["BOLD"])
+        printS("\nQueueStream IDs", color = BashColor.BOLD)
         printS("No IDs will be removed", doPrint = len(_deletedData["QueueStreamId"]) == 0)
         for _id in _deletedData["QueueStreamId"]:
             print(_id)
             
         printS("\nRemoving ", len(_deletedData["QueueStream"]), " watched QueueStreams and ", len(_deletedData["QueueStreamId"]), " IDs in Playlist \"", _playlist.name, "\".")
-        printS("Do you want to", (" PERMANENTLY REMOVE" if permanentlyDelete else " DELETE"), " this data?", color = colors["WARNING"])
+        printS("Do you want to", (" PERMANENTLY REMOVE" if permanentlyDelete else " DELETE"), " this data?", color = BashColor.WARNING)
         _input = input("(y/n):")
         if(_input not in affirmative):
-            printS("Prune aborted by user.", color = colors["WARNING"])
+            printS("Prune aborted by user.", color = BashColor.WARNING)
             return _deletedDataEmpty
         
         if(len(_deletedData["QueueStream"]) == 0 and len(_deletedData["QueueStreamId"]) == 0):
-            printS("No data was available.", color = colors["WARNING"])
+            printS("No data was available.", color = BashColor.WARNING)
             return _deletedDataEmpty
         
-        printS("DEBUG: prune - remove streams", color = colors["WARNING"], doPrint = DEBUG)
+        printS("DEBUG: prune - remove streams", color = BashColor.WARNING, doPrint = DEBUG)
         for _stream in _deletedData["QueueStream"]:
             if(permanentlyDelete):
                 self.queueStreamService.remove(_stream.id, includeSoftDeleted)
@@ -164,38 +165,38 @@ class SharedService():
                 _sourceIdsToRemove.extend(_deletedData["StreamSourceId"])
                 _updatedPlaylists.append(_playlist)
         
-        printS("\nPurge summary, the following data will be", (" PERMANENTLY REMOVED" if permanentlyDelete else " DELETED"), ":", color = colors["WARNING"])
+        printS("\nPurge summary, the following data will be", (" PERMANENTLY REMOVED" if permanentlyDelete else " DELETED"), ":", color = BashColor.WARNING)
         
-        printS("\nQueueStream", color = colors["BOLD"])
+        printS("\nQueueStream", color = BashColor.BOLD)
         printS("No QueueStreams will be", (" permanently" if permanentlyDelete else ""), " removed", doPrint = len(_deletedData["QueueStream"]) == 0)
         for _ in _deletedData["QueueStream"]:
             print(_.id + " - " + _.name)
             
-        printS("\nStreamSource", color = colors["BOLD"])
+        printS("\nStreamSource", color = BashColor.BOLD)
         printS("No StreamSources will be removed", doPrint = len(_deletedData["StreamSource"]) == 0)
         for _ in _deletedData["StreamSource"]:
             print(_.id + " - " + _.name)
             
-        printS("\nDangling QueueStream IDs", color = colors["BOLD"])
+        printS("\nDangling QueueStream IDs", color = BashColor.BOLD)
         printS("No IDs will be removed", doPrint = len(_deletedData["QueueStreamId"]) == 0)
         for _ in _deletedData["QueueStreamId"]:
             print(_.id + " - " + _.name)
             
-        printS("\nDangling StreamSource IDs", color = colors["BOLD"])
+        printS("\nDangling StreamSource IDs", color = BashColor.BOLD)
         printS("No IDs will be removed", doPrint = len(_deletedData["StreamSourceId"]) == 0)
         for _ in _deletedData["StreamSourceId"]:
             print(_.id + " - " + _.name)
         
         printS("\nRemoving ", len(_deletedData["QueueStream"]), " unlinked QueueStreams, ", len(_deletedData["StreamSource"]), " StreamSources.")
         printS("Removing ", len(_deletedData["QueueStreamId"]), " dangling QueueStream IDs, ", len(_deletedData["StreamSourceId"]), " dangling StreamSource IDs.")
-        printS("Do you want to", (" PERMANENTLY REMOVE" if permanentlyDelete else " DELETE"), " this data?", color = colors["WARNING"])
+        printS("Do you want to", (" PERMANENTLY REMOVE" if permanentlyDelete else " DELETE"), " this data?", color = BashColor.WARNING)
         _input = input("(y/n):")
         if(_input not in affirmative):
-            printS("Purge aborted by user.", color = colors["WARNING"])
+            printS("Purge aborted by user.", color = BashColor.WARNING)
             return _deletedDataEmpty
             
         if(len(_deletedData["QueueStream"]) == 0 and len(_deletedData["StreamSource"]) == 0 and len(_deletedData["QueueStreamId"]) == 0 and len(_deletedData["StreamSourceId"]) == 0):
-            printS("No data was available.", color = colors["WARNING"])
+            printS("No data was available.", color = BashColor.WARNING)
             return _deletedDataEmpty
             
         for _ in _deletedData["QueueStream"]:
@@ -245,7 +246,7 @@ class SharedService():
                 _data["Playlist"].append(_entity)
         
         _found = len(_data["QueueStream"]) > 0 or len(_data["StreamSource"]) > 0 or len(_data["Playlist"]) > 0
-        printS("DEBUG: search - no results", color = colors["WARNING"], doPrint = DEBUG and not _found)
+        printS("DEBUG: search - no results", color = BashColor.WARNING, doPrint = DEBUG and not _found)
         
         return _data 
     

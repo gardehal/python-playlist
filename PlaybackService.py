@@ -1,20 +1,21 @@
 import os
 import random
 import subprocess
+import sys
 from datetime import datetime
 from typing import List
 
 from dotenv import load_dotenv
-from myutil.Util import *
+from myutil.BashColor import BashColor
+from myutil.InputUtil import sanitize
+from myutil.PrintUtil import printS
 
-from QueueStreamService import QueueStreamService
-from PlaylistService import PlaylistService
-from StreamSourceService import StreamSourceService
-from Utility import Utility
-from exception.ExceptBreak import ExceptBreak
-from exception.ExceptContinue import ExceptContinue
 from model.Playlist import Playlist
 from model.QueueStream import QueueStream
+from PlaylistService import PlaylistService
+from QueueStreamService import QueueStreamService
+from StreamSourceService import StreamSourceService
+from Utility import Utility
 
 load_dotenv()
 DEBUG = eval(os.environ.get("DEBUG"))
@@ -91,8 +92,8 @@ class PlaybackService():
             if(True): # Playlist mode
                 _playResult = self.playCmd(_playlist, _streams)
         except:
-            printS("DEBUG: play - \n", sys.exc_info(), color=colors["WARNING"], doPrint = DEBUG)
-            #printS("handleing of streams encountered an issue.", color=colors["WARNING"])
+            printS("DEBUG: play - \n", sys.exc_info(), color = BashColor.WARNING, doPrint = DEBUG)
+            #printS("handleing of streams encountered an issue.", color=BashColor.WARNING)
 
         printS("Playlist \"", _playlist.name, "\" finished.")
 
@@ -116,7 +117,7 @@ class PlaybackService():
         for i, stream in enumerate(streams):
             if(stream.watched != None and not playlist.playWatchedStreams):
                 _checkLogsMessage = " Check your logs (" + WATCHED_LOG_FILEPATH + ") for date/time watched." if LOG_WATCHED else " Logging is disabled and date/time watched is not available."
-                printS("Stream \"", stream.name, "\" (ID: ", stream.id, ") has been marked as watched.", _checkLogsMessage, color = colors["WARNING"])
+                printS("Stream \"", stream.name, "\" (ID: ", stream.id, ") has been marked as watched.", _checkLogsMessage, color = BashColor.WARNING)
                 continue
 
             subprocessStream = None
@@ -127,13 +128,13 @@ class PlaybackService():
                 # subprocessStream = subprocess.Popen([BROWSER_BIN, f"{stream.uri}"], stdout=subprocess.PIPE, shell=False) # PID set by this SHOULD be browser, but is not
             else:
                 # TODO
-                printS("Non-web streams currently not supported, skipping video ", stream.name, color = colors["ERROR"])
+                printS("Non-web streams currently not supported, skipping video ", stream.name, color = BashColor.ERROR)
                 continue
 
-            printS(f"{i} - Now playing \"{stream.name}\"" + ("..." if(i < (len(streams) - 1)) else ". This is the last stream in this playback, press enter to finish."), color = colors["BOLD"])
+            printS(f"{i} - Now playing \"{stream.name}\"" + ("..." if(i < (len(streams) - 1)) else ". This is the last stream in this playback, press enter to finish."), color = BashColor.BOLD)
             _inputHandleing = self.handlePlaybackInput(playlist, stream)
             if(_inputHandleing == 0):
-                printS("An error occurred while parsing inputs.", color = colors["ERROR"])
+                printS("An error occurred while parsing inputs.", color = BashColor.ERROR)
                 return False
             elif(_inputHandleing == 1):
                 pass
@@ -155,7 +156,7 @@ class PlaybackService():
                 
                 _updateSuccess = self.queueStreamService.update(stream)
                 if(not _updateSuccess):
-                    printS("Stream \"", stream.name, "\" could not be updated as watched.", color=colors["WARNING"])
+                    printS("Stream \"", stream.name, "\" could not be updated as watched.", color=BashColor.WARNING)
                     
         return True
 
@@ -181,16 +182,16 @@ class PlaybackService():
             if(_input.strip() == ""):
                 return 1
             elif(len(self.quitInputs) > 0 and _input in self.quitInputs):
-                printS("Ending playback due to user input.", color = colors["OKGREEN"])
+                printS("Ending playback due to user input.", color = BashColor.OKGREEN)
                 return 3
             elif(len(self.skipInputs) > 0 and _input in self.skipInputs):
-                printS("Skipping video, will not be marked as watched.", color = colors["OKGREEN"])
+                printS("Skipping video, will not be marked as watched.", color = BashColor.OKGREEN)
                 return 2
             elif(len(self.addToInputs) > 0 and " " in _input and _input.split(" ")[0] in self.addToInputs):
                 _idsIndices = _input.split(" ")[1:]
                 _crossAddPlaylistResult = self.addPlaybackStreamToPlaylist(stream, _idsIndices)
-                printS("Stream \"", stream.name, "\" added to new Playlist \"", _crossAddPlaylistResult[0].name, "\".", color = colors["OKGREEN"], doPrint = (_crossAddPlaylistResult > 0))
-                printS("Stream \"", stream.name, "\" could not be added to new Playlist.", color = colors["FAIL"], doPrint = (_crossAddPlaylistResult == 0))
+                printS("Stream \"", stream.name, "\" added to new Playlist \"", _crossAddPlaylistResult[0].name, "\".", color = BashColor.OKGREEN, doPrint = (_crossAddPlaylistResult > 0))
+                printS("Stream \"", stream.name, "\" could not be added to new Playlist.", color = BashColor.FAIL, doPrint = (_crossAddPlaylistResult == 0))
             elif(len(self.printDetailsInputs) > 0 and _input in self.printDetailsInputs):
                 self.playlistService.printPlaylistDetails([playlist.id])
             elif(len(self.printHelpInputs) > 0 and _input in self.printHelpInputs):
@@ -198,7 +199,7 @@ class PlaybackService():
                 printS(_help)
             else:
                 print(_input)
-                printS("Argument(s) not recognized: \"", _input, "\". Please refrain from using arrows to navigate in the CLI as it adds hidden characters.", color = colors["WARNING"])
+                printS("Argument(s) not recognized: \"", _input, "\". Please refrain from using arrows to navigate in the CLI as it adds hidden characters.", color = BashColor.WARNING)
         
         return 0
 
@@ -215,12 +216,12 @@ class PlaybackService():
         """
         
         if(len(idsIndices) < 1):
-            printS("Missing arguments, cross-adding stream requires IDs of Playlists to add to.", color=colors["WARNING"])
+            printS("Missing arguments, cross-adding stream requires IDs of Playlists to add to.", color=BashColor.WARNING)
             return 0
         
         _ids = self.utility.getIdsFromInput(idsIndices, self.playlistService.getAllIds(), self.playlistService.getAll())
         if(len(_ids) == 0):
-            printS("Failed to add cross-add streams, missing playlistIds or indices.", color = colors["WARNING"])
+            printS("Failed to add cross-add streams, missing playlistIds or indices.", color = BashColor.WARNING)
             return 0
         
         _result = []

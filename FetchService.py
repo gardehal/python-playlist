@@ -1,10 +1,14 @@
-from datetime import datetime
 import os
+import sys
+from datetime import datetime
 from typing import List
 
 from dotenv import load_dotenv
+from myutil.BashColor import BashColor
 from myutil.DateTimeObject import DateTimeObject
-from myutil.Util import *
+from myutil.FileUtil import mkdir
+from myutil.InputUtil import sanitize
+from myutil.PrintUtil import printS
 from pytube import Channel
 
 from enums.StreamSourceType import StreamSourceType
@@ -53,7 +57,7 @@ class FetchService():
         for _sourceId in _playlist.streamSourceIds:
             _source = self.streamSourceService.get(_sourceId)
             if(_source == None):
-                printS("DEBUG: fetch - StreamSource with ID ", _sourceId, " could not be found. Consider removing it using the purge commands.", color = colors["WARNING"], doPrint = DEBUG)
+                printS("DEBUG: fetch - StreamSource with ID ", _sourceId, " could not be found. Consider removing it using the purge commands.", color = BashColor.WARNING, doPrint = DEBUG)
                 continue
 
             if(not _source.enableFetch):
@@ -80,7 +84,7 @@ class FetchService():
             if(_updateSuccess):
                 _newStreams += _fetchedStreams
             else:
-                printS("Could not update source \"", _source.name, "\" (ID: ", _source.id, "), streams could not be added: \n", _fetchedStreams, color = colors["WARNING"])
+                printS("Could not update source \"", _source.name, "\" (ID: ", _source.id, "), streams could not be added: \n", _fetchedStreams, color = BashColor.WARNING)
                 
             sys.stdout.flush()
 
@@ -106,12 +110,12 @@ class FetchService():
         _channel = Channel(streamSource.uri)
 
         if(_channel == None or _channel.channel_name == None):
-            printS("Channel \"", streamSource.name, "\" (URL: ", streamSource.uri, ") could not be found or is not valid. Please remove it and add it back.", color = colors["ERROR"])
+            printS("Channel \"", streamSource.name, "\" (URL: ", streamSource.uri, ") could not be found or is not valid. Please remove it and add it back.", color = BashColor.FAIL)
             return []
 
         printS("Fetching videos from ", _channel.channel_name, "...")
         if(len(_channel.video_urls) < 1):
-            printS("Channel \"", _channel.channel_name, "\" has no videos.", color = colors["WARNING"])
+            printS("Channel \"", _channel.channel_name, "\" has no videos.", color = BashColor.WARNING)
             return []
 
         _newStreams = []

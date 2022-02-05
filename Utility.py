@@ -1,10 +1,12 @@
 import os
 from typing import List
 
-from dotenv import load_dotenv
 import mechanize
+from dotenv import load_dotenv
+from myutil.BashColor import BashColor
+from myutil.InputUtil import isNumber, sanitize
+from myutil.PrintUtil import printS
 from pytube import YouTube
-from myutil.Util import *
 
 from enums.StreamSourceType import StreamSourceType, StreamSourceTypeUtil
 
@@ -73,11 +75,11 @@ class Utility():
         
         _isYouTubeChannel = "user" in url or "channel" in url  
         if(StreamSourceTypeUtil.strToStreamSourceType(url) == StreamSourceType.YOUTUBE and not _isYouTubeChannel):
-            printS("DEBUG: getPageTitle - Getting title from pytube.", color = colors["WARNING"], doPrint = DEBUG)
+            printS("DEBUG: getPageTitle - Getting title from pytube.", color = BashColor.WARNING, doPrint = DEBUG)
             _yt = YouTube(url)
             _title = _yt.title
         else:
-            printS("DEBUG: getPageTitle - Getting title from mechanize.", color = colors["WARNING"], doPrint = DEBUG)
+            printS("DEBUG: getPageTitle - Getting title from mechanize.", color = BashColor.WARNING, doPrint = DEBUG)
             _br = mechanize.Browser()
             _br.open(url)
             _title = _br.title()
@@ -101,7 +103,7 @@ class Utility():
         """
         
         if(len(existingIds) == 0 or len(indexList) == 0):
-            printS("DEBUG: getIdsFromInput - Length of input \"existingIds\" (", len(existingIds), ") or \"indexList\" (", len(indexList), ") was 0.", color = colors["WARNING"], doPrint = DEBUG)
+            printS("DEBUG: getIdsFromInput - Length of input \"existingIds\" (", len(existingIds), ") or \"indexList\" (", len(indexList), ") was 0.", color = BashColor.WARNING, doPrint = DEBUG)
             return []
 
         _result = []
@@ -112,7 +114,7 @@ class Utility():
 
         for i, _string in enumerate(input):
             if(limit != None and i >= limit):
-                printS("DEBUG: getIdsFromInput - Returning data before input ", _string, ", limit (", limit, ") reached.", color = colors["WARNING"], doPrint = DEBUG)
+                printS("DEBUG: getIdsFromInput - Returning data before input ", _string, ", limit (", limit, ") reached.", color = BashColor.WARNING, doPrint = DEBUG)
                 break
             
             if(_string[0] == "i"):  # Starts with "i", like index of "i2" is 2, "i123" is 123 etc.
@@ -120,7 +122,7 @@ class Utility():
                     if(returnOnNonIds):
                         return _result
                     
-                    printS("Argument ", _string, " is not a valid index format, must be \"i\" followed by an integer, like \"i0\". Argument not processed.", color = colors["FAIL"])
+                    printS("Argument ", _string, " is not a valid index format, must be \"i\" followed by an integer, like \"i0\". Argument not processed.", color = BashColor.FAIL)
                     continue
 
                 _index = int(float(_string[1:]))
@@ -132,7 +134,7 @@ class Utility():
                     if(returnOnNonIds):
                         return _result
                     
-                    printS("Failed to get data for index ", _index, ", it is out of bounds.", color = colors["FAIL"])
+                    printS("Failed to get data for index ", _index, ", it is out of bounds.", color = BashColor.FAIL)
             else:  # Assume input is ID if it's not, users problem. Could also check if ID in getAllIds()
                 if(_string in existingIds):
                     _result.append(_string)
@@ -140,7 +142,7 @@ class Utility():
                     if(returnOnNonIds):
                         return _result
                     
-                    printS("Failed to add playlist with ID \"", _string, "\", no such entity found in database.", color = colors["FAIL"])
+                    printS("Failed to add playlist with ID \"", _string, "\", no such entity found in database.", color = BashColor.FAIL)
                     continue
 
         return _result
@@ -158,12 +160,12 @@ class Utility():
         """
         
         for i, dataList in enumerate(data):
-            printS("\n", titles[i], color = colors["BOLD"])
-            printS("No data.", color = colors["WARNING"], doPrint = len(dataList) == 0) 
+            printS("\n", titles[i], color = BashColor.BOLD)
+            printS("No data.", color = BashColor.WARNING, doPrint = len(dataList) == 0) 
             
             for j, entry in enumerate(dataList):
                 _color = "WHITE" if j % 2 == 0 else "GREYBG"
-                printS(entry, color = colors[_color]) 
+                printS(entry, color = BashColor[_color]) 
                 
         return True
     

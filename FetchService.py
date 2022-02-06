@@ -120,14 +120,15 @@ class FetchService():
 
         _newStreams = []
         for i, yt in enumerate(_channel.videos):
-            if(takeAfter != None):
-                if(yt.publish_date < takeAfter):
-                    break
-            if(takeBefore != None):
-                if(yt.publish_date > takeBefore):
-                    continue
-
+            if(takeAfter != None and yt.publish_date < takeAfter):
+                printS("DEBUG: fetchYoutube - break due to takeAfter != None and yt.publish_date < takeAfter", color = BashColor.WARNING)
+                break
+            if(takeBefore != None and yt.publish_date > takeBefore):
+                printS("DEBUG: fetchYoutube - continue due to takeBefore != None and yt.publish_date > takeBefore", color = BashColor.WARNING)
+                continue
+            
             _sanitizedTitle = sanitize(yt.title)
+            printS("\tAddeding a QueueStream with name \"", _sanitizedTitle, "\"...")
             _newStreams.append(QueueStream(name = _sanitizedTitle, 
                                            uri = yt.watch_url, 
                                            isWeb = True,
@@ -135,8 +136,6 @@ class FetchService():
                                            watched = None,
                                            backgroundContent = streamSource.backgroundContent,
                                            added = datetime.now()))
-            
-            printS("\tAddeding a QueueStream with name \"", _sanitizedTitle, "\"...")
 
             # Todo fetch batches using batchSize of videos instead of all 3000 videos in some cases taking 60 seconds+ to load
             if(i > batchSize):

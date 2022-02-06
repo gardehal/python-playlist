@@ -8,7 +8,7 @@ from typing import List
 from dotenv import load_dotenv
 from myutil.BashColor import BashColor
 from myutil.InputUtil import getIdsFromInput, sanitize
-from myutil.PrintUtil import printS
+from myutil.PrintUtil import printS, printLists
 
 from model.Playlist import Playlist
 from model.QueueStream import QueueStream
@@ -198,7 +198,7 @@ class PlaybackService():
                     for (i, _entry) in enumerate(_result):
                         _data.append(str(i) + " - " + _entry.summaryString())
                         
-                    self.utility.printLists([_data], [_titles])
+                    printLists([_data], [_titles])
                 else:
                     printS("No Playlists found.", color = BashColor.WARNING)
             elif(len(self.addToInputs) > 0 and " " in _input and _input.split(" ")[0] in self.addToInputs):

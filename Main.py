@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 from myutil.BashColor import BashColor
 from myutil.FileUtil import makeFiles
 from myutil.InputUtil import extractArgs, getIdsFromInput, isNumber
-from myutil.PrintUtil import printS
+from myutil.PrintUtil import printS, printLists
 
 from FetchService import FetchService
 from model.Playlist import Playlist
@@ -59,6 +59,9 @@ class Main:
                 _input = extractArgs(argIndex, argV)
                 printS("Test", color = BashColor.OKBLUE)
                 
+                x = Main.streamSourceService.getAll()[0]
+                printS(x.detailsString())
+                
                 quit()            
                 
             elif(arg in Main.utility.editCommands):
@@ -89,7 +92,7 @@ class Main:
                 # _result is a dict of string keys, list values, get values from [*_result.values()]
                 # list of list, for each list, for each entry, str.join id, name, and uri, then join back to list of lists of strings, ready for printLists
                 _resultList = [[" - ".join([e.id, e.name, e.uri]) for e in l] for l in [*_result.values()]]
-                Main.utility.printLists(_resultList, [*_result.keys()])
+                printLists(_resultList, [*_result.keys()])
                 
                 argIndex += len(_input) + 1
                 continue
@@ -187,7 +190,7 @@ class Main:
                     for (i, _entry) in enumerate(_result):
                         _data.append(str(i) + " - " + _entry.summaryString())
                         
-                    Main.utility.printLists([_data], _titles)
+                    printLists([_data], _titles)
 
                 argIndex += len(_input) + 1
                 continue
@@ -547,7 +550,7 @@ class Main:
                 else: 
                     _resultList = [[e.detailsString() for e in l] for l in [*_result.values()]]
                     
-                Main.utility.printLists(_resultList, [*_result.keys()])
+                printLists(_resultList, [*_result.keys()])
 
                 argIndex += len(_input) + 1
                 continue

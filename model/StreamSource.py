@@ -10,6 +10,7 @@ class StreamSource:
                  enableFetch: bool = None, 
                  lastFetched: datetime = None, 
                  lastSuccessfulFetched: datetime = None, 
+                 lastFetchStreamCount: int = None, 
                  backgroundContent: bool = False, 
                  deleted: datetime = None,
                  added: datetime = datetime.now(),
@@ -21,6 +22,7 @@ class StreamSource:
         self.enableFetch: bool = enableFetch
         self.lastFetched: datetime = lastFetched
         self.lastSuccessfulFetched: datetime = lastSuccessfulFetched
+        self.lastFetchStreamCount: int = lastFetchStreamCount
         self.backgroundContent: bool = backgroundContent
         self.deleted: datetime = deleted
         self.added: datetime = added
@@ -54,6 +56,7 @@ class StreamSource:
         ", enableFetch: ", self.enableFetch,
         _lastFetchedString,
         _lastSuccessfulFetchedString,
+        ", lastFetchStreamCount: ", self.lastFetchStreamCount, 
         ", backgroundContent: ", self.backgroundContent, 
         _deletedString,
         _addedString,

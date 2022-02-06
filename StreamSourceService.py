@@ -39,6 +39,7 @@ class StreamSourceService():
         _entity = streamSource
         _entity.isWeb = validators.url(_entity.uri)
         _entity.streamSourceTypeId = StreamSourceTypeUtil.strToStreamSourceType(_entity.uri).value
+        _entity.lastFetchStreamCount = 0
         _entity.deleted = None
         _entity.added = datetime.now()
         _entity.id = str(uuid.uuid4())

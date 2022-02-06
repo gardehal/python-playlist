@@ -6,7 +6,7 @@ import validators
 from dotenv import load_dotenv
 from myutil.BashColor import BashColor
 from myutil.FileUtil import makeFiles
-from myutil.InputUtil import extractArgs, isNumber
+from myutil.InputUtil import extractArgs, getIdsFromInput, isNumber
 from myutil.PrintUtil import printS
 
 from FetchService import FetchService
@@ -21,6 +21,7 @@ from StreamSourceService import StreamSourceService
 from Utility import Utility
 
 load_dotenv()
+DEBUG = eval(os.environ.get("DEBUG"))
 LOCAL_STORAGE_PATH = os.environ.get("LOCAL_STORAGE_PATH")
 WATCHED_LOG_FILEPATH = os.environ.get("WATCHED_LOG_FILEPATH")
 
@@ -64,7 +65,7 @@ class Main:
                 # Expected input: playlistId or index
                 _input = extractArgs(argIndex, argV)
                 
-                _ids = Main.utility.getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll())
+                _ids = getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll(), debug = DEBUG)
                 if(len(_ids) == 0):
                     printS("Failed to edit, missing playlistId or index.", color = BashColor.FAIL)
                     argIndex += len(_input) + 1
@@ -100,7 +101,7 @@ class Main:
                 _name = _input[0] if(len(_input) > 0) else "New Playlist"
                 _playWatchedStreams = eval(_input[1]) if(len(_input) > 1) else None
                 _allowDuplicates = eval(_input[2]) if(len(_input) > 2) else True
-                _streamSourceIds = Main.getIdsFromInput(_input[3:], Main.playlistService.getAllIds(), Main.playlistService.getAll()) if(len(_input) > 3) else []
+                _streamSourceIds = getIdsFromInput(_input[3:], Main.playlistService.getAllIds(), Main.playlistService.getAll(), debug = DEBUG) if(len(_input) > 3) else []
 
                 _entity = Playlist(name = _name, playWatchedStreams = _playWatchedStreams, allowDuplicates = _allowDuplicates, streamSourceIds = _streamSourceIds)
                 _result = Main.playlistService.add(_entity)
@@ -133,7 +134,7 @@ class Main:
             elif(arg in Main.utility.deletePlaylistCommands):
                 # Expected input: playlistIds or indices
                 _input = extractArgs(argIndex, argV)
-                _ids = Main.utility.getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll())
+                _ids = getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll(), debug = DEBUG)
                 
                 if(len(_ids) == 0):
                     printS("Failed to delete Playlists, missing playlistIds or indices.", color = BashColor.FAIL)
@@ -153,7 +154,7 @@ class Main:
             elif(arg in Main.utility.restorePlaylistCommands):
                 # Expected input: playlistIds or indices
                 _input = extractArgs(argIndex, argV)
-                _ids = Main.utility.getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll())
+                _ids = getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll(), debug = DEBUG)
                 
                 if(len(_ids) == 0):
                     printS("Failed to restore Playlists, missing playlistIds or indices.", color = BashColor.FAIL)
@@ -194,7 +195,7 @@ class Main:
             elif(arg in Main.utility.detailsPlaylistCommands):
                 # Expected input: playlistIds or indices, includeUri, includeId, includeDatertime, includeListCount, includeSource
                 _input = extractArgs(argIndex, argV)
-                _ids = Main.utility.getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll(), returnOnNonIds = True)
+                _ids = getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll(), returnOnNonIds = True, debug = DEBUG)
                 _lenIds = len(_ids)
                 _includeUri = eval(_input[_lenIds]) if(len(_input) > _lenIds) else False
                 _includeId = eval(_input[_lenIds + 1]) if(len(_input) > _lenIds + 1) else False
@@ -219,7 +220,7 @@ class Main:
             elif(arg in Main.utility.fetchPlaylistSourcesCommands):
                 # Expected input: playlistIds or indices, fromDateTime?, toDatetime?
                 _input = extractArgs(argIndex, argV)
-                _ids = Main.utility.getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll(), returnOnNonIds = True)
+                _ids = getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll(), returnOnNonIds = True, debug = DEBUG)
                 _lenIds = len(_ids)
                 _takeAfter = _input[_lenIds] if(len(_input) > _lenIds) else None
                 _takeBefore = _input[_lenIds + 1] if(len(_input) > _lenIds + 1) else None
@@ -250,7 +251,7 @@ class Main:
             elif(arg in Main.utility.prunePlaylistCommands):
                 # Expected input: playlistIds or indices, includeSoftDeleted, permanentlyDelete, "accept changes" input within purge method
                 _input = extractArgs(argIndex, argV)
-                _ids = Main.utility.getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll())
+                _ids = getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll(), debug = DEBUG)
                 _lenIds = len(_ids)
                 _includeSoftDeleted = eval(_input[_lenIds]) if(len(_input) > _lenIds) else False
                 _permanentlyDelete = eval(_input[_lenIds + 1]) if(len(_input) > _lenIds + 1) else False
@@ -290,7 +291,7 @@ class Main:
             elif(arg in Main.utility.resetPlaylistFetchCommands):
                 # Expected input: playlistIds or indices
                 _input = extractArgs(argIndex, argV)
-                _ids = Main.utility.getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll())
+                _ids = getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll(), debug = DEBUG)
                 
                 if(len(_ids) == 0):
                     printS("Failed to reset fetch-status of playlists, missing playlistIds or indices.", color = BashColor.FAIL)
@@ -310,7 +311,7 @@ class Main:
             elif(arg in Main.utility.playCommands):
                 # Expected input: playlistId or index, startIndex, shuffle, repeat
                 _input = extractArgs(argIndex, argV)
-                _ids = Main.utility.getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll(), 1)
+                _ids = getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll(), 1, debug = DEBUG)
                 _startIndex = _input[1] if(len(_input) > 1) else 0
                 _shuffle = eval(_input[2]) if(len(_input) > 2) else False
                 _repeat = eval(_input[3]) if(len(_input) > 3) else False
@@ -338,7 +339,7 @@ class Main:
             elif(arg in Main.utility.addStreamCommands):
                 # Expected input: playlistId or index, uri, name?
                 _input = extractArgs(argIndex, argV)
-                _ids = Main.utility.getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll(), 1)
+                _ids = getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll(), 1, debug = DEBUG)
                 _uri = _input[1] if len(_input) > 1 else None
                 _name = _input[2] if len(_input) > 2 else None
 
@@ -373,14 +374,14 @@ class Main:
                 # Expected input: playlistId or index, queueStreamIds or indices
                 _input = extractArgs(argIndex, argV)
 
-                _playlistIds = Main.utility.getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll(), 1)
+                _playlistIds = getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll(), 1, debug = DEBUG)
                 if(len(_playlistIds) == 0):
                     printS("Failed to delete QueueStreams, missing playlistId or index.", color = BashColor.FAIL)
                     argIndex += len(_input) + 1
                     continue
                 
                 _playlist = Main.playlistService.get(_playlistIds[0])
-                _queueStreamIds = Main.utility.getIdsFromInput(_input[1:], _playlist.streamIds, Main.playlistService.getStreamsByPlaylistId(_playlist.id))
+                _queueStreamIds = getIdsFromInput(_input[1:], _playlist.streamIds, Main.playlistService.getStreamsByPlaylistId(_playlist.id), debug = DEBUG)
                 if(len(_queueStreamIds) == 0):
                     printS("Failed to delete QueueStreams, missing queueStreamIds or indices.", color = BashColor.FAIL)
                     argIndex += len(_input) + 1
@@ -399,14 +400,14 @@ class Main:
                 # Expected input: playlistId or index, queueStreamIds or indices
                 _input = extractArgs(argIndex, argV)
 
-                _playlistIds = Main.utility.getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll(), 1)
+                _playlistIds = getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll(), 1, debug = DEBUG)
                 if(len(_playlistIds) == 0):
                     printS("Failed to restore QueueStreams, missing playlistId or index.", color = BashColor.FAIL)
                     argIndex += len(_input) + 1
                     continue
                 
                 _playlist = Main.playlistService.get(_playlistIds[0])
-                _queueStreamIds = Main.utility.getIdsFromInput(_input[1:], Main.queueStreamService.getAllIds(includeSoftDeleted = True), Main.playlistService.getStreamsByPlaylistId(_playlist.id, includeSoftDeleted = True))
+                _queueStreamIds = getIdsFromInput(_input[1:], Main.queueStreamService.getAllIds(includeSoftDeleted = True), Main.playlistService.getStreamsByPlaylistId(_playlist.id, includeSoftDeleted = True), debug = DEBUG)
                 if(len(_queueStreamIds) == 0):
                     printS("Failed to restore QueueStreams, missing queueStreamIds or indices.", color = BashColor.FAIL)
                     argIndex += len(_input) + 1
@@ -425,7 +426,7 @@ class Main:
             elif(arg in Main.utility.addSourcesCommands):
                 # Expected input: playlistId or index, uri, enableFetch?, backgroundContent?, name?
                 _input = extractArgs(argIndex, argV)
-                _ids = Main.utility.getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll(), 1)
+                _ids = getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll(), 1, debug = DEBUG)
                 _uri = _input[1] if len(_input) > 1 else None
                 _enableFetch = eval(_input[2]) if len(_input) > 2 else False
                 _bgContent = eval(_input[3]) if len(_input) > 3 else False
@@ -462,14 +463,14 @@ class Main:
                 # Expected input: playlistId or index, streamSourceIds or indices
                 _input = extractArgs(argIndex, argV)
 
-                _playlistIds = Main.utility.getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll(), 1)
+                _playlistIds = getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll(), 1, debug = DEBUG)
                 if(len(_playlistIds) == 0):
                     printS("Failed to delete StreamSources, missing playlistId or index.", color = BashColor.FAIL)
                     argIndex += len(_input) + 1
                     continue
                 
                 _playlist = Main.playlistService.get(_playlistIds[0])
-                _streamSourceIds = Main.utility.getIdsFromInput(_input[1:], _playlist.streamSourceIds, Main.playlistService.getSourcesByPlaylistId(_playlist.id))
+                _streamSourceIds = getIdsFromInput(_input[1:], _playlist.streamSourceIds, Main.playlistService.getSourcesByPlaylistId(_playlist.id), debug = DEBUG)
                 if(len(_streamSourceIds) == 0):
                     printS("Failed to delete StreamSources, missing streamSourceIds or indices.", color = BashColor.FAIL)
                     argIndex += len(_input) + 1
@@ -488,14 +489,14 @@ class Main:
                 # Expected input: playlistId or index, streamSourceIds or indices
                 _input = extractArgs(argIndex, argV)
 
-                _playlistIds = Main.utility.getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll(), 1)
+                _playlistIds = getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll(), 1, debug = DEBUG)
                 if(len(_playlistIds) == 0):
                     printS("Failed to restore StreamSources, missing playlistId or index.", color = BashColor.FAIL)
                     argIndex += len(_input) + 1
                     continue
                 
                 _playlist = Main.playlistService.get(_playlistIds[0])
-                _streamSourceIds = Main.utility.getIdsFromInput(_input[1:], Main.streamSourceService.getAllIds(includeSoftDeleted = True), Main.playlistService.getSourcesByPlaylistId(_playlist.id, includeSoftDeleted = True))
+                _streamSourceIds = getIdsFromInput(_input[1:], Main.streamSourceService.getAllIds(includeSoftDeleted = True), Main.playlistService.getSourcesByPlaylistId(_playlist.id, includeSoftDeleted = True), debug = DEBUG)
                 if(len(_streamSourceIds) == 0):
                     printS("Failed to restore StreamSources, missing streamSourceIds or indices.", color = BashColor.FAIL)
                     argIndex += len(_input) + 1

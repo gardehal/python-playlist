@@ -7,7 +7,7 @@ from typing import List
 
 from dotenv import load_dotenv
 from myutil.BashColor import BashColor
-from myutil.InputUtil import sanitize
+from myutil.InputUtil import getIdsFromInput, sanitize
 from myutil.PrintUtil import printS
 
 from model.Playlist import Playlist
@@ -233,7 +233,7 @@ class PlaybackService():
             printS("Missing arguments, cross-adding stream requires IDs of Playlists to add to.", color=BashColor.WARNING)
             return 0
         
-        _ids = self.utility.getIdsFromInput(idsIndices, self.playlistService.getAllIds(), self.playlistService.getAll())
+        _ids = getIdsFromInput(idsIndices, self.playlistService.getAllIds(), self.playlistService.getAll(), debug = DEBUG)
         if(len(_ids) == 0):
             printS("Failed to add cross-add streams, missing playlistIds or indices.", color = BashColor.WARNING)
             return 0

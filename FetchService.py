@@ -76,15 +76,17 @@ class FetchService():
                 # TODO handle directory sources
                 continue
 
+            _fetchedSource = self.streamSourceService.get(_sourceId)
+
             if(len(_fetchedStreams) > 0):
-                _source.lastSuccessfulFetched = _datetimeStarted
+                _fetchedSource.lastSuccessfulFetched = _datetimeStarted
             
-            _source.lastFetched = _datetimeStarted
-            _updateSuccess = self.streamSourceService.update(_source)
+            _fetchedSource.lastFetched = _datetimeStarted
+            _updateSuccess = self.streamSourceService.update(_fetchedSource)
             if(_updateSuccess):
                 _newStreams += _fetchedStreams
             else:
-                printS("Could not update source \"", _source.name, "\" (ID: ", _source.id, "), streams could not be added: \n", _fetchedStreams, color = BashColor.WARNING)
+                printS("Could not update source \"", _fetchedSource.name, "\" (ID: ", _fetchedSource.id, "), streams could not be added: \n", _fetchedStreams, color = BashColor.WARNING)
                 
             sys.stdout.flush()
 
@@ -119,28 +121,36 @@ class FetchService():
             return []
 
         _newStreams = []
-        for i, yt in enumerate(_channel.videos):
-            if(takeAfter != None and yt.publish_date < takeAfter):
+        _videos = _channel.videos
+        for i, yt in enumerate(_videos):
+            # Todo fetch batches using batchSize of videos instead of all 3000 videos in some cases taking 60 seconds+ to load
+            if(i > batchSize):
+                printS("DEBUG: fetchYoutube - i > batchSize", color = BashColor.WARNING)
+                break
+            elif(len(_videos) == streamSource.lastFetchStreamCount): # Might fail if video is deleted and another uploaded
+                printS("DEBUG: fetchYoutube - break due to len(_videos) == streamSource.lastFetchStreamCount", color = BashColor.WARNING)
+                break
+            elif(takeAfter != None and yt.publish_date < takeAfter):
                 printS("DEBUG: fetchYoutube - break due to takeAfter != None and yt.publish_date < takeAfter", color = BashColor.WARNING)
                 break
-            if(takeBefore != None and yt.publish_date > takeBefore):
+            elif(takeBefore != None and yt.publish_date > takeBefore):
                 printS("DEBUG: fetchYoutube - continue due to takeBefore != None and yt.publish_date > takeBefore", color = BashColor.WARNING)
                 continue
             
             _sanitizedTitle = sanitize(yt.title)
-            printS("\tAddeding a QueueStream with name \"", _sanitizedTitle, "\"...")
-            _newStreams.append(QueueStream(name = _sanitizedTitle, 
+            printS("\tAdding a QueueStream with name \"", _sanitizedTitle, "\"...")
+            _stream = QueueStream(name = _sanitizedTitle, 
                                            uri = yt.watch_url, 
                                            isWeb = True,
                                            streamSourceId = streamSource.id,
                                            watched = None,
                                            backgroundContent = streamSource.backgroundContent,
-                                           added = datetime.now()))
-
-            # Todo fetch batches using batchSize of videos instead of all 3000 videos in some cases taking 60 seconds+ to load
-            if(i > batchSize):
-                printS("WIP: Cannot get all videos. Taking last ", len(_newStreams), ".")
-                break
+                                           added = datetime.now())
+            
+            streamSource.lastFetchStreamCount = len(_videos)
+            _updateSuccess = self.streamSourceService.update(streamSource)
+            if(_updateSuccess):
+                _newStreams.append(_stream)
 
         return _newStreams
     

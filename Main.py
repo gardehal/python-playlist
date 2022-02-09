@@ -228,11 +228,6 @@ class Main:
                 _takeAfter = _input[_lenIds] if(len(_input) > _lenIds) else None
                 _takeBefore = _input[_lenIds + 1] if(len(_input) > _lenIds + 1) else None
                 
-                if(len(_ids) == 0):
-                    printS("Failed to fetch sources, missing playlistIds or indices.", color = BashColor.FAIL)
-                    argIndex += len(_input) + 1
-                    continue
-                
                 try:
                     if(_takeAfter != None):
                         _takeAfter = datetime.strptime(_takeAfter, "%Y-%m-%d")

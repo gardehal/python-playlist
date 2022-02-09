@@ -10,7 +10,7 @@ class StreamSource:
                  enableFetch: bool = None, 
                  lastFetched: datetime = None, 
                  lastSuccessfulFetched: datetime = None, 
-                 lastFetchStreamCount: int = None, 
+                 lastFetchedId: str = None, 
                  backgroundContent: bool = False, 
                  deleted: datetime = None,
                  added: datetime = datetime.now(),
@@ -22,7 +22,7 @@ class StreamSource:
         self.enableFetch: bool = enableFetch
         self.lastFetched: datetime = lastFetched
         self.lastSuccessfulFetched: datetime = lastSuccessfulFetched
-        self.lastFetchStreamCount: int = lastFetchStreamCount
+        self.lastFetchedId: int = lastFetchedId
         self.backgroundContent: bool = backgroundContent
         self.deleted: datetime = deleted
         self.added: datetime = added
@@ -44,6 +44,7 @@ class StreamSource:
     def detailsString(self, includeUri: bool = True, includeId: bool = True, includeDatetime: bool = True, includeListCount: bool = True):
         _uriString = ", uri: " + self.uri if(includeUri) else ""
         _idString = ", id: " + self.id if(includeId) else ""
+        _lastFetchedIdString = ", lastFetchedId: " + self.lastFetchedId if(includeId) else ""
         _lastFetchedString = ", lastFetched: " + str(self.lastFetched) if(includeDatetime) else ""
         _lastSuccessfulFetchedString = ", lastSuccessfulFetched: " + str(self.lastSuccessfulFetched) if(includeDatetime) else ""
         _deletedString = ", deleted: " + str(self.deleted) if(includeDatetime) else ""
@@ -56,7 +57,7 @@ class StreamSource:
         ", enableFetch: ", self.enableFetch,
         _lastFetchedString,
         _lastSuccessfulFetchedString,
-        ", lastFetchStreamCount: ", self.lastFetchStreamCount, 
+        _lastFetchedIdString,
         ", backgroundContent: ", self.backgroundContent, 
         _deletedString,
         _addedString,

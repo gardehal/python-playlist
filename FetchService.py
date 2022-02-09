@@ -76,17 +76,16 @@ class FetchService():
                 # TODO handle directory sources
                 continue
 
-            _fetchedSource = self.streamSourceService.get(_sourceId)
-
             if(len(_fetchedStreams) > 0):
-                _fetchedSource.lastSuccessfulFetched = _datetimeStarted
+                _source.lastSuccessfulFetched = _datetimeStarted
             
-            _fetchedSource.lastFetched = _datetimeStarted
-            _updateSuccess = self.streamSourceService.update(_fetchedSource)
+            _source.lastFetchedId = _fetchedStreams[1]
+            _source.lastFetched = _datetimeStarted
+            _updateSuccess = self.streamSourceService.update(_source)
             if(_updateSuccess):
-                _newStreams += _fetchedStreams
+                _newStreams += _fetchedStreams[0]
             else:
-                printS("Could not update source \"", _fetchedSource.name, "\" (ID: ", _fetchedSource.id, "), streams could not be added: \n", _fetchedStreams, color = BashColor.WARNING)
+                printS("Could not update source \"", _source.name, "\" (ID: ", _source.id, "), streams could not be added: \n", _fetchedStreams, color = BashColor.WARNING)
                 
             sys.stdout.flush()
 
@@ -96,7 +95,7 @@ class FetchService():
         else:
             return 0
 
-    def fetchYoutube(self, streamSource: StreamSource, batchSize: int = 10, takeAfter: datetime = None, takeBefore: datetime = None) -> List[QueueStream]:
+    def fetchYoutube(self, streamSource: StreamSource, batchSize: int = 10, takeAfter: datetime = None, takeBefore: datetime = None) -> tuple[List[QueueStream], str]:
         """
         Fetch videos from YouTube
 
@@ -106,7 +105,7 @@ class FetchService():
             takeBefore (datetime): limit to take video before
 
         Returns:
-            List[QueueStream]: List of QueueStream
+            tuple[List[QueueStream], str]: A tuple of List of QueueStream, and the last YouTube ID fetched 
         """
 
         _channel = Channel(streamSource.uri)
@@ -122,20 +121,23 @@ class FetchService():
 
         _newStreams = []
         _videos = _channel.videos
+        _ = len(_videos) # List is lazy init, discard result
+        _lastVideoId = _videos[-1].video_id
+        if(streamSource.lastFetchedId != None and _lastVideoId == streamSource.lastFetchedId):
+            printS("DEBUG: fetchYoutube - return due to _lastVideoId == streamSource.lastFetchedId", color = BashColor.WARNING)
+            return (_newStreams, _lastVideoId)
+            
         for i, yt in enumerate(_videos):
-            # Todo fetch batches using batchSize of videos instead of all 3000 videos in some cases taking 60 seconds+ to load
-            if(i > batchSize):
-                printS("DEBUG: fetchYoutube - i > batchSize", color = BashColor.WARNING)
-                break
-            elif(len(_videos) == streamSource.lastFetchStreamCount): # Might fail if video is deleted and another uploaded
-                printS("DEBUG: fetchYoutube - break due to len(_videos) == streamSource.lastFetchStreamCount", color = BashColor.WARNING)
-                break
-            elif(takeAfter != None and yt.publish_date < takeAfter):
+            if(takeAfter != None and yt.publish_date < takeAfter):
                 printS("DEBUG: fetchYoutube - break due to takeAfter != None and yt.publish_date < takeAfter", color = BashColor.WARNING)
                 break
             elif(takeBefore != None and yt.publish_date > takeBefore):
                 printS("DEBUG: fetchYoutube - continue due to takeBefore != None and yt.publish_date > takeBefore", color = BashColor.WARNING)
                 continue
+            # Todo fetch batches using batchSize of videos instead of all 3000 videos in some cases taking 60 seconds+ to load
+            elif(i > batchSize):
+                printS("DEBUG: fetchYoutube - break due to i > batchSize", color = BashColor.WARNING)
+                break
             
             _sanitizedTitle = sanitize(yt.title)
             printS("\tAdding a QueueStream with name \"", _sanitizedTitle, "\"...")
@@ -146,13 +148,9 @@ class FetchService():
                                            watched = None,
                                            backgroundContent = streamSource.backgroundContent,
                                            added = datetime.now())
+            _newStreams.append(_stream)
             
-            streamSource.lastFetchStreamCount = len(_videos)
-            _updateSuccess = self.streamSourceService.update(streamSource)
-            if(_updateSuccess):
-                _newStreams.append(_stream)
-
-        return _newStreams
+        return (_newStreams, _lastVideoId)
     
     def resetPlaylistFetch(self, playlistIds: List[str]) -> int:
         """

@@ -100,4 +100,5 @@ Program for queueing and playing videos from list or from sources like channels 
 
 - minor print issues and wording/use of IDs
 - fetch seem to skip some YT videos - if 2 videos uploaded with hours pause, fetch done after first before second will only get first? due to YT date not time. store Id of last fetched, check against that rather than number of videos or date?
+  - todo test in everyday use more
 - tests for core functions like fetch and play?

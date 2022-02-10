@@ -64,7 +64,7 @@ class FetchService():
                 continue
 
             _fetchedStreams = []
-            _takeAfter = takeAfter if(takeAfter != None or _source.lastSuccessfulFetched == None) else DateTimeObject().fromString(_source.lastSuccessfulFetched, "+00:00").now
+            _takeAfter = takeAfter # if(takeAfter != None or _source.lastSuccessfulFetched == None) else DateTimeObject().fromString(_source.lastSuccessfulFetched, "+00:00").now
                 
             if(_source.isWeb):
                 if(_source.streamSourceTypeId == StreamSourceType.YOUTUBE.value):
@@ -120,10 +120,10 @@ class FetchService():
             return []
 
         _newStreams = []
-        _videos = _channel.videos
-        _ = len(_videos) # List is lazy init, discard result
-        _lastVideoId = _videos[-1].video_id
+        _videos = list(_channel.videos)
+        _lastVideoId = _videos[0].video_id
         if(streamSource.lastFetchedId != None and _lastVideoId == streamSource.lastFetchedId):
+            printS("DEBUG: fetchYoutube - last video fetched: \"", sanitize(_videos[0].title), "\", YouTube ID \"", _lastVideoId, "\"", color = BashColor.WARNING)
             printS("DEBUG: fetchYoutube - return due to _lastVideoId == streamSource.lastFetchedId", color = BashColor.WARNING)
             return (_newStreams, _lastVideoId)
             

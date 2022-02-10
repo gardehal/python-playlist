@@ -56,19 +56,18 @@ class FetchService():
         _newStreams = []
         for _sourceId in _playlist.streamSourceIds:
             _source = self.streamSourceService.get(_sourceId)
+            _fetchedStreams = []
+            
             if(_source == None):
-                printS("DEBUG: fetch - StreamSource with ID ", _sourceId, " could not be found. Consider removing it using the purge commands.", color = BashColor.WARNING, doPrint = DEBUG)
+                printS("StreamSource with ID ", _sourceId, " could not be found. Consider removing it using the purge commands.", color = BashColor.FAIL)
                 continue
-
+            
             if(not _source.enableFetch):
                 continue
 
-            _fetchedStreams = []
-            _takeAfter = takeAfter # if(takeAfter != None or _source.lastSuccessfulFetched == None) else DateTimeObject().fromString(_source.lastSuccessfulFetched, "+00:00").now
-                
             if(_source.isWeb):
                 if(_source.streamSourceTypeId == StreamSourceType.YOUTUBE.value):
-                    _fetchedStreams = self.fetchYoutube(_source, batchSize, _takeAfter, takeBefore)
+                    _fetchedStreams = self.fetchYoutube(_source, batchSize, takeAfter, takeBefore)
                 else:
                     # TODO handle other sources
                     continue

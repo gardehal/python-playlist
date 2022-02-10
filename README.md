@@ -1,6 +1,6 @@
 # Python Video Queue
 
-Program for queueing and playing videos from list or from sources like channels on YouTube, BitChute, Rumble. Data stored locally in JSON files.
+Program for queueing and playing videos from list or from sources like channels on YouTube, Odysee, Rumble. Data stored locally in JSON files.
 
 - Using [MyUtil](https://github.com/grdall/python-packages)
 - Using [Python with pip and VS Code](https://github.com/grdall/shared-documentation/blob/main/python-pip-vscode.md)
@@ -92,12 +92,7 @@ Program for queueing and playing videos from list or from sources like channels 
 
 ## TODO
 
-- play in what?
-  - Selenium too slow but gives more control
-  - Open different browser can be killed by PID, but clumsy
-  - Close tab after video is watched not possible? Have to guess with time, can't account for pauses
-  - download stream, play in subprocess VLC which sets video to watched when video finishes or VLC closes would be nice (easy for yt, third party without pytube-like packs much harder)
-
 - implement file/folder, Odysee, Rumble fetches
+- option to download and watch (required implement file/folder)
 - minor print issues and wording/use of IDs
 - tests for core functions like fetch and play?

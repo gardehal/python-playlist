@@ -35,7 +35,7 @@ class FetchService():
 
         mkdir(self.storagePath)
 
-    def fetch(self, playlistId: str, batchSize: int = 10, takeAfter: datetime = None, takeBefore: datetime = None) -> int:
+    def fetch(self, playlistId: str, batchSize: int = 10, takeAfter: datetime = None, takeBefore: datetime = None, takeNewOnly: bool = False) -> int:
         """
         Fetch new videos from watched sources, adding them in chronological order.
 
@@ -43,6 +43,7 @@ class FetchService():
             batchSize (int): number of videos to check at a time, unrelated to max videos that will be read
             takeAfter (datetime): limit to take video after
             takeBefore (datetime): limit to take video before
+            takeNewOnly (bool): only take streams marked as new
 
         Returns:
             int: number of videos added
@@ -56,7 +57,6 @@ class FetchService():
         _newStreams = []
         for _sourceId in _playlist.streamSourceIds:
             _source = self.streamSourceService.get(_sourceId)
-            _fetchedStreams = []
             
             if(_source == None):
                 printS("StreamSource with ID ", _sourceId, " could not be found. Consider removing it using the purge commands.", color = BashColor.FAIL)
@@ -65,9 +65,12 @@ class FetchService():
             if(not _source.enableFetch):
                 continue
 
+            _fetchedStreams = []
+            _takeAfter = takeAfter if(takeAfter != None or _source.lastSuccessfulFetched == None) else DateTimeObject().fromString(_source.lastSuccessfulFetched, "+00:00").now
+            
             if(_source.isWeb):
                 if(_source.streamSourceTypeId == StreamSourceType.YOUTUBE.value):
-                    _fetchedStreams = self.fetchYoutube(_source, batchSize, takeAfter, takeBefore)
+                    _fetchedStreams = self.fetchYoutube(_source, batchSize, _takeAfter, takeBefore, takeNewOnly)
                 else:
                     # TODO handle other sources
                     continue
@@ -94,14 +97,15 @@ class FetchService():
         else:
             return 0
 
-    def fetchYoutube(self, streamSource: StreamSource, batchSize: int = 10, takeAfter: datetime = None, takeBefore: datetime = None) -> tuple[List[QueueStream], str]:
+    def fetchYoutube(self, streamSource: StreamSource, batchSize: int = 10, takeAfter: datetime = None, takeBefore: datetime = None, takeNewOnly: bool = False) -> tuple[List[QueueStream], str]:
         """
-        Fetch videos from YouTube
+        Fetch videos from YouTube.
 
         Args:
             batchSize (int): number of videos to check at a time, unrelated to max videos that will be read
             takeAfter (datetime): limit to take video after
             takeBefore (datetime): limit to take video before
+            takeNewOnly (bool): only take streams marked as new
 
         Returns:
             tuple[List[QueueStream], str]: A tuple of List of QueueStream, and the last YouTube ID fetched 
@@ -121,19 +125,21 @@ class FetchService():
         _newStreams = []
         _videos = list(_channel.videos)
         _lastVideoId = _videos[0].video_id
-        if(streamSource.lastFetchedId != None and _lastVideoId == streamSource.lastFetchedId):
+        if((takeNewOnly or (takeAfter == None and takeBefore == None)) and streamSource.lastFetchedId != None and _lastVideoId == streamSource.lastFetchedId):
             printS("DEBUG: fetchYoutube - last video fetched: \"", sanitize(_videos[0].title), "\", YouTube ID \"", _lastVideoId, "\"", color = BashColor.WARNING)
-            printS("DEBUG: fetchYoutube - return due to _lastVideoId == streamSource.lastFetchedId", color = BashColor.WARNING)
+            printS("DEBUG: fetchYoutube - return due to (takeNewOnly or (takeAfter == None and takeBefore == None)) and streamSource.lastFetchedId != None and _lastVideoId == streamSource.lastFetchedId", color = BashColor.WARNING)
             return (_newStreams, _lastVideoId)
             
         for i, yt in enumerate(_videos):
-            if(takeAfter != None and yt.publish_date < takeAfter):
-                printS("DEBUG: fetchYoutube - break due to takeAfter != None and yt.publish_date < takeAfter", color = BashColor.WARNING)
+            if(takeNewOnly and yt.video_id == _lastVideoId):
+                printS("DEBUG: fetchYoutube - break due to takeNewOnly and yt.video_id == _lastVideoId", color = BashColor.WARNING)
                 break
-            elif(takeBefore != None and yt.publish_date > takeBefore):
-                printS("DEBUG: fetchYoutube - continue due to takeBefore != None and yt.publish_date > takeBefore", color = BashColor.WARNING)
+            elif(not takeNewOnly and takeAfter != None and yt.publish_date < takeAfter):
+                printS("DEBUG: fetchYoutube - break due to not takeNewOnly and takeAfter != None and yt.publish_date < takeAfter", color = BashColor.WARNING)
+                break
+            elif(not takeNewOnly and takeBefore != None and yt.publish_date > takeBefore):
+                printS("DEBUG: fetchYoutube - continue due to not takeNewOnly and takeBefore != None and yt.publish_date > takeBefore", color = BashColor.WARNING)
                 continue
-            # Todo fetch batches using batchSize of videos instead of all 3000 videos in some cases taking 60 seconds+ to load
             elif(i > batchSize):
                 printS("DEBUG: fetchYoutube - break due to i > batchSize", color = BashColor.WARNING)
                 break

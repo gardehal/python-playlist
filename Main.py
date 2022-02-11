@@ -221,12 +221,13 @@ class Main:
                 continue
 
             elif(arg in Main.utility.fetchPlaylistSourcesCommands):
-                # Expected input: playlistIds or indices, fromDateTime?, toDatetime?
+                # Expected input: playlistIds or indices, fromDateTime?, toDatetime?, takeNewOnly?
                 _input = extractArgs(argIndex, argV)
                 _ids = getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll(), returnOnNonIds = True, debug = DEBUG)
                 _lenIds = len(_ids)
                 _takeAfter = _input[_lenIds] if(len(_input) > _lenIds) else None
                 _takeBefore = _input[_lenIds + 1] if(len(_input) > _lenIds + 1) else None
+                _takeNewOnly = eval(_input[_lenIds + 2]) if(len(_input) > _lenIds + 2) else True
                 
                 try:
                     if(_takeAfter != None):
@@ -239,7 +240,7 @@ class Main:
                     continue
                 
                 for _id in _ids:
-                    _result = Main.fetchService.fetch(_id, batchSize = 20, takeAfter = _takeAfter, takeBefore = _takeBefore)
+                    _result = Main.fetchService.fetch(_id, batchSize = 20, takeAfter = _takeAfter, takeBefore = _takeBefore, takeNewOnly = _takeNewOnly)
                     _playlist = Main.playlistService.get(_id)
                     printS("Fetched ", _result, " for playlist \"", _playlist.name, "\" successfully.", color = BashColor.OKGREEN)
 

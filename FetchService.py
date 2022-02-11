@@ -66,7 +66,7 @@ class FetchService():
                 continue
 
             _fetchedStreams = []
-            _takeAfter = takeAfter if(takeAfter != None or _source.lastSuccessfulFetched == None) else DateTimeObject().fromString(_source.lastSuccessfulFetched, "+00:00").now
+            _takeAfter = takeAfter if(not takeNewOnly) else _source.lastSuccessfulFetched
             
             if(_source.isWeb):
                 if(_source.streamSourceTypeId == StreamSourceType.YOUTUBE.value):
@@ -125,14 +125,14 @@ class FetchService():
         _newStreams = []
         _videos = list(_channel.videos)
         _lastVideoId = _videos[0].video_id
-        if((takeNewOnly or (takeAfter == None and takeBefore == None)) and streamSource.lastFetchedId != None and _lastVideoId == streamSource.lastFetchedId):
+        if(takeNewOnly and takeAfter == None and streamSource.lastFetchedId != None and _lastVideoId == streamSource.lastFetchedId):
             printS("DEBUG: fetchYoutube - last video fetched: \"", sanitize(_videos[0].title), "\", YouTube ID \"", _lastVideoId, "\"", color = BashColor.WARNING)
-            printS("DEBUG: fetchYoutube - return due to (takeNewOnly or (takeAfter == None and takeBefore == None)) and streamSource.lastFetchedId != None and _lastVideoId == streamSource.lastFetchedId", color = BashColor.WARNING)
+            printS("DEBUG: fetchYoutube - return due to takeNewOnly and takeAfter == None and streamSource.lastFetchedId != None and _lastVideoId == streamSource.lastFetchedId", color = BashColor.WARNING)
             return (_newStreams, _lastVideoId)
             
         for i, yt in enumerate(_videos):
-            if(takeNewOnly and yt.video_id == _lastVideoId):
-                printS("DEBUG: fetchYoutube - break due to takeNewOnly and yt.video_id == _lastVideoId", color = BashColor.WARNING)
+            if(takeNewOnly and takeAfter == None and yt.video_id == _lastVideoId):
+                printS("DEBUG: fetchYoutube - break due to takeNewOnly and takeAfter == None and yt.video_id == _lastVideoId", color = BashColor.WARNING)
                 break
             elif(not takeNewOnly and takeAfter != None and yt.publish_date < takeAfter):
                 printS("DEBUG: fetchYoutube - break due to not takeNewOnly and takeAfter != None and yt.publish_date < takeAfter", color = BashColor.WARNING)

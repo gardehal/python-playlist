@@ -92,7 +92,7 @@ Program for queueing and playing videos from list or from sources like channels 
 
 ## TODO
 
-- checking last ID only speeds up correct non-fetches, does not get correct number of videos due to takeafter removed
+- command for opening stream source by id or all of them
 - implement file/folder, Odysee, Rumble fetches
 - option to download and watch (required implement file/folder)
 - minor print issues and wording/use of IDs

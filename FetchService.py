@@ -131,8 +131,9 @@ class FetchService():
             return (_newStreams, _lastVideoId)
             
         for i, yt in enumerate(_videos):
-            if(takeNewOnly and takeAfter == None and yt.video_id == _lastVideoId):
-                printS("DEBUG: fetchYoutube - break due to takeNewOnly and takeAfter == None and yt.video_id == _lastVideoId", color = BashColor.WARNING)
+            if(takeNewOnly and yt.video_id == _lastVideoId):
+                printS("DEBUG: fetchYoutube - name \"", sanitize(yt.title), "\", YouTube ID \"", yt.video_id, "\"", color = BashColor.WARNING)
+                printS("DEBUG: fetchYoutube - break due to takeNewOnly and yt.video_id == _lastVideoId", color = BashColor.WARNING)
                 break
             elif(not takeNewOnly and takeAfter != None and yt.publish_date < takeAfter):
                 printS("DEBUG: fetchYoutube - break due to not takeNewOnly and takeAfter != None and yt.publish_date < takeAfter", color = BashColor.WARNING)

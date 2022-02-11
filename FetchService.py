@@ -43,7 +43,7 @@ class FetchService():
             batchSize (int): number of videos to check at a time, unrelated to max videos that will be read
             takeAfter (datetime): limit to take video after
             takeBefore (datetime): limit to take video before
-            takeNewOnly (bool): only take streams marked as new
+            takeNewOnly (bool): only take streams marked as new. Disables takeAfter and takeBefore-checks. To use takeAfter and/or takeBefore, set this to False
 
         Returns:
             int: number of videos added

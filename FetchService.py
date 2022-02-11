@@ -75,8 +75,7 @@ class FetchService():
                     # TODO handle other sources
                     continue
             else:
-                # TODO handle directory sources
-                continue
+                _fetchedStreams = self.fetchDirectory(_source, batchSize, _takeAfter, takeBefore, takeNewOnly)
 
             if(len(_fetchedStreams) > 0):
                 _source.lastSuccessfulFetched = _datetimeStarted
@@ -110,45 +109,49 @@ class FetchService():
         Returns:
             tuple[List[QueueStream], str]: A tuple of List of QueueStream, and the last YouTube ID fetched 
         """
+        
+        if(streamSource == None):
+            raise ValueError("fetchYoutube - streamSource was None")
 
+        _emptyReturn = ([], streamSource.lastFetchedId)
         _channel = Channel(streamSource.uri)
 
         if(_channel == None or _channel.channel_name == None):
             printS("Channel \"", streamSource.name, "\" (URL: ", streamSource.uri, ") could not be found or is not valid. Please remove it and add it back.", color = BashColor.FAIL)
-            return []
+            return _emptyReturn
 
         printS("Fetching videos from ", _channel.channel_name, "...")
         if(len(_channel.video_urls) < 1):
             printS("Channel \"", _channel.channel_name, "\" has no videos.", color = BashColor.WARNING)
-            return []
+            return _emptyReturn
 
         _newStreams = []
-        _videos = list(_channel.videos)
-        _lastVideoId = _videos[0].video_id
-        if(takeNewOnly and takeAfter == None and streamSource.lastFetchedId != None and _lastVideoId == streamSource.lastFetchedId):
-            printS("DEBUG: fetchYoutube - last video fetched: \"", sanitize(_videos[0].title), "\", YouTube ID \"", _lastVideoId, "\"", color = BashColor.WARNING)
-            printS("DEBUG: fetchYoutube - return due to takeNewOnly and takeAfter == None and streamSource.lastFetchedId != None and _lastVideoId == streamSource.lastFetchedId", color = BashColor.WARNING)
-            return (_newStreams, _lastVideoId)
+        _streams = list(_channel.videos)
+        _lastStreamId = _streams[0].video_id
+        if(takeNewOnly and takeAfter == None and streamSource.lastFetchedId != None and _lastStreamId == streamSource.lastFetchedId):
+            printS("DEBUG: fetchYoutube - last video fetched: \"", sanitize(_streams[0].title), "\", YouTube ID \"", _lastStreamId, "\"", color = BashColor.WARNING)
+            printS("DEBUG: fetchYoutube - return due to takeNewOnly and takeAfter == None and streamSource.lastFetchedId != None and _lastStreamId == streamSource.lastFetchedId", color = BashColor.WARNING)
+            return _emptyReturn
             
-        for i, yt in enumerate(_videos):
-            if(takeNewOnly and yt.video_id == _lastVideoId):
-                printS("DEBUG: fetchYoutube - name \"", sanitize(yt.title), "\", YouTube ID \"", yt.video_id, "\"", color = BashColor.WARNING)
-                printS("DEBUG: fetchYoutube - break due to takeNewOnly and yt.video_id == _lastVideoId", color = BashColor.WARNING)
+        for i, _stream in enumerate(_streams):
+            if(takeNewOnly and _stream.video_id == _lastStreamId):
+                printS("DEBUG: fetchYoutube - name \"", sanitize(_stream.title), "\", YouTube ID \"", _stream.video_id, "\"", color = BashColor.WARNING)
+                printS("DEBUG: fetchYoutube - break due to takeNewOnly and _stream.video_id == _lastStreamId", color = BashColor.WARNING)
                 break
-            elif(not takeNewOnly and takeAfter != None and yt.publish_date < takeAfter):
-                printS("DEBUG: fetchYoutube - break due to not takeNewOnly and takeAfter != None and yt.publish_date < takeAfter", color = BashColor.WARNING)
+            elif(not takeNewOnly and takeAfter != None and _stream.publish_date < takeAfter):
+                printS("DEBUG: fetchYoutube - break due to not takeNewOnly and takeAfter != None and _stream.publish_date < takeAfter", color = BashColor.WARNING)
                 break
-            elif(not takeNewOnly and takeBefore != None and yt.publish_date > takeBefore):
-                printS("DEBUG: fetchYoutube - continue due to not takeNewOnly and takeBefore != None and yt.publish_date > takeBefore", color = BashColor.WARNING)
+            elif(not takeNewOnly and takeBefore != None and _stream.publish_date > takeBefore):
+                printS("DEBUG: fetchYoutube - continue due to not takeNewOnly and takeBefore != None and _stream.publish_date > takeBefore", color = BashColor.WARNING)
                 continue
             elif(i > batchSize):
                 printS("DEBUG: fetchYoutube - break due to i > batchSize", color = BashColor.WARNING)
                 break
             
-            _sanitizedTitle = sanitize(yt.title)
+            _sanitizedTitle = sanitize(_stream.title)
             printS("\tAdding a QueueStream with name \"", _sanitizedTitle, "\"...")
             _stream = QueueStream(name = _sanitizedTitle, 
-                                           uri = yt.watch_url, 
+                                           uri = _stream.watch_url, 
                                            isWeb = True,
                                            streamSourceId = streamSource.id,
                                            watched = None,
@@ -156,7 +159,27 @@ class FetchService():
                                            added = datetime.now())
             _newStreams.append(_stream)
             
-        return (_newStreams, _lastVideoId)
+        return (_newStreams, _lastStreamId)
+
+    def fetchDirectory(self, streamSource: StreamSource, batchSize: int = 10, takeAfter: datetime = None, takeBefore: datetime = None, takeNewOnly: bool = False) -> tuple[List[QueueStream], str]:
+        """
+        Fetch streams from a local directory.
+
+        Args:
+            batchSize (int): number of videos to check at a time, unrelated to max videos that will be read
+            takeAfter (datetime): limit to take video after
+            takeBefore (datetime): limit to take video before
+            takeNewOnly (bool): only take streams marked as new. Disables takeAfter and takeBefore-checks. To use takeAfter and/or takeBefore, set this to False
+
+        Returns:
+            tuple[List[QueueStream], str]: A tuple of List of QueueStream, and the last filename fetched 
+        """
+        
+        if(streamSource == None):
+            raise ValueError("fetchDirectory - streamSource was None")
+
+        _emptyReturn = ([], streamSource.lastFetchedId)
+        return _emptyReturn
     
     def resetPlaylistFetch(self, playlistIds: List[str]) -> int:
         """

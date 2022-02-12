@@ -121,6 +121,7 @@ class FetchService():
             return _emptyReturn
 
         printS("Fetching videos from ", _channel.channel_name, "...")
+        sys.stdout.flush()
         if(len(_channel.video_urls) < 1):
             printS("Channel \"", _channel.channel_name, "\" has no videos.", color = BashColor.WARNING)
             return _emptyReturn
@@ -134,9 +135,9 @@ class FetchService():
             return _emptyReturn
             
         for i, _stream in enumerate(_streams):
-            if(takeNewOnly and _stream.video_id == _lastStreamId):
+            if(takeNewOnly and _stream.video_id == streamSource.lastFetchedId):
                 printS("DEBUG: fetchYoutube - name \"", sanitize(_stream.title), "\", YouTube ID \"", _stream.video_id, "\"", color = BashColor.WARNING)
-                printS("DEBUG: fetchYoutube - break due to takeNewOnly and _stream.video_id == _lastStreamId", color = BashColor.WARNING)
+                printS("DEBUG: fetchYoutube - break due to takeNewOnly and _stream.video_id == streamSource.lastFetchedId", color = BashColor.WARNING)
                 break
             elif(not takeNewOnly and takeAfter != None and _stream.publish_date < takeAfter):
                 printS("DEBUG: fetchYoutube - break due to not takeNewOnly and takeAfter != None and _stream.publish_date < takeAfter", color = BashColor.WARNING)

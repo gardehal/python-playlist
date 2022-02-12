@@ -92,7 +92,6 @@ Program for queueing and playing videos from list or from sources like channels 
 
 ## TODO
 
-- command for opening stream source in browser by id or all of them
 - implement file/folder, Odysee, Rumble fetches
 - option to download and watch (required implement file/folder)
 - minor print issues and wording/use of IDs

@@ -58,7 +58,7 @@ class Utility():
         self.deleteSourceCommands = ["deletesource", "ds"]
         self.restoreSourceCommands = ["restoresource", "rs"]
         self.listSourcesCommands = ["listsources", "ls"]
-        self.openCommands = ["opensource", "os"]
+        self.openSourceCommands = ["opensource", "os"]
         # Meta
         self.listSettingsCommands = ["settings", "secrets"]
         self.listSoftDeletedCommands = ["listsoftdeleted", "listdeleted", "lsd", "ld"]
@@ -223,7 +223,7 @@ class Utility():
         _result += "\n" + str(self.deleteSourceCommands) + " [playlistId or index: str] [sourceIds or indices: str]: deletes StreamSources from database and Playlist if used anywhere."
         _result += "\n" + str(self.restoreSourceCommands) + " [playlistId or index: str] [sourceIds or indices: str]: restore soft deleted StreamSources from database."
         _result += "\n" + str(self.listSourcesCommands) + " [? includeSoftDeleted: bool]: Lists StreamSources with indices that can be used instead of IDs in other commands."
-        _result += "\n" + str(self.openCommands) + ": Open StreamSources in web if it is a web source, or directory if not."
+        _result += "\n" + str(self.openSourceCommands) + "[sourceIds or indices: str]: open StreamSources in web if it is a web source, or directory if not."
 
         return _result
     

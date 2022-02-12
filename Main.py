@@ -1,4 +1,5 @@
 import os
+import subprocess
 import sys
 from datetime import datetime
 
@@ -522,6 +523,27 @@ class Main:
                             printS(i, " - ", _entry.summaryString())
                     else:
                         printS("No QueueStreams found.", color = BashColor.WARNING)
+
+                    argIndex += len(_input) + 1
+                    continue
+                
+                elif(arg in Main.utility.openSourceCommands):
+                    # Expected input: streamSourceIds or indices
+                    _input = extractArgs(argIndex, argV)
+                    
+                    _streamSourceIds = getIdsFromInput(_input, Main.streamSourceService.getAllIds(), Main.streamSourceService.getAll(), debug = DEBUG)
+                    if(len(_streamSourceIds) == 0):
+                        printS("Failed to open StreamSources, missing streamSourceIds or indices.", color = BashColor.FAIL)
+                        argIndex += len(_input) + 1
+                        continue
+
+                    for _id in _streamSourceIds:
+                        _stream = Main.streamSourceService.get(_id)
+                        if(_stream != None):
+                            subprocess.Popen(f"call start {_stream.uri}", stdout = subprocess.PIPE, shell = True)
+                    
+                        else:
+                            printS("No QueueStreams found.", color = BashColor.WARNING)
 
                     argIndex += len(_input) + 1
                     continue

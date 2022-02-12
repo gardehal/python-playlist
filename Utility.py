@@ -43,6 +43,7 @@ class Utility():
         self.playCommands = ["play", "p"]
         self.quitArguments = ["quit", "q", "exit", "end"]
         self.skipArguments = ["skip", "s"]
+        self.repeatArguments = ["repeat", "r"]
         self.listPlaylistArguments = ["listplaylists", "lp"]
         self.addCurrentToPlaylistArguments = ["addto", "at"]
         self.printPlaybackDetailsArguments = ["detailsprint", "details", "print", "dp"]
@@ -57,6 +58,7 @@ class Utility():
         self.deleteSourceCommands = ["deletesource", "ds"]
         self.restoreSourceCommands = ["restoresource", "rs"]
         self.listSourcesCommands = ["listsources", "ls"]
+        self.openCommands = ["opensource", "os"]
         # Meta
         self.listSettingsCommands = ["settings", "secrets"]
         self.listSoftDeletedCommands = ["listsoftdeleted", "listdeleted", "lsd", "ld"]
@@ -184,6 +186,7 @@ class Utility():
         _result = ""
         _result += "\n\t" + str(self.quitArguments) + ": End current playback and contintue the program without playing anymore QueueStreams in Playlist. Only available while Playlist is playing."
         _result += "\n\t" + str(self.skipArguments) + ": Skip current QueueStream playing. This QueueStream will not be marked as watched. Only available while Playlist is playing."
+        _result += "\n\t" + str(self.repeatArguments) + ": Repeat current QueueStream."
         _result += "\n\t" + str(self.listPlaylistArguments) + ": List Playlists."
         _result += "\n\t" + str(self.addCurrentToPlaylistArguments) + " [playlistId or index: str]: Add the current QueueStream to another Playlist indicated by ID on index. Only available while Playlist is playing."
         _result += "\n\t" + str(self.printPlaybackDetailsArguments) + ": Prints details of current playing Playlist."
@@ -220,6 +223,7 @@ class Utility():
         _result += "\n" + str(self.deleteSourceCommands) + " [playlistId or index: str] [sourceIds or indices: str]: deletes StreamSources from database and Playlist if used anywhere."
         _result += "\n" + str(self.restoreSourceCommands) + " [playlistId or index: str] [sourceIds or indices: str]: restore soft deleted StreamSources from database."
         _result += "\n" + str(self.listSourcesCommands) + " [? includeSoftDeleted: bool]: Lists StreamSources with indices that can be used instead of IDs in other commands."
+        _result += "\n" + str(self.openCommands) + ": Open StreamSources in web if it is a web source, or directory if not."
 
         return _result
     

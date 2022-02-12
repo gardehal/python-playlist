@@ -45,6 +45,7 @@ class PlaybackService():
         self.utility: Utility = Utility()
         self.quitInputs: List[str] = self.utility.quitArguments
         self.skipInputs: List[str] = self.utility.skipArguments
+        self.repeatInputs: List[str] = self.utility.repeatArguments
         self.listPlaylistInputs: List[str] = self.utility.listPlaylistArguments
         self.addToInputs: List[str] = self.utility.addCurrentToPlaylistArguments
         self.printDetailsInputs: List[str] = self.utility.printPlaybackDetailsArguments
@@ -173,7 +174,7 @@ class PlaybackService():
         0 - Error, internal loop failed to return any other code
         1 - No action needed, parent loop should be allowed to finish as normal
         2 - continue parent loop
-        3 - break parent loop 
+        3 - break parent loop
         """
         
         while 1: # Infinite loop until a return is hit
@@ -185,13 +186,17 @@ class PlaybackService():
             if(_input.strip() == ""):
                 return 1
             
+            elif(len(self.skipInputs) > 0 and _input in self.skipInputs):
+                printS("Skipping video, will not be marked as watched.", color = BashColor.OKGREEN)
+                return 2
+            
             elif(len(self.quitInputs) > 0 and _input in self.quitInputs):
                 printS("Ending playback due to user input.", color = BashColor.OKGREEN)
                 return 3
             
-            elif(len(self.skipInputs) > 0 and _input in self.skipInputs):
-                printS("Skipping video, will not be marked as watched.", color = BashColor.OKGREEN)
-                return 2
+            elif(len(self.repeatInputs) > 0 and _input in self.repeatInputs):
+                printS("Repeating stream.", color = BashColor.OKGREEN)
+                self.playCmd(playlist, [stream]) # A little weird with prints and continueing but it works
             
             elif(len(self.listPlaylistInputs) > 0 and _input in self.listPlaylistInputs):
                 _result = self.playlistService.getAll()

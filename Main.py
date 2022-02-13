@@ -364,7 +364,7 @@ class Main:
                     _entity = QueueStream(name = _name, uri = _uri)
                     _addResult = Main.playlistService.addStreams(_playlist.id, [_entity])
                     if(len(_addResult) > 0):
-                        printS("QueueStream \"", _addResult[0].name, "\" added successfully.", color = BashColor.OKGREEN)
+                        printS("Added QueueStream \"", _addResult[0].name, "\" to Playlist \"", _playlist.name, "\".", color = BashColor.OKGREEN)
                     else:
                         printS("Failed to create QueueStream.", color = BashColor.FAIL)
 
@@ -453,7 +453,7 @@ class Main:
                     _entity = StreamSource(name = _name, uri = _uri, enableFetch = _enableFetch, backgroundContent = _bgContent)
                     _addResult = Main.playlistService.addStreamSources(_playlist.id, [_entity])
                     if(len(_addResult) > 0):
-                        printS("StreamSource \"", _addResult[0].name, "\" added successfully.", color = BashColor.OKGREEN)
+                        printS("Added StreamSource \"", _addResult[0].name, "\" to Playlist \"", _playlist.name, "\".", color = BashColor.OKGREEN)
                     else:
                         printS("Failed to create StreamSource.", color = BashColor.FAIL)
 
@@ -543,7 +543,7 @@ class Main:
                             subprocess.Popen(f"call start {_stream.uri}", stdout = subprocess.PIPE, shell = True)
                     
                         else:
-                            printS("No QueueStreams found.", color = BashColor.WARNING)
+                            printS("No StreamSource found.", color = BashColor.WARNING)
 
                     argIndex += len(_input) + 1
                     continue

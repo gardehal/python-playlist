@@ -93,6 +93,6 @@ Program for queueing and playing videos from list or from sources like channels 
 ## TODO
 
 - implement file/folder, Odysee, Rumble fetches
-- option to download and watch (required implement file/folder)
+- option to download and watch (requires implement file/folder)
 - minor print issues and wording/use of IDs
 - tests for core functions like fetch and play?

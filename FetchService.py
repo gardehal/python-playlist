@@ -111,7 +111,7 @@ class FetchService():
         """
         
         if(streamSource == None):
-            raise ValueError("fetchYoutube - streamSource was None")
+            raise ValueError("fetchYoutube - streamSource was None.")
 
         _emptyReturn = ([], streamSource.lastFetchedId)
         _channel = Channel(streamSource.uri)

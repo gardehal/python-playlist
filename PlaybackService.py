@@ -215,8 +215,8 @@ class PlaybackService():
             elif(len(self.addToInputs) > 0 and " " in _input and _input.split(" ")[0] in self.addToInputs):
                 _idsIndices = _input.split(" ")[1:]
                 _crossAddPlaylistResult = self.addPlaybackStreamToPlaylist(stream, _idsIndices)
-                printS("Stream \"", stream.name, "\" added to new Playlist \"", _crossAddPlaylistResult[0].name, "\".", color = BashColor.OKGREEN, doPrint = (len(_crossAddPlaylistResult) > 0))
-                printS("Stream \"", stream.name, "\" could not be added to new Playlist.", color = BashColor.FAIL, doPrint = (len(_crossAddPlaylistResult) == 0))
+                printS("QueueStream \"", stream.name, "\" added to new Playlist \"", _crossAddPlaylistResult[0].name, "\".", color = BashColor.OKGREEN, doPrint = (len(_crossAddPlaylistResult) > 0))
+                printS("QueueStream \"", stream.name, "\" could not be added to new Playlist.", color = BashColor.FAIL, doPrint = (len(_crossAddPlaylistResult) == 0))
                 
             elif(len(self.printDetailsInputs) > 0 and _input in self.printDetailsInputs):
                 self.playlistService.printPlaylistDetails([playlist.id])
@@ -242,16 +242,16 @@ class PlaybackService():
             Playlist: Playlist the stream was added to
         """
         
+        _result = []
         if(len(idsIndices) < 1):
             printS("Missing arguments, cross-adding stream requires IDs of Playlists to add to.", color = BashColor.WARNING)
-            return 0
+            return _result
         
         _ids = getIdsFromInput(idsIndices, self.playlistService.getAllIds(), self.playlistService.getAll(), debug = DEBUG)
         if(len(_ids) == 0):
             printS("Failed to add cross-add streams, missing playlistIds or indices.", color = BashColor.WARNING)
-            return 0
+            return _result
         
-        _result = []
         for _id in _ids:
             _addResult = self.playlistService.addStreams(_id, [queueStream])
             if(len(_addResult) > 0):

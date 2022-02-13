@@ -92,6 +92,8 @@ Program for queueing and playing videos from list or from sources like channels 
 
 ## TODO
 
+- play directory streams
+- support for mp3s
 - implement file/folder, Odysee, Rumble fetches
 - option to download and watch (requires implement file/folder)
 - minor print issues and wording/use of IDs

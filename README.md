@@ -92,6 +92,7 @@ Program for queueing and playing videos from list or from sources like channels 
 
 ## TODO
 
+- when fetching, if the last fetched stream was deleted, fetch will attempt to fetch all up to batch size..
 - play directory streams
 - support for mp3s
 - implement file/folder, Odysee, Rumble fetches

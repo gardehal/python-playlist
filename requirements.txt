@@ -1,6 +1,5 @@
 mechanize==0.4.7
 python-dotenv==0.19.2
-pytube==11.0.2
+pytube==12.0.0
 pytube3==9.6.4
-util==1.0.2
 validators==0.18.2

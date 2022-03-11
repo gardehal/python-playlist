@@ -5,10 +5,10 @@ from datetime import datetime
 
 import validators
 from dotenv import load_dotenv
-from myutil.BashColor import BashColor
-from myutil.FileUtil import makeFiles
-from myutil.InputUtil import extractArgs, getIdsFromInput, isNumber
-from myutil.PrintUtil import printS, printLists
+from grdUtil.BashColor import BashColor
+from grdUtil.FileUtil import makeFiles
+from grdUtil.InputUtil import extractArgs, getIdsFromInput, isNumber
+from grdUtil.PrintUtil import printS, printLists
 
 from FetchService import FetchService
 from model.Playlist import Playlist

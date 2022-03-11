@@ -5,9 +5,9 @@ from typing import List
 
 import validators
 from dotenv import load_dotenv
-from myutil.BashColor import BashColor
-from myutil.LocalJsonRepository import LocalJsonRepository
-from myutil.PrintUtil import printS
+from grdUtil.BashColor import BashColor
+from grdUtil.LocalJsonRepository import LocalJsonRepository
+from grdUtil.PrintUtil import printS
 
 from enums.StreamSourceType import StreamSourceTypeUtil
 from model.StreamSource import StreamSource

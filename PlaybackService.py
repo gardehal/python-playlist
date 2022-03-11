@@ -6,9 +6,9 @@ from datetime import datetime
 from typing import List
 
 from dotenv import load_dotenv
-from myutil.BashColor import BashColor
-from myutil.InputUtil import getIdsFromInput, sanitize
-from myutil.PrintUtil import printS, printLists
+from grdUtil.BashColor import BashColor
+from grdUtil.InputUtil import getIdsFromInput, sanitize
+from grdUtil.PrintUtil import printS, printLists
 
 from model.Playlist import Playlist
 from model.QueueStream import QueueStream

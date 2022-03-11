@@ -3,8 +3,8 @@ import re
 from typing import List
 
 from dotenv import load_dotenv
-from myutil.BashColor import BashColor
-from myutil.PrintUtil import printS
+from grdUtil.BashColor import BashColor
+from grdUtil.PrintUtil import printS
 
 from model.Playlist import Playlist
 from model.QueueStream import QueueStream

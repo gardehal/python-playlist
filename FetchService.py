@@ -4,11 +4,11 @@ from datetime import datetime
 from typing import List
 
 from dotenv import load_dotenv
-from myutil.BashColor import BashColor
-from myutil.DateTimeObject import DateTimeObject
-from myutil.FileUtil import mkdir
-from myutil.InputUtil import sanitize
-from myutil.PrintUtil import printS
+from grdUtil.BashColor import BashColor
+from grdUtil.DateTimeObject import DateTimeObject
+from grdUtil.FileUtil import mkdir
+from grdUtil.InputUtil import sanitize
+from grdUtil.PrintUtil import printS
 from pytube import Channel
 
 from enums.StreamSourceType import StreamSourceType

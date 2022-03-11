@@ -5,10 +5,10 @@ from typing import List
 
 import pytube
 from dotenv import load_dotenv
-from myutil.BashColor import BashColor
-from myutil.InputUtil import sanitize
-from myutil.LocalJsonRepository import LocalJsonRepository
-from myutil.PrintUtil import printS
+from grdUtil.BashColor import BashColor
+from grdUtil.InputUtil import sanitize
+from grdUtil.LocalJsonRepository import LocalJsonRepository
+from grdUtil.PrintUtil import printS
 import validators
 
 from model.Playlist import Playlist

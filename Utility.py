@@ -3,9 +3,9 @@ from typing import List
 
 import mechanize
 from dotenv import load_dotenv
-from myutil.BashColor import BashColor
-from myutil.InputUtil import isNumber, sanitize
-from myutil.PrintUtil import printS
+from grdUtil.BashColor import BashColor
+from grdUtil.InputUtil import sanitize
+from grdUtil.PrintUtil import printS
 from pytube import YouTube
 
 from enums.StreamSourceType import StreamSourceType, StreamSourceTypeUtil

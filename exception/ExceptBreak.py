@@ -1,2 +1,0 @@
-class ExceptBreak(Exception):
-    pass

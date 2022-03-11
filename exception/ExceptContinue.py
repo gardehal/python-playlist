@@ -1,2 +1,0 @@
-class ExceptContinue(Exception):
-    pass

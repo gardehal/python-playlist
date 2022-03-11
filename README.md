@@ -8,8 +8,10 @@ Program for queueing and playing videos from list or from sources like channels 
 ## Installation
 
 1. Download and install Python and PIP
-1. Download PIP packages needed for this program to run:
-  - ```$ pip install -r path/to/requirements.txt```
+1. Download the [grdUtil](https://github.com/grdall/python-packages), navigate to it's base directory and download PIP packages for it:
+  - ```$ pip install -r requirements.txt```
+1. Navigate to the base directory of the project and download PIP packages needed for this program to run:
+  - ```$ pip install -r requirements.txt```
 1. Create the usable .env-file for setting and secrets:
   - Copy and paste the file .env-example.
   - Rename the file to ".env".

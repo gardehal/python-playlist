@@ -8,20 +8,21 @@ Program for queueing and playing videos from list or from sources like channels 
 ## Installation
 
 1. Download and install Python and PIP
-1. Download the [grdUtil](https://github.com/grdall/python-packages), navigate to it's base directory and download PIP packages for it:
-  - ```$ pip install -r requirements.txt```
-1. Navigate to the base directory of the project and download PIP packages needed for this program to run:
-  - ```$ pip install -r requirements.txt```
+1. Download [grdUtil](https://github.com/grdall/python-packages), navigate to it's base directory and run commands:
+    - $ `pip install -r requirements.txt`
+    - $ `pip install .`
+1. Navigate to the base directory of this project and download PIP packages needed to run:
+    - $ `pip install -r requirements.txt`
 1. Create the usable .env-file for setting and secrets:
-  - Copy and paste the file .env-example.
-  - Rename the file to ".env".
-  - Change the values to your liking:
+    - Copy and paste the file .env-example.
+    - Rename the file to ".env".
+    - Change the values to your liking:
       - The value "BROWSER_BIN" can be left blank. 
       - Values which are booleans must be Python parsable, "True", "False", "1", "0" etc.
       - Paths should be absolute, otherwise they will only work from that relative folder.
 1. Confirm install by entering the help command:
-  - ```$ python main.py help``` (it is advised you get an alias for "absolute-installation-path/main.py")
-  - Verify that the program prints an overview of commands, arguments, flags, and a description of what they do.
+    - $ `python main.py help` (it is advised you get an alias for "absolute-installation-path/main.py")
+    - Verify that the program prints an overview of commands, arguments, flags, and a description of what they do.
 
 ## Help
 

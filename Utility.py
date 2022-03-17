@@ -19,6 +19,7 @@ REMOVE_WATCHED_ON_FETCH = eval(os.environ.get("REMOVE_WATCHED_ON_FETCH"))
 PLAYED_ALWAYS_WATCHED = eval(os.environ.get("PLAYED_ALWAYS_WATCHED"))
 WATCHED_LOG_FILEPATH = os.environ.get("WATCHED_LOG_FILEPATH")
 BROWSER_BIN = os.environ.get("BROWSER_BIN")
+FETCH_LIMIT_SINGLE_SOURCE = os.environ.get("FETCH_LIMIT_SINGLE_SOURCE")
 
 class Utility():
     
@@ -105,7 +106,8 @@ class Utility():
                "\n", "REMOVE_WATCHED_ON_FETCH: ", REMOVE_WATCHED_ON_FETCH,
                "\n", "PLAYED_ALWAYS_WATCHED: ", PLAYED_ALWAYS_WATCHED,
                "\n", "WATCHED_LOG_FILEPATH: ", WATCHED_LOG_FILEPATH,
-               "\n", "BROWSER_BIN: ", BROWSER_BIN)
+               "\n", "BROWSER_BIN: ", BROWSER_BIN,
+               "\n", "FETCH_LIMIT_SINGLE_SOURCE: ", FETCH_LIMIT_SINGLE_SOURCE)
         
     def getHelpString(self) -> str:
         """

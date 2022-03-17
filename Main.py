@@ -25,6 +25,7 @@ load_dotenv()
 DEBUG = eval(os.environ.get("DEBUG"))
 LOCAL_STORAGE_PATH = os.environ.get("LOCAL_STORAGE_PATH")
 WATCHED_LOG_FILEPATH = os.environ.get("WATCHED_LOG_FILEPATH")
+FETCH_LIMIT_SINGLE_SOURCE = os.environ.get("FETCH_LIMIT_SINGLE_SOURCE")
 
 class Main:
     fetchService = FetchService()
@@ -242,7 +243,7 @@ class Main:
                         continue
                     
                     for _id in _ids:
-                        _result = Main.fetchService.fetch(_id, batchSize = 20, takeAfter = _takeAfter, takeBefore = _takeBefore, takeNewOnly = _takeNewOnly)
+                        _result = Main.fetchService.fetch(_id, batchSize = FETCH_LIMIT_SINGLE_SOURCE, takeAfter = _takeAfter, takeBefore = _takeBefore, takeNewOnly = _takeNewOnly)
                         _playlist = Main.playlistService.get(_id)
                         printS("Fetched ", _result, " for playlist \"", _playlist.name, "\" successfully.", color = BashColor.OKGREEN)
 

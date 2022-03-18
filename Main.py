@@ -25,7 +25,7 @@ load_dotenv()
 DEBUG = eval(os.environ.get("DEBUG"))
 LOCAL_STORAGE_PATH = os.environ.get("LOCAL_STORAGE_PATH")
 WATCHED_LOG_FILEPATH = os.environ.get("WATCHED_LOG_FILEPATH")
-FETCH_LIMIT_SINGLE_SOURCE = os.environ.get("FETCH_LIMIT_SINGLE_SOURCE")
+FETCH_LIMIT_SINGLE_SOURCE = int(os.environ.get("FETCH_LIMIT_SINGLE_SOURCE"))
 
 class Main:
     fetchService = FetchService()

@@ -13,16 +13,13 @@ Program for queueing and playing videos from list or from sources like channels 
     - $ `pip install .`
 1. Navigate to the base directory of this project and download PIP packages needed to run:
     - $ `pip install -r requirements.txt`
-1. Create the usable .env-file for setting and secrets:
-    - Copy and paste the file .env-example.
-    - Rename the file to ".env".
-    - Change the values to your liking:
-      - The value "BROWSER_BIN" can be left blank. 
-      - Values which are booleans must be Python parsable, "True", "False", "1", "0" etc.
-      - Paths should be absolute, otherwise they will only work from that relative folder.
 1. Confirm install by entering the help command:
     - $ `python main.py help` (it is advised you get an alias for "absolute-installation-path/main.py")
     - Verify that the program prints an overview of commands, arguments, flags, and a description of what they do.
+1. Optional: Update the file .env with setting and secrets:
+    - Change the values to your liking:
+      - Values which are booleans must be Python parsable, "True", "False", "1", "0" etc.
+      - Paths should be absolute, otherwise they will only work from that relative folder.
 
 ## Help
 
@@ -97,9 +94,14 @@ Program for queueing and playing videos from list or from sources like channels 
 
 - During playback, adding stream to other playlist, then continuing does not mark stream as watched when it should
 - when fetching, if the last fetched stream was deleted, fetch will attempt to fetch all up to batch size..
-- play directory streams
+- play local/directory streams
 - support for mp3s
 - implement file/folder, Odysee, Rumble fetches
 - option to download and watch (requires implement file/folder)
 - minor print issues and wording/use of IDs
 - tests for core functions like fetch and play?
+- add auto adding .env
+- sometimes add source fails due to webrequests I assume
+- check on last 2,3,4? fetched streams in case of deletions? more common than expected
+- update for grdUtil/service/exception
+- error plying with options like shuffle?

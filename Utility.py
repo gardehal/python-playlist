@@ -1,5 +1,5 @@
 import os
-from typing import List
+import shutil
 
 import mechanize
 from dotenv import load_dotenv
@@ -9,6 +9,12 @@ from grdUtil.PrintUtil import printS
 from pytube import YouTube
 
 from enums.StreamSourceType import StreamSourceType, StreamSourceTypeUtil
+
+ENV_FILE_PATH = ".env"
+ENV_FILE_PATH_EXAMPLE = ".env-example"
+if(not os.path.exists(ENV_FILE_PATH) and os.path.exists(ENV_FILE_PATH_EXAMPLE)):
+    shutil.copy2(ENV_FILE_PATH_EXAMPLE, ENV_FILE_PATH)
+    printS("Created a setting file, ", ENV_FILE_PATH, ", you may want to update some of the settings for security purposes according to the installation guide in README.md.\n\n", color = BashColor.OKGREEN)
 
 load_dotenv()
 DEBUG = eval(os.environ.get("DEBUG"))

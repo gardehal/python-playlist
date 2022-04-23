@@ -1,15 +1,15 @@
 import os
-import uuid
 from datetime import datetime
 from typing import List
 
 import pytube
+import validators
 from dotenv import load_dotenv
+from grdService.BaseService import BaseService
 from grdUtil.BashColor import BashColor
 from grdUtil.InputUtil import sanitize
 from grdUtil.LocalJsonRepository import LocalJsonRepository
 from grdUtil.PrintUtil import printS
-import validators
 
 from model.Playlist import Playlist
 from model.QueueStream import QueueStream
@@ -30,198 +30,17 @@ BROWSER_BIN = os.environ.get("BROWSER_BIN")
 
 T = Playlist
 
-class PlaylistService():
-    storagePath: str = LOCAL_STORAGE_PATH
+class PlaylistService(BaseService[T]):
     playlistRepository: LocalJsonRepository = None
     queueStreamService: QueueStreamService = None
     streamSourceService: StreamSourceService = None
     utility: Utility = None
 
     def __init__(self):
-        self.playlistRepository: LocalJsonRepository = LocalJsonRepository(T, DEBUG, os.path.join(self.storagePath, "Playlist"))
+        BaseService.__init__(self, T, DEBUG, os.path.join(LOCAL_STORAGE_PATH, "Playlist"))
         self.queueStreamService: QueueStreamService = QueueStreamService()
         self.streamSourceService: StreamSourceService = StreamSourceService()
         self.utility: Utility = Utility()
-
-    def add(self, playlist: T) -> T:
-        """
-        Add a new playlist.
-
-        Args:
-            playlist (Playlist): playlist to add
-
-        Returns:
-            Playlist | None: returns Playlist if success, else None
-        """
-
-        _entity = playlist
-        _entity.updated = datetime.now()
-        _entity.deleted = None
-        _entity.added = datetime.now()
-        _entity.id = str(uuid.uuid4())
-        
-        _result = self.playlistRepository.add(_entity)
-        if(_result):
-            return _entity
-        else:
-            return None
-
-    def get(self, id: str, includeSoftDeleted: bool = False) -> T:
-        """
-        Get Playlist by ID.
-
-        Args:
-            id (str): ID of Playlist to get
-            includeSoftDeleted (bool): should include soft-deleted entities
-
-        Returns:
-            Playlist: Playlist if any, else None
-        """
-
-        _entity = self.playlistRepository.get(id)
-        
-        if(_entity != None and _entity.deleted != None and not includeSoftDeleted):
-            printS("DEBUG: get - Playlist with ID ", _entity.id, " was soft deleted.", color = BashColor.WARNING, doPrint = DEBUG)
-            return None
-        else:
-            return _entity
-
-    def getAll(self, includeSoftDeleted: bool = False) -> List[T]:
-        """
-        Get all Playlists.
-
-        Args:
-            includeSoftDeleted (bool): should include soft-deleted entities
-
-        Returns:
-            List[Playlist]: list of Playlists
-        """
-
-        _entities = self.playlistRepository.getAll()
-        _result = []
-        
-        for _entity in _entities:
-            if(_entity.deleted != None and not includeSoftDeleted):
-                printS("DEBUG: getAll - Playlist with ID ", _entity.id, " was soft deleted.", color = BashColor.WARNING, doPrint = DEBUG)
-            else:
-                _result.append(_entity)
-            
-        return _result
-        
-    def getAllIds(self, includeSoftDeleted: bool = False) -> List[str]:
-        """
-        Get all IDs of playlists.
-
-        Args:
-            includeSoftDeleted (bool): should include soft-deleted entities
-
-        Returns:
-            List[str]: playlists IDs if any, else empty list
-        """
-        
-        _all = self.getAll(includeSoftDeleted)
-        return [_.id for _ in _all]
-
-    def update(self, playlist: T) -> T:
-        """
-        Update Playlist.
-
-        Args:
-            playlist (Playlist): playlist to update
-
-        Returns:
-            Playlist | None: returns Playlist if success, else None
-        """
-
-        _entity = playlist
-        _entity.updated = datetime.now()
-        _result = self.playlistRepository.update(_entity)
-        if(_result):
-            return _entity
-        else:
-            return None
-
-    def delete(self, id: str) -> T:
-        """
-        (Soft) Delete a Playlist.
-
-        Args:
-            id (str): ID of Playlist to delete
-
-        Returns:
-            Playlist | None: returns Playlist if success, else None
-        """
-
-        _entity = self.get(id)
-        if(_entity == None):
-            return None
-
-        _entity.deleted = datetime.now()
-        _result = self.update(_entity)
-        if(_result):
-            return _entity
-        else:
-            return None
-        
-    def restore(self, id: str) -> T:
-        """
-        Restore a (soft) deleted Playlist.
-
-        Args:
-            id (str): ID of Playlist to restore
-
-        Returns:
-            Playlist | None: returns Playlist if success, else None
-        """
-
-        _entity = self.get(id, includeSoftDeleted = True)
-        if(_entity == None):
-            return None
-
-        _entity.deleted = None
-        _result = self.update(_entity)
-        if(_result):
-            return _entity
-        else:
-            return None
-        
-    def remove(self, id: str, includeSoftDeleted: bool = False) -> T:
-        """
-        Permanently remove a Playlist.
-
-        Args:
-            id (str): ID of Playlist to remove
-            includeSoftDeleted (bool): should include soft-deleted entities
-
-        Returns:
-            Playlist | None: returns Playlist if success, else None
-        """
-
-        _entity = self.get(id, includeSoftDeleted)
-        if(_entity == None):
-            return None
-        
-        _result = self.playlistRepository.remove(_entity.id)
-        if(_result):
-            return _entity
-        else:
-            return None
-
-    def addOrUpdate(self, playlist: T) -> T:
-        """
-        Add playlist if none exists, else update existing.
-
-        Args:
-            playlist (T): playlist to add or update
-
-        Returns:
-            Playlist | None: returns Playlist if success, else None
-        """
-
-        if(self.get(playlist.id) == None):
-            return self.add(playlist)
-
-        return self.update(playlist)
 
     def addStreams(self, playlistId: str, streams: List[QueueStream]) -> List[QueueStream]:
         """

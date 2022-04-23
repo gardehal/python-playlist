@@ -8,7 +8,7 @@ Program for queueing and playing videos from list or from sources like channels 
 ## Installation
 
 1. Download and install Python and PIP
-1. Download [grdUtil](https://github.com/grdall/python-packages), navigate to it's base directory and run commands:
+1. Download [grdUtil](https://github.com/grdall/python-packages), navigate to its base directory and run commands:
     - $ `pip install -r requirements.txt`
     - $ `pip install .`
 1. Navigate to the base directory of this project and download PIP packages needed to run:
@@ -16,6 +16,7 @@ Program for queueing and playing videos from list or from sources like channels 
 1. Confirm install by entering the help command:
     - $ `python main.py help` (it is advised you get an alias for "absolute-installation-path/main.py")
     - Verify that the program prints an overview of commands, arguments, flags, and a description of what they do.
+    - This will also create the .env file for settings.
 1. Optional: Update the file .env with setting and secrets:
     - Change the values to your liking:
       - Values which are booleans must be Python parsable, "True", "False", "1", "0" etc.
@@ -100,8 +101,7 @@ Program for queueing and playing videos from list or from sources like channels 
 - option to download and watch (requires implement file/folder)
 - minor print issues and wording/use of IDs
 - tests for core functions like fetch and play?
-- add auto adding .env
 - sometimes add source fails due to webrequests I assume
 - check on last 2,3,4? fetched streams in case of deletions? more common than expected
 - update for grdUtil/service/exception
-- error plying with options like shuffle?
+- error playing with options like shuffle? 

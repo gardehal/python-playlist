@@ -104,4 +104,5 @@ Program for queueing and playing videos from list or from sources like channels 
 - sometimes add source fails due to webrequests I assume
 - check on last 2,3,4? fetched streams in case of deletions? more common than expected
 - update for grdUtil/service/exception
-- error playing with options like shuffle? 
+- error playing with options like shuffle?
+- update grdUtils

@@ -8,7 +8,7 @@ from typing import List
 from dotenv import load_dotenv
 from grdUtil.BashColor import BashColor
 from grdUtil.InputUtil import getIdsFromInput, sanitize
-from grdUtil.PrintUtil import printS, printLists
+from grdUtil.PrintUtil import printS, printLists, printStack
 
 from model.Playlist import Playlist
 from model.QueueStream import QueueStream
@@ -81,10 +81,9 @@ class PlaybackService():
             printS("Playlist \"", _playlist.name, "\" has ", len(_streams), " streams, but they could not be found in database (they may have been removed). Ending playback.")
             return False
 
+        _streams = _rawStreams[startIndex:]
         if(shuffle):
-            _streams = random.shuffle(_rawStreams)
-        else:
-            _streams = _rawStreams[startIndex:]
+            random.shuffle(_streams)
 
         printS("Playing playlist ", _playlist.name, ".")
         printS("Starting at stream number: ", (startIndex + 1), ", shuffle is ", ("on" if shuffle else "off"), ", repeat playlist is ", ("on" if repeatPlaylist else "off"), ", played videos set to watched is ", ("on" if PLAYED_ALWAYS_WATCHED else "off"), ".")
@@ -94,8 +93,7 @@ class PlaybackService():
             if(True): # Playlist mode
                 _playResult = self.playCmd(_playlist, _streams)
         except:
-            printS("DEBUG: play - \n", sys.exc_info(), color = BashColor.WARNING, doPrint = DEBUG)
-            #printS("handleing of streams encountered an issue.", color=BashColor.WARNING)
+            printStack(doPrint = DEBUG)
 
         printS("Playlist \"", _playlist.name, "\" finished.")
 

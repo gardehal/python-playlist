@@ -472,7 +472,7 @@ class PlaylistService(BaseService[T]):
             for i, _sourceId in enumerate(_playlist.streamSourceIds):
                 _source = self.streamSourceService.get(_sourceId)
                 if(_source == None):
-                    printS("\\tSource not found (ID: \"", _sourceId, "\").", color = BashColor.FAIL)
+                    printS("\tSource not found (ID: \"", _sourceId, "\").", color = BashColor.FAIL)
                     continue
                 
                 _color = "WHITE" if i % 2 == 0 else "GREYBG"
@@ -493,6 +493,11 @@ class PlaylistService(BaseService[T]):
                 _sourceString = ""
                 if(includeSource and _stream.streamSourceId != None):
                     _streamSource = self.streamSourceService.get(_stream.streamSourceId)
+                    
+                    if(_streamSource == None):
+                        printS("\tStreamSource not found (ID: \"", _streamId, "\").", color = BashColor.FAIL)
+                        continue
+                    
                     _sourceString = ", StreamSource: \"" + _streamSource.name + "\"" 
                 printS("\t", str(i), " - ", _stream.detailsString(includeUri, includeId, includeDatetime, includeListCount), _sourceString, color = BashColor[_color])
                 

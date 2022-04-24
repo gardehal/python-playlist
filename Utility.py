@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 from grdUtil.BashColor import BashColor
 from grdUtil.InputUtil import sanitize
 from grdUtil.PrintUtil import printS
+from grdUtil.StaticUtil import StaticUtil
 from pytube import YouTube
 
 from enums.StreamSourceType import StreamSourceType, StreamSourceTypeUtil
@@ -48,7 +49,7 @@ class Utility():
         self.purgePlaylistCommands = ["purge"]
         self.resetPlaylistFetchCommands = ["reset"]
         self.playCommands = ["play", "p"]
-        self.quitArguments = ["quit", "q", "exit", "end"]
+        self.quitArguments = StaticUtil.quit
         self.skipArguments = ["skip", "s"]
         self.repeatArguments = ["repeat", "r"]
         self.listPlaylistArguments = ["listplaylists", "lp"]

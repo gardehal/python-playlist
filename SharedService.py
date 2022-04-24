@@ -5,6 +5,7 @@ from typing import List
 from dotenv import load_dotenv
 from grdUtil.BashColor import BashColor
 from grdUtil.PrintUtil import printS
+from grdUtil.StaticUtil import StaticUtil
 
 from model.Playlist import Playlist
 from model.QueueStream import QueueStream
@@ -23,9 +24,6 @@ REMOVE_WATCHED_ON_FETCH = eval(os.environ.get("REMOVE_WATCHED_ON_FETCH"))
 PLAYED_ALWAYS_WATCHED = eval(os.environ.get("PLAYED_ALWAYS_WATCHED"))
 WATCHED_LOG_FILEPATH = os.environ.get("WATCHED_LOG_FILEPATH")
 BROWSER_BIN = os.environ.get("BROWSER_BIN")
-
-affirmative = ["yes", "y", "1"]
-negative = ["no", "n", "0"]
 
 class SharedService():
     storagePath: str = LOCAL_STORAGE_PATH
@@ -84,7 +82,7 @@ class SharedService():
         printS("\nRemoving ", len(_deletedData["QueueStream"]), " watched QueueStream(s) and ", len(_deletedData["QueueStreamId"]), " ID(s) in Playlist \"", _playlist.name, "\".")
         printS("Do you want to", (" PERMANENTLY REMOVE" if permanentlyDelete else " DELETE"), " this data?", color = BashColor.WARNING)
         _input = input("(y/n):")
-        if(_input not in affirmative):
+        if(_input not in StaticUtil.affirmative):
             printS("Prune aborted by user.", color = BashColor.WARNING)
             return _deletedDataEmpty
         
@@ -191,7 +189,7 @@ class SharedService():
         printS("Removing ", len(_deletedData["QueueStreamId"]), " dangling QueueStream ID(s), ", len(_deletedData["StreamSourceId"]), " dangling StreamSource ID(s).")
         printS("Do you want to", (" PERMANENTLY REMOVE" if permanentlyDelete else " DELETE"), " this data?", color = BashColor.WARNING)
         _input = input("(y/n):")
-        if(_input not in affirmative):
+        if(_input not in StaticUtil.affirmative):
             printS("Purge aborted by user.", color = BashColor.WARNING)
             return _deletedDataEmpty
             

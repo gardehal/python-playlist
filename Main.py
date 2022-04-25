@@ -11,6 +11,7 @@ from grdUtil.InputUtil import extractArgs, getIdsFromInput, isNumber
 from grdUtil.PrintUtil import printS, printLists
 
 from FetchService import FetchService
+from LegacyService import LegacyService
 from model.Playlist import Playlist
 from model.QueueStream import QueueStream
 from model.StreamSource import StreamSource
@@ -29,6 +30,7 @@ FETCH_LIMIT_SINGLE_SOURCE = int(os.environ.get("FETCH_LIMIT_SINGLE_SOURCE"))
 
 class Main:
     fetchService = FetchService()
+    legacyService = LegacyService()
     playbackService = PlaybackService()
     playlistService = PlaylistService()
     queueStreamService = QueueStreamService()
@@ -62,8 +64,7 @@ class Main:
                     _input = extractArgs(argIndex, argV)
                     printS("Test", color = BashColor.OKBLUE)
                     
-                    x = Main.streamSourceService.getAll()[0]
-                    printS(x.detailsString())
+                    print(Main.legacyService.runRefactorCheck())
                     
                     quit()            
                     

@@ -98,8 +98,9 @@ Program for queueing and playing videos from list or from sources like channels 
 - play local/directory streams
 - support for mp3s
 - implement file/folder, Odysee, Rumble fetches
+- implement background content properly, should not wait for input, just play when previous stream finished (assume no ads/breaks/pauses, need playtime in model...)
 - option to download and watch (requires implement file/folder)
 - minor print issues and wording/use of IDs
 - tests for core functions like fetch and play?
-- sometimes add source fails due to webrequests I assume
+- sometimes add source fails due to webrequests/title?
 - check on last 2,3,4? fetched streams in case of deletions? more common than expected

@@ -11,7 +11,7 @@ class QueueStream:
                  backgroundContent: bool = False, 
                  deleted: datetime = None,
                  added: datetime = datetime.now(),
-                 id: str = str(uuid.uuid4())):
+                 id: str = None):
         self.name: str = name
         self.uri: str = uri
         self.isWeb: bool = isWeb

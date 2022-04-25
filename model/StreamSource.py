@@ -10,11 +10,12 @@ class StreamSource:
                  enableFetch: bool = None, 
                  lastFetched: datetime = None, 
                  lastSuccessfulFetched: datetime = None, 
-                 lastFetchedId: str = None, 
+                 lastFetchedId: str = None,
+                #  lastFetchedIds: list[str] = None,
                  backgroundContent: bool = False, 
                  deleted: datetime = None,
                  added: datetime = datetime.now(),
-                 id: str = str(uuid.uuid4())):
+                 id: str = None):
         self.name: str = name
         self.uri: str = uri
         self.isWeb: bool = isWeb
@@ -22,7 +23,8 @@ class StreamSource:
         self.enableFetch: bool = enableFetch
         self.lastFetched: datetime = lastFetched
         self.lastSuccessfulFetched: datetime = lastSuccessfulFetched
-        self.lastFetchedId: int = lastFetchedId
+        self.lastFetchedId: str = lastFetchedId
+        # self.lastFetchedIds: list[str] = lastFetchedIds
         self.backgroundContent: bool = backgroundContent
         self.deleted: datetime = deleted
         self.added: datetime = added

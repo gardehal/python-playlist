@@ -14,7 +14,7 @@ class Playlist():
                  deleted: datetime = None,
                  updated: datetime = datetime.now(),
                  added: datetime = datetime.now(),
-                 id: str = str(uuid.uuid4())):
+                 id: str = None):
         self.name: str = name
         self.streamIds: List[str] = streamIds
         self.lastWatchedIndex: int = lastWatchedIndex

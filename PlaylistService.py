@@ -68,12 +68,12 @@ class PlaylistService(BaseService[T]):
         _added = []
         for stream in streams:            
             if(not _playlist.allowDuplicates and (stream.uri in _playlistStreamUris or stream.name in _playlistStreamNames)):
-                printS("QueueStream \"", stream.name, "\" / ", stream.uri, " already exists in Playlist \"", _playlist.name, "\" and allow duplicates for this Playlist is disabled.", color = BashColor.WARNING)
+                printS("\"", stream.name, "\" / ", stream.uri, " already exists in Playlist \"", _playlist.name, "\" and allow duplicates for this Playlist is disabled.", color = BashColor.WARNING)
                 continue
 
             _addResult = self.queueStreamService.add(stream)            
             if(_addResult == None):
-                printS("QueueStream \"", stream.name, "\" could not be added.", color = BashColor.FAIL)
+                printS("\"", stream.name, "\" could not be added.", color = BashColor.FAIL)
                 continue
 
             _playlist.streamIds.append(stream.id)
@@ -218,12 +218,12 @@ class PlaylistService(BaseService[T]):
         _added = []
         for source in streamSources:
             if(not _playlist.allowDuplicates and (source.uri in _playlistStreamSourceUris or source.name in _playlistStreamSourceNames)):
-                printS("StreamSource \"", source.name, "\" / ", source.uri, " already exists in Playlist \"", _playlist.name, "\" and allow duplicates for this Playlist is disabled.", color = BashColor.WARNING)
+                printS("\"", source.name, "\" / ", source.uri, " already exists in Playlist \"", _playlist.name, "\" and allow duplicates for this Playlist is disabled.", color = BashColor.WARNING)
                 continue
 
             _addResult = self.streamSourceService.add(source)            
             if(_addResult == None):
-                printS("StreamSource \"", source.name, "\" could not be added.", color = BashColor.FAIL)
+                printS("\"", source.name, "\" could not be added.", color = BashColor.FAIL)
                 continue
 
             _playlist.streamSourceIds.append(source.id)
@@ -472,7 +472,7 @@ class PlaylistService(BaseService[T]):
             for i, _sourceId in enumerate(_playlist.streamSourceIds):
                 _source = self.streamSourceService.get(_sourceId)
                 if(_source == None):
-                    printS("\tSource not found (ID: \"", _sourceId, "\").", color = BashColor.FAIL)
+                    printS("\tStreamSource not found (ID: \"", _sourceId, "\").", color = BashColor.FAIL)
                     continue
                 
                 _color = "WHITE" if i % 2 == 0 else "GREYBG"
@@ -486,7 +486,7 @@ class PlaylistService(BaseService[T]):
             for i, _streamId in enumerate(_playlist.streamIds):
                 _stream = self.queueStreamService.get(_streamId)
                 if(_stream == None):
-                    printS("\tStream not found (ID: \"", _streamId, "\").", color = BashColor.FAIL)
+                    printS("\tQueueStream not found (ID: \"", _streamId, "\").", color = BashColor.FAIL)
                     continue
                 
                 _color = "WHITE" if i % 2 == 0 else "GREYBG"

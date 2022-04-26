@@ -71,7 +71,7 @@ class PlaybackService():
             return False
 
         if(len(_playlist.streamIds) == 0):
-            printS("No streams found in playlist \"", _playlist.name, "\". Ending playback.")
+            printS("No streams found in \"", _playlist.name, "\". Ending playback.")
             return False
 
         _streams = []
@@ -85,7 +85,7 @@ class PlaybackService():
         if(shuffle):
             random.shuffle(_streams)
 
-        printS("Playing playlist ", _playlist.name, ".")
+        printS("Playing ", _playlist.name, ".")
         printS("Starting at stream number: ", (startIndex + 1), ", shuffle is ", ("on" if shuffle else "off"), ", repeat playlist is ", ("on" if repeatPlaylist else "off"), ", played videos set to watched is ", ("on" if PLAYED_ALWAYS_WATCHED else "off"), ".")
 
         _playResult = False
@@ -156,7 +156,7 @@ class PlaybackService():
                 
                 _updateSuccess = self.queueStreamService.update(stream)
                 if(not _updateSuccess):
-                    printS("Stream \"", stream.name, "\" could not be updated as watched.", color=BashColor.WARNING)
+                    printS("\"", stream.name, "\" could not be updated as watched.", color=BashColor.WARNING)
                     
         return True
 
@@ -185,7 +185,7 @@ class PlaybackService():
                 return 1
             
             elif(len(self.skipInputs) > 0 and _input in self.skipInputs):
-                printS("Skipping video, will not be marked as watched.", color = BashColor.OKGREEN)
+                printS("Skipping, will not be marked as watched.", color = BashColor.OKGREEN)
                 return 2
             
             elif(len(self.quitInputs) > 0 and _input in self.quitInputs):
@@ -193,7 +193,7 @@ class PlaybackService():
                 return 3
             
             elif(len(self.repeatInputs) > 0 and _input in self.repeatInputs):
-                printS("Repeating stream.", color = BashColor.OKGREEN)
+                printS("Repeating.", color = BashColor.OKGREEN)
                 self.playCmd(playlist, [stream]) # A little weird with prints and continueing but it works
             
             elif(len(self.listPlaylistInputs) > 0 and _input in self.listPlaylistInputs):
@@ -213,8 +213,8 @@ class PlaybackService():
             elif(len(self.addToInputs) > 0 and " " in _input and _input.split(" ")[0] in self.addToInputs):
                 _idsIndices = _input.split(" ")[1:]
                 _crossAddPlaylistResult = self.addPlaybackStreamToPlaylist(stream, _idsIndices)
-                printS("QueueStream \"", stream.name, "\" added to new Playlist \"", _crossAddPlaylistResult[0].name, "\".", color = BashColor.OKGREEN, doPrint = (len(_crossAddPlaylistResult) > 0))
-                printS("QueueStream \"", stream.name, "\" could not be added to new Playlist.", color = BashColor.FAIL, doPrint = (len(_crossAddPlaylistResult) == 0))
+                printS("\"", stream.name, "\" added to new Playlist \"", _crossAddPlaylistResult[0].name, "\".", color = BashColor.OKGREEN, doPrint = (len(_crossAddPlaylistResult) > 0))
+                printS("\"", stream.name, "\" could not be added to new Playlist.", color = BashColor.FAIL, doPrint = (len(_crossAddPlaylistResult) == 0))
                 
             elif(len(self.printDetailsInputs) > 0 and _input in self.printDetailsInputs):
                 self.playlistService.printPlaylistDetails([playlist.id])

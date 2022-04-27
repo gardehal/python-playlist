@@ -13,7 +13,6 @@ from model.StreamSource import StreamSource
 from PlaylistService import PlaylistService
 from QueueStreamService import QueueStreamService
 from StreamSourceService import StreamSourceService
-from Utility import Utility
 
 load_dotenv()
 DEBUG = eval(os.environ.get("DEBUG"))
@@ -30,13 +29,11 @@ class SharedService():
     playlistService: PlaylistService = None
     queueStreamService: QueueStreamService = None
     streamSourceService: StreamSourceService = None
-    utility: Utility = None
 
     def __init__(self):
         self.playlistService: PlaylistService = PlaylistService()
         self.queueStreamService: QueueStreamService = QueueStreamService()
         self.streamSourceService: StreamSourceService = StreamSourceService()
-        self.utility: Utility = Utility()
 
     def prune(self, playlistId: str, includeSoftDeleted: bool = False, permanentlyDelete: bool = False) -> dict[List[QueueStream], List[str]]:
         """

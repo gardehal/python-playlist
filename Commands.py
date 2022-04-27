@@ -28,7 +28,7 @@ WATCHED_LOG_FILEPATH = os.environ.get("WATCHED_LOG_FILEPATH")
 BROWSER_BIN = os.environ.get("BROWSER_BIN")
 FETCH_LIMIT_SINGLE_SOURCE = int(os.environ.get("FETCH_LIMIT_SINGLE_SOURCE"))
 
-class Utility():
+class Commands():
     
     def __init__(self):
         # General

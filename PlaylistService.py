@@ -16,7 +16,6 @@ from model.QueueStream import QueueStream
 from model.StreamSource import StreamSource
 from QueueStreamService import QueueStreamService
 from StreamSourceService import StreamSourceService
-from Utility import Utility
 
 load_dotenv()
 DEBUG = eval(os.environ.get("DEBUG"))
@@ -34,13 +33,11 @@ class PlaylistService(BaseService[T]):
     playlistRepository: LocalJsonRepository = None
     queueStreamService: QueueStreamService = None
     streamSourceService: StreamSourceService = None
-    utility: Utility = None
 
     def __init__(self):
         BaseService.__init__(self, T, DEBUG, os.path.join(LOCAL_STORAGE_PATH, "Playlist"))
         self.queueStreamService: QueueStreamService = QueueStreamService()
         self.streamSourceService: StreamSourceService = StreamSourceService()
-        self.utility: Utility = Utility()
 
     def addStreams(self, playlistId: str, streams: List[QueueStream]) -> List[QueueStream]:
         """

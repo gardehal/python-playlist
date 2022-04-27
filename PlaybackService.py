@@ -15,7 +15,7 @@ from model.QueueStream import QueueStream
 from PlaylistService import PlaylistService
 from QueueStreamService import QueueStreamService
 from StreamSourceService import StreamSourceService
-from Utility import Utility
+from Commands import Commands
 
 load_dotenv()
 DEBUG = eval(os.environ.get("DEBUG"))
@@ -28,7 +28,7 @@ WATCHED_LOG_FILEPATH = os.environ.get("WATCHED_LOG_FILEPATH")
 BROWSER_BIN = os.environ.get("BROWSER_BIN")
 
 class PlaybackService():
-    utility: Utility = None
+    commands: Commands = None
     storagePath: str = LOCAL_STORAGE_PATH
     playlistService: PlaylistService = None
     queueStreamService: QueueStreamService = None
@@ -42,14 +42,14 @@ class PlaybackService():
         self.playlistService: PlaylistService = PlaylistService()
         self.queueStreamService: QueueStreamService = QueueStreamService()
         self.streamSourceService: StreamSourceService = StreamSourceService()
-        self.utility: Utility = Utility()
-        self.quitInputs: List[str] = self.utility.quitArguments
-        self.skipInputs: List[str] = self.utility.skipArguments
-        self.repeatInputs: List[str] = self.utility.repeatArguments
-        self.listPlaylistInputs: List[str] = self.utility.listPlaylistArguments
-        self.addToInputs: List[str] = self.utility.addCurrentToPlaylistArguments
-        self.printDetailsInputs: List[str] = self.utility.printPlaybackDetailsArguments
-        self.printHelpInputs: List[str] = self.utility.printPlaybackHelpArguments
+        self.commands: Commands = Commands()
+        self.quitInputs: List[str] = self.commands.quitArguments
+        self.skipInputs: List[str] = self.commands.skipArguments
+        self.repeatInputs: List[str] = self.commands.repeatArguments
+        self.listPlaylistInputs: List[str] = self.commands.listPlaylistArguments
+        self.addToInputs: List[str] = self.commands.addCurrentToPlaylistArguments
+        self.printDetailsInputs: List[str] = self.commands.printPlaybackDetailsArguments
+        self.printHelpInputs: List[str] = self.commands.printPlaybackHelpArguments
 
     def play(self, playlistId: str, startIndex: int = 0, shuffle: bool = False, repeatPlaylist: bool = False) -> bool:
         """
@@ -220,7 +220,7 @@ class PlaybackService():
                 self.playlistService.printPlaylistDetails([playlist.id])
                 
             elif(len(self.printHelpInputs) > 0 and _input in self.printHelpInputs):
-                _help = self.utility.getPlaylistArgumentsHelpString()
+                _help = self.commands.getPlaylistArgumentsHelpString()
                 printS(_help)
                 
             else:

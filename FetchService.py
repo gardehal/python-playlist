@@ -86,7 +86,7 @@ class FetchService():
             if(_updateSuccess):
                 _newStreams += _fetchedStreams[0]
             else:
-                printS("Could not update source \"", _source.name, "\" (ID: ", _source.id, "), streams could not be added: \n", _fetchedStreams, color = BashColor.WARNING)
+                printS("Could not update StreamSource \"", _source.name, "\" (ID: ", _source.id, "), streams could not be added: \n", _fetchedStreams, color = BashColor.WARNING)
                 
             sys.stdout.flush()
 
@@ -150,7 +150,7 @@ class FetchService():
                 break
             
             _sanitizedTitle = sanitize(_stream.title)
-            printS("\tAdding a QueueStream with name \"", _sanitizedTitle, "\"...")
+            printS("\tAdding \"", _sanitizedTitle, "\"...")
             _stream = QueueStream(name = _sanitizedTitle, 
                                            uri = _stream.watch_url, 
                                            isWeb = True,

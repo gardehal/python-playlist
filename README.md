@@ -104,3 +104,4 @@ Program for queueing and playing videos from list or from sources like channels 
 - tests for core functions like fetch and play?
 - sometimes add source fails due to webrequests/title?
 - check on last 2,3,4? fetched streams in case of deletions? more common than expected
+- fetch videos and add in chronologic order, currently adding last video first

@@ -64,7 +64,7 @@ class Main:
                     _input = extractArgs(argIndex, argV)
                     printS("Test", color = BashColor.OKBLUE)
                     
-                    print(Main.legacyService.runRefactorCheck())
+                    print(Main.legacyService.refactorCheckLastFetchedId(4))
                     
                     quit()            
                     

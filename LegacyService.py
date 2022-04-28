@@ -1,4 +1,5 @@
 import os
+import random
 import re
 from typing import Pattern
 
@@ -40,49 +41,43 @@ class LegacyService():
         if(self.playlistService.get(id) != None):
             return os.path.join(LOCAL_STORAGE_PATH, "Playlist", f"{id}.json")
         
-        if(self.queueStreamService.get(id) != None):
-            return os.path.join(LOCAL_STORAGE_PATH, "QueueStream", f"{id}.json")
-        
         if(self.streamSourceService.get(id) != None):
             return os.path.join(LOCAL_STORAGE_PATH, "StreamSource", f"{id}.json")
         
+        if(self.queueStreamService.get(id) != None):
+            return os.path.join(LOCAL_STORAGE_PATH, "QueueStream", f"{id}.json")
+        
         return None
         
-    def runRefactorCheck(self) -> list[str]:
+    def refactorCheckLastFetchedId(self, checkDivisor: int = 10) -> list[str]:
         """
         Check if refactor has been done on a selection of entities.
+
+        Args:
+            checkDivisor (int): Divisor of len(self.streamSourceService.getAll())/x to check. Default 10.
 
         Returns:
             list[str]: List of IDs of entities not refactored.
         """
 
         notRefactored = []
+        all = self.streamSourceService.getAll()
+        nChecks = int(len(all) / checkDivisor)
+        indicesChecked = []
         
-        # Check refactorLastFetchedId
-        if(True):
-            all = self.streamSourceService.getAll()
-                
-            firstId = all[0].id
-            printS("Checking first: ", firstId, color = BashColor.WARNING, doPrint = DEBUG)
-            with open(self.getFilePath(firstId), "r") as file:
+        for i in range(nChecks):
+            index = 0
+            while 1:
+                index = random.randrange(0, len(all))
+                if(index not in indicesChecked):
+                    break
+            
+            id = all[index].id
+            printS("DEBUG: refactorCheckLastFetchedId - Checking ", (i+1), "/", nChecks, ": ", id, color = BashColor.WARNING, doPrint = DEBUG)
+            with open(self.getFilePath(id), "r") as file:
                 content = file.read()
                 if(re.search(self.lastFetchedIdRegex, content)):
-                    notRefactored.append(firstId)
-                    
-            lastId = all[-1].id
-            printS("Checking last: ", lastId, color = BashColor.WARNING, doPrint = DEBUG)
-            with open(self.getFilePath(lastId), "r") as file:
-                content = file.read()
-                if(re.match(self.lastFetchedIdRegex, content)):
-                    notRefactored.append(lastId)
-                    
-            if(len(all) > 3):
-                midId = all[int(len(all)/2)].id
-                printS("DEBUG: runRefactorCheck - Checking mid: ", midId, color = BashColor.WARNING, doPrint = DEBUG)
-                with open(self.getFilePath(midId), "r") as file:
-                    content = file.read()
-                    if(re.match(self.lastFetchedIdRegex, content)):
-                        notRefactored.append(midId)
+                    notRefactored.append(id)
         
         return notRefactored
     
@@ -95,6 +90,12 @@ class LegacyService():
         """
 
         all = self.streamSourceService.getAll()
+        for item in all:
+            with open(self.getFilePath(item.id), "r") as file:
+                content = file.read()
+                # TODO replace
+                # re.search(self.lastFetchedIdRegex, content)
+            
         # get line in json with regex
         # replace line
         # save and repeat for each

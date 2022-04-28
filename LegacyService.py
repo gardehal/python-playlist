@@ -1,10 +1,11 @@
 import os
 import random
 import re
+from turtle import update
 from typing import Pattern
 
 from dotenv import load_dotenv
-from grdUtil.PrintUtil import printS
+from grdUtil.PrintUtil import printS, printStack
 from grdUtil.BashColor import BashColor
 
 from PlaylistService import PlaylistService
@@ -20,12 +21,14 @@ class LegacyService():
     queueStreamService: QueueStreamService = None
     streamSourceService: StreamSourceService = None
     lastFetchedIdRegex: Pattern[str] = None
+    stringValueRegex: Pattern[str] = None
     
     def __init__(self):
         self.playlistService = PlaylistService()
         self.queueStreamService = QueueStreamService()
         self.streamSourceService = StreamSourceService()
         self.lastFetchedIdRegex = re.compile("\s*\"lastFetchedId\":\s*\".*\",?", re.RegexFlag.IGNORECASE)
+        self.stringValueRegex = re.compile("\s*\".*\":\s*\"(.*)\",?", re.RegexFlag.IGNORECASE)
         
     def getFilePath(self, id: str) -> str:
         """
@@ -81,24 +84,39 @@ class LegacyService():
         
         return notRefactored
     
-    def refactorLastFetchedId(self) -> bool:
+    def refactorLastFetchedId(self) -> list[str]:
         """
         Refactor all StreamSources in database to remove field lastFetchedId: str and add field lastFetchedIds: list[str].
 
         Returns:
-            bool: Result of refactor.
+            list[str]: IDs of entities refactored.
         """
 
         all = self.streamSourceService.getAll()
+        result = []
         for item in all:
+            updatedContent = []
             with open(self.getFilePath(item.id), "r") as file:
-                content = file.read()
-                # TODO replace
-                # re.search(self.lastFetchedIdRegex, content)
-            
-        # get line in json with regex
-        # replace line
-        # save and repeat for each
+                content = file.readlines()
+                
+                for line, i in enumerate(content):
+                    if(not re.search(self.lastFetchedIdRegex, line)):
+                        continue
+                    
+                    value = ""
+                    content[i] = ""
+                    updatedContent = content
+                    break
+                    
+            if(len(updatedContent) == 0):
+                continue
+                
+            try:    
+                with open(self.getFilePath(item.id), "w") as file:
+                    file.writelines(updatedContent)
+                result.append(item.id)
+            except:
+                printStack()
         
-        return True
+        return result
         

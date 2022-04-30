@@ -27,8 +27,9 @@ class LegacyService():
         self.playlistService = PlaylistService()
         self.queueStreamService = QueueStreamService()
         self.streamSourceService = StreamSourceService()
-        self.lastFetchedIdRegex = re.compile("\s*\"lastFetchedId\":\s*\".*\",?", re.RegexFlag.IGNORECASE)
+        self.lastFetchedIdRegex = re.compile("\s*\"lastFetchedId\":\s*\"?.*\"?,?", re.RegexFlag.IGNORECASE)
         self.stringValueRegex = re.compile("\s*\".*\":\s*\"(.*)\",?", re.RegexFlag.IGNORECASE)
+        self.nullValueRegex = re.compile("\s*\".*\":\s*null,?", re.RegexFlag.IGNORECASE)
         
     def getFilePath(self, id: str) -> str:
         """
@@ -92,7 +93,7 @@ class LegacyService():
             list[str]: IDs of entities refactored.
         """
 
-        all = self.streamSourceService.getAll()
+        all = self.streamSourceService.getAll()[:1]
         result = []
         for item in all:
             updatedContent = []
@@ -100,13 +101,20 @@ class LegacyService():
                 content = file.readlines()
                 
                 for i, line in enumerate(content):
+                    print(line)
                     if(not re.search(self.lastFetchedIdRegex, line)):
                         continue
                     
-                    value = re.search(self.stringValueRegex, line)[1]
+                    regexSearch = re.search(self.stringValueRegex, line)
+                    value = regexSearch[1] if(regexSearch != None) else None
+                    
                     updatedLine = line
                     updatedLine = updatedLine.replace("lastFetchedId", "lastFetchedIds")
-                    updatedLine = updatedLine.replace(f"\"{value}\"", f"[\"{value}\"]")
+                    if(value == None or len(value) == 0):
+                        updatedLine = updatedLine.replace(f"null", f"[]")
+                    else:
+                        updatedLine = updatedLine.replace(f"\"{value}\"", f"[\"{value}\"]")
+                        
                     content[i] = updatedLine
                     updatedContent = content
                     break

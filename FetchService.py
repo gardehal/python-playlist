@@ -4,8 +4,8 @@ from datetime import datetime
 from typing import List
 
 from dotenv import load_dotenv
+from grdException.ArgumentException import ArgumentException
 from grdUtil.BashColor import BashColor
-from grdUtil.DateTimeObject import DateTimeObject
 from grdUtil.FileUtil import mkdir
 from grdUtil.InputUtil import sanitize
 from grdUtil.PrintUtil import printS
@@ -23,7 +23,6 @@ DEBUG = eval(os.environ.get("DEBUG"))
 LOCAL_STORAGE_PATH = os.environ.get("LOCAL_STORAGE_PATH")
 
 class FetchService():
-    storagePath: str = LOCAL_STORAGE_PATH
     playlistService: PlaylistService = None
     queueStreamService: QueueStreamService = None
     streamSourceService: StreamSourceService = None
@@ -33,7 +32,7 @@ class FetchService():
         self.queueStreamService: QueueStreamService = QueueStreamService()
         self.streamSourceService: StreamSourceService = StreamSourceService()
 
-        mkdir(self.storagePath)
+        mkdir(LOCAL_STORAGE_PATH)
 
     def fetch(self, playlistId: str, batchSize: int = 10, takeAfter: datetime = None, takeBefore: datetime = None, takeNewOnly: bool = False) -> int:
         """
@@ -48,6 +47,9 @@ class FetchService():
         Returns:
             int: number of videos added
         """
+        
+        if(batchSize < 1):
+            raise ArgumentException("fetch - batchSize was less than 1.")
 
         _playlist = self.playlistService.get(playlistId)
         if(_playlist == None):
@@ -80,7 +82,7 @@ class FetchService():
             if(len(_fetchedStreams) > 0):
                 _source.lastSuccessfulFetched = _datetimeStarted
             
-            _source.lastFetchedId = _fetchedStreams[1]
+            _source.lastFetchedIds = _fetchedStreams[1]
             _source.lastFetched = _datetimeStarted
             _updateSuccess = self.streamSourceService.update(_source)
             if(_updateSuccess):
@@ -96,7 +98,7 @@ class FetchService():
         else:
             return 0
 
-    def fetchYoutube(self, streamSource: StreamSource, batchSize: int = 10, takeAfter: datetime = None, takeBefore: datetime = None, takeNewOnly: bool = False) -> tuple[List[QueueStream], str]:
+    def fetchYoutube(self, streamSource: StreamSource, batchSize: int = 10, takeAfter: datetime = None, takeBefore: datetime = None, takeNewOnly: bool = False) -> tuple[List[QueueStream], List[str]]:
         """
         Fetch videos from YouTube.
 
@@ -111,9 +113,9 @@ class FetchService():
         """
         
         if(streamSource == None):
-            raise ValueError("fetchYoutube - streamSource was None.")
+            raise ArgumentException("fetchYoutube - streamSource was None.")
 
-        _emptyReturn = ([], streamSource.lastFetchedId)
+        _emptyReturn = ([], streamSource.lastFetchedIds)
         _channel = Channel(streamSource.uri)
 
         if(_channel == None or _channel.channel_name == None):
@@ -129,15 +131,15 @@ class FetchService():
         _newStreams = []
         _streams = list(_channel.videos)
         _lastStreamId = _streams[0].video_id
-        if(takeNewOnly and takeAfter == None and streamSource.lastFetchedId != None and _lastStreamId == streamSource.lastFetchedId):
+        if(takeNewOnly and takeAfter == None and _lastStreamId in streamSource.lastFetchedIds):
             printS("DEBUG: fetchYoutube - last video fetched: \"", sanitize(_streams[0].title), "\", YouTube ID \"", _lastStreamId, "\"", color = BashColor.WARNING)
-            printS("DEBUG: fetchYoutube - return due to takeNewOnly and takeAfter == None and streamSource.lastFetchedId != None and _lastStreamId == streamSource.lastFetchedId", color = BashColor.WARNING)
+            printS("DEBUG: fetchYoutube - return due to takeNewOnly and takeAfter == None and _lastStreamId in streamSource.lastFetchedIds", color = BashColor.WARNING)
             return _emptyReturn
             
         for i, _stream in enumerate(_streams):
-            if(takeNewOnly and _stream.video_id == streamSource.lastFetchedId):
+            if(takeNewOnly and _stream.video_id in streamSource.lastFetchedIds):
                 printS("DEBUG: fetchYoutube - name \"", sanitize(_stream.title), "\", YouTube ID \"", _stream.video_id, "\"", color = BashColor.WARNING)
-                printS("DEBUG: fetchYoutube - break due to takeNewOnly and _stream.video_id == streamSource.lastFetchedId", color = BashColor.WARNING)
+                printS("DEBUG: fetchYoutube - break due to takeNewOnly and _stream.video_id in streamSource.lastFetchedIds", color = BashColor.WARNING)
                 break
             elif(not takeNewOnly and takeAfter != None and _stream.publish_date < takeAfter):
                 printS("DEBUG: fetchYoutube - break due to not takeNewOnly and takeAfter != None and _stream.publish_date < takeAfter", color = BashColor.WARNING)
@@ -160,7 +162,11 @@ class FetchService():
                                            added = datetime.now())
             _newStreams.append(_stream)
             
-        return (_newStreams, _lastStreamId)
+        streamSource.lastFetchedIds.append(_lastStreamId)
+        if(len(streamSource.lastFetchedIds) > batchSize):
+            streamSource.lastFetchedIds.pop()
+        
+        return (_newStreams, streamSource.lastFetchedIds)
 
     def fetchDirectory(self, streamSource: StreamSource, batchSize: int = 10, takeAfter: datetime = None, takeBefore: datetime = None, takeNewOnly: bool = False) -> tuple[List[QueueStream], str]:
         """
@@ -179,7 +185,7 @@ class FetchService():
         if(streamSource == None):
             raise ValueError("fetchDirectory - streamSource was None")
 
-        _emptyReturn = ([], streamSource.lastFetchedId)
+        _emptyReturn = ([], streamSource.lastFetchedIds)
         return _emptyReturn
     
     def resetPlaylistFetch(self, playlistIds: List[str]) -> int:

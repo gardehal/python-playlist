@@ -64,7 +64,8 @@ class Main:
                     _input = extractArgs(argIndex, argV)
                     printS("Test", color = BashColor.OKBLUE)
                     
-                    print(Main.legacyService.refactorCheckLastFetchedId(4))
+                    # print(Main.legacyService.refactorCheckLastFetchedId(4))
+                    # print(Main.legacyService.refactorLastFetchedId())
                     
                     quit()            
                     
@@ -574,6 +575,19 @@ class Main:
                     printLists(_resultList, [*_result.keys()])
 
                     argIndex += len(_input) + 1
+                    continue
+                
+                elif(arg in Main.commands.refactorCommands):
+                    # Expected input: None
+                    
+                    refactorLastFetchedIdResult = Main.legacyService.refactorLastFetchedId()
+                    if(len(refactorLastFetchedIdResult) > 0):
+                        printS("Refactored ", len(refactorLastFetchedIdResult), " StreamSources. IDs:", color = BashColor.OKGREEN)
+                        printS(refactorLastFetchedIdResult)
+                    else:
+                        printS("No refactors needed for refactorLastFetchedId.", color = BashColor.OKGREEN)
+
+                    argIndex += 1
                     continue
 
                 # Invalid

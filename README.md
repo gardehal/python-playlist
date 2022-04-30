@@ -27,6 +27,9 @@ Program for queueing and playing videos from list or from sources like channels 
 - All commands can be seen by entering the command "help".
 - Sources currently supported for fetch: YouTube (channels).
 - All data is stored locally in human readable JSON files in the path specified in the .env setting LOCAL_STORAGE_PATH. This defaults to "C:/python/playlists". To edit data, it's easier to change these text files directly, as long as you adhere to the JSON format.
+- 2022-04-30: An update in the StreamSource model requires a refactoring of the data.
+    - Refactor available under the command `refactor`, eg. $ `python main.py refactor`
+    - Example of a changed entity: `... "lastFetchedId": "abc123def", ...` -> `... "lastFetchedIds": ["abc123def"], ...`
 
 ## Examples
 
@@ -105,3 +108,4 @@ Program for queueing and playing videos from list or from sources like channels 
 - sometimes add source fails due to webrequests/title?
 - check on last 2,3,4? fetched streams in case of deletions? more common than expected
 - fetch videos and add in chronologic order, currently adding last video first
+- circumvent restrictions using VLC: https://www.electronicshub.org/bypass-youtube-age-restriction/#3_Using_VLC_Media_Player_on_a_Phone_or_Tablet

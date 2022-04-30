@@ -70,6 +70,7 @@ class Commands():
         # Meta
         self.listSettingsCommands = ["settings", "secrets"]
         self.listSoftDeletedCommands = ["listsoftdeleted", "listdeleted", "lsd", "ld"]
+        self.refactorCommands = ["refactor"]
 
     def getPageTitle(self, url: str) -> str:
         """
@@ -247,6 +248,7 @@ class Commands():
         _result = ""
         _result += "\n" + str(self.listSettingsCommands) + ": Lists settings currently used by program. These settings can also be found in the file named \".env\" with examples in the file \".env-example\"."
         _result += "\n" + str(self.listSoftDeletedCommands) + " [? simplified: bool]: Lists all soft deleted entities. Option for simplified, less verbose list."
+        _result += "\n" + str(self.refactorCommands) + ": Refactor old code/data (JSON-file storage only)."
 
         return _result
     

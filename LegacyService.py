@@ -99,12 +99,15 @@ class LegacyService():
             with open(self.getFilePath(item.id), "r") as file:
                 content = file.readlines()
                 
-                for line, i in enumerate(content):
+                for i, line in enumerate(content):
                     if(not re.search(self.lastFetchedIdRegex, line)):
                         continue
                     
-                    value = ""
-                    content[i] = ""
+                    value = re.search(self.stringValueRegex, line)[1]
+                    updatedLine = line
+                    updatedLine = updatedLine.replace("lastFetchedId", "lastFetchedIds")
+                    updatedLine = updatedLine.replace(f"\"{value}\"", f"[\"{value}\"]")
+                    content[i] = updatedLine
                     updatedContent = content
                     break
                     

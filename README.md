@@ -109,3 +109,5 @@ Program for queueing and playing videos from list or from sources like channels 
 - check on last 2,3,4? fetched streams in case of deletions? more common than expected
 - fetch videos and add in chronologic order, currently adding last video first
 - circumvent restrictions using VLC: https://www.electronicshub.org/bypass-youtube-age-restriction/#3_Using_VLC_Media_Player_on_a_Phone_or_Tablet
+- fetch youtube still slow, probably still loading all videos from library pytube
+- move getPageTitle from commands to shared

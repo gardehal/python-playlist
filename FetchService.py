@@ -55,7 +55,6 @@ class FetchService():
         if(_playlist == None):
             return 0
 
-        _datetimeStarted = datetime.now()
         _newStreams = []
         for _sourceId in _playlist.streamSourceIds:
             _source = self.streamSourceService.get(_sourceId)
@@ -80,10 +79,10 @@ class FetchService():
                 _fetchedStreams = self.fetchDirectory(_source, batchSize, _takeAfter, takeBefore, takeNewOnly)
 
             if(len(_fetchedStreams) > 0):
-                _source.lastSuccessfulFetched = _datetimeStarted
+                _source.lastSuccessfulFetched = datetime.now()
             
             _source.lastFetchedIds = _fetchedStreams[1]
-            _source.lastFetched = _datetimeStarted
+            _source.lastFetched = datetime.now()
             _updateSuccess = self.streamSourceService.update(_source)
             if(_updateSuccess):
                 _newStreams += _fetchedStreams[0]
@@ -109,7 +108,7 @@ class FetchService():
             takeNewOnly (bool): only take streams marked as new. Disables takeAfter and takeBefore-checks. To use takeAfter and/or takeBefore, set this to False
 
         Returns:
-            tuple[List[QueueStream], str]: A tuple of List of QueueStream, and the last YouTube ID fetched 
+            tuple[List[QueueStream], List[str]]: A tuple of List of QueueStream, and List of last YouTube IDs fetched
         """
         
         if(streamSource == None):
@@ -161,6 +160,10 @@ class FetchService():
                                            backgroundContent = streamSource.backgroundContent,
                                            added = datetime.now())
             _newStreams.append(_stream)
+            
+        if(len(_newStreams) == 0):
+            printS("No new videos detected.", color = BashColor.OKGREEN)
+            return _emptyReturn
             
         streamSource.lastFetchedIds.append(_lastStreamId)
         if(len(streamSource.lastFetchedIds) > batchSize):

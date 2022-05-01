@@ -2,11 +2,15 @@ import os
 import re
 from typing import List
 
+import mechanize
 from dotenv import load_dotenv
 from grdUtil.BashColor import BashColor
+from grdUtil.InputUtil import sanitize
 from grdUtil.PrintUtil import printS
 from grdUtil.StaticUtil import StaticUtil
+from pytube import YouTube
 
+from enums.StreamSourceType import StreamSourceType, StreamSourceTypeUtil
 from model.Playlist import Playlist
 from model.QueueStream import QueueStream
 from model.StreamSource import StreamSource
@@ -34,6 +38,31 @@ class SharedService():
         self.playlistService: PlaylistService = PlaylistService()
         self.queueStreamService: QueueStreamService = QueueStreamService()
         self.streamSourceService: StreamSourceService = StreamSourceService()
+
+    def getPageTitle(self, url: str) -> str:
+        """
+        Get page title from the URL url, using mechanize or PyTube.
+
+        Args:
+            url (str): URL to page to get title from
+
+        Returns:
+            str: Title of page
+        """
+        
+        isYouTubeChannel = "user" in url or "channel" in url  
+        if(StreamSourceTypeUtil.strToStreamSourceType(url) == StreamSourceType.YOUTUBE and not isYouTubeChannel):
+            printS("DEBUG: getPageTitle - Getting title from pytube.", color = BashColor.WARNING, doPrint = DEBUG)
+            yt = YouTube(url)
+            title = yt.title
+        else:
+            printS("DEBUG: getPageTitle - Getting title from mechanize.", color = BashColor.WARNING, doPrint = DEBUG)
+            br = mechanize.Browser()
+            br.open(url)
+            title = br.title()
+            br.close()
+
+        return sanitize(title).strip()
 
     def prune(self, playlistId: str, includeSoftDeleted: bool = False, permanentlyDelete: bool = False) -> dict[List[QueueStream], List[str]]:
         """

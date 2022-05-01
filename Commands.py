@@ -1,15 +1,10 @@
 import os
 import shutil
 
-import mechanize
 from dotenv import load_dotenv
 from grdUtil.BashColor import BashColor
-from grdUtil.InputUtil import sanitize
 from grdUtil.PrintUtil import printS
 from grdUtil.StaticUtil import StaticUtil
-from pytube import YouTube
-
-from enums.StreamSourceType import StreamSourceType, StreamSourceTypeUtil
 
 ENV_FILE_PATH = ".env"
 ENV_FILE_PATH_EXAMPLE = ".env-example"
@@ -71,33 +66,6 @@ class Commands():
         self.listSettingsCommands = ["settings", "secrets"]
         self.listSoftDeletedCommands = ["listsoftdeleted", "listdeleted", "lsd", "ld"]
         self.refactorCommands = ["refactor"]
-
-    def getPageTitle(self, url: str) -> str:
-        """
-        Get page title from the URL url, using mechanize or PyTube.
-
-        Args:
-            url (str): URL to page to get title from
-
-        Returns:
-            str: Title of page
-        """
-
-        _title = ""
-        
-        _isYouTubeChannel = "user" in url or "channel" in url  
-        if(StreamSourceTypeUtil.strToStreamSourceType(url) == StreamSourceType.YOUTUBE and not _isYouTubeChannel):
-            printS("DEBUG: getPageTitle - Getting title from pytube.", color = BashColor.WARNING, doPrint = DEBUG)
-            yt = YouTube(url)
-            title = yt.title
-        else:
-            printS("DEBUG: getPageTitle - Getting title from mechanize.", color = BashColor.WARNING, doPrint = DEBUG)
-            br = mechanize.Browser()
-            br.open(url)
-            title = br.title()
-            br.close()
-
-        return sanitize(title).strip()
     
     def getAllSettingsAsString(self) -> str:
         """

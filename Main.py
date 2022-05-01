@@ -64,9 +64,6 @@ class Main:
                     _input = extractArgs(argIndex, argV)
                     printS("Test", color = BashColor.OKBLUE)
                     
-                    # print(Main.legacyService.refactorCheckLastFetchedId(4))
-                    # print(Main.legacyService.refactorLastFetchedId())
-                    
                     quit()            
                     
                 elif(arg in Main.commands.editCommands):
@@ -358,7 +355,7 @@ class Main:
                         continue
 
                     if(_name == None and validators.url(_uri)):
-                        _name = Main.commands.getPageTitle(_uri)
+                        _name = Main.sharedService.getPageTitle(_uri)
                     if(_name == None):
                         _name = "New QueueStream"
                         printS("Could not automatically get the web name for this QueueStream, will be named \"" , _name, "\".", color = BashColor.WARNING)
@@ -447,7 +444,7 @@ class Main:
                         continue
 
                     if(_name == None):
-                        _name = Main.commands.getPageTitle(_uri)
+                        _name = Main.sharedService.getPageTitle(_uri)
                     if(_name == None):
                         _name = "New StreamSource"
                         printS("Could not automatically get the web name for this StreamSource, will be named \"" , _name, "\".", color = BashColor.WARNING)                  

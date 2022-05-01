@@ -164,7 +164,7 @@ class FetchService():
             
         streamSource.lastFetchedIds.append(_lastStreamId)
         if(len(streamSource.lastFetchedIds) > batchSize):
-            streamSource.lastFetchedIds.pop()
+            streamSource.lastFetchedIds.pop(0)
         
         return (_newStreams, streamSource.lastFetchedIds)
 

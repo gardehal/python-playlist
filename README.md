@@ -103,10 +103,9 @@ Program for queueing and playing videos from list or from sources like channels 
 - implement file/folder, Odysee, Rumble fetches
 - implement background content properly, should not wait for input, just play when previous stream finished (assume no ads/breaks/pauses, need playtime in model...)
 - option to download and watch (requires implement file/folder)
-- minor print issues and wording/use of IDs
+- minor print issues and wording/use of IDs. Some prints can be simplified due to context (e.g. "Added StreamSource "X"", "StreamSource" unnecessary)
 - tests for core functions like fetch and play?
 - sometimes add source fails due to webrequests/title?
-- check on last 2,3,4? fetched streams in case of deletions? more common than expected
 - fetch videos and add in chronologic order, currently adding last video first
 - circumvent restrictions using VLC: https://www.electronicshub.org/bypass-youtube-age-restriction/#3_Using_VLC_Media_Player_on_a_Phone_or_Tablet
 - fetch youtube still slow, probably still loading all videos from library pytube

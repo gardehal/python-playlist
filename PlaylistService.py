@@ -51,38 +51,38 @@ class PlaylistService(BaseService[T]):
             List[QueueStream]: QueueStreams added
         """
 
-        _playlist = self.get(playlistId)
-        if(_playlist == None):
+        playlist = self.get(playlistId)
+        if(playlist == None):
             return 0
 
-        _playlistStreamUris = []
-        _playlistStreamNames = []
-        if(not _playlist.allowDuplicates):
-            _playlistStreams = self.getStreamsByPlaylistId(_playlist.id)
-            _playlistStreamUris = [_.uri for _ in _playlistStreams]
-            _playlistStreamNames = [_.name for _ in _playlistStreams]
+        playlistStreamUris = []
+        playlistStreamNames = []
+        if(not playlist.allowDuplicates):
+            playlistStreams = self.getStreamsByPlaylistId(playlist.id)
+            playlistStreamUris = [_.uri for _ in playlistStreams]
+            playlistStreamNames = [_.name for _ in playlistStreams]
             
-        _added = []
+        added = []
         for stream in streams:            
-            if(not _playlist.allowDuplicates and (stream.uri in _playlistStreamUris or stream.name in _playlistStreamNames)):
-                printS("\"", stream.name, "\" / ", stream.uri, " already exists in Playlist \"", _playlist.name, "\" and allow duplicates for this Playlist is disabled.", color = BashColor.WARNING)
+            if(not playlist.allowDuplicates and (stream.uri in playlistStreamUris or stream.name in playlistStreamNames)):
+                printS("\"", stream.name, "\" / ", stream.uri, " already exists in Playlist \"", playlist.name, "\" and allow duplicates for this Playlist is disabled.", color = BashColor.WARNING)
                 continue
 
-            _addResult = self.queueStreamService.add(stream)            
-            if(_addResult == None):
+            addResult = self.queueStreamService.add(stream)            
+            if(addResult == None):
                 printS("\"", stream.name, "\" could not be added.", color = BashColor.FAIL)
                 continue
 
-            _playlist.streamIds.append(stream.id)
-            _added.append(_addResult)
+            playlist.streamIds.append(stream.id)
+            added.append(addResult)
 
-        _playlist.updated = datetime.now()
-        _updateResult = self.update(_playlist)
-        if(len(_added) > 0 and _updateResult != None):
-            return _added
+        playlist.updated = datetime.now()
+        updateResult = self.update(playlist)
+        if(len(added) > 0 and updateResult != None):
+            return added
         else:
             # Delete added QueueStreams if update of Playlist failed
-            for stream in _added:
+            for stream in added:
                 self.queueStreamService.remove(stream.id, includeSoftDeleted = True)
             
             return []
@@ -99,24 +99,24 @@ class PlaylistService(BaseService[T]):
             List[QueueStream]: QueueStream deleted
         """
 
-        _return = []
-        _playlist = self.get(playlistId)
-        if(_playlist == None):
-            return _return
+        result = []
+        playlist = self.get(playlistId)
+        if(playlist == None):
+            return result
 
         for id in streamIds:
-            _stream = self.queueStreamService.get(id)
-            if(_stream == None):
+            stream = self.queueStreamService.get(id)
+            if(stream == None):
                 continue
             
-            _removeResult = self.queueStreamService.delete(id)
-            if(_removeResult != None):
-                _playlist.streamIds.remove(_stream.id)
-                _return.append(_stream)
+            removeResult = self.queueStreamService.delete(id)
+            if(removeResult != None):
+                playlist.streamIds.remove(stream.id)
+                result.append(stream)
 
-        _updateResult = self.update(_playlist)
-        if(_updateResult):
-            return _return
+        updateResult = self.update(playlist)
+        if(updateResult):
+            return result
         else:
             return []
         
@@ -132,24 +132,24 @@ class PlaylistService(BaseService[T]):
             List[QueueStream]: QueueStream restored
         """
 
-        _return = []
-        _playlist = self.get(playlistId, includeSoftDeleted = True)
-        if(_playlist == None):
-            return _return
+        result = []
+        playlist = self.get(playlistId, includeSoftDeleted = True)
+        if(playlist == None):
+            return result
 
         for id in streamIds:
-            _stream = self.queueStreamService.get(id, includeSoftDeleted = True)
-            if(_stream == None):
+            stream = self.queueStreamService.get(id, includeSoftDeleted = True)
+            if(stream == None):
                 continue
             
-            _result = self.queueStreamService.restore(id)
-            if(_result != None):
-                _playlist.streamIds.append(_stream.id)
-                _return.append(_stream)
+            result = self.queueStreamService.restore(id)
+            if(result != None):
+                playlist.streamIds.append(stream.id)
+                result.append(stream)
 
-        _updateResult = self.update(_playlist)
-        if(_updateResult):
-            return _return
+        updateResult = self.update(playlist)
+        if(updateResult):
+            return result
         else:
             return []
 
@@ -166,28 +166,28 @@ class PlaylistService(BaseService[T]):
             bool: success = True
         """
 
-        _playlist = self.get(playlistId)
-        if(_playlist == None):
+        playlist = self.get(playlistId)
+        if(playlist == None):
             return 0
 
-        _listLength = len(_playlist.streamIds)
+        listLength = len(playlist.streamIds)
         if(fromIndex == toIndex):
             printS("DEBUG: moveStream - Index from and to were the same. No update needed.", color=BashColor.WARNING, doPrint = DEBUG)
             return True
-        if(fromIndex < 0 or fromIndex >= _listLength):
+        if(fromIndex < 0 or fromIndex >= listLength):
             printS("Index to move from (", fromIndex, ") was out or range.", color=BashColor.WARNING)
             return False
-        if(toIndex < 0 or toIndex >= _listLength):
+        if(toIndex < 0 or toIndex >= listLength):
             printS("Index to move to (", toIndex, ") was out or range.", color=BashColor.WARNING)
             return False
 
         ## TODO check before/after and how stuff moves?
-        entry = _playlist.streamIds[fromIndex]
-        _playlist.streamIds.pop(fromIndex)
-        _playlist.streamIds.insert(toIndex, entry)
+        entry = playlist.streamIds[fromIndex]
+        playlist.streamIds.pop(fromIndex)
+        playlist.streamIds.insert(toIndex, entry)
 
-        _playlist.updated = datetime.now()
-        return self.update(_playlist)
+        playlist.updated = datetime.now()
+        return self.update(playlist)
     
     def addStreamSources(self, playlistId: str, streamSources: List[StreamSource]) -> List[StreamSource]:
         """
@@ -201,38 +201,38 @@ class PlaylistService(BaseService[T]):
             List[StreamSource]: StreamSources added
         """
 
-        _playlist = self.get(playlistId)
-        if(_playlist == None):
+        playlist = self.get(playlistId)
+        if(playlist == None):
             return 0
 
-        _playlistStreamSourceUris = []
-        _playlistStreamSourceNames = []
-        if(not _playlist.allowDuplicates):
-            _playlistStreams = self.getSourcesByPlaylistId(_playlist.id)
-            _playlistStreamSourceUris = [_.uri for _ in _playlistStreams]
-            _playlistStreamSourceNames = [_.name for _ in _playlistStreams]
+        playlistStreamSourceUris = []
+        playlistStreamSourceNames = []
+        if(not playlist.allowDuplicates):
+            playlistStreams = self.getSourcesByPlaylistId(playlist.id)
+            playlistStreamSourceUris = [_.uri for _ in playlistStreams]
+            playlistStreamSourceNames = [_.name for _ in playlistStreams]
             
-        _added = []
+        added = []
         for source in streamSources:
-            if(not _playlist.allowDuplicates and (source.uri in _playlistStreamSourceUris or source.name in _playlistStreamSourceNames)):
-                printS("\"", source.name, "\" / ", source.uri, " already exists in Playlist \"", _playlist.name, "\" and allow duplicates for this Playlist is disabled.", color = BashColor.WARNING)
+            if(not playlist.allowDuplicates and (source.uri in playlistStreamSourceUris or source.name in playlistStreamSourceNames)):
+                printS("\"", source.name, "\" / ", source.uri, " already exists in Playlist \"", playlist.name, "\" and allow duplicates for this Playlist is disabled.", color = BashColor.WARNING)
                 continue
 
-            _addResult = self.streamSourceService.add(source)            
-            if(_addResult == None):
+            addResult = self.streamSourceService.add(source)            
+            if(addResult == None):
                 printS("\"", source.name, "\" could not be added.", color = BashColor.FAIL)
                 continue
 
-            _playlist.streamSourceIds.append(source.id)
-            _added.append(_addResult)
+            playlist.streamSourceIds.append(source.id)
+            added.append(addResult)
 
-        _playlist.updated = datetime.now()
-        _updateResult = self.update(_playlist)
-        if(len(_added) > 0 and _updateResult != None):
-            return _added
+        playlist.updated = datetime.now()
+        updateResult = self.update(playlist)
+        if(len(added) > 0 and updateResult != None):
+            return added
         else:
             # Delete added StreamSources if update of Playlist failed
-            for source in _added:
+            for source in added:
                 self.streamSourceService.remove(source.id, includeSoftDeleted = True)
             return []
     
@@ -248,24 +248,24 @@ class PlaylistService(BaseService[T]):
             List[StreamSource]: StreamSources deleted
         """
 
-        _return = []
-        _playlist = self.get(playlistId)
-        if(_playlist == None):
-            return _return
+        result = []
+        playlist = self.get(playlistId)
+        if(playlist == None):
+            return result
 
         for id in streamSourceIds:
-            _source = self.streamSourceService.get(id)
-            if(_source == None):
+            source = self.streamSourceService.get(id)
+            if(source == None):
                 continue
             
-            _removeResult = self.streamSourceService.delete(id)
-            if(_removeResult != None):
-                _playlist.streamSourceIds.remove(_source.id)
-                _return.append(_source)
+            removeResult = self.streamSourceService.delete(id)
+            if(removeResult != None):
+                playlist.streamSourceIds.remove(source.id)
+                result.append(source)
 
-        _updateResult = self.update(_playlist)
-        if(_updateResult):
-            return _return
+        updateResult = self.update(playlist)
+        if(updateResult):
+            return result
         else:
             return []
         
@@ -281,24 +281,24 @@ class PlaylistService(BaseService[T]):
             List[StreamSource]: StreamSource restored
         """
 
-        _return = []
-        _playlist = self.get(playlistId, includeSoftDeleted = True)
-        if(_playlist == None):
-            return _return
+        result = []
+        playlist = self.get(playlistId, includeSoftDeleted = True)
+        if(playlist == None):
+            return result
 
         for id in streamSourceIds:
-            _source = self.streamSourceService.get(id, includeSoftDeleted = True)
-            if(_source == None):
+            source = self.streamSourceService.get(id, includeSoftDeleted = True)
+            if(source == None):
                 continue
             
-            _result = self.streamSourceService.restore(id)
-            if(_result != None):
-                _playlist.streamSourceIds.append(_source.id)
-                _return.append(_source)
+            result = self.streamSourceService.restore(id)
+            if(result != None):
+                playlist.streamSourceIds.append(source.id)
+                result.append(source)
 
-        _updateResult = self.update(_playlist)
-        if(_updateResult):
-            return _return
+        updateResult = self.update(playlist)
+        if(updateResult):
+            return result
         else:
             return []
 
@@ -314,20 +314,20 @@ class PlaylistService(BaseService[T]):
             List[QueueStream]: QueueStreams if any, else empty list
         """
 
-        _playlist = self.get(playlistId, includeSoftDeleted)
-        if(_playlist == None):
+        playlist = self.get(playlistId, includeSoftDeleted)
+        if(playlist == None):
             return 0
 
-        _playlistStreams = []
-        for id in _playlist.streamIds:
-            _stream = self.queueStreamService.get(id, includeSoftDeleted)
-            if(_stream == None):
-                printS("A QueueStream with ID: ", id, " was listed in Playlist \"", _playlist.name, "\", but was not found in the database. Consider removing it by running the purge command.", color = BashColor.WARNING)
+        playlistStreams = []
+        for id in playlist.streamIds:
+            stream = self.queueStreamService.get(id, includeSoftDeleted)
+            if(stream == None):
+                printS("A QueueStream with ID: ", id, " was listed in Playlist \"", playlist.name, "\", but was not found in the database. Consider removing it by running the purge command.", color = BashColor.WARNING)
                 continue
             
-            _playlistStreams.append(_stream)
+            playlistStreams.append(stream)
 
-        return _playlistStreams
+        return playlistStreams
     
     def getUnwatchedStreamsByPlaylistId(self, playlistId: str, includeSoftDeleted: bool = False) -> List[QueueStream]:
         """
@@ -341,21 +341,21 @@ class PlaylistService(BaseService[T]):
             List[QueueStream]: QueueStreams if any, else empty list
         """
 
-        _playlist = self.get(playlistId, includeSoftDeleted)
-        if(_playlist == None):
+        playlist = self.get(playlistId, includeSoftDeleted)
+        if(playlist == None):
             return 0
 
-        _playlistStreams = []
-        for id in _playlist.streamIds:
-            _stream = self.queueStreamService.get(id, includeSoftDeleted)
-            if(_stream == None):
-                printS("A QueueStream with ID: ", id, " was listed in Playlist \"", _playlist.name, "\", but was not found in the database. Consider removing it by running the purge command.", color = BashColor.WARNING)
+        playlistStreams = []
+        for id in playlist.streamIds:
+            stream = self.queueStreamService.get(id, includeSoftDeleted)
+            if(stream == None):
+                printS("A QueueStream with ID: ", id, " was listed in Playlist \"", playlist.name, "\", but was not found in the database. Consider removing it by running the purge command.", color = BashColor.WARNING)
                 continue
             
-            if(_stream.watched == None):
-                _playlistStreams.append(_stream)
+            if(stream.watched == None):
+                playlistStreams.append(stream)
 
-        return _playlistStreams    
+        return playlistStreams    
     
     def getSourcesByPlaylistId(self, playlistId: str, getFetchEnabledOnly: bool = False, includeSoftDeleted: bool = False) -> List[StreamSource]:
         """
@@ -369,23 +369,23 @@ class PlaylistService(BaseService[T]):
             List[StreamSource]: StreamSources if any, else empty list
         """
 
-        _playlist = self.get(playlistId, includeSoftDeleted)
-        if(_playlist == None):
+        playlist = self.get(playlistId, includeSoftDeleted)
+        if(playlist == None):
             return 0
 
-        _playlistSources = []
-        for id in _playlist.streamSourceIds:
-            _source = self.streamSourceService.get(id, includeSoftDeleted)
-            if(_source == None):
-                printS("A StreamSource with ID: ", id, " was listed in Playlist \"", _playlist.name, "\", but was not found in the database. Consider removing it by running the purge command.", color = BashColor.WARNING)
+        playlistSources = []
+        for id in playlist.streamSourceIds:
+            source = self.streamSourceService.get(id, includeSoftDeleted)
+            if(source == None):
+                printS("A StreamSource with ID: ", id, " was listed in Playlist \"", playlist.name, "\", but was not found in the database. Consider removing it by running the purge command.", color = BashColor.WARNING)
                 continue
             
-            if(getFetchEnabledOnly and not _source.enableFetch):
+            if(getFetchEnabledOnly and not source.enableFetch):
                 continue
                 
-            _playlistSources.append(_source)
+            playlistSources.append(source)
 
-        return _playlistSources
+        return playlistSources
 
     def addYouTubePlaylist(self, playlist: Playlist, url: str) -> T:
         """
@@ -420,17 +420,17 @@ class PlaylistService(BaseService[T]):
         if(playlist.description == None):
             playlist.description = f"Playlist created from YouTube playlist: {url}"
         
-        _streamsToAdd = []
+        streamsToAdd = []
         for videoUrl in ytPlaylist.video_urls:
-            _video = pytube.YouTube(videoUrl)
-            _stream = QueueStream(name = sanitize(_video.title), uri = _video.watch_url)
-            _streamsToAdd.append(_stream)
+            video = pytube.YouTube(videoUrl)
+            stream = QueueStream(name = sanitize(video.title), uri = video.video_url)
+            streamsToAdd.append(stream)
         
-        _addPlaylistResult = self.add(playlist)
-        if(_addPlaylistResult != None):
-            _addStreamsResult = self.addStreams(_addPlaylistResult.id, _streamsToAdd)
-            if(len(_addStreamsResult) > 0):
-                return _addPlaylistResult
+        addPlaylistResult = self.add(playlist)
+        if(addPlaylistResult != None):
+            addStreamsResult = self.addStreams(addPlaylistResult.id, streamsToAdd)
+            if(len(addStreamsResult) > 0):
+                return addPlaylistResult
             
         return None
     
@@ -448,56 +448,56 @@ class PlaylistService(BaseService[T]):
             int: number of playlists printed for
         """
         
-        _result = 0
-        for _id in playlistIds:
-            _playlist = self.get(_id)
+        result = 0
+        for id in playlistIds:
+            playlist = self.get(id)
               
-            _playlistDetailsString = _playlist.detailsString(includeUri, includeId, includeDatetime, includeListCount = False)
+            playlistDetailsString = playlist.detailsString(includeUri, includeId, includeDatetime, includeListCount = False)
             if(includeListCount):
-                _unwatchedStreams = self.getUnwatchedStreamsByPlaylistId(_playlist.id)
-                _fetchedSources = self.getSourcesByPlaylistId(_playlist.id, getFetchEnabledOnly = True)
-                _sourcesListString = f", unwatched streams: {len(_unwatchedStreams)}/{len(_playlist.streamIds)}"
-                _streamsListString = f", fetched sources: {len(_fetchedSources)}/{len(_playlist.streamSourceIds)}"
-                _playlistDetailsString += _sourcesListString + _streamsListString
+                unwatchedStreams = self.getUnwatchedStreamsByPlaylistId(playlist.id)
+                fetchedSources = self.getSourcesByPlaylistId(playlist.id, getFetchEnabledOnly = True)
+                sourcesListString = f", unwatched streams: {len(unwatchedStreams)}/{len(playlist.streamIds)}"
+                streamsListString = f", fetched sources: {len(fetchedSources)}/{len(playlist.streamSourceIds)}"
+                playlistDetailsString += sourcesListString + streamsListString
 
-            printS(_playlistDetailsString)
+            printS(playlistDetailsString)
             
             printS("\tStreamSources", color = BashColor.BOLD)
-            if(len(_playlist.streamSourceIds) == 0):
+            if(len(playlist.streamSourceIds) == 0):
                 printS("\tNo sources added yet.")
             
-            for i, _sourceId in enumerate(_playlist.streamSourceIds):
-                _source = self.streamSourceService.get(_sourceId)
-                if(_source == None):
-                    printS("\tStreamSource not found (ID: \"", _sourceId, "\").", color = BashColor.FAIL)
+            for i, sourceId in enumerate(playlist.streamSourceIds):
+                source = self.streamSourceService.get(sourceId)
+                if(source == None):
+                    printS("\tStreamSource not found (ID: \"", sourceId, "\").", color = BashColor.FAIL)
                     continue
                 
-                _color = "WHITE" if i % 2 == 0 else "GREYBG"
-                printS("\t", str(i), " - ", _source.detailsString(includeUri, includeId, includeDatetime, includeListCount), color = BashColor[_color])
+                color = "WHITE" if i % 2 == 0 else "GREYBG"
+                printS("\t", str(i), " - ", source.detailsString(includeUri, includeId, includeDatetime, includeListCount), color = BashColor[color])
             
             print("\n")
             printS("\tQueueStreams", color = BashColor.BOLD)
-            if(len(_playlist.streamIds) == 0):
+            if(len(playlist.streamIds) == 0):
                 printS("\tNo streams added yet.")
             
-            for i, _streamId in enumerate(_playlist.streamIds):
-                _stream = self.queueStreamService.get(_streamId)
-                if(_stream == None):
-                    printS("\tQueueStream not found (ID: \"", _streamId, "\").", color = BashColor.FAIL)
+            for i, streamId in enumerate(playlist.streamIds):
+                stream = self.queueStreamService.get(streamId)
+                if(stream == None):
+                    printS("\tQueueStream not found (ID: \"", streamId, "\").", color = BashColor.FAIL)
                     continue
                 
-                _color = "WHITE" if i % 2 == 0 else "GREYBG"
-                _sourceString = ""
-                if(includeSource and _stream.streamSourceId != None):
-                    _streamSource = self.streamSourceService.get(_stream.streamSourceId)
+                color = "WHITE" if i % 2 == 0 else "GREYBG"
+                sourceString = ""
+                if(includeSource and stream.streamSourceId != None):
+                    streamSource = self.streamSourceService.get(stream.streamSourceId)
                     
-                    if(_streamSource == None):
-                        printS("\tStreamSource not found (ID: \"", _streamId, "\").", color = BashColor.FAIL)
+                    if(streamSource == None):
+                        printS("\tStreamSource not found (ID: \"", streamId, "\").", color = BashColor.FAIL)
                         continue
                     
-                    _sourceString = ", StreamSource: \"" + _streamSource.name + "\"" 
-                printS("\t", str(i), " - ", _stream.detailsString(includeUri, includeId, includeDatetime, includeListCount), _sourceString, color = BashColor[_color])
+                    sourceString = ", StreamSource: \"" + streamSource.name + "\"" 
+                printS("\t", str(i), " - ", stream.detailsString(includeUri, includeId, includeDatetime, includeListCount), sourceString, color = BashColor[color])
                 
-            _result += 1
+            result += 1
                 
-        return _result
+        return result

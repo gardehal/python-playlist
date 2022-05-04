@@ -77,59 +77,59 @@ class SharedService():
             dict[List[QueueStream], List[str]]: dict with two lists, for StreamSources removed from database, StreamSourceId removed from playlist
         """
         
-        _deletedDataEmpty = {"QueueStream": [], "QueueStreamId": []}
-        _deletedData = _deletedDataEmpty
+        deletedDataEmpty = {"QueueStream": [], "QueueStreamId": []}
+        deletedData = deletedDataEmpty
 
-        _playlist = self.playlistService.get(playlistId, includeSoftDeleted)
-        if(_playlist == None or _playlist.playWatchedStreams):
-            return _deletedDataEmpty
+        playlist = self.playlistService.get(playlistId, includeSoftDeleted)
+        if(playlist == None or playlist.playWatchedStreams):
+            return deletedDataEmpty
         
-        for _id in _playlist.streamIds:
-            _stream = self.queueStreamService.get(_id, includeSoftDeleted)
-            if(_stream != None and _stream.watched != None):
-                _deletedData["QueueStream"].append(_stream)
+        for id in playlist.streamIds:
+            stream = self.queueStreamService.get(id, includeSoftDeleted)
+            if(stream != None and stream.watched != None):
+                deletedData["QueueStream"].append(stream)
             
         # Will not do anything if streams already deleted
-        for _stream in _deletedData["QueueStream"]:
-            _deletedData["QueueStreamId"].append(_stream.id)
+        for stream in deletedData["QueueStream"]:
+            deletedData["QueueStreamId"].append(stream.id)
             
         printS("\nPrune summary, the following data will be", (" PERMANENTLY REMOVED" if permanentlyDelete else " DELETED"), ":", color = BashColor.WARNING)
             
         printS("\nQueueStream(s)", color = BashColor.BOLD)
-        printS("No QueueStreams will be removed", doPrint = len(_deletedData["QueueStream"]) == 0)
-        for _stream in _deletedData["QueueStream"]:
-            print(_stream.id + " - " + _stream.name)
+        printS("No QueueStreams will be removed", doPrint = len(deletedData["QueueStream"]) == 0)
+        for stream in deletedData["QueueStream"]:
+            print(stream.id + " - " + stream.name)
             
         printS("\nQueueStream ID(s)", color = BashColor.BOLD)
-        printS("No IDs will be removed", doPrint = len(_deletedData["QueueStreamId"]) == 0)
-        for _id in _deletedData["QueueStreamId"]:
-            print(_id)
+        printS("No IDs will be removed", doPrint = len(deletedData["QueueStreamId"]) == 0)
+        for id in deletedData["QueueStreamId"]:
+            print(id)
             
-        printS("\nRemoving ", len(_deletedData["QueueStream"]), " watched QueueStream(s) and ", len(_deletedData["QueueStreamId"]), " ID(s) in Playlist \"", _playlist.name, "\".")
+        printS("\nRemoving ", len(deletedData["QueueStream"]), " watched QueueStream(s) and ", len(deletedData["QueueStreamId"]), " ID(s) in Playlist \"", playlist.name, "\".")
         printS("Do you want to", (" PERMANENTLY REMOVE" if permanentlyDelete else " DELETE"), " this data?", color = BashColor.WARNING)
-        _input = input("(y/n):")
-        if(_input not in StaticUtil.affirmative):
+        inputArgs = input("(y/n):")
+        if(inputArgs not in StaticUtil.affirmative):
             printS("Prune aborted by user.", color = BashColor.WARNING)
-            return _deletedDataEmpty
+            return deletedDataEmpty
         
-        if(len(_deletedData["QueueStream"]) == 0 and len(_deletedData["QueueStreamId"]) == 0):
+        if(len(deletedData["QueueStream"]) == 0 and len(deletedData["QueueStreamId"]) == 0):
             printS("No data was available.", color = BashColor.WARNING)
-            return _deletedDataEmpty
+            return deletedDataEmpty
         
         printS("DEBUG: prune - remove streams", color = BashColor.WARNING, doPrint = DEBUG)
-        for _stream in _deletedData["QueueStream"]:
+        for stream in deletedData["QueueStream"]:
             if(permanentlyDelete):
-                self.queueStreamService.remove(_stream.id, includeSoftDeleted)
+                self.queueStreamService.remove(stream.id, includeSoftDeleted)
             else:
-                self.queueStreamService.delete(_stream.id)
+                self.queueStreamService.delete(stream.id)
                 
-            _playlist.streamIds.remove(_stream.id)
+            playlist.streamIds.remove(stream.id)
         
-        _updateResult = self.playlistService.update(_playlist)
-        if(_updateResult != None):
-            return _deletedData
+        updateResult = self.playlistService.update(playlist)
+        if(updateResult != None):
+            return deletedData
         else:
-            return _deletedDataEmpty
+            return deletedDataEmpty
         
     def purge(self, includeSoftDeleted: bool = False, permanentlyDelete: bool = False) -> dict[List[QueueStream], List[StreamSource], List[str], List[str]]:
         """
@@ -143,102 +143,102 @@ class SharedService():
             dict[List[QueueStream], List[StreamSource], List[str], List[str]]: dict with four lists, one for StreamSources removed, QueueStreams removed, QueueStreamId removed from playlists, and StreamSourceId removed
         """
         
-        _deletedDataEmpty = {"QueueStream": [], "StreamSource": [], "QueueStreamId": [], "StreamSourceId": []}
-        _deletedData = _deletedDataEmpty
-        _playlists = self.playlistService.getAll(includeSoftDeleted)
-        _streamsIds = self.queueStreamService.getAllIds(includeSoftDeleted)
-        _sourcesIds = self.streamSourceService.getAllIds(includeSoftDeleted)
+        deletedDataEmpty = {"QueueStream": [], "StreamSource": [], "QueueStreamId": [], "StreamSourceId": []}
+        deletedData = deletedDataEmpty
+        playlists = self.playlistService.getAll(includeSoftDeleted)
+        streamsIds = self.queueStreamService.getAllIds(includeSoftDeleted)
+        sourcesIds = self.streamSourceService.getAllIds(includeSoftDeleted)
         
-        _playlistStreams = []
-        _playlistSources = []
-        _updatedPlaylists = []
-        for _playlist in _playlists:
-            _playlistStreams.extend(_playlist.streamIds)
-            _playlistSources.extend(_playlist.streamSourceIds)
+        playlistStreams = []
+        playlistSources = []
+        updatedPlaylists = []
+        for playlist in playlists:
+            playlistStreams.extend(playlist.streamIds)
+            playlistSources.extend(playlist.streamSourceIds)
         
-        for _id in _streamsIds:
-            if(not _id in _playlistStreams):
-                _entity = self.queueStreamService.get(_id, includeSoftDeleted)
-                _deletedData["QueueStream"].append(_entity)
-        for _id in _sourcesIds:
-            if(not _id in _playlistSources):
-                _entity = self.streamSourceService.get(_id, includeSoftDeleted)
-                _deletedData["StreamSource"].append(_entity)
+        for id in streamsIds:
+            if(not id in playlistStreams):
+                entity = self.queueStreamService.get(id, includeSoftDeleted)
+                deletedData["QueueStream"].append(entity)
+        for id in sourcesIds:
+            if(not id in playlistSources):
+                entity = self.streamSourceService.get(id, includeSoftDeleted)
+                deletedData["StreamSource"].append(entity)
                 
-        for _playlist in _playlists:
-            _streamIdsToRemove = []
-            _sourceIdsToRemove = []
+        for playlist in playlists:
+            streamIdsToRemove = []
+            sourceIdsToRemove = []
             
-            for _id in _playlist.streamIds:
-                _stream = self.queueStreamService.get(_id, includeSoftDeleted)
-                if(_stream == None):
-                    _streamIdsToRemove.append(_id)
+            for id in playlist.streamIds:
+                stream = self.queueStreamService.get(id, includeSoftDeleted)
+                if(stream == None):
+                    streamIdsToRemove.append(id)
                     
-            for _id in _playlist.streamSourceIds:
-                _source = self.streamSourceService.get(_id, includeSoftDeleted)
-                if(_source == None):
-                    _sourceIdsToRemove.append(_id)
+            for id in playlist.streamSourceIds:
+                source = self.streamSourceService.get(id, includeSoftDeleted)
+                if(source == None):
+                    sourceIdsToRemove.append(id)
                     
-            if(len(_streamIdsToRemove) > 0 or len(_sourceIdsToRemove) > 0):
-                for _id in _streamIdsToRemove:
-                    _playlist.streamIds.remove(_id)
-                for _id in _sourceIdsToRemove:
-                    _playlist.streamSourceIds.remove(_id)
+            if(len(streamIdsToRemove) > 0 or len(sourceIdsToRemove) > 0):
+                for id in streamIdsToRemove:
+                    playlist.streamIds.remove(id)
+                for id in sourceIdsToRemove:
+                    playlist.streamSourceIds.remove(id)
                 
-                _streamIdsToRemove.extend(_deletedData["QueueStreamId"])
-                _sourceIdsToRemove.extend(_deletedData["StreamSourceId"])
-                _updatedPlaylists.append(_playlist)
+                streamIdsToRemove.extend(deletedData["QueueStreamId"])
+                sourceIdsToRemove.extend(deletedData["StreamSourceId"])
+                updatedPlaylists.append(playlist)
         
         printS("\nPurge summary, the following data will be", (" PERMANENTLY REMOVED" if permanentlyDelete else " DELETED"), ":", color = BashColor.WARNING)
         
         printS("\nQueueStream(s)", color = BashColor.BOLD)
-        printS("No QueueStream(s) will be", (" permanently" if permanentlyDelete else ""), " removed", doPrint = len(_deletedData["QueueStream"]) == 0)
-        for _ in _deletedData["QueueStream"]:
+        printS("No QueueStream(s) will be", (" permanently" if permanentlyDelete else ""), " removed", doPrint = len(deletedData["QueueStream"]) == 0)
+        for _ in deletedData["QueueStream"]:
             print(_.id + " - " + _.name)
             
         printS("\nStreamSource(s)", color = BashColor.BOLD)
-        printS("No StreamSource(s) will be removed", doPrint = len(_deletedData["StreamSource"]) == 0)
-        for _ in _deletedData["StreamSource"]:
+        printS("No StreamSource(s) will be removed", doPrint = len(deletedData["StreamSource"]) == 0)
+        for _ in deletedData["StreamSource"]:
             print(_.id + " - " + _.name)
             
         printS("\nDangling QueueStream ID(s)", color = BashColor.BOLD)
-        printS("No ID(s) will be removed", doPrint = len(_deletedData["QueueStreamId"]) == 0)
-        for _ in _deletedData["QueueStreamId"]:
+        printS("No ID(s) will be removed", doPrint = len(deletedData["QueueStreamId"]) == 0)
+        for _ in deletedData["QueueStreamId"]:
             print(_.id + " - " + _.name)
             
         printS("\nDangling StreamSource ID(s)", color = BashColor.BOLD)
-        printS("No ID(s) will be removed", doPrint = len(_deletedData["StreamSourceId"]) == 0)
-        for _ in _deletedData["StreamSourceId"]:
+        printS("No ID(s) will be removed", doPrint = len(deletedData["StreamSourceId"]) == 0)
+        for _ in deletedData["StreamSourceId"]:
             print(_.id + " - " + _.name)
         
-        printS("\nRemoving ", len(_deletedData["QueueStream"]), " unlinked QueueStream(s), ", len(_deletedData["StreamSource"]), " unlinked StreamSource(s).")
-        printS("Removing ", len(_deletedData["QueueStreamId"]), " dangling QueueStream ID(s), ", len(_deletedData["StreamSourceId"]), " dangling StreamSource ID(s).")
+        printS("\nRemoving ", len(deletedData["QueueStream"]), " unlinked QueueStream(s), ", len(deletedData["StreamSource"]), " unlinked StreamSource(s).")
+        printS("Removing ", len(deletedData["QueueStreamId"]), " dangling QueueStream ID(s), ", len(deletedData["StreamSourceId"]), " dangling StreamSource ID(s).")
         printS("Do you want to", (" PERMANENTLY REMOVE" if permanentlyDelete else " DELETE"), " this data?", color = BashColor.WARNING)
-        _input = input("(y/n):")
-        if(_input not in StaticUtil.affirmative):
+        inputArgs = input("(y/n):")
+        if(inputArgs not in StaticUtil.affirmative):
             printS("Purge aborted by user.", color = BashColor.WARNING)
-            return _deletedDataEmpty
+            return deletedDataEmpty
             
-        if(len(_deletedData["QueueStream"]) == 0 and len(_deletedData["StreamSource"]) == 0 and len(_deletedData["QueueStreamId"]) == 0 and len(_deletedData["StreamSourceId"]) == 0):
+        if(len(deletedData["QueueStream"]) == 0 and len(deletedData["StreamSource"]) == 0 and len(deletedData["QueueStreamId"]) == 0 and len(deletedData["StreamSourceId"]) == 0):
             printS("No data was available.", color = BashColor.WARNING)
-            return _deletedDataEmpty
+            return deletedDataEmpty
             
-        for _ in _deletedData["QueueStream"]:
+        for _ in deletedData["QueueStream"]:
             if(permanentlyDelete):
                 self.queueStreamService.remove(_.id, includeSoftDeleted)
             else:
                 self.queueStreamService.delete(_.id)
                 
-        for _ in _deletedData["StreamSource"]:
+        for _ in deletedData["StreamSource"]:
             if(permanentlyDelete):
                 self.streamSourceService.remove(_.id, includeSoftDeleted)
             else:
                 self.streamSourceService.delete(_.id)
         
-        for _playlist in _updatedPlaylists:
-            self.playlistService.update(_playlist)
+        for playlist in updatedPlaylists:
+            self.playlistService.update(playlist)
             
-        return _deletedData
+        return deletedData
     
     def search(self, searchTerm: str, includeSoftDeleted: bool = False) -> dict[List[QueueStream], List[StreamSource], List[Playlist]]:
         """
@@ -252,27 +252,27 @@ class SharedService():
             dict[List[QueueStream], List[StreamSource], List[Playlist]]: A dict of lists with entities that matched the searchTerm
         """
         
-        _dataEmpty = {"QueueStream": [], "StreamSource": [], "Playlist": []}
-        _data = _dataEmpty
+        dataEmpty = {"QueueStream": [], "StreamSource": [], "Playlist": []}
+        data = dataEmpty
         
-        _queueStreams = self.queueStreamService.getAll()
-        _streamSources = self.streamSourceService.getAll()
-        _playlists = self.playlistService.getAll()
+        queueStreams = self.queueStreamService.getAll()
+        streamSources = self.streamSourceService.getAll()
+        playlists = self.playlistService.getAll()
         
-        for _entity in _queueStreams:
-            if(self.searchFields(searchTerm, _entity.name, _entity.uri) > 0):
-                _data["QueueStream"].append(_entity)
-        for _entity in _streamSources:
-            if(self.searchFields(searchTerm, _entity.name, _entity.uri) > 0):
-                _data["StreamSource"].append(_entity)
-        for _entity in _playlists:
-            if(self.searchFields(searchTerm, _entity.name) > 0):
-                _data["Playlist"].append(_entity)
+        for entity in queueStreams:
+            if(self.searchFields(searchTerm, entity.name, entity.uri) > 0):
+                data["QueueStream"].append(entity)
+        for entity in streamSources:
+            if(self.searchFields(searchTerm, entity.name, entity.uri) > 0):
+                data["StreamSource"].append(entity)
+        for entity in playlists:
+            if(self.searchFields(searchTerm, entity.name) > 0):
+                data["Playlist"].append(entity)
         
-        _found = len(_data["QueueStream"]) > 0 or len(_data["StreamSource"]) > 0 or len(_data["Playlist"]) > 0
-        printS("DEBUG: search - no results", color = BashColor.WARNING, doPrint = DEBUG and not _found)
+        found = len(data["QueueStream"]) > 0 or len(data["StreamSource"]) > 0 or len(data["Playlist"]) > 0
+        printS("DEBUG: search - no results", color = BashColor.WARNING, doPrint = DEBUG and not found)
         
-        return _data 
+        return data 
     
     def searchFields(self, searchTerm: str, *fields) -> int:
         """
@@ -300,21 +300,21 @@ class SharedService():
             dict[List[QueueStream], List[StreamSource], List[Playlist]]: A dict of lists with entities that matched the searchTerm
         """
         
-        _dataEmpty = {"QueueStream": [], "StreamSource": [], "Playlist": []}
-        _data = _dataEmpty
+        dataEmpty = {"QueueStream": [], "StreamSource": [], "Playlist": []}
+        data = dataEmpty
         
-        _queueStreams = self.queueStreamService.getAll(includeSoftDeleted = True)
-        _streamSources = self.streamSourceService.getAll(includeSoftDeleted = True)
-        _playlists = self.playlistService.getAll(includeSoftDeleted = True)
+        queueStreams = self.queueStreamService.getAll(includeSoftDeleted = True)
+        streamSources = self.streamSourceService.getAll(includeSoftDeleted = True)
+        playlists = self.playlistService.getAll(includeSoftDeleted = True)
         
-        for _entity in _queueStreams:
-            if(_entity.deleted != None):
-                _data["QueueStream"].append(_entity)
-        for _entity in _streamSources:
-            if(_entity.deleted != None):
-                _data["StreamSource"].append(_entity)
-        for _entity in _playlists:
-            if(_entity.deleted != None):
-                _data["Playlist"].append(_entity)
+        for entity in queueStreams:
+            if(entity.deleted != None):
+                data["QueueStream"].append(entity)
+        for entity in streamSources:
+            if(entity.deleted != None):
+                data["StreamSource"].append(entity)
+        for entity in playlists:
+            if(entity.deleted != None):
+                data["Playlist"].append(entity)
         
-        return _data
+        return data

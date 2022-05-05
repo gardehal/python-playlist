@@ -175,20 +175,19 @@ class PlaybackService():
         """
         
         while 1: # Infinite loop until a return is hit
-            inputMessage = "\tPress enter to play next, \"skip\" to skip video, or \"quit\" to quit playback: "
-            self.skipInputs.append("skip") # Ensure skip and quit always available
-            self.quitInputs.append("quit")
-            inputArgs = sanitize(input(inputMessage), mode = 2)
+            inputMessage = "\tAwaiting input: "
+            self.quitInputs.append("quit") # Ensure quit and help always available
+            self.printHelpInputs.append("help")
+            inputArgs = sanitize(input(inputMessage).strip(), mode = 2)
                 
-            if(inputArgs.strip() == ""):
+            if(inputArgs == ""):
                 return 1
             
             elif(len(self.skipInputs) > 0 and inputArgs in self.skipInputs):
-                printS("Skipping, will not be marked as watched.", color = BashColor.OKGREEN)
+                printS("Skipping.", color = BashColor.OKGREEN)
                 return 2
             
             elif(len(self.quitInputs) > 0 and inputArgs in self.quitInputs):
-                printS("Ending playback due to user inputArgs.", color = BashColor.OKGREEN)
                 return 3
             
             elif(len(self.repeatInputs) > 0 and inputArgs in self.repeatInputs):
@@ -212,8 +211,8 @@ class PlaybackService():
             elif(len(self.addToInputs) > 0 and " " in inputArgs and inputArgs.split(" ")[0] in self.addToInputs):
                 idsIndices = inputArgs.split(" ")[1:]
                 crossAddPlaylistResult = self.addPlaybackStreamToPlaylist(stream, idsIndices)
-                printS("\"", stream.name, "\" added to new Playlist \"", crossAddPlaylistResult[0].name, "\".", color = BashColor.OKGREEN, doPrint = (len(crossAddPlaylistResult) > 0))
-                printS("\"", stream.name, "\" could not be added to new Playlist.", color = BashColor.FAIL, doPrint = (len(crossAddPlaylistResult) == 0))
+                printS("\"", stream.name, "\" added to \"", crossAddPlaylistResult[0].name, "\".", color = BashColor.OKGREEN, doPrint = (len(crossAddPlaylistResult) > 0))
+                printS("\"", stream.name, "\" could not be added \"", crossAddPlaylistResult[0].name, "\".", color = BashColor.FAIL, doPrint = (len(crossAddPlaylistResult) == 0))
                 
             elif(len(self.printDetailsInputs) > 0 and inputArgs in self.printDetailsInputs):
                 self.playlistService.printPlaylistDetails([playlist.id])
@@ -223,7 +222,7 @@ class PlaybackService():
                 printS(help)
                 
             else:
-                printS("Argument(s) not recognized: \"", inputArgs, "\". Please refrain from using arrows to navigate in the CLI as it adds hidden characters.", color = BashColor.WARNING)
+                printS("Argument(s) not recognized: \"", inputArgs, "\". Try \"help\" for help.", color = BashColor.WARNING)
             
         return 0
 

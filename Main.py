@@ -44,8 +44,8 @@ class Main:
         argIndex = 1
 
         if(argC < 2):
-            _help = Main.commands.getHelpString()
-            printS(_help)
+            help = Main.commands.getHelpString()
+            printS(help)
 
         makeFiles(WATCHED_LOG_FILEPATH)
 
@@ -54,524 +54,524 @@ class Main:
                 arg = sys.argv[argIndex].lower()
 
                 if(arg in Main.commands.helpCommands):
-                    _help = Main.commands.getHelpString()
-                    printS(_help)
+                    help = Main.commands.getHelpString()
+                    printS(help)
                     
                     argIndex += 1
                     continue
 
                 elif(arg in Main.commands.testCommands):
-                    _input = extractArgs(argIndex, argV)
+                    inputArgs = extractArgs(argIndex, argV)
                     printS("Test", color = BashColor.OKBLUE)
                     
                     quit()            
                     
                 elif(arg in Main.commands.editCommands):
                     # Expected input: playlistId or index
-                    _input = extractArgs(argIndex, argV)
+                    inputArgs = extractArgs(argIndex, argV)
                     
-                    _ids = getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll(), debug = DEBUG)
-                    if(len(_ids) == 0):
+                    ids = getIdsFromInput(inputArgs, Main.playlistService.getAllIds(), Main.playlistService.getAll(), debug = DEBUG)
+                    if(len(ids) == 0):
                         printS("Failed to edit, missing playlistId or index.", color = BashColor.FAIL)
-                        argIndex += len(_input) + 1
+                        argIndex += len(inputArgs) + 1
                         continue
 
-                    filepath = os.path.join(LOCAL_STORAGE_PATH, "Playlist", _ids[0] + ".json")
+                    filepath = os.path.join(LOCAL_STORAGE_PATH, "Playlist", ids[0] + ".json")
                     filepath = str(filepath).replace("\\", "/")
                     os.startfile(filepath)
                         
-                    argIndex += len(_input) + 1
+                    argIndex += len(inputArgs) + 1
                     continue
 
                 elif(arg in Main.commands.searchCommands):
                     # Expected input: searchTerm, includeSoftDeleted?
-                    _input = extractArgs(argIndex, argV)
-                    _searchTerm = _input[0] if(len(_input) > 0) else ""
-                    _includeSoftDeleted = eval(_input[1]) if(len(_input) > 1) else False
+                    inputArgs = extractArgs(argIndex, argV)
+                    searchTerm = inputArgs[0] if(len(inputArgs) > 0) else ""
+                    includeSoftDeleted = eval(inputArgs[1]) if(len(inputArgs) > 1) else False
 
-                    _result = Main.sharedService.search(_searchTerm, _includeSoftDeleted)
+                    result = Main.sharedService.search(searchTerm, includeSoftDeleted)
                     
-                    # _result is a dict of string keys, list values, get values from [*_result.values()]
+                    # result is a dict of string keys, list values, get values from [*result.values()]
                     # list of list, for each list, for each entry, str.join id, name, and uri, then join back to list of lists of strings, ready for printLists
-                    _resultList = [[" - ".join([e.id, e.name, e.uri]) for e in l] for l in [*_result.values()]]
-                    printLists(_resultList, [*_result.keys()])
+                    resultList = [[" - ".join([e.id, e.name, e.uri]) for e in l] for l in [*result.values()]]
+                    printLists(resultList, [*result.keys()])
                     
-                    argIndex += len(_input) + 1
+                    argIndex += len(inputArgs) + 1
                     continue
                 
                 # Playlist
                 elif(arg in Main.commands.addPlaylistCommands):
                     # Expected input: name, playWatchedStreams?, allowDuplicates?, streamSourceIds/indices?
-                    _input = extractArgs(argIndex, argV)
-                    _name = _input[0] if(len(_input) > 0) else "New Playlist"
-                    _playWatchedStreams = eval(_input[1]) if(len(_input) > 1) else None
-                    _allowDuplicates = eval(_input[2]) if(len(_input) > 2) else True
-                    _streamSourceIds = getIdsFromInput(_input[3:], Main.playlistService.getAllIds(), Main.playlistService.getAll(), debug = DEBUG) if(len(_input) > 3) else []
+                    inputArgs = extractArgs(argIndex, argV)
+                    name = inputArgs[0] if(len(inputArgs) > 0) else "New Playlist"
+                    playWatchedStreams = eval(inputArgs[1]) if(len(inputArgs) > 1) else None
+                    allowDuplicates = eval(inputArgs[2]) if(len(inputArgs) > 2) else True
+                    streamSourceIds = getIdsFromInput(inputArgs[3:], Main.playlistService.getAllIds(), Main.playlistService.getAll(), debug = DEBUG) if(len(inputArgs) > 3) else []
 
-                    _entity = Playlist(name = _name, playWatchedStreams = _playWatchedStreams, allowDuplicates = _allowDuplicates, streamSourceIds = _streamSourceIds)
-                    _result = Main.playlistService.add(_entity)
-                    if(_result != None):
-                        printS("Playlist \"", _result.name, "\" added successfully.", color = BashColor.OKGREEN)
+                    entity = Playlist(name = name, playWatchedStreams = playWatchedStreams, allowDuplicates = allowDuplicates, streamSourceIds = streamSourceIds)
+                    result = Main.playlistService.add(entity)
+                    if(result != None):
+                        printS("Playlist \"", result.name, "\" added successfully.", color = BashColor.OKGREEN)
                     else:
                         printS("Failed to create Playlist.", color = BashColor.FAIL)
 
-                    argIndex += len(_input) + 1
+                    argIndex += len(inputArgs) + 1
                     continue
                 
                 elif(arg in Main.commands.addPlaylistFromYouTubeCommands):
                     # Expected input: youTubePlaylistUrl, name?, playWatchedStreams?, allowDuplicates?
-                    _input = extractArgs(argIndex, argV)
-                    _url = _input[0] if(len(_input) > 0) else None
-                    _name = _input[1] if(len(_input) > 1) else None
-                    _playWatchedStreams = eval(_input[2]) if(len(_input) > 2) else None
-                    _allowDuplicates = eval(_input[3]) if(len(_input) > 3) else True
+                    inputArgs = extractArgs(argIndex, argV)
+                    url = inputArgs[0] if(len(inputArgs) > 0) else None
+                    name = inputArgs[1] if(len(inputArgs) > 1) else None
+                    playWatchedStreams = eval(inputArgs[2]) if(len(inputArgs) > 2) else None
+                    allowDuplicates = eval(inputArgs[3]) if(len(inputArgs) > 3) else True
 
-                    _entity = Playlist(name = _name, playWatchedStreams = _playWatchedStreams, allowDuplicates = _allowDuplicates)
-                    _result = Main.playlistService.addYouTubePlaylist(_entity, _url)
-                    if(_result != None):
-                        printS("Playlist \"", _result.name, "\" added successfully from YouTube playlist.", color = BashColor.OKGREEN)
+                    entity = Playlist(name = name, playWatchedStreams = playWatchedStreams, allowDuplicates = allowDuplicates)
+                    result = Main.playlistService.addYouTubePlaylist(entity, url)
+                    if(result != None):
+                        printS("Playlist \"", result.name, "\" added successfully from YouTube playlist.", color = BashColor.OKGREEN)
                     else:
                         printS("Failed to create Playlist.", color = BashColor.FAIL)
 
-                    argIndex += len(_input) + 1
+                    argIndex += len(inputArgs) + 1
                     continue
 
                 elif(arg in Main.commands.deletePlaylistCommands):
                     # Expected input: playlistIds or indices
-                    _input = extractArgs(argIndex, argV)
-                    _ids = getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll(), debug = DEBUG)
+                    inputArgs = extractArgs(argIndex, argV)
+                    ids = getIdsFromInput(inputArgs, Main.playlistService.getAllIds(), Main.playlistService.getAll(), debug = DEBUG)
                     
-                    if(len(_ids) == 0):
+                    if(len(ids) == 0):
                         printS("Failed to delete Playlists, missing playlistIds or indices.", color = BashColor.FAIL)
-                        argIndex += len(_input) + 1
+                        argIndex += len(inputArgs) + 1
                         continue
                     
-                    for _id in _ids:
-                        _result = Main.playlistService.delete(_id)
-                        if(_result != None):
-                            printS("Playlist \"", _result.name, "\" deleted successfully.", color = BashColor.OKGREEN)
+                    for id in ids:
+                        result = Main.playlistService.delete(id)
+                        if(result != None):
+                            printS("Playlist \"", result.name, "\" deleted successfully.", color = BashColor.OKGREEN)
                         else:
                             printS("Failed to delete Playlist.", color = BashColor.FAIL)
 
-                    argIndex += len(_input) + 1
+                    argIndex += len(inputArgs) + 1
                     continue
                 
                 elif(arg in Main.commands.restorePlaylistCommands):
                     # Expected input: playlistIds or indices
-                    _input = extractArgs(argIndex, argV)
-                    _ids = getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll(), debug = DEBUG)
+                    inputArgs = extractArgs(argIndex, argV)
+                    ids = getIdsFromInput(inputArgs, Main.playlistService.getAllIds(), Main.playlistService.getAll(), debug = DEBUG)
                     
-                    if(len(_ids) == 0):
+                    if(len(ids) == 0):
                         printS("Failed to restore Playlists, missing playlistIds or indices.", color = BashColor.FAIL)
-                        argIndex += len(_input) + 1
+                        argIndex += len(inputArgs) + 1
                         continue
                     
-                    for _id in _ids:
-                        _result = Main.playlistService.restore(_id)
-                        if(_result != None):
-                            printS("Playlist \"", _result.name, "\" restore successfully.", color = BashColor.OKGREEN)
+                    for id in ids:
+                        result = Main.playlistService.restore(id)
+                        if(result != None):
+                            printS("Playlist \"", result.name, "\" restore successfully.", color = BashColor.OKGREEN)
                         else:
                             printS("Failed to restore Playlist.", color = BashColor.FAIL)
 
-                    argIndex += len(_input) + 1
+                    argIndex += len(inputArgs) + 1
                     continue
 
                 elif(arg in Main.commands.listPlaylistCommands):
                     # Expected input: includeSoftDeleted?
-                    _input = extractArgs(argIndex, argV)
-                    _includeSoftDeleted = eval(_input[0]) if(len(_input) > 0) else False
+                    inputArgs = extractArgs(argIndex, argV)
+                    includeSoftDeleted = eval(inputArgs[0]) if(len(inputArgs) > 0) else False
 
-                    _result = Main.playlistService.getAll(_includeSoftDeleted)
-                    if(len(_result) > 0):
-                        _nPlaylists = len(_result)
-                        _nQueueStreams = len(Main.queueStreamService.getAll(_includeSoftDeleted))
-                        _nStreamSources = len(Main.streamSourceService.getAll(_includeSoftDeleted))
-                        _titles = [str(_nPlaylists) + " Playlists, " + str(_nQueueStreams) + " QueueStreams, " + str(_nStreamSources) + " StreamSources."]
+                    result = Main.playlistService.getAll(includeSoftDeleted)
+                    if(len(result) > 0):
+                        nPlaylists = len(result)
+                        nQueueStreams = len(Main.queueStreamService.getAll(includeSoftDeleted))
+                        nStreamSources = len(Main.streamSourceService.getAll(includeSoftDeleted))
+                        titles = [str(nPlaylists) + " Playlists, " + str(nQueueStreams) + " QueueStreams, " + str(nStreamSources) + " StreamSources."]
                         
-                        _data = []
-                        for (i, _entry) in enumerate(_result):
-                            _data.append(str(i) + " - " + _entry.summaryString())
+                        data = []
+                        for (i, entry) in enumerate(result):
+                            data.append(str(i) + " - " + entry.summaryString())
                             
-                        printLists([_data], _titles)
+                        printLists([data], titles)
 
-                    argIndex += len(_input) + 1
+                    argIndex += len(inputArgs) + 1
                     continue
                 
                 elif(arg in Main.commands.detailsPlaylistCommands):
                     # Expected input: playlistIds or indices, includeUri, includeId, includeDatertime, includeListCount, includeSource
-                    _input = extractArgs(argIndex, argV)
-                    _ids = getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll(), returnOnNonIds = True, debug = DEBUG)
-                    _lenIds = len(_ids)
-                    _includeUri = eval(_input[_lenIds]) if(len(_input) > _lenIds) else False
-                    _includeId = eval(_input[_lenIds + 1]) if(len(_input) > _lenIds + 1) else False
-                    _includeDatetime = eval(_input[_lenIds + 2]) if(len(_input) > _lenIds + 2) else False
-                    _includeListCount = eval(_input[_lenIds + 3]) if(len(_input) > _lenIds + 3) else True
-                    _includeSource = eval(_input[_lenIds + 4]) if(len(_input) > _lenIds + 4) else True
+                    inputArgs = extractArgs(argIndex, argV)
+                    ids = getIdsFromInput(inputArgs, Main.playlistService.getAllIds(), Main.playlistService.getAll(), returnOnNonIds = True, debug = DEBUG)
+                    lenIds = len(ids)
+                    includeUri = eval(inputArgs[lenIds]) if(len(inputArgs) > lenIds) else False
+                    includeId = eval(inputArgs[lenIds + 1]) if(len(inputArgs) > lenIds + 1) else False
+                    includeDatetime = eval(inputArgs[lenIds + 2]) if(len(inputArgs) > lenIds + 2) else False
+                    includeListCount = eval(inputArgs[lenIds + 3]) if(len(inputArgs) > lenIds + 3) else True
+                    includeSource = eval(inputArgs[lenIds + 4]) if(len(inputArgs) > lenIds + 4) else True
                     
-                    if(len(_ids) == 0):
+                    if(len(ids) == 0):
                         printS("Failed to print details, missing playlistIds or indices.", color = BashColor.FAIL)
-                        argIndex += len(_input) + 1
+                        argIndex += len(inputArgs) + 1
                         continue
                     
-                    _result = Main.playlistService.printPlaylistDetails(_ids, _includeUri, _includeId, _includeDatetime, _includeListCount, _includeSource)
-                    if(_result):
-                        printS("Finished printing ", _result, " details.", color = BashColor.OKGREEN)
+                    result = Main.playlistService.printPlaylistDetails(ids, includeUri, includeId, includeDatetime, includeListCount, includeSource)
+                    if(result):
+                        printS("Finished printing ", result, " details.", color = BashColor.OKGREEN)
                     else:
                         printS("Failed print details.", color = BashColor.FAIL)
                             
-                    argIndex += len(_input) + 1
+                    argIndex += len(inputArgs) + 1
                     continue
 
                 elif(arg in Main.commands.fetchPlaylistSourcesCommands):
                     # Expected input: playlistIds or indices, fromDateTime?, toDatetime?, takeNewOnly?
-                    _input = extractArgs(argIndex, argV)
-                    _ids = getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll(), returnOnNonIds = True, debug = DEBUG)
-                    _lenIds = len(_ids)
-                    _takeAfter = _input[_lenIds] if(len(_input) > _lenIds) else None
-                    _takeBefore = _input[_lenIds + 1] if(len(_input) > _lenIds + 1) else None
-                    _takeNewOnly = eval(_input[_lenIds + 2]) if(len(_input) > _lenIds + 2) else True
+                    inputArgs = extractArgs(argIndex, argV)
+                    ids = getIdsFromInput(inputArgs, Main.playlistService.getAllIds(), Main.playlistService.getAll(), returnOnNonIds = True, debug = DEBUG)
+                    lenIds = len(ids)
+                    takeAfter = inputArgs[lenIds] if(len(inputArgs) > lenIds) else None
+                    takeBefore = inputArgs[lenIds + 1] if(len(inputArgs) > lenIds + 1) else None
+                    takeNewOnly = eval(inputArgs[lenIds + 2]) if(len(inputArgs) > lenIds + 2) else True
                     
                     try:
-                        if(_takeAfter != None):
-                            _takeAfter = datetime.strptime(_takeAfter, "%Y-%m-%d")
-                        if(_takeBefore != None):
-                            _takeBefore = datetime.strptime(_takeBefore, "%Y-%m-%d")
+                        if(takeAfter != None):
+                            takeAfter = datetime.strptime(takeAfter, "%Y-%m-%d")
+                        if(takeBefore != None):
+                            takeBefore = datetime.strptime(takeBefore, "%Y-%m-%d")
                     except:
                         printS("Dates for takeAfter and takeBefore were not valid, see -help print for format.", color = BashColor.FAIL)
-                        argIndex += len(_input) + 1
+                        argIndex += len(inputArgs) + 1
                         continue
                     
-                    for _id in _ids:
-                        _result = Main.fetchService.fetch(_id, batchSize = FETCH_LIMIT_SINGLE_SOURCE, takeAfter = _takeAfter, takeBefore = _takeBefore, takeNewOnly = _takeNewOnly)
-                        _playlist = Main.playlistService.get(_id)
-                        printS("Fetched ", _result, " for playlist \"", _playlist.name, "\" successfully.", color = BashColor.OKGREEN)
+                    for id in ids:
+                        result = Main.fetchService.fetch(id, batchSize = FETCH_LIMIT_SINGLE_SOURCE, takeAfter = takeAfter, takeBefore = takeBefore, takeNewOnly = takeNewOnly)
+                        playlist = Main.playlistService.get(id)
+                        printS("Fetched ", result, " for playlist \"", playlist.name, "\" successfully.", color = BashColor.OKGREEN)
 
-                    argIndex += len(_input) + 1
+                    argIndex += len(inputArgs) + 1
                     continue
 
                 elif(arg in Main.commands.prunePlaylistCommands):
                     # Expected input: playlistIds or indices, includeSoftDeleted, permanentlyDelete, "accept changes" input within purge method
-                    _input = extractArgs(argIndex, argV)
-                    _ids = getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll(), debug = DEBUG)
-                    _lenIds = len(_ids)
-                    _includeSoftDeleted = eval(_input[_lenIds]) if(len(_input) > _lenIds) else False
-                    _permanentlyDelete = eval(_input[_lenIds + 1]) if(len(_input) > _lenIds + 1) else False
+                    inputArgs = extractArgs(argIndex, argV)
+                    ids = getIdsFromInput(inputArgs, Main.playlistService.getAllIds(), Main.playlistService.getAll(), debug = DEBUG)
+                    lenIds = len(ids)
+                    includeSoftDeleted = eval(inputArgs[lenIds]) if(len(inputArgs) > lenIds) else False
+                    permanentlyDelete = eval(inputArgs[lenIds + 1]) if(len(inputArgs) > lenIds + 1) else False
                     
-                    if(len(_ids) == 0):
+                    if(len(ids) == 0):
                         printS("Failed to prune playlists, missing playlistIds or indices.", color = BashColor.FAIL)
-                        argIndex += len(_input) + 1
+                        argIndex += len(inputArgs) + 1
                         continue
                     
-                    for _id in _ids:
-                        _result = Main.sharedService.prune(_id, _includeSoftDeleted, _permanentlyDelete)
-                        _playlist = Main.playlistService.get(_id)
+                    for id in ids:
+                        result = Main.sharedService.prune(id, includeSoftDeleted, permanentlyDelete)
+                        playlist = Main.playlistService.get(id)
                         
-                        if(len(_result["QueueStream"]) > 0 and len(_result["QueueStreamId"]) > 0):
-                            printS("Prune finished, deleted ", len(_result["QueueStream"]), " QueueStream(s), ", len(_result["QueueStreamId"]), " ID(s) from Playlist \"", _playlist.name, "\".", color = BashColor.OKGREEN)
+                        if(len(result["QueueStream"]) > 0 and len(result["QueueStreamId"]) > 0):
+                            printS("Prune finished, deleted ", len(result["QueueStream"]), " QueueStream(s), ", len(result["QueueStreamId"]), " ID(s) from Playlist \"", playlist.name, "\".", color = BashColor.OKGREEN)
                         else:
-                            printS("Prune failed, could not delete any QueueStream(s) from Playlist \"", _playlist.name, "\".", color = BashColor.FAIL)
+                            printS("Prune failed, could not delete any QueueStream(s) from Playlist \"", playlist.name, "\".", color = BashColor.FAIL)
 
-                    argIndex += len(_input) + 1
+                    argIndex += len(inputArgs) + 1
                     continue
                 
                 elif(arg in Main.commands.purgePlaylistCommands):
                     # Expected input: includeSoftDeleted, permanentlyDelete, "accept changes" input within purge method
-                    _input = extractArgs(argIndex, argV)
-                    _includeSoftDeleted = eval(_input[0]) if(len(_input) > 0) else False
-                    _permanentlyDelete = eval(_input[1]) if(len(_input) > 1) else False
+                    inputArgs = extractArgs(argIndex, argV)
+                    includeSoftDeleted = eval(inputArgs[0]) if(len(inputArgs) > 0) else False
+                    permanentlyDelete = eval(inputArgs[1]) if(len(inputArgs) > 1) else False
                     
-                    _result = Main.sharedService.purge(_includeSoftDeleted, _permanentlyDelete)
-                    if(len(_result["QueueStream"]) > 0 or len(_result["StreamSource"]) > 0 or len(_result["QueueStreamId"]) > 0 or len(_result["StreamSourceId"]) > 0):
-                        printS("Purge finished, deleted ", len(_result["QueueStream"]), " QueueStream(s), ", len(_result["StreamSource"]), " StreamSource(s), and ", len(_result["QueueStreamId"]) + len(_result["StreamSourceId"]), " ID(s).", color = BashColor.OKGREEN)
+                    result = Main.sharedService.purge(includeSoftDeleted, permanentlyDelete)
+                    if(len(result["QueueStream"]) > 0 or len(result["StreamSource"]) > 0 or len(result["QueueStreamId"]) > 0 or len(result["StreamSourceId"]) > 0):
+                        printS("Purge finished, deleted ", len(result["QueueStream"]), " QueueStream(s), ", len(result["StreamSource"]), " StreamSource(s), and ", len(result["QueueStreamId"]) + len(result["StreamSourceId"]), " ID(s).", color = BashColor.OKGREEN)
                     else:
                         printS("Purge failed.", color = BashColor.FAIL)
 
-                    argIndex += len(_input) + 1
+                    argIndex += len(inputArgs) + 1
                     continue
                 
                 elif(arg in Main.commands.resetPlaylistFetchCommands):
                     # Expected input: playlistIds or indices
-                    _input = extractArgs(argIndex, argV)
-                    _ids = getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll(), debug = DEBUG)
+                    inputArgs = extractArgs(argIndex, argV)
+                    ids = getIdsFromInput(inputArgs, Main.playlistService.getAllIds(), Main.playlistService.getAll(), debug = DEBUG)
                     
-                    if(len(_ids) == 0):
+                    if(len(ids) == 0):
                         printS("Failed to reset fetch-status of playlists, missing playlistIds or indices.", color = BashColor.FAIL)
-                        argIndex += len(_input) + 1
+                        argIndex += len(inputArgs) + 1
                         continue
                         
-                    _result = Main.fetchService.resetPlaylistFetch(_ids)
-                    _playlist = Main.playlistService.get(_id)
-                    if(_result):
-                        printS("Finished resetting fetch statuses for sources in Playlist \"", _playlist.name, "\".", color = BashColor.OKGREEN)
+                    result = Main.fetchService.resetPlaylistFetch(ids)
+                    playlist = Main.playlistService.get(id)
+                    if(result):
+                        printS("Finished resetting fetch statuses for sources in Playlist \"", playlist.name, "\".", color = BashColor.OKGREEN)
                     else:
-                        printS("Failed to reset fetch statuses for sources in Playlist \"", _playlist.name, "\".", color = BashColor.FAIL)
+                        printS("Failed to reset fetch statuses for sources in Playlist \"", playlist.name, "\".", color = BashColor.FAIL)
 
-                    argIndex += len(_input) + 1
+                    argIndex += len(inputArgs) + 1
                     continue
 
                 elif(arg in Main.commands.playCommands):
                     # Expected input: playlistId or index, startIndex, shuffle, repeat
-                    _input = extractArgs(argIndex, argV)
-                    _ids = getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll(), 1, debug = DEBUG)
-                    _startIndex = _input[1] if(len(_input) > 1) else 0
-                    _shuffle = eval(_input[2]) if(len(_input) > 2) else False
-                    _repeat = eval(_input[3]) if(len(_input) > 3) else False
+                    inputArgs = extractArgs(argIndex, argV)
+                    ids = getIdsFromInput(inputArgs, Main.playlistService.getAllIds(), Main.playlistService.getAll(), 1, debug = DEBUG)
+                    startIndex = inputArgs[1] if(len(inputArgs) > 1) else 0
+                    shuffle = eval(inputArgs[2]) if(len(inputArgs) > 2) else False
+                    repeat = eval(inputArgs[3]) if(len(inputArgs) > 3) else False
                     
-                    if(len(_ids) == 0):
+                    if(len(ids) == 0):
                         printS("Failed to play playlist, missing playlistIds or indices.", color = BashColor.FAIL)
-                        argIndex += len(_input) + 1
+                        argIndex += len(inputArgs) + 1
                         continue
                     
-                    if(not isNumber(_startIndex, intOnly = True)):
+                    if(not isNumber(startIndex, intOnly = True)):
                         printS("Failed to play playlist, input startIndex must be an integer.", color = BashColor.FAIL)
-                        argIndex += len(_input) + 1
+                        argIndex += len(inputArgs) + 1
                         continue
                     
-                    _startIndex = int(float(_startIndex))
-                    _result = Main.playbackService.play(_ids[0], _startIndex, _shuffle, _repeat)
-                    if(not _result):
-                        _playlist = Main.playlistService.get(_ids[0])
-                        printS("Failed to play Playlist \"", _playlist.name, "\".", color = BashColor.FAIL)
+                    startIndex = int(float(startIndex))
+                    result = Main.playbackService.play(ids[0], startIndex, shuffle, repeat)
+                    if(not result):
+                        playlist = Main.playlistService.get(ids[0])
+                        printS("Failed to play Playlist \"", playlist.name, "\".", color = BashColor.FAIL)
 
-                    argIndex += len(_input) + 1
+                    argIndex += len(inputArgs) + 1
                     continue
 
                 # Streams
                 elif(arg in Main.commands.addStreamCommands):
                     # Expected input: playlistId or index, uri, name?
-                    _input = extractArgs(argIndex, argV)
-                    _ids = getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll(), 1, debug = DEBUG)
-                    _uri = _input[1] if len(_input) > 1 else None
-                    _name = _input[2] if len(_input) > 2 else None
+                    inputArgs = extractArgs(argIndex, argV)
+                    ids = getIdsFromInput(inputArgs, Main.playlistService.getAllIds(), Main.playlistService.getAll(), 1, debug = DEBUG)
+                    uri = inputArgs[1] if len(inputArgs) > 1 else None
+                    name = inputArgs[2] if len(inputArgs) > 2 else None
 
-                    if(len(_ids) == 0):
+                    if(len(ids) == 0):
                         printS("Failed to add QueueStream, missing playlistId or index.", color = BashColor.FAIL)
-                        argIndex += len(_input) + 1
+                        argIndex += len(inputArgs) + 1
                         continue
 
-                    if(_uri == None):
+                    if(uri == None):
                         printS("Failed to add QueueStream, missing uri.", color = BashColor.FAIL)
-                        argIndex += len(_input) + 1
+                        argIndex += len(inputArgs) + 1
                         continue
 
-                    if(_name == None and validators.url(_uri)):
-                        _name = Main.sharedService.getPageTitle(_uri)
-                    if(_name == None):
-                        _name = "New QueueStream"
-                        printS("Could not automatically get the web name for this QueueStream, will be named \"" , _name, "\".", color = BashColor.WARNING)
+                    if(name == None and validators.url(uri)):
+                        name = Main.sharedService.getPageTitle(uri)
+                    if(name == None):
+                        name = "New QueueStream"
+                        printS("Could not automatically get the web name for this QueueStream, will be named \"" , name, "\".", color = BashColor.WARNING)
 
-                    _playlist = Main.playlistService.get(_ids[0])
-                    _entity = QueueStream(name = _name, uri = _uri)
-                    _addResult = Main.playlistService.addStreams(_playlist.id, [_entity])
-                    if(len(_addResult) > 0):
-                        printS("Added QueueStream \"", _addResult[0].name, "\" to Playlist \"", _playlist.name, "\".", color = BashColor.OKGREEN)
+                    playlist = Main.playlistService.get(ids[0])
+                    entity = QueueStream(name = name, uri = uri)
+                    addResult = Main.playlistService.addStreams(playlist.id, [entity])
+                    if(len(addResult) > 0):
+                        printS("Added QueueStream \"", addResult[0].name, "\" to Playlist \"", playlist.name, "\".", color = BashColor.OKGREEN)
                     else:
                         printS("Failed to create QueueStream.", color = BashColor.FAIL)
 
-                    argIndex += len(_input) + 1
+                    argIndex += len(inputArgs) + 1
                     continue
 
                 elif(arg in Main.commands.deleteStreamCommands):
                     # Expected input: playlistId or index, queueStreamIds or indices
-                    _input = extractArgs(argIndex, argV)
+                    inputArgs = extractArgs(argIndex, argV)
 
-                    _playlistIds = getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll(), 1, debug = DEBUG)
-                    if(len(_playlistIds) == 0):
+                    playlistIds = getIdsFromInput(inputArgs, Main.playlistService.getAllIds(), Main.playlistService.getAll(), 1, debug = DEBUG)
+                    if(len(playlistIds) == 0):
                         printS("Failed to delete QueueStreams, missing playlistId or index.", color = BashColor.FAIL)
-                        argIndex += len(_input) + 1
+                        argIndex += len(inputArgs) + 1
                         continue
                     
-                    _playlist = Main.playlistService.get(_playlistIds[0])
-                    _queueStreamIds = getIdsFromInput(_input[1:], _playlist.streamIds, Main.playlistService.getStreamsByPlaylistId(_playlist.id), debug = DEBUG)
-                    if(len(_queueStreamIds) == 0):
+                    playlist = Main.playlistService.get(playlistIds[0])
+                    queueStreamIds = getIdsFromInput(inputArgs[1:], playlist.streamIds, Main.playlistService.getStreamsByPlaylistId(playlist.id), debug = DEBUG)
+                    if(len(queueStreamIds) == 0):
                         printS("Failed to delete QueueStreams, missing queueStreamIds or indices.", color = BashColor.FAIL)
-                        argIndex += len(_input) + 1
+                        argIndex += len(inputArgs) + 1
                         continue
                     
-                    _result = Main.playlistService.deleteStreams(_playlist.id, _queueStreamIds)
-                    if(len(_result) > 0):
-                        printS("Deleted ", len(_result), " QueueStreams successfully from Playlist \"", _playlist.name, "\".", color = BashColor.OKGREEN)
+                    result = Main.playlistService.deleteStreams(playlist.id, queueStreamIds)
+                    if(len(result) > 0):
+                        printS("Deleted ", len(result), " QueueStreams successfully from Playlist \"", playlist.name, "\".", color = BashColor.OKGREEN)
                     else:
                         printS("Failed to delete QueueStreams.", color = BashColor.FAIL)
 
-                    argIndex += len(_input) + 1
+                    argIndex += len(inputArgs) + 1
                     continue
                 
                 elif(arg in Main.commands.restoreStreamCommands):
                     # Expected input: playlistId or index, queueStreamIds or indices
-                    _input = extractArgs(argIndex, argV)
+                    inputArgs = extractArgs(argIndex, argV)
 
-                    _playlistIds = getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll(), 1, debug = DEBUG)
-                    if(len(_playlistIds) == 0):
+                    playlistIds = getIdsFromInput(inputArgs, Main.playlistService.getAllIds(), Main.playlistService.getAll(), 1, debug = DEBUG)
+                    if(len(playlistIds) == 0):
                         printS("Failed to restore QueueStreams, missing playlistId or index.", color = BashColor.FAIL)
-                        argIndex += len(_input) + 1
+                        argIndex += len(inputArgs) + 1
                         continue
                     
-                    _playlist = Main.playlistService.get(_playlistIds[0])
-                    _queueStreamIds = getIdsFromInput(_input[1:], Main.queueStreamService.getAllIds(includeSoftDeleted = True), Main.playlistService.getStreamsByPlaylistId(_playlist.id, includeSoftDeleted = True), debug = DEBUG)
-                    if(len(_queueStreamIds) == 0):
+                    playlist = Main.playlistService.get(playlistIds[0])
+                    queueStreamIds = getIdsFromInput(inputArgs[1:], Main.queueStreamService.getAllIds(includeSoftDeleted = True), Main.playlistService.getStreamsByPlaylistId(playlist.id, includeSoftDeleted = True), debug = DEBUG)
+                    if(len(queueStreamIds) == 0):
                         printS("Failed to restore QueueStreams, missing queueStreamIds or indices.", color = BashColor.FAIL)
-                        argIndex += len(_input) + 1
+                        argIndex += len(inputArgs) + 1
                         continue
                     
-                    _result = Main.playlistService.restoreStreams(_playlist.id, _queueStreamIds)
-                    if(len(_result) > 0):
-                        printS("Restored ", len(_result), " QueueStreams successfully from Playlist \"", _playlist.name, "\".", color = BashColor.OKGREEN)
+                    result = Main.playlistService.restoreStreams(playlist.id, queueStreamIds)
+                    if(len(result) > 0):
+                        printS("Restored ", len(result), " QueueStreams successfully from Playlist \"", playlist.name, "\".", color = BashColor.OKGREEN)
                     else:
                         printS("Failed to restore QueueStreams.", color = BashColor.FAIL)
 
-                    argIndex += len(_input) + 1
+                    argIndex += len(inputArgs) + 1
                     continue
 
                 # Sources
                 elif(arg in Main.commands.addSourcesCommands):
                     # Expected input: playlistId or index, uri, enableFetch?, backgroundContent?, name?
-                    _input = extractArgs(argIndex, argV)
-                    _ids = getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll(), 1, debug = DEBUG)
-                    _uri = _input[1] if len(_input) > 1 else None
-                    _enableFetch = eval(_input[2]) if len(_input) > 2 else False
-                    _bgContent = eval(_input[3]) if len(_input) > 3 else False
-                    _name = _input[4] if len(_input) > 4 else None
+                    inputArgs = extractArgs(argIndex, argV)
+                    ids = getIdsFromInput(inputArgs, Main.playlistService.getAllIds(), Main.playlistService.getAll(), 1, debug = DEBUG)
+                    uri = inputArgs[1] if len(inputArgs) > 1 else None
+                    enableFetch = eval(inputArgs[2]) if len(inputArgs) > 2 else False
+                    bgContent = eval(inputArgs[3]) if len(inputArgs) > 3 else False
+                    name = inputArgs[4] if len(inputArgs) > 4 else None
 
-                    if(len(_ids) == 0):
+                    if(len(ids) == 0):
                         printS("Failed to add StreamSource, missing playlistId or index.", color = BashColor.FAIL)
-                        argIndex += len(_input) + 1
+                        argIndex += len(inputArgs) + 1
                         continue
 
-                    if(_uri == None):
+                    if(uri == None):
                         printS("Failed to add StreamSource, missing uri.", color = BashColor.FAIL)
-                        argIndex += len(_input) + 1
+                        argIndex += len(inputArgs) + 1
                         continue
 
-                    if(_name == None):
-                        _name = Main.sharedService.getPageTitle(_uri)
-                    if(_name == None):
-                        _name = "New StreamSource"
-                        printS("Could not automatically get the web name for this StreamSource, will be named \"" , _name, "\".", color = BashColor.WARNING)                  
+                    if(name == None):
+                        name = Main.sharedService.getPageTitle(uri)
+                    if(name == None):
+                        name = "New StreamSource"
+                        printS("Could not automatically get the web name for this StreamSource, will be named \"" , name, "\".", color = BashColor.WARNING)                  
                         
-                    _playlist = Main.playlistService.get(_ids[0])
-                    _entity = StreamSource(name = _name, uri = _uri, enableFetch = _enableFetch, backgroundContent = _bgContent)
-                    _addResult = Main.playlistService.addStreamSources(_playlist.id, [_entity])
-                    if(len(_addResult) > 0):
-                        printS("Added StreamSource \"", _addResult[0].name, "\" to Playlist \"", _playlist.name, "\".", color = BashColor.OKGREEN)
+                    playlist = Main.playlistService.get(ids[0])
+                    entity = StreamSource(name = name, uri = uri, enableFetch = enableFetch, backgroundContent = bgContent)
+                    addResult = Main.playlistService.addStreamSources(playlist.id, [entity])
+                    if(len(addResult) > 0):
+                        printS("Added StreamSource \"", addResult[0].name, "\" to Playlist \"", playlist.name, "\".", color = BashColor.OKGREEN)
                     else:
                         printS("Failed to create StreamSource.", color = BashColor.FAIL)
 
-                    argIndex += len(_input) + 1
+                    argIndex += len(inputArgs) + 1
                     continue
 
                 elif(arg in Main.commands.deleteSourceCommands):
                     # Expected input: playlistId or index, streamSourceIds or indices
-                    _input = extractArgs(argIndex, argV)
+                    inputArgs = extractArgs(argIndex, argV)
 
-                    _playlistIds = getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll(), 1, debug = DEBUG)
-                    if(len(_playlistIds) == 0):
+                    playlistIds = getIdsFromInput(inputArgs, Main.playlistService.getAllIds(), Main.playlistService.getAll(), 1, debug = DEBUG)
+                    if(len(playlistIds) == 0):
                         printS("Failed to delete StreamSources, missing playlistId or index.", color = BashColor.FAIL)
-                        argIndex += len(_input) + 1
+                        argIndex += len(inputArgs) + 1
                         continue
                     
-                    _playlist = Main.playlistService.get(_playlistIds[0])
-                    _streamSourceIds = getIdsFromInput(_input[1:], _playlist.streamSourceIds, Main.playlistService.getSourcesByPlaylistId(_playlist.id), debug = DEBUG)
-                    if(len(_streamSourceIds) == 0):
+                    playlist = Main.playlistService.get(playlistIds[0])
+                    streamSourceIds = getIdsFromInput(inputArgs[1:], playlist.streamSourceIds, Main.playlistService.getSourcesByPlaylistId(playlist.id), debug = DEBUG)
+                    if(len(streamSourceIds) == 0):
                         printS("Failed to delete StreamSources, missing streamSourceIds or indices.", color = BashColor.FAIL)
-                        argIndex += len(_input) + 1
+                        argIndex += len(inputArgs) + 1
                         continue
                     
-                    _result = Main.playlistService.deleteStreamSources(_playlist.id, _streamSourceIds)
-                    if(len(_result) > 0):
-                        printS("Deleted ", len(_result), " StreamSources successfully from playlist \"", _playlist.name, "\".", color = BashColor.OKGREEN)
+                    result = Main.playlistService.deleteStreamSources(playlist.id, streamSourceIds)
+                    if(len(result) > 0):
+                        printS("Deleted ", len(result), " StreamSources successfully from playlist \"", playlist.name, "\".", color = BashColor.OKGREEN)
                     else:
                         printS("Failed to delete StreamSources.", color = BashColor.FAIL)
 
-                    argIndex += len(_input) + 1
+                    argIndex += len(inputArgs) + 1
                     continue
                 
                 elif(arg in Main.commands.restoreSourceCommands):
                     # Expected input: playlistId or index, streamSourceIds or indices
-                    _input = extractArgs(argIndex, argV)
+                    inputArgs = extractArgs(argIndex, argV)
 
-                    _playlistIds = getIdsFromInput(_input, Main.playlistService.getAllIds(), Main.playlistService.getAll(), 1, debug = DEBUG)
-                    if(len(_playlistIds) == 0):
+                    playlistIds = getIdsFromInput(inputArgs, Main.playlistService.getAllIds(), Main.playlistService.getAll(), 1, debug = DEBUG)
+                    if(len(playlistIds) == 0):
                         printS("Failed to restore StreamSources, missing playlistId or index.", color = BashColor.FAIL)
-                        argIndex += len(_input) + 1
+                        argIndex += len(inputArgs) + 1
                         continue
                     
-                    _playlist = Main.playlistService.get(_playlistIds[0])
-                    _streamSourceIds = getIdsFromInput(_input[1:], Main.streamSourceService.getAllIds(includeSoftDeleted = True), Main.playlistService.getSourcesByPlaylistId(_playlist.id, includeSoftDeleted = True), debug = DEBUG)
-                    if(len(_streamSourceIds) == 0):
+                    playlist = Main.playlistService.get(playlistIds[0])
+                    streamSourceIds = getIdsFromInput(inputArgs[1:], Main.streamSourceService.getAllIds(includeSoftDeleted = True), Main.playlistService.getSourcesByPlaylistId(playlist.id, includeSoftDeleted = True), debug = DEBUG)
+                    if(len(streamSourceIds) == 0):
                         printS("Failed to restore StreamSources, missing streamSourceIds or indices.", color = BashColor.FAIL)
-                        argIndex += len(_input) + 1
+                        argIndex += len(inputArgs) + 1
                         continue
                     
-                    _result = Main.playlistService.restoreStreamSources(_playlist.id, _streamSourceIds)
-                    if(len(_result) > 0):
-                        printS("Restored ", len(_result), " StreamSources successfully from Playlist \"", _playlist.name, "\".", color = BashColor.OKGREEN)
+                    result = Main.playlistService.restoreStreamSources(playlist.id, streamSourceIds)
+                    if(len(result) > 0):
+                        printS("Restored ", len(result), " StreamSources successfully from Playlist \"", playlist.name, "\".", color = BashColor.OKGREEN)
                     else:
                         printS("Failed to restore StreamSources.", color = BashColor.FAIL)
 
-                    argIndex += len(_input) + 1
+                    argIndex += len(inputArgs) + 1
                     continue
 
                 elif(arg in Main.commands.listSourcesCommands):
                     # Expected input: includeSoftDeleted
-                    _input = extractArgs(argIndex, argV)
-                    _includeSoftDeleted = eval(_input[0]) if(len(_input) > 0) else False
+                    inputArgs = extractArgs(argIndex, argV)
+                    includeSoftDeleted = eval(inputArgs[0]) if(len(inputArgs) > 0) else False
 
-                    _result = Main.streamSourceService.getAll(_includeSoftDeleted)
-                    if(len(_result) > 0):
-                        for (i, _entry) in enumerate(_result):
-                            printS(i, " - ", _entry.summaryString())
+                    result = Main.streamSourceService.getAll(includeSoftDeleted)
+                    if(len(result) > 0):
+                        for (i, entry) in enumerate(result):
+                            printS(i, " - ", entry.summaryString())
                     else:
                         printS("No QueueStreams found.", color = BashColor.WARNING)
 
-                    argIndex += len(_input) + 1
+                    argIndex += len(inputArgs) + 1
                     continue
                 
                 elif(arg in Main.commands.openSourceCommands):
                     # Expected input: streamSourceIds or indices
-                    _input = extractArgs(argIndex, argV)
+                    inputArgs = extractArgs(argIndex, argV)
                     
-                    _streamSourceIds = getIdsFromInput(_input, Main.streamSourceService.getAllIds(), Main.streamSourceService.getAll(), debug = DEBUG)
-                    if(len(_streamSourceIds) == 0):
+                    streamSourceIds = getIdsFromInput(inputArgs, Main.streamSourceService.getAllIds(), Main.streamSourceService.getAll(), debug = DEBUG)
+                    if(len(streamSourceIds) == 0):
                         printS("Failed to open StreamSources, missing streamSourceIds or indices.", color = BashColor.FAIL)
-                        argIndex += len(_input) + 1
+                        argIndex += len(inputArgs) + 1
                         continue
 
-                    for _id in _streamSourceIds:
-                        _stream = Main.streamSourceService.get(_id)
-                        if(_stream != None):
-                            subprocess.Popen(f"call start {_stream.uri}", stdout = subprocess.PIPE, shell = True)
+                    for id in streamSourceIds:
+                        stream = Main.streamSourceService.get(id)
+                        if(stream != None):
+                            subprocess.Popen(f"call start {stream.uri}", stdout = subprocess.PIPE, shell = True)
                     
                         else:
                             printS("No StreamSource found.", color = BashColor.WARNING)
 
-                    argIndex += len(_input) + 1
+                    argIndex += len(inputArgs) + 1
                     continue
 
                 # Meta
                 elif(arg in Main.commands.listSettingsCommands):
                     # Expected input: none
                     
-                    _result = Main.commands.getAllSettingsAsString()
-                    print(_result)
+                    result = Main.commands.getAllSettingsAsString()
+                    print(result)
 
                     argIndex += 1
                     continue
                 
                 elif(arg in Main.commands.listSoftDeletedCommands):
                     # Expected input: simplified
-                    _input = extractArgs(argIndex, argV)
-                    _simplified = eval(_input[0]) if(len(_input) > 0) else False
+                    inputArgs = extractArgs(argIndex, argV)
+                    simplified = eval(inputArgs[0]) if(len(inputArgs) > 0) else False
                     
-                    _result = Main.sharedService.getAllSoftDeleted()
-                    if(_simplified):
-                        _resultList = [[e.summaryString() for e in l] for l in [*_result.values()]]
+                    result = Main.sharedService.getAllSoftDeleted()
+                    if(simplified):
+                        resultList = [[e.summaryString() for e in l] for l in [*result.values()]]
                     else: 
-                        _resultList = [[e.detailsString() for e in l] for l in [*_result.values()]]
+                        resultList = [[e.detailsString() for e in l] for l in [*result.values()]]
                         
-                    printLists(_resultList, [*_result.keys()])
+                    printLists(resultList, [*result.keys()])
 
-                    argIndex += len(_input) + 1
+                    argIndex += len(inputArgs) + 1
                     continue
                 
                 elif(arg in Main.commands.refactorCommands):

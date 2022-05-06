@@ -250,7 +250,7 @@ class Main:
                     continue
 
                 elif(arg in Main.commands.prunePlaylistCommands):
-                    # Expected input: playlistIds or indices, includeSoftDeleted, permanentlyDelete, "accept changes" input within purge method
+                    # Expected input: playlistIds or indices, includeSoftDeleted, permanentlyDelete, "accept changes" input within prune method
                     inputArgs = extractArgs(argIndex, argV)
                     ids = getIdsFromInput(inputArgs, Main.playlistService.getAllIds(), Main.playlistService.getAll(), debug = DEBUG)
                     lenIds = len(ids)

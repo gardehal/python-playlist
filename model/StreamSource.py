@@ -43,23 +43,23 @@ class StreamSource:
         ", Last fetch: ", self.lastSuccessfulFetched]))
 
     def detailsString(self, includeUri: bool = True, includeId: bool = True, includeDatetime: bool = True, includeListCount: bool = True):
-        _uriString = ", uri: " + self.uri if(includeUri) else ""
-        _idString = ", id: " + self.id if(includeId) else ""
-        _lastFetchedIdsString = ", lastFetchedIds: " + self.lastFetchedIds if(includeId) else ""
-        _lastFetchedString = ", lastFetched: " + str(self.lastFetched) if(includeDatetime) else ""
-        _lastSuccessfulFetchedString = ", lastSuccessfulFetched: " + str(self.lastSuccessfulFetched) if(includeDatetime) else ""
-        _deletedString = ", deleted: " + str(self.deleted) if(includeDatetime) else ""
-        _addedString = ", added: " + str(self.added) if(includeDatetime) else ""
+        uriString = ", uri: " + self.uri if(includeUri) else ""
+        idString = ", id: " + self.id if(includeId) else ""
+        lastFetchedIdsString = ", lastFetchedIds: " + self.lastFetchedIds if(includeId) else ""
+        lastFetchedString = ", lastFetched: " + str(self.lastFetched) if(includeDatetime) else ""
+        lastSuccessfulFetchedString = ", lastSuccessfulFetched: " + str(self.lastSuccessfulFetched) if(includeDatetime) else ""
+        deletedString = ", deleted: " + str(self.deleted) if(includeDatetime) else ""
+        addedString = ", added: " + str(self.added) if(includeDatetime) else ""
         
         return "".join(map(str, ["name: ", self.name,
-        _uriString,
+        uriString,
         ", isWeb: ", self.isWeb,
         ", streamSourceTypeId: ", self.streamSourceTypeId,
         ", enableFetch: ", self.enableFetch,
-        _lastFetchedString,
-        _lastSuccessfulFetchedString,
-        _lastFetchedIdsString,
+        lastFetchedString,
+        lastSuccessfulFetchedString,
+        lastFetchedIdsString,
         ", backgroundContent: ", self.backgroundContent, 
-        _deletedString,
-        _addedString,
-        _idString]))
+        deletedString,
+        addedString,
+        idString]))

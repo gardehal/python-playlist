@@ -33,19 +33,19 @@ class QueueStream:
         ", is web" if(self.isWeb) else ""]))
 
     def detailsString(self, includeUri: bool = True, includeId: bool = True, includeDatetime: bool = True, includeListCount: bool = True):
-        _uriString = ", uri: " + self.uri if(includeUri) else ""
-        _streamSourceIdString = ", streamSourceId: " + str(self.streamSourceId) if(includeId) else ""
-        _idString = ", id: " + self.id if(includeId) else ""
-        _watchedString = ", watched: " + str(self.watched) if(includeDatetime) else ""
-        _deletedString = ", deleted: " + str(self.deleted) if(includeDatetime) else ""
-        _addedString = ", added: " + str(self.added) if(includeDatetime) else ""
+        uriString = ", uri: " + self.uri if(includeUri) else ""
+        streamSourceIdString = ", streamSourceId: " + str(self.streamSourceId) if(includeId) else ""
+        idString = ", id: " + self.id if(includeId) else ""
+        watchedString = ", watched: " + str(self.watched) if(includeDatetime) else ""
+        deletedString = ", deleted: " + str(self.deleted) if(includeDatetime) else ""
+        addedString = ", added: " + str(self.added) if(includeDatetime) else ""
         
         return "".join(map(str, ["name: ", self.name,
-        _uriString,
+        uriString,
         ", isWeb: ", self.isWeb, 
-        _streamSourceIdString,
-        _watchedString, 
+        streamSourceIdString,
+        watchedString, 
         ", backgroundContent: ", self.backgroundContent, 
-        _deletedString,
-        _addedString,
-        _idString]))
+        deletedString,
+        addedString,
+        idString]))

@@ -39,21 +39,21 @@ class Playlist():
         ", ", len(self.streamSourceIds), " SourceSources",]))
 
     def detailsString(self, includeUri: bool = True, includeId: bool = True, includeDatetime: bool = True, includeListCount: bool = True):
-        _idString = ", id: " + self.id if(includeId) else ""
-        _deletedString = ", deleted: " + str(self.deleted) if(includeDatetime) else ""
-        _updatedString = ", updated: " + str(self.updated) if(includeDatetime) else ""
-        _addedString = ", added: " + str(self.added) if(includeDatetime) else ""
-        _lenStreamString = ", n streamIds: " + len(self.streamIds) if(includeListCount) else ""
-        _lenStreamStreamString = ", n streamSourceIds: " + len(self.streamIds) if(includeListCount) else ""
+        idString = ", id: " + self.id if(includeId) else ""
+        deletedString = ", deleted: " + str(self.deleted) if(includeDatetime) else ""
+        updatedString = ", updated: " + str(self.updated) if(includeDatetime) else ""
+        addedString = ", added: " + str(self.added) if(includeDatetime) else ""
+        lenStreamString = ", n streamIds: " + str(len(self.streamIds)) if(includeListCount) else ""
+        lenStreamStreamString = ", n streamSourceIds: " + str(len(self.streamIds)) if(includeListCount) else ""
         
         return "".join(map(str, ["name: ", self.name, 
-        _lenStreamString, 
+        lenStreamString, 
         ", lastWatchedIndex: ", self.lastWatchedIndex, 
         ", playWatchedStreams: ", self.playWatchedStreams, 
         ", allowDuplicates: ", self.allowDuplicates, 
-        _lenStreamStreamString,
+        lenStreamStreamString,
         ", description: ", self.description,
-        _deletedString,
-        _updatedString, 
-        _addedString,
-        _idString]))
+        deletedString,
+        updatedString, 
+        addedString,
+        idString]))

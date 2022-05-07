@@ -130,8 +130,18 @@ class SharedService():
             return deletedData
         else:
             return deletedDataEmpty
+    
+    def purge(self) -> dict[List[QueueStream], List[StreamSource], List[Playlist]]:
+        """
+        Purges deleted entities.
+            
+        Returns:
+            dict[List[QueueStream], List[StreamSource], List[Playlist]]: dict with three lists, StreamSources removed, QueueStreams removed, Playlists removed from playlists
+        """
+        deletedDataEmpty = {"QueueStream": [], "StreamSource": [], "Playlist": []}
+        return deletedDataEmpty
         
-    def purge(self, includeSoftDeleted: bool = False, permanentlyDelete: bool = False) -> dict[List[QueueStream], List[StreamSource], List[str], List[str]]:
+    def purgePlaylists(self, includeSoftDeleted: bool = False, permanentlyDelete: bool = False) -> dict[List[QueueStream], List[StreamSource], List[str], List[str]]:
         """
         Purges the dangling IDs from Playlists, and purge unlinked StreamSources and QueueStreams.
 
@@ -185,8 +195,6 @@ class SharedService():
                 for id in sourceIdsToRemove:
                     playlist.streamSourceIds.remove(id)
                 
-                streamIdsToRemove.extend(deletedData["QueueStreamId"])
-                sourceIdsToRemove.extend(deletedData["StreamSourceId"])
                 updatedPlaylists.append(playlist)
         
         printS("\nPurge summary, the following data will be", (" PERMANENTLY REMOVED" if permanentlyDelete else " DELETED"), ":", color = BashColor.WARNING)

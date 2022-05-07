@@ -280,13 +280,19 @@ class Main:
                     includeSoftDeleted = eval(inputArgs[0]) if(len(inputArgs) > 0) else False
                     permanentlyDelete = eval(inputArgs[1]) if(len(inputArgs) > 1) else False
                     
-                    result = Main.sharedService.purge(includeSoftDeleted, permanentlyDelete)
+                    result = Main.sharedService.purgePlaylists(includeSoftDeleted, permanentlyDelete)
                     if(len(result["QueueStream"]) > 0 or len(result["StreamSource"]) > 0 or len(result["QueueStreamId"]) > 0 or len(result["StreamSourceId"]) > 0):
                         printS("Purge finished, deleted ", len(result["QueueStream"]), " QueueStream(s), ", len(result["StreamSource"]), " StreamSource(s), and ", len(result["QueueStreamId"]) + len(result["StreamSourceId"]), " ID(s).", color = BashColor.OKGREEN)
                     else:
                         printS("Purge failed.", color = BashColor.FAIL)
 
                     argIndex += len(inputArgs) + 1
+                    continue
+                
+                elif(arg in Main.commands.purgeCommands):
+                    # Expected input: "accept changes" input within purge method
+
+                    argIndex += 1
                     continue
                 
                 elif(arg in Main.commands.resetPlaylistFetchCommands):

@@ -8,8 +8,10 @@ from dotenv import load_dotenv
 from grdUtil.BashColor import BashColor
 from grdUtil.FileUtil import makeFiles
 from grdUtil.InputUtil import extractArgs, getIdsFromInput, isNumber
-from grdUtil.PrintUtil import printS, printLists
+from grdUtil.PrintUtil import printLists, printS
 
+from CliController import SharedCliController
+from Commands import Commands
 from FetchService import FetchService
 from LegacyService import LegacyService
 from model.Playlist import Playlist
@@ -20,7 +22,6 @@ from PlaylistService import PlaylistService
 from QueueStreamService import QueueStreamService
 from SharedService import SharedService
 from StreamSourceService import StreamSourceService
-from Commands import Commands
 
 load_dotenv()
 DEBUG = eval(os.environ.get("DEBUG"))
@@ -37,6 +38,7 @@ class Main:
     sharedService = SharedService()
     streamSourceService = StreamSourceService()
     commands = Commands()
+    sharedCliController: SharedCliController = SharedCliController()
 
     def main():
         argC = len(sys.argv)
@@ -291,6 +293,8 @@ class Main:
                 
                 elif(arg in Main.commands.purgeCommands):
                     # Expected input: "accept changes" input within purge method
+
+                    Main.sharedCliController.purge()
 
                     argIndex += 1
                     continue

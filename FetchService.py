@@ -153,16 +153,16 @@ class FetchService():
             sanitizedTitle = sanitize(stream.title)
             printS("\tAdding \"", sanitizedTitle, "\"...")
             stream = QueueStream(name = sanitizedTitle, 
-                                           uri = stream.watch_url, 
-                                           isWeb = True,
-                                           streamSourceId = streamSource.id,
-                                           watched = None,
-                                           backgroundContent = streamSource.backgroundContent,
-                                           added = datetime.now())
+                uri = stream.watch_url, 
+                isWeb = True,
+                streamSourceId = streamSource.id,
+                watched = None,
+                backgroundContent = streamSource.backgroundContent,
+                added = datetime.now())
             newStreams.append(stream)
             
         if(len(newStreams) == 0):
-            printS("No new videos detected.", color = BashColor.OKGREEN)
+            # printS("No new videos detected.", color = BashColor.OKGREEN)
             return emptyReturn
             
         streamSource.lastFetchedIds.append(lastStreamId)

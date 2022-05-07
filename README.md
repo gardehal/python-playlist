@@ -111,3 +111,4 @@ Program for queueing and playing videos from list or from sources like channels 
 - fetch youtube still slow, probably still loading all videos from channel, in library pytube
 - purge result print on decline is wrong
 - purge doesn't delete playlists. should it? no other means of permanently remove playlist?
+- controller layer, main only parse args and issues method call to controller

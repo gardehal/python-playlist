@@ -131,15 +131,45 @@ class SharedService():
         else:
             return deletedDataEmpty
     
-    def purge(self) -> dict[List[QueueStream], List[StreamSource], List[Playlist]]:
+    def preparePurge(self) -> dict[list[QueueStream], list[StreamSource], list[Playlist]]:
         """
-        Purges deleted entities.
+        Prepare a purge to permanently remove all soft-deleted entities, getting data for doPurge.
             
         Returns:
-            dict[List[QueueStream], List[StreamSource], List[Playlist]]: dict with three lists, StreamSources removed, QueueStreams removed, Playlists removed from playlists
+            dict[list[QueueStream], list[StreamSource], list[Playlist]]: dict with lists of entities to remove
         """
-        deletedDataEmpty = {"QueueStream": [], "StreamSource": [], "Playlist": []}
-        return deletedDataEmpty
+        
+        dataEmpty = {"QueueStream": [], "StreamSource": [], "Playlist": []}
+        data = dataEmpty
+        
+        allQ = self.queueStreamService.getAll(includeSoftDeleted = True)
+        data["QueueStream"] = [_ for _ in allQ if _.deleted != None]
+        allS = self.streamSourceService.getAll(includeSoftDeleted = True)
+        data["StreamSource"] = [_ for _ in allS if _.deleted != None]
+        allP = self.playlistService.getAll(includeSoftDeleted = True)
+        data["Playlist"] = [_ for _ in allP if _.deleted != None]
+        
+        return data
+    
+    def doPurge(self, data: dict[list[QueueStream], list[StreamSource], list[Playlist]]) -> bool:
+        """
+        Purge (permanently remove) all soft-deleted entities given as data.
+            
+        Args:
+            data (dict[list[QueueStream], list[StreamSource], list[Playlist]]): Data to remove.
+            
+        Returns:
+            bool: result
+        """
+        
+        for _ in data["QueueStream"]:
+            self.queueStreamService.remove(_.id, True)
+        for _ in data["StreamSource"]:
+            self.streamSourceService.remove(_.id, True)
+        for _ in data["Playlist"]:
+            self.playlistService.remove(_.id, True)
+            
+        return True
         
     def purgePlaylists(self, includeSoftDeleted: bool = False, permanentlyDelete: bool = False) -> dict[List[QueueStream], List[StreamSource], List[str], List[str]]:
         """
@@ -263,9 +293,9 @@ class SharedService():
         dataEmpty = {"QueueStream": [], "StreamSource": [], "Playlist": []}
         data = dataEmpty
         
-        queueStreams = self.queueStreamService.getAll()
-        streamSources = self.streamSourceService.getAll()
-        playlists = self.playlistService.getAll()
+        queueStreams = self.queueStreamService.getAll(includeSoftDeleted)
+        streamSources = self.streamSourceService.getAll(includeSoftDeleted)
+        playlists = self.playlistService.getAll(includeSoftDeleted)
         
         for entity in queueStreams:
             if(self.searchFields(searchTerm, entity.name, entity.uri) > 0):

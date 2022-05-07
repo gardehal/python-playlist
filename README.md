@@ -112,3 +112,4 @@ Program for queueing and playing videos from list or from sources like channels 
 - purge result print on decline is wrong
 - purge for deleteing all soft deleted
 - controller layer, main: parse args and call controller, controller: service call, handle input (?), print all except debug, service: manage data and call repo, repo: save/get from storage
+- rename to python-playlist

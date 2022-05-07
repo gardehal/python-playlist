@@ -170,6 +170,45 @@ class SharedService():
             self.playlistService.remove(_.id, True)
             
         return True
+    
+    def preparePurgePlaylists(self, includeSoftDeleted: bool = False, permanentlyDelete: bool = False) -> dict[list[QueueStream], list[StreamSource], list[Playlist], list[str], list[str], list[str]]:
+        """
+        Prepare a purge to delete/permanently remove QueueStreams and StreamSources from DB, while removing IDs with no entity from Playlists, getting data for doPurgePlaylists.
+        
+        Args:
+            includeSoftDeleted (bool): should soft-deleted entities be deleted
+            permanentlyDelete (bool): should entities be permanently deleted
+            
+        Returns:
+            dict[list[QueueStream], list[StreamSource], list[Playlist], list[str], list[str], list[str]]: dict with lists of entities to remove
+        """
+        
+        dataEmpty = {"QueueStream": [], "StreamSource": [], "Playlist": [], "QueueStreamId": [], "StreamSourceId": [], "PlaylistId": []}
+        data = dataEmpty
+        playlists = self.playlistService.getAll(includeSoftDeleted)
+        qIds = self.queueStreamService.getAllIds(includeSoftDeleted)
+        sIds = self.streamSourceService.getAllIds(includeSoftDeleted)
+        
+        return data
+    
+    def doPurgePlaylists(self, data: dict[list[Playlist], list[str]]) -> bool:
+        """
+        Purge Playlists given as data for dangling IDs.
+            
+        Args:
+            data (dict[list[Playlist], list[str]]): Data to remove.
+            
+        Returns:
+            bool: result
+        """
+        
+        for playlist in data["Playlist"]:
+            playlist.streamIds = [_ for _ in playlist.streamIds if(_ not in data["PlaylistId"])]
+            playlist.streamSourceIds = [_ for _ in playlist.streamSourceIds if(_ not in data["PlaylistId"])]
+            
+            self.playlistService.update(playlist)
+            
+        return True
         
     def purgePlaylists(self, includeSoftDeleted: bool = False, permanentlyDelete: bool = False) -> dict[List[QueueStream], List[StreamSource], List[str], List[str]]:
         """

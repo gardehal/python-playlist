@@ -51,7 +51,7 @@ class SharedCliController():
         
         data = self.sharedService.preparePurge()
         if(not data["QueueStream"] and not data["StreamSource"] and not data["Playlist"]):
-            printS("Purge aborted, no data to delete.", color = BashColor.OKGREEN)
+            printS("Purge aborted, nothing to purge.", color = BashColor.OKGREEN)
             return None
         
         qTitle = "QueueStream(s)"
@@ -69,6 +69,44 @@ class SharedCliController():
             result = self.sharedService.doPurge(data)
             if(result):
                 printS("Purge completed.", color = BashColor.OKGREEN)
+            else:
+                printS("Purge failed.", color = BashColor.FAIL)
+        
+        return data
+    
+    def purgePlaylists(self, includeSoftDeleted: bool = False, permanentlyDelete: bool = False) -> dict[list[QueueStream], list[StreamSource], list[Playlist]]:
+        """
+        Purges deleted entities.
+            
+        Returns:
+            dict[list[QueueStream], list[StreamSource], list[Playlist]]: dict with lists of entities removed
+        """
+        
+        data = self.sharedService.preparePurgePlaylists(includeSoftDeleted, permanentlyDelete)
+        if(not data["QueueStream"] and not data["StreamSource"] and not data["Playlist"]):
+            printS("Purge aborted, nothing to purge.", color = BashColor.OKGREEN)
+            return None
+        
+        qTitle = "QueueStream(s)"
+        qDataList = [(_.id + " - " + _.name) for _ in data["QueueStream"]]
+        sTitle = "StreamSource(s)"
+        sDataList = [(_.id + " - " + _.name) for _ in data["StreamSource"]]
+        pTitle = "Playlist(s) updated"
+        pDataList = [(_.id + " - " + _.name) for _ in data["Playlist"]]
+        
+        printLists([qDataList, sDataList, pDataList], [qTitle, sTitle, pTitle])
+        
+        printS("\nDo you want to ", ("PERMANENTLY REMOVE" if permanentlyDelete else "DELETE"), " REMOVE this data?", color = BashColor.WARNING)
+        inputArgs = input("(y/n): ")
+        
+        if(inputArgs in StaticUtil.affirmative):
+            result = self.sharedService.doPurge(data)
+            result = result and self.sharedService.doPurgePlaylists(data)
+            if(result):
+                printS("Purge completed.", color = BashColor.OKGREEN)
+            else:
+                printS("Purge failed.", color = BashColor.FAIL)
+                
         
         return data
         

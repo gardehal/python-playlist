@@ -215,9 +215,17 @@ class SharedService():
                 data["StreamSource"].append(entity)
         
         for playlist in playlists:
-            if(any(_ in playlist.streamIds for _ in unlinkedPlaylistQueueStreamIds)
-                or any(_ in playlist.streamSourceIds for _ in unlinkedPlaylistStreamStreamIds)):
-                data["Playlist"].append(playlist)
+            for id in playlist.streamIds:
+                if(not self.queueStreamService.exists(id)):
+                    print(playlist.name)
+                    print(id)
+                    data["Playlist"].append(playlist)
+                    break
+                
+            for id in playlist.streamSourceIds:
+                if(not self.streamSourceService.exists(id)):
+                    data["Playlist"].append(playlist)
+                    break
                 
         return data
     
@@ -233,8 +241,11 @@ class SharedService():
         """
         
         for playlist in data["Playlist"]:
-            playlist.streamIds = [_ for _ in playlist.streamIds if(_ not in data["PlaylistId"])]
-            playlist.streamSourceIds = [_ for _ in playlist.streamSourceIds if(_ not in data["PlaylistId"])]
+            updatedStreamIds = playlist.streamIds
+            updatedStreamSourceService = playlist.streamSourceIds
+            
+            playlist.streamIds = updatedStreamIds
+            playlist.streamSourceIds = updatedStreamSourceService
             
             self.playlistService.update(playlist)
             

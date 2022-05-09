@@ -40,7 +40,6 @@ class SharedCliController():
         self.sharedService = SharedService()
         self.streamSourceService = StreamSourceService()
         
-    
     def purge(self) -> dict[list[QueueStream], list[StreamSource], list[Playlist]]:
         """
         Purges deleted entities.
@@ -60,12 +59,15 @@ class SharedCliController():
         sDataList = [(_.id + " - " + _.name) for _ in data["StreamSource"]]
         pTitle = "Playlist(s)"
         pDataList = [(_.id + " - " + _.name) for _ in data["Playlist"]]
-        printLists([qDataList, sDataList, pDataList], [qTitle, sTitle, pTitle])
         
+        printLists([qDataList, sDataList, pDataList], [qTitle, sTitle, pTitle])
         printS("\nDo you want to PERMANENTLY REMOVE this data?", color = BashColor.WARNING)
         inputArgs = input("(y/n): ")
         
-        if(inputArgs in StaticUtil.affirmative):
+        if(inputArgs not in StaticUtil.affirmative):
+            printS("Purge aborted by user.", color = BashColor.WARNING)
+            return None
+        else:
             result = self.sharedService.doPurge(data)
             if(result):
                 printS("Purge completed.", color = BashColor.OKGREEN)
@@ -95,18 +97,19 @@ class SharedCliController():
         pDataList = [(_.id + " - " + _.name) for _ in data["Playlist"]]
         
         printLists([qDataList, sDataList, pDataList], [qTitle, sTitle, pTitle])
-        
         printS("\nDo you want to ", ("PERMANENTLY REMOVE" if permanentlyDelete else "DELETE"), " REMOVE this data?", color = BashColor.WARNING)
         inputArgs = input("(y/n): ")
         
-        if(inputArgs in StaticUtil.affirmative):
+        if(inputArgs not in StaticUtil.affirmative):
+            printS("Purge aborted by user.", color = BashColor.WARNING)
+            return None
+        else:
             result = self.sharedService.doPurge(data)
             result = result and self.sharedService.doPurgePlaylists(data)
             if(result):
                 printS("Purge completed.", color = BashColor.OKGREEN)
             else:
                 printS("Purge failed.", color = BashColor.FAIL)
-                
-        
+             
         return data
         

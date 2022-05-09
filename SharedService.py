@@ -171,7 +171,7 @@ class SharedService():
             
         return True
     
-    def preparePurgePlaylists(self, includeSoftDeleted: bool = False, permanentlyDelete: bool = False) -> dict[list[QueueStream], list[StreamSource], list[Playlist], list[str], list[str], list[str]]:
+    def preparePurgePlaylists(self, includeSoftDeleted: bool = False, permanentlyDelete: bool = False) -> dict[list[QueueStream], list[StreamSource], list[Playlist]]:
         """
         Prepare a purge to delete/permanently remove QueueStreams and StreamSources from DB, while removing IDs with no entity from Playlists, getting data for doPurgePlaylists.
         
@@ -180,15 +180,45 @@ class SharedService():
             permanentlyDelete (bool): should entities be permanently deleted
             
         Returns:
-            dict[list[QueueStream], list[StreamSource], list[Playlist], list[str], list[str], list[str]]: dict with lists of entities to remove
+            dict[list[QueueStream], list[StreamSource], list[Playlist]]: dict with lists of entities to remove
         """
         
-        dataEmpty = {"QueueStream": [], "StreamSource": [], "Playlist": [], "QueueStreamId": [], "StreamSourceId": [], "PlaylistId": []}
+        dataEmpty = {"QueueStream": [], "StreamSource": [], "Playlist": []}
         data = dataEmpty
         playlists = self.playlistService.getAll(includeSoftDeleted)
         qIds = self.queueStreamService.getAllIds(includeSoftDeleted)
         sIds = self.streamSourceService.getAllIds(includeSoftDeleted)
         
+        # Get all playlists
+        # get all qs and ss ids from playlists
+        # get all IDs of qs and ss
+        # remove overlapping playlist ids with all ids, the remaining are unlinked qs and ss
+        
+        # for each id in unlinked entities, if id in playlist, add playlist to list
+        
+        allPlaylistQueueStreamIds = []
+        allPlaylistStreamStreamIds = []
+        for playlist in playlists:
+            allPlaylistQueueStreamIds.extend(playlist.streamIds)
+            allPlaylistStreamStreamIds.extend(playlist.streamSourceIds)
+        
+        unlinkedPlaylistQueueStreamIds = [_ for _ in qIds if(_ not in allPlaylistQueueStreamIds)]
+        unlinkedPlaylistStreamStreamIds = [_ for _ in sIds if(_ not in allPlaylistStreamStreamIds)]
+        
+        for id in unlinkedPlaylistQueueStreamIds:
+            if(not id in allPlaylistQueueStreamIds):
+                entity = self.queueStreamService.get(id, includeSoftDeleted)
+                data["QueueStream"].append(entity)
+        for id in unlinkedPlaylistStreamStreamIds:
+            if(not id in allPlaylistStreamStreamIds):
+                entity = self.streamSourceService.get(id, includeSoftDeleted)
+                data["StreamSource"].append(entity)
+        
+        for playlist in playlists:
+            if(any(_ in playlist.streamIds for _ in unlinkedPlaylistQueueStreamIds)
+                or any(_ in playlist.streamSourceIds for _ in unlinkedPlaylistStreamStreamIds)):
+                data["Playlist"].append(playlist)
+                
         return data
     
     def doPurgePlaylists(self, data: dict[list[Playlist], list[str]]) -> bool:
@@ -196,7 +226,7 @@ class SharedService():
         Purge Playlists given as data for dangling IDs.
             
         Args:
-            data (dict[list[Playlist], list[str]]): Data to remove.
+            data (dict[list[Playlist], list[str]]): Data to remove where Playlist-list is Playlists to update, and str-list are IDs to remove from any field in Playlists.
             
         Returns:
             bool: result

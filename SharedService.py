@@ -205,6 +205,7 @@ class SharedService():
         unlinkedPlaylistQueueStreamIds = [_ for _ in qIds if(_ not in allPlaylistQueueStreamIds)]
         unlinkedPlaylistStreamStreamIds = [_ for _ in sIds if(_ not in allPlaylistStreamStreamIds)]
         
+        # Find unlinked QueueStreams and StreamSources (not found in any Playlists)
         for id in unlinkedPlaylistQueueStreamIds:
             if(not id in allPlaylistQueueStreamIds):
                 entity = self.queueStreamService.get(id, includeSoftDeleted)
@@ -214,11 +215,10 @@ class SharedService():
                 entity = self.streamSourceService.get(id, includeSoftDeleted)
                 data["StreamSource"].append(entity)
         
+        # Find IDs in Playlists with no corresponding entity
         for playlist in playlists:
             for id in playlist.streamIds:
                 if(not self.queueStreamService.exists(id)):
-                    print(playlist.name)
-                    print(id)
                     data["Playlist"].append(playlist)
                     break
                 
@@ -244,6 +244,7 @@ class SharedService():
             updatedStreamIds = playlist.streamIds
             updatedStreamSourceService = playlist.streamSourceIds
             
+            # TODO - remove not found ids
             playlist.streamIds = updatedStreamIds
             playlist.streamSourceIds = updatedStreamSourceService
             

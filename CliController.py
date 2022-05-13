@@ -104,7 +104,10 @@ class SharedCliController():
             printS("Purge aborted by user.", color = BashColor.WARNING)
             return None
         else:
-            result = self.sharedService.doPurge(data)
+            # Remove Playlists from purged data, will only be updated
+            entitiesToRemove = data
+            entitiesToRemove["Playlist"] = []
+            result = self.sharedService.doPurge(entitiesToRemove)
             result = result and self.sharedService.doPurgePlaylists(data)
             if(result):
                 printS("Purge completed.", color = BashColor.OKGREEN)

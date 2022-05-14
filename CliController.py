@@ -105,7 +105,7 @@ class SharedCliController():
             return None
         else:
             # Remove Playlists from purged data, will only be updated
-            entitiesToRemove = data
+            entitiesToRemove = data.copy()
             entitiesToRemove["Playlist"] = []
             result = self.sharedService.doPurge(entitiesToRemove)
             result = result and self.sharedService.doPurgePlaylists(data)

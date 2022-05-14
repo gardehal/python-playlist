@@ -229,22 +229,29 @@ class SharedService():
                 
         return data
     
-    def doPurgePlaylists(self, data: dict[list[Playlist], list[str]]) -> bool:
+    def doPurgePlaylists(self, data: dict[list[Playlist]]) -> bool:
         """
         Purge Playlists given as data for dangling IDs.
             
         Args:
-            data (dict[list[Playlist], list[str]]): Data to remove where Playlist-list is Playlists to update, and str-list are IDs to remove from any field in Playlists.
+            data (dict[list[Playlist]]): Data to remove where Playlist-list is Playlists to update, and str-list are IDs to remove from any field in Playlists.
             
         Returns:
             bool: result
         """
         
         for playlist in data["Playlist"]:
-            updatedStreamIds = playlist.streamIds
-            updatedStreamSourceService = playlist.streamSourceIds
+            updatedStreamIds = []
+            updatedStreamSourceService = []
             
-            # TODO - remove not found ids
+            for id in playlist.streamIds:
+                if(self.queueStreamService.exists(id)):
+                    updatedStreamIds.append(id)
+                    
+            for id in playlist.streamSourceIds:
+                if(self.streamSourceService.exists(id)):
+                    updatedStreamSourceService.append(id)
+                
             playlist.streamIds = updatedStreamIds
             playlist.streamSourceIds = updatedStreamSourceService
             

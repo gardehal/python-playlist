@@ -66,6 +66,11 @@ class Main:
                     inputArgs = extractArgs(argIndex, argV)
                     printS("Test", color = BashColor.OKBLUE)
                     
+                    print(Main.queueStreamService.exists("7a9912b5-746f-4bce-abba-e8f28660066c"))
+                    print(Main.queueStreamService.exists("02de6708-ab18-4e9a-a469-6660ecdc50a6"))
+                    print(Main.queueStreamService.exists("c4949703-30e1-4584-ab1a-2dfc03bbe0d8"))
+                    Main.sharedCliController.purgePlaylists(True, True)
+                    
                     quit()            
                     
                 elif(arg in Main.commands.editCommands):
@@ -277,18 +282,11 @@ class Main:
                     continue
                 
                 elif(arg in Main.commands.purgePlaylistCommands):
-                    # Expected input: includeSoftDeleted, permanentlyDelete, "accept changes" input within purge method
-                    inputArgs = extractArgs(argIndex, argV)
-                    includeSoftDeleted = eval(inputArgs[0]) if(len(inputArgs) > 0) else False
-                    permanentlyDelete = eval(inputArgs[1]) if(len(inputArgs) > 1) else False
+                    # Expected input: "accept changes" input within purge method
                     
-                    result = Main.sharedService.purgePlaylists(includeSoftDeleted, permanentlyDelete)
-                    if(len(result["QueueStream"]) > 0 or len(result["StreamSource"]) > 0 or len(result["QueueStreamId"]) > 0 or len(result["StreamSourceId"]) > 0):
-                        printS("Purge finished, deleted ", len(result["QueueStream"]), " QueueStream(s), ", len(result["StreamSource"]), " StreamSource(s), and ", len(result["QueueStreamId"]) + len(result["StreamSourceId"]), " ID(s).", color = BashColor.OKGREEN)
-                    else:
-                        printS("Purge failed.", color = BashColor.FAIL)
+                    Main.sharedCliController.purgePlaylists(True, True)
 
-                    argIndex += len(inputArgs) + 1
+                    argIndex += 1
                     continue
                 
                 elif(arg in Main.commands.purgeCommands):

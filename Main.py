@@ -66,11 +66,6 @@ class Main:
                     inputArgs = extractArgs(argIndex, argV)
                     printS("Test", color = BashColor.OKBLUE)
                     
-                    print(Main.queueStreamService.exists("7a9912b5-746f-4bce-abba-e8f28660066c"))
-                    print(Main.queueStreamService.exists("02de6708-ab18-4e9a-a469-6660ecdc50a6"))
-                    print(Main.queueStreamService.exists("c4949703-30e1-4584-ab1a-2dfc03bbe0d8"))
-                    Main.sharedCliController.purgePlaylists(True, True)
-                    
                     quit()            
                     
                 elif(arg in Main.commands.editCommands):
@@ -100,7 +95,7 @@ class Main:
                     
                     # result is a dict of string keys, list values, get values from [*result.values()]
                     # list of list, for each list, for each entry, str.join id, name, and uri, then join back to list of lists of strings, ready for printLists
-                    resultList = [[" - ".join([e.id, e.name, e.uri]) for e in l] for l in [*result.values()]]
+                    resultList = [[" - ".join([e.id, e.name]) for e in l] for l in [*result.values()]]
                     printLists(resultList, [*result.keys()])
                     
                     argIndex += len(inputArgs) + 1

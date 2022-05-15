@@ -211,8 +211,10 @@ class PlaybackService():
             elif(len(self.addToInputs) > 0 and " " in inputArgs and inputArgs.split(" ")[0] in self.addToInputs):
                 idsIndices = inputArgs.split(" ")[1:]
                 crossAddPlaylistResult = self.addPlaybackStreamToPlaylist(stream, idsIndices)
-                printS("\"", stream.name, "\" added to \"", crossAddPlaylistResult[0].name, "\".", color = BashColor.OKGREEN, doPrint = (len(crossAddPlaylistResult) > 0))
-                printS("\"", stream.name, "\" could not be added \"", crossAddPlaylistResult[0].name, "\".", color = BashColor.FAIL, doPrint = (len(crossAddPlaylistResult) == 0))
+                if(len(crossAddPlaylistResult) > 0):
+                    printS("\"", stream.name, "\" added to \"", crossAddPlaylistResult[0].name, "\".", color = BashColor.OKGREEN)
+                else:
+                    printS("\"", stream.name, "\" could not be added to any playlists.", color = BashColor.FAIL, doPrint = (len(crossAddPlaylistResult) == 0))
                 
             elif(len(self.printDetailsInputs) > 0 and inputArgs in self.printDetailsInputs):
                 self.playlistService.printPlaylistDetails([playlist.id])

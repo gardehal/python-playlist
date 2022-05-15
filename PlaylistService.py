@@ -9,7 +9,7 @@ from grdService.BaseService import BaseService
 from grdUtil.BashColor import BashColor
 from grdUtil.InputUtil import sanitize
 from grdUtil.LocalJsonRepository import LocalJsonRepository
-from grdUtil.PrintUtil import printS
+from grdUtil.PrintUtil import disablePrint, enablePrint, printS
 
 from model.Playlist import Playlist
 from model.QueueStream import QueueStream
@@ -68,10 +68,10 @@ class PlaylistService(BaseService[T]):
                 printS("\"", stream.name, "\" / ", stream.uri, " already exists in Playlist \"", playlist.name, "\" and allow duplicates for this Playlist is disabled.", color = BashColor.WARNING)
                 continue
 
-            addResult = self.queueStreamService.add(stream)            
-            if(addResult == None):
-                printS("\"", stream.name, "\" could not be added.", color = BashColor.FAIL)
-                continue
+            # Ignore errors
+            disablePrint()
+            addResult = self.queueStreamService.add(stream)
+            enablePrint()
 
             playlist.streamIds.append(stream.id)
             added.append(addResult)

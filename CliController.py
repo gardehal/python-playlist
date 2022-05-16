@@ -45,7 +45,7 @@ class SharedCliController():
         Purges deleted entities.
             
         Returns:
-            dict[list[QueueStream], list[StreamSource], list[Playlist]]: dict with lists of entities removed
+            dict[list[QueueStream], list[StreamSource], list[Playlist]]: dict with lists of entities removed.
         """
         
         data = self.sharedService.preparePurge()
@@ -85,7 +85,7 @@ class SharedCliController():
             permanentlyDelete (bool, optional): Should entities be permanently deleted. Defaults to False.
             
         Returns:
-            dict[list[QueueStream], list[StreamSource], list[Playlist]]: dict with lists of entities removed
+            dict[list[QueueStream], list[StreamSource], list[Playlist]]: dict with lists of entities removed.
         """
         
         data = self.sharedService.preparePurgePlaylists(includeSoftDeleted, permanentlyDelete)
@@ -120,7 +120,7 @@ class SharedCliController():
              
         return data
         
-    def prune(self, ids: list[str], includeSoftDeleted: bool = False, permanentlyDelete: bool = False) -> bool:
+    def prune(self, ids: list[str], includeSoftDeleted: bool = False, permanentlyDelete: bool = False) -> dict[List[QueueStream], List[str]]:
         """
         Removes watched streams from a Playlist if it does not allow replaying of already played streams (playWatchedStreams == False).
 
@@ -130,12 +130,16 @@ class SharedCliController():
             permanentlyDelete (bool, optional): Should entities be permanently deleted. Defaults to False.
 
         Returns:
-            bool: Result.
+            dict[List[QueueStream], List[str]]: Result.
         """
         
         if(len(ids) == 0):
             printS("Missing input: playlistIds or indices.", color = BashColor.FAIL)
-            return False
+            return None
+        
+        # TODO preparePrune and doPrune
+        # get accept after foreach
+        # clean up prints
         
         for id in ids:
             result = self.sharedService.prune(id, includeSoftDeleted, permanentlyDelete)
@@ -146,5 +150,5 @@ class SharedCliController():
             else:
                 printS("Prune failed, could not delete any QueueStream(s) from Playlist \"", playlist.name, "\".", color = BashColor.FAIL)
                 
-        return True
+        return ([], [])
     

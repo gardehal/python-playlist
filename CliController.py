@@ -79,6 +79,10 @@ class SharedCliController():
     def purgePlaylists(self, includeSoftDeleted: bool = False, permanentlyDelete: bool = False) -> dict[list[QueueStream], list[StreamSource], list[Playlist]]:
         """
         Purges deleted entities.
+
+        Args:
+            includeSoftDeleted (bool, optional): Should include soft-deleted entities. Defaults to False.
+            permanentlyDelete (bool, optional): Should entities be permanently deleted. Defaults to False.
             
         Returns:
             dict[list[QueueStream], list[StreamSource], list[Playlist]]: dict with lists of entities removed
@@ -116,3 +120,31 @@ class SharedCliController():
              
         return data
         
+    def prune(self, ids: list[str], includeSoftDeleted: bool = False, permanentlyDelete: bool = False) -> bool:
+        """
+        Removes watched streams from a Playlist if it does not allow replaying of already played streams (playWatchedStreams == False).
+
+        Args:
+            ids (list[str]): IDs of Playlists to prune.
+            includeSoftDeleted (bool, optional): Should include soft-deleted entities. Defaults to False.
+            permanentlyDelete (bool, optional): Should entities be permanently deleted. Defaults to False.
+
+        Returns:
+            bool: Result.
+        """
+        
+        if(len(ids) == 0):
+            printS("Missing input: playlistIds or indices.", color = BashColor.FAIL)
+            return False
+        
+        for id in ids:
+            result = self.sharedService.prune(id, includeSoftDeleted, permanentlyDelete)
+            playlist = self.playlistService.get(id)
+            
+            if(len(result["QueueStream"]) > 0 and len(result["QueueStreamId"]) > 0):
+                printS("Prune finished, deleted ", len(result["QueueStream"]), " QueueStream(s), ", len(result["QueueStreamId"]), " ID(s) from Playlist \"", playlist.name, "\".", color = BashColor.OKGREEN)
+            else:
+                printS("Prune failed, could not delete any QueueStream(s) from Playlist \"", playlist.name, "\".", color = BashColor.FAIL)
+                
+        return True
+    

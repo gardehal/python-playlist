@@ -252,32 +252,20 @@ class Main:
                     continue
 
                 elif(arg in Main.commands.prunePlaylistCommands):
-                    # Expected input: playlistIds or indices, includeSoftDeleted, permanentlyDelete, "accept changes" input within prune method
+                    # Expected input: playlistIds or indices, includeSoftDeleted, permanentlyDelete, "accept changes" input within method
                     inputArgs = extractArgs(argIndex, argV)
                     ids = getIdsFromInput(inputArgs, Main.playlistService.getAllIds(), Main.playlistService.getAll(), debug = DEBUG)
                     lenIds = len(ids)
                     includeSoftDeleted = eval(inputArgs[lenIds]) if(len(inputArgs) > lenIds) else False
                     permanentlyDelete = eval(inputArgs[lenIds + 1]) if(len(inputArgs) > lenIds + 1) else False
                     
-                    if(len(ids) == 0):
-                        printS("Failed to prune playlists, missing playlistIds or indices.", color = BashColor.FAIL)
-                        argIndex += len(inputArgs) + 1
-                        continue
-                    
-                    for id in ids:
-                        result = Main.sharedService.prune(id, includeSoftDeleted, permanentlyDelete)
-                        playlist = Main.playlistService.get(id)
-                        
-                        if(len(result["QueueStream"]) > 0 and len(result["QueueStreamId"]) > 0):
-                            printS("Prune finished, deleted ", len(result["QueueStream"]), " QueueStream(s), ", len(result["QueueStreamId"]), " ID(s) from Playlist \"", playlist.name, "\".", color = BashColor.OKGREEN)
-                        else:
-                            printS("Prune failed, could not delete any QueueStream(s) from Playlist \"", playlist.name, "\".", color = BashColor.FAIL)
+                    Main.sharedCliController.prune(ids, includeSoftDeleted, permanentlyDelete)
 
                     argIndex += len(inputArgs) + 1
                     continue
                 
                 elif(arg in Main.commands.purgePlaylistCommands):
-                    # Expected input: "accept changes" input within purge method
+                    # Expected input: "accept changes" input within method
                     
                     Main.sharedCliController.purgePlaylists(True, True)
 
@@ -285,7 +273,7 @@ class Main:
                     continue
                 
                 elif(arg in Main.commands.purgeCommands):
-                    # Expected input: "accept changes" input within purge method
+                    # Expected input: "accept changes" input within method
 
                     Main.sharedCliController.purge()
 

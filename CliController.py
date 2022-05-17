@@ -155,7 +155,7 @@ class SharedCliController():
             printS("Prune aborted by user.", color = BashColor.WARNING)
             return None
         else:
-            result = self.sharedService.doPrune(data)
+            result = self.sharedService.doPrune(data, includeSoftDeleted, permanentlyDelete)
             if(result):
                 printS("Prune completed.", color = BashColor.OKGREEN)
             else:

@@ -101,7 +101,7 @@ class SharedCliController():
         pDataList = [(_.id + " - " + _.name) for _ in data["Playlist"]]
         
         printLists([qDataList, sDataList, pDataList], [qTitle, sTitle, pTitle])
-        printS("\nDo you want to ", ("PERMANENTLY REMOVE" if permanentlyDelete else "DELETE"), " REMOVE this data?", color = BashColor.WARNING)
+        printS("\nDo you want to ", ("PERMANENTLY REMOVE" if permanentlyDelete else "DELETE"), " this data?", color = BashColor.WARNING)
         inputArgs = input("(y/n): ")
         
         if(inputArgs not in StaticUtil.affirmative):
@@ -120,35 +120,46 @@ class SharedCliController():
              
         return data
         
-    def prune(self, ids: list[str], includeSoftDeleted: bool = False, permanentlyDelete: bool = False) -> dict[List[QueueStream], List[str]]:
+    def prune(self, id: str, includeSoftDeleted: bool = False, permanentlyDelete: bool = False) -> dict[list[Playlist], list[QueueStream]]:
         """
         Removes watched streams from a Playlist if it does not allow replaying of already played streams (playWatchedStreams == False).
 
         Args:
-            ids (list[str]): IDs of Playlists to prune.
+            id (str): ID of Playlists to prune.
             includeSoftDeleted (bool, optional): Should include soft-deleted entities. Defaults to False.
             permanentlyDelete (bool, optional): Should entities be permanently deleted. Defaults to False.
 
         Returns:
-            dict[List[QueueStream], List[str]]: Result.
+            dict[list[QueueStream], list[str]]: Result.
         """
         
-        if(len(ids) == 0):
-            printS("Missing input: playlistIds or indices.", color = BashColor.FAIL)
+        if(id == None):
+            printS("Missing input: playlistId or index.", color = BashColor.FAIL)
             return None
         
-        # TODO preparePrune and doPrune
-        # get accept after foreach
-        # clean up prints
+        data = self.sharedService.preparePrune(id, includeSoftDeleted)
+        if(not data["QueueStream"] and not data["Playlist"]):
+            printS("Prune aborted, nothing to prune.", color = BashColor.OKGREEN)
+            return None
         
-        for id in ids:
-            result = self.sharedService.prune(id, includeSoftDeleted, permanentlyDelete)
-            playlist = self.playlistService.get(id)
-            
-            if(len(result["QueueStream"]) > 0 and len(result["QueueStreamId"]) > 0):
-                printS("Prune finished, deleted ", len(result["QueueStream"]), " QueueStream(s), ", len(result["QueueStreamId"]), " ID(s) from Playlist \"", playlist.name, "\".", color = BashColor.OKGREEN)
+        pTitle = "Playlist"
+        pDataList = [(_.id + " - " + _.name) for _ in data["Playlist"]]
+        qTitle = "QueueStream(s)"
+        qDataList = [(_.id + " - " + _.name) for _ in data["QueueStream"]]
+        
+        printLists([pDataList, qDataList], [pTitle, qTitle])
+        printS("\nDo you want to ", ("PERMANENTLY REMOVE" if permanentlyDelete else "DELETE"), " this data?", color = BashColor.WARNING)
+        inputArgs = input("(y/n): ")
+        
+        if(inputArgs not in StaticUtil.affirmative):
+            printS("Prune aborted by user.", color = BashColor.WARNING)
+            return None
+        else:
+            result = self.sharedService.doPrune(data)
+            if(result):
+                printS("Prune completed.", color = BashColor.OKGREEN)
             else:
-                printS("Prune failed, could not delete any QueueStream(s) from Playlist \"", playlist.name, "\".", color = BashColor.FAIL)
-                
-        return ([], [])
+                printS("Prune failed.", color = BashColor.FAIL)
+        
+        return data
     

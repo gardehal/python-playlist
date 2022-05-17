@@ -7,7 +7,7 @@ import validators
 from dotenv import load_dotenv
 from grdUtil.BashColor import BashColor
 from grdUtil.FileUtil import makeFiles
-from grdUtil.InputUtil import extractArgs, getIdsFromInput, isNumber
+from grdUtil.InputUtil import extractArgs, getIdsFromInput, getIfExists, isNumber
 from grdUtil.PrintUtil import printLists, printS
 
 from CliController import SharedCliController
@@ -252,14 +252,13 @@ class Main:
                     continue
 
                 elif(arg in Main.commands.prunePlaylistCommands):
-                    # Expected input: playlistIds or indices, includeSoftDeleted, permanentlyDelete, "accept changes" input within method
+                    # Expected input: playlistId or index, includeSoftDeleted, permanentlyDelete, "accept changes" input within method
                     inputArgs = extractArgs(argIndex, argV)
-                    ids = getIdsFromInput(inputArgs, Main.playlistService.getAllIds(), Main.playlistService.getAll(), debug = DEBUG)
-                    lenIds = len(ids)
-                    includeSoftDeleted = eval(inputArgs[lenIds]) if(len(inputArgs) > lenIds) else False
-                    permanentlyDelete = eval(inputArgs[lenIds + 1]) if(len(inputArgs) > lenIds + 1) else False
+                    id = getIdsFromInput(inputArgs, Main.playlistService.getAllIds(), Main.playlistService.getAll(), returnOnNonIds = True, debug = DEBUG)
+                    includeSoftDeleted = eval(getIfExists(inputArgs, 1, "False"))
+                    permanentlyDelete = eval(getIfExists(inputArgs, 2, "False"))
                     
-                    Main.sharedCliController.prune(ids, includeSoftDeleted, permanentlyDelete)
+                    Main.sharedCliController.prune(id, includeSoftDeleted, permanentlyDelete)
 
                     argIndex += len(inputArgs) + 1
                     continue

@@ -77,7 +77,7 @@ class SharedService():
         """
         
         dataEmpty = { "Playlist": [], "QueueStream": []}
-        data = dataEmpty
+        data = dataEmpty.copy()
 
         playlist = self.playlistService.get(playlistId, includeSoftDeleted)
         if(playlist == None or playlist.playWatchedStreams):
@@ -91,32 +91,32 @@ class SharedService():
         
         return data
     
-    def doPrune(self, data: dict[list[Playlist], list[QueueStream]], permanentlyDelete: bool = False) -> bool:
+    def doPrune(self, data: dict[list[Playlist], list[QueueStream]], includeSoftDeleted: bool = False, permanentlyDelete: bool = False) -> bool:
         """
         Prune (permanently remove/soft delete) watched QueueStreams from Playlists given as data.
         
         Args:
             dict[list[Playlist], list[QueueStream]]): Data to remove.
+            includeSoftDeleted (bool): Should soft-deleted entities be deleted.
             permanentlyDelete (bool): Should entities be permanently deleted.
             
         Returns:
             bool: Result.
         """
         
-        # for stream in deletedData["QueueStream"]:
-        #     if(permanentlyDelete):
-        #         self.queueStreamService.remove(stream.id, includeSoftDeleted)
-        #     else:
-        #         self.queueStreamService.delete(stream.id)
+        for stream in data["QueueStream"]:
+            if(permanentlyDelete):
+                self.queueStreamService.remove(stream.id, includeSoftDeleted)
+            else:
+                self.queueStreamService.delete(stream.id)
                 
-        #     playlist.streamIds.remove(stream.id)
-        
-        # updateResult = self.playlistService.update(playlist)
-        # if(updateResult != None):
-        #     return deletedData
-        # else:
-        #     return deletedDataEmpty
-            
+            for playlist in data["Playlist"]:
+                playlist.streamIds.remove(stream.id)
+                result = self.playlistService.update(playlist)
+                if(not result):
+                    printS("DEBUG: doPrune - failed to update Playlist \"", playlist.name, "\".", color = BashColor.WARNING, doPrint = DEBUG)
+                    return False
+                    
         return True
     
     def preparePurge(self) -> dict[list[QueueStream], list[StreamSource], list[Playlist]]:
@@ -128,7 +128,7 @@ class SharedService():
         """
         
         dataEmpty = {"QueueStream": [], "StreamSource": [], "Playlist": []}
-        data = dataEmpty
+        data = dataEmpty.copy()
         
         allQ = self.queueStreamService.getAll(includeSoftDeleted = True)
         data["QueueStream"] = [_ for _ in allQ if _.deleted != None]
@@ -172,7 +172,7 @@ class SharedService():
         """
         
         dataEmpty = {"QueueStream": [], "StreamSource": [], "Playlist": []}
-        data = dataEmpty
+        data = dataEmpty.copy()
         playlists = self.playlistService.getAll(includeSoftDeleted)
         qIds = self.queueStreamService.getAllIds(includeSoftDeleted)
         sIds = self.streamSourceService.getAllIds(includeSoftDeleted)
@@ -260,7 +260,7 @@ class SharedService():
         """
         
         deletedDataEmpty = {"QueueStream": [], "StreamSource": [], "QueueStreamId": [], "StreamSourceId": []}
-        deletedData = deletedDataEmpty
+        deletedData = deletedDataEmpty.copy()
         playlists = self.playlistService.getAll(includeSoftDeleted)
         streamsIds = self.queueStreamService.getAllIds(includeSoftDeleted)
         sourcesIds = self.streamSourceService.getAllIds(includeSoftDeleted)
@@ -367,7 +367,7 @@ class SharedService():
         """
         
         dataEmpty = {"QueueStream": [], "StreamSource": [], "Playlist": []}
-        data = dataEmpty
+        data = dataEmpty.copy()
         
         queueStreams = self.queueStreamService.getAll(includeSoftDeleted)
         streamSources = self.streamSourceService.getAll(includeSoftDeleted)
@@ -415,7 +415,7 @@ class SharedService():
         """
         
         dataEmpty = {"QueueStream": [], "StreamSource": [], "Playlist": []}
-        data = dataEmpty
+        data = dataEmpty.copy()
         
         queueStreams = self.queueStreamService.getAll(includeSoftDeleted = True)
         streamSources = self.streamSourceService.getAll(includeSoftDeleted = True)

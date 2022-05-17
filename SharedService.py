@@ -64,101 +64,58 @@ class SharedService():
 
         return sanitize(title).strip()
 
-    def prune(self, playlistId: str, includeSoftDeleted: bool = False, permanentlyDelete: bool = False) -> dict[List[QueueStream], List[str]]:
+    def preparePrune(self, playlistId: str, includeSoftDeleted: bool = False) -> dict[list[Playlist], list[QueueStream]]:
         """
-        Removes watched streams from a Playlist if it does not allow replaying of already played streams (playWatchedStreams == False).
-
+        Prepare a prune to permanently remove all soft-deleted entities, getting data for doPrune.
+        
         Args:
             playlistId (str): ID of playlist to prune.
-            includeSoftDeleted (bool): should include soft-deleted entities.
-            permanentlyDelete (bool): should entities be permanently deleted.
-
+            includeSoftDeleted (bool, optional): Should include soft-deleted entities. Defaults to False.
+            
         Returns:
-            dict[List[QueueStream], List[str]]: StreamSources removed from database, StreamSourceId removed from playlist.
+            dict[list[Playlist], list[QueueStream]]: Entities to remove.
         """
         
-        deletedDataEmpty = {"QueueStream": [], "QueueStreamId": []}
-        deletedData = deletedDataEmpty
+        dataEmpty = { "Playlist": [], "QueueStream": []}
+        data = dataEmpty
 
         playlist = self.playlistService.get(playlistId, includeSoftDeleted)
         if(playlist == None or playlist.playWatchedStreams):
-            return deletedDataEmpty
+            return dataEmpty
         
+        data["Playlist"].append(playlist)
         for id in playlist.streamIds:
             stream = self.queueStreamService.get(id, includeSoftDeleted)
             if(stream != None and stream.watched != None):
-                deletedData["QueueStream"].append(stream)
-            
-        # Will not do anything if streams already deleted
-        for stream in deletedData["QueueStream"]:
-            deletedData["QueueStreamId"].append(stream.id)
-            
-        printS("\nPrune summary, the following data will be", (" PERMANENTLY REMOVED" if permanentlyDelete else " DELETED"), ":", color = BashColor.WARNING)
-            
-        printS("\nQueueStream(s)", color = BashColor.BOLD)
-        printS("No QueueStreams will be removed", doPrint = len(deletedData["QueueStream"]) == 0)
-        for stream in deletedData["QueueStream"]:
-            print(stream.id + " - " + stream.name)
-            
-        printS("\nQueueStream ID(s)", color = BashColor.BOLD)
-        printS("No IDs will be removed", doPrint = len(deletedData["QueueStreamId"]) == 0)
-        for id in deletedData["QueueStreamId"]:
-            print(id)
-            
-        printS("\nRemoving ", len(deletedData["QueueStream"]), " watched QueueStream(s) and ", len(deletedData["QueueStreamId"]), " ID(s) in Playlist \"", playlist.name, "\".")
-        printS("Do you want to", (" PERMANENTLY REMOVE" if permanentlyDelete else " DELETE"), " this data?", color = BashColor.WARNING)
-        inputArgs = input("(y/n):")
-        if(inputArgs not in StaticUtil.affirmative):
-            printS("Prune aborted by user.", color = BashColor.WARNING)
-            return deletedDataEmpty
-        
-        if(len(deletedData["QueueStream"]) == 0 and len(deletedData["QueueStreamId"]) == 0):
-            printS("No data was available.", color = BashColor.WARNING)
-            return deletedDataEmpty
-        
-        printS("DEBUG: prune - remove streams", color = BashColor.WARNING, doPrint = DEBUG)
-        for stream in deletedData["QueueStream"]:
-            if(permanentlyDelete):
-                self.queueStreamService.remove(stream.id, includeSoftDeleted)
-            else:
-                self.queueStreamService.delete(stream.id)
-                
-            playlist.streamIds.remove(stream.id)
-        
-        updateResult = self.playlistService.update(playlist)
-        if(updateResult != None):
-            return deletedData
-        else:
-            return deletedDataEmpty
-    
-    def preparePrune(self, playlistId: str, includeSoftDeleted: bool = False) -> dict[list[QueueStream], list[StreamSource]]:
-        """
-        Prepare a prune to permanently remove all soft-deleted entities, getting data for doPurge.
-            
-        Args:
-            playlistId (str): ID of playlist to prune.
-            includeSoftDeleted (bool): Should include soft-deleted entities.
-            
-        Returns:
-            dict[list[QueueStream], list[StreamSource]]: Entities to remove.
-        """
-        
-        dataEmpty = {"QueueStream": [], "QueueStreamId": []}
-        data = dataEmpty
+                data["QueueStream"].append(stream)
         
         return data
     
-    def doPrune(self, data: dict[list[QueueStream], list[StreamSource]]) -> bool:
+    def doPrune(self, data: dict[list[Playlist], list[QueueStream]], permanentlyDelete: bool = False) -> bool:
         """
         Prune (permanently remove/soft delete) watched QueueStreams from Playlists given as data.
-            
+        
         Args:
-            data (dict[list[QueueStream], list[StreamSource]]): Data to remove.
+            dict[list[Playlist], list[QueueStream]]): Data to remove.
+            permanentlyDelete (bool): Should entities be permanently deleted.
             
         Returns:
             bool: Result.
         """
         
+        # for stream in deletedData["QueueStream"]:
+        #     if(permanentlyDelete):
+        #         self.queueStreamService.remove(stream.id, includeSoftDeleted)
+        #     else:
+        #         self.queueStreamService.delete(stream.id)
+                
+        #     playlist.streamIds.remove(stream.id)
+        
+        # updateResult = self.playlistService.update(playlist)
+        # if(updateResult != None):
+        #     return deletedData
+        # else:
+        #     return deletedDataEmpty
             
         return True
     

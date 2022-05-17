@@ -252,13 +252,15 @@ class Main:
                     continue
 
                 elif(arg in Main.commands.prunePlaylistCommands):
-                    # Expected input: playlistId or index, includeSoftDeleted, permanentlyDelete, "accept changes" input within method
+                    # Expected input: playlistIds or indices, includeSoftDeleted, permanentlyDelete, "accept changes" input within method
                     inputArgs = extractArgs(argIndex, argV)
-                    id = getIdsFromInput(inputArgs, Main.playlistService.getAllIds(), Main.playlistService.getAll(), returnOnNonIds = True, debug = DEBUG)
-                    includeSoftDeleted = eval(getIfExists(inputArgs, 1, "False"))
-                    permanentlyDelete = eval(getIfExists(inputArgs, 2, "False"))
+                    ids = getIdsFromInput(inputArgs, Main.playlistService.getAllIds(), Main.playlistService.getAll(), returnOnNonIds = True, debug = DEBUG)
+                    lenIds = len(ids)
+                    includeSoftDeleted = eval(getIfExists(inputArgs, lenIds, "False"))
+                    permanentlyDelete = eval(getIfExists(inputArgs, lenIds + 1, "False"))
                     
-                    Main.sharedCliController.prune(id, includeSoftDeleted, permanentlyDelete)
+                    for id in ids:
+                        Main.sharedCliController.prune(id, includeSoftDeleted, permanentlyDelete)
 
                     argIndex += len(inputArgs) + 1
                     continue

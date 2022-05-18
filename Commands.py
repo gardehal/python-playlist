@@ -118,9 +118,9 @@ class Commands():
         result = ""
         result += "\n--- Help ---"
         result += "\nArguments marked with ? are optional."
-        result += "\nAll arguments that triggers a function start with dash(-)."
         result += "\nAll arguments must be separated by space only."
         result += "\nWhen using an index or indices, format with with an \"i\" followed by the index, like \"i0\"."
+        result += "\nExample, print the detail so if first Playlist: \"main.py dp i0\""
         result += "\n\n"
 
         result += "\n" + str(self.helpCommands) + ": Prints this information about input arguments."

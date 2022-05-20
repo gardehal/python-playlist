@@ -128,6 +128,7 @@ class FetchService():
             return emptyReturn
 
         newStreams = []
+        newQueueStreams = []
         streams = list(channel.videos)
         lastStreamId = streams[0].video_id
         if(takeNewOnly and takeAfter == None and lastStreamId in streamSource.lastFetchedIds):
@@ -150,26 +151,30 @@ class FetchService():
                 printS("DEBUG: fetchYoutube - break due to i > batchSize", color = BashColor.WARNING)
                 break
             
+            newStreams.append(stream)
+            
+        if(len(newStreams) == 0):
+            return emptyReturn
+        
+        newStreams.reverse()
+        for stream in newStreams:
             sanitizedTitle = sanitize(stream.title)
-            printS("\tAdding \"", sanitizedTitle, "\"...")
-            stream = QueueStream(name = sanitizedTitle, 
+            printS("\tAdding \"", sanitizedTitle, "\".")
+            queueStream = QueueStream(name = sanitizedTitle, 
                 uri = stream.watch_url, 
                 isWeb = True,
                 streamSourceId = streamSource.id,
                 watched = None,
                 backgroundContent = streamSource.backgroundContent,
                 added = datetime.now())
-            newStreams.append(stream)
             
-        if(len(newStreams) == 0):
-            # printS("No new videos detected.", color = BashColor.OKGREEN)
-            return emptyReturn
+            newQueueStreams.append(queueStream)
             
         streamSource.lastFetchedIds.append(lastStreamId)
         if(len(streamSource.lastFetchedIds) > batchSize):
             streamSource.lastFetchedIds.pop(0)
         
-        return (newStreams, streamSource.lastFetchedIds)
+        return (newQueueStreams, streamSource.lastFetchedIds)
 
     def fetchDirectory(self, streamSource: StreamSource, batchSize: int = 10, takeAfter: datetime = None, takeBefore: datetime = None, takeNewOnly: bool = False) -> tuple[List[QueueStream], str]:
         """

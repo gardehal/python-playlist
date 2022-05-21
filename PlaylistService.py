@@ -1,10 +1,10 @@
 import os
 from datetime import datetime
-from typing import List
 
 import pytube
 import validators
 from dotenv import load_dotenv
+from grdException import ArgumentException, NotFoundException
 from grdService.BaseService import BaseService
 from grdUtil.BashColor import BashColor
 from grdUtil.InputUtil import sanitize
@@ -39,21 +39,21 @@ class PlaylistService(BaseService[T]):
         self.queueStreamService: QueueStreamService = QueueStreamService()
         self.streamSourceService: StreamSourceService = StreamSourceService()
 
-    def addStreams(self, playlistId: str, streams: List[QueueStream]) -> List[QueueStream]:
+    def addStreams(self, playlistId: str, streams: list[QueueStream]) -> list[QueueStream]:
         """
         Add QueueStreams to Playlist.
 
         Args:
             playlistId (str): ID of Playlist to add to
-            streams (List[QueueStream]): QueueStreams to add
+            streams (list[QueueStream]): QueueStreams to add
 
         Returns:
-            List[QueueStream]: QueueStreams added
+            list[QueueStream]: QueueStreams added
         """
 
         playlist = self.get(playlistId)
         if(playlist == None):
-            return 0
+            raise NotFoundException(f"addStreams - Playlist with ID {playlistId} was not found.")
 
         playlistStreamUris = []
         playlistStreamNames = []
@@ -87,29 +87,35 @@ class PlaylistService(BaseService[T]):
             
             return []
 
-    def deleteStreams(self, playlistId: str, streamIds: List[str]) -> List[QueueStream]:
+    def deleteStreams(self, playlistId: str, streamIds: list[str], includeSoftDeleted: bool = False, permanentlyDelete: bool = False) -> list[QueueStream]:
         """
-        (Soft) Delete QueueStreams from Playlist.
+        (Soft) Delete/remove QueueStreams from Playlist.
 
         Args:
-            playlistId (str): ID of Playlist to remove from
-            streamIds (List[str]): IDs of QueueStreams to remove
+            playlistId (str): ID of Playlist to remove from.
+            streamIds (list[str]): IDs of QueueStreams to remove.
+            includeSoftDeleted (bool, optional): Should include soft-deleted entities. Defaults to False.
+            permanentlyDelete (bool, optional): Should entities be permanently deleted. Defaults to False.
 
         Returns:
-            List[QueueStream]: QueueStream deleted
+            list[QueueStream]: QueueStream deleted/removed.
         """
 
         result = []
-        playlist = self.get(playlistId)
+        playlist = self.get(playlistId, includeSoftDeleted)
         if(playlist == None):
-            return result
+            raise NotFoundException(f"deleteStreams - Playlist with ID {playlistId} was not found.")
 
         for id in streamIds:
-            stream = self.queueStreamService.get(id)
+            stream = self.queueStreamService.get(id, includeSoftDeleted)
             if(stream == None):
                 continue
             
-            removeResult = self.queueStreamService.delete(id)
+            removeResult = None
+            if(permanentlyDelete):
+                self.queueStreamService.remove(id, includeSoftDeleted)
+            else:
+                self.queueStreamService.delete(id)
             if(removeResult != None):
                 playlist.streamIds.remove(stream.id)
                 result.append(stream)
@@ -120,22 +126,22 @@ class PlaylistService(BaseService[T]):
         else:
             return []
         
-    def restoreStreams(self, playlistId: str, streamIds: List[str]) -> List[QueueStream]:
+    def restoreStreams(self, playlistId: str, streamIds: list[str]) -> list[QueueStream]:
         """
         Restore QueueStreams to Playlist.
 
         Args:
             playlistId (str): ID of Playlist to restore to
-            streamIds (List[str]): IDs of QueueStreams to restore
+            streamIds (list[str]): IDs of QueueStreams to restore
 
         Returns:
-            List[QueueStream]: QueueStream restored
+            list[QueueStream]: QueueStream restored
         """
 
         result = []
         playlist = self.get(playlistId, includeSoftDeleted = True)
         if(playlist == None):
-            return result
+            raise NotFoundException(f"restoreStreams - Playlist with ID {playlistId} was not found.")
 
         for id in streamIds:
             stream = self.queueStreamService.get(id, includeSoftDeleted = True)
@@ -168,7 +174,7 @@ class PlaylistService(BaseService[T]):
 
         playlist = self.get(playlistId)
         if(playlist == None):
-            return 0
+            raise NotFoundException(f"moveStream - Playlist with ID {playlistId} was not found.")
 
         listLength = len(playlist.streamIds)
         if(fromIndex == toIndex):
@@ -189,21 +195,21 @@ class PlaylistService(BaseService[T]):
         playlist.updated = datetime.now()
         return self.update(playlist)
     
-    def addStreamSources(self, playlistId: str, streamSources: List[StreamSource]) -> List[StreamSource]:
+    def addStreamSources(self, playlistId: str, streamSources: list[StreamSource]) -> list[StreamSource]:
         """
         Add StreamSources to Playlist.
 
         Args:
             playlistId (str): ID of Playlist to add to
-            streamSources (List[StreamSource]): StreamSources to add
+            streamSources (list[StreamSource]): StreamSources to add
 
         Returns:
-            List[StreamSource]: StreamSources added
+            list[StreamSource]: StreamSources added
         """
 
         playlist = self.get(playlistId)
         if(playlist == None):
-            return 0
+            raise NotFoundException(f"addStreamSources - Playlist with ID {playlistId} was not found.")
 
         playlistStreamSourceUris = []
         playlistStreamSourceNames = []
@@ -236,22 +242,22 @@ class PlaylistService(BaseService[T]):
                 self.streamSourceService.remove(source.id, includeSoftDeleted = True)
             return []
     
-    def deleteStreamSources(self, playlistId: str, streamSourceIds: List[str]) -> List[StreamSource]:
+    def deleteStreamSources(self, playlistId: str, streamSourceIds: list[str]) -> list[StreamSource]:
         """
         (Soft) Delete StreamSources from Playlist.
 
         Args:
             playlistId (str): ID of Playlist to delete from
-            streamSourceIds (List[str]): IDs of StreamSources to delete
+            streamSourceIds (list[str]): IDs of StreamSources to delete
 
         Returns:
-            List[StreamSource]: StreamSources deleted
+            list[StreamSource]: StreamSources deleted
         """
 
         result = []
         playlist = self.get(playlistId)
         if(playlist == None):
-            return result
+            raise NotFoundException(f"deleteStreamSources - Playlist with ID {playlistId} was not found.")
 
         for id in streamSourceIds:
             source = self.streamSourceService.get(id)
@@ -269,22 +275,22 @@ class PlaylistService(BaseService[T]):
         else:
             return []
         
-    def restoreStreamSources(self, playlistId: str, streamSourceIds: List[str]) -> List[StreamSource]:
+    def restoreStreamSources(self, playlistId: str, streamSourceIds: list[str]) -> list[StreamSource]:
         """
         Restore StreamSources to Playlist.
 
         Args:
             playlistId (str): ID of Playlist to restore to
-            streamSourceIds (List[str]): IDs of StreamSources to restore
+            streamSourceIds (list[str]): IDs of StreamSources to restore
 
         Returns:
-            List[StreamSource]: StreamSource restored
+            list[StreamSource]: StreamSource restored
         """
 
         result = []
         playlist = self.get(playlistId, includeSoftDeleted = True)
         if(playlist == None):
-            return result
+            raise NotFoundException(f"restoreStreamSources - Playlist with ID {playlistId} was not found.")
 
         for id in streamSourceIds:
             source = self.streamSourceService.get(id, includeSoftDeleted = True)
@@ -302,7 +308,7 @@ class PlaylistService(BaseService[T]):
         else:
             return []
 
-    def getStreamsByPlaylistId(self, playlistId: str, includeSoftDeleted: bool = False) -> List[QueueStream]:
+    def getStreamsByPlaylistId(self, playlistId: str, includeSoftDeleted: bool = False) -> list[QueueStream]:
         """
         Get all QueueStreams in playlist from playlistId.
 
@@ -311,12 +317,12 @@ class PlaylistService(BaseService[T]):
             includeSoftDeleted (bool): should include soft-deleted entities
 
         Returns:
-            List[QueueStream]: QueueStreams if any, else empty list
+            list[QueueStream]: QueueStreams if any, else empty list
         """
 
         playlist = self.get(playlistId, includeSoftDeleted)
         if(playlist == None):
-            return 0
+            raise NotFoundException(f"getStreamsByPlaylistId - Playlist with ID {playlistId} was not found.")
 
         playlistStreams = []
         for id in playlist.streamIds:
@@ -329,7 +335,7 @@ class PlaylistService(BaseService[T]):
 
         return playlistStreams
     
-    def getUnwatchedStreamsByPlaylistId(self, playlistId: str, includeSoftDeleted: bool = False) -> List[QueueStream]:
+    def getUnwatchedStreamsByPlaylistId(self, playlistId: str, includeSoftDeleted: bool = False) -> list[QueueStream]:
         """
         Get unwatched QueueStreams in playlist from playlistId.
 
@@ -338,12 +344,12 @@ class PlaylistService(BaseService[T]):
             includeSoftDeleted (bool): should include soft-deleted entities
 
         Returns:
-            List[QueueStream]: QueueStreams if any, else empty list
+            list[QueueStream]: QueueStreams if any, else empty list
         """
 
         playlist = self.get(playlistId, includeSoftDeleted)
         if(playlist == None):
-            return 0
+            raise NotFoundException(f"getUnwatchedStreamsByPlaylistId - Playlist with ID {playlistId} was not found.")
 
         playlistStreams = []
         for id in playlist.streamIds:
@@ -357,7 +363,7 @@ class PlaylistService(BaseService[T]):
 
         return playlistStreams    
     
-    def getSourcesByPlaylistId(self, playlistId: str, getFetchEnabledOnly: bool = False, includeSoftDeleted: bool = False) -> List[StreamSource]:
+    def getSourcesByPlaylistId(self, playlistId: str, getFetchEnabledOnly: bool = False, includeSoftDeleted: bool = False) -> list[StreamSource]:
         """
         Get StreamSources in playlist from playlistId.
 
@@ -366,12 +372,12 @@ class PlaylistService(BaseService[T]):
             includeSoftDeleted (bool): should include soft-deleted entities
 
         Returns:
-            List[StreamSource]: StreamSources if any, else empty list
+            list[StreamSource]: StreamSources if any, else empty list
         """
 
         playlist = self.get(playlistId, includeSoftDeleted)
         if(playlist == None):
-            return 0
+            raise NotFoundException(f"getSourcesByPlaylistId - Playlist with ID {playlistId} was not found.")
 
         playlistSources = []
         for id in playlist.streamSourceIds:
@@ -400,20 +406,17 @@ class PlaylistService(BaseService[T]):
         """
         
         if(playlist == None):
-            printS("Playlist was None.", color = BashColor.FAIL)
-            return None
+            raise ArgumentException(f"addYouTubePlaylist - playlist was None.")
         
         if(not validators.url(url)):
-            printS("URL \"", url, "\" was not an accepted, absolute URL.", color = BashColor.FAIL)
-            return None
+            raise ArgumentException(f"addYouTubePlaylist - URL \"", url, "\" was not an accepted, absolute URL.")
         
         ytPlaylist = pytube.Playlist(url)
         try:
             # For some reasons the property call just fails for invalid playlist, instead of being None. Except = fail.
             ytPlaylist.title == None
         except:
-            printS("YouTube playlist given by URL \"", url, "\" was not found. It could be set to private or deleted.", color = BashColor.FAIL)
-            return None
+            raise ArgumentException(f"addYouTubePlaylist - YouTube playlist given by URL \"", url, "\" was not found. It could be set to private or deleted")
         
         if(playlist.name == None):
             playlist.name = sanitize(ytPlaylist.title)
@@ -434,12 +437,12 @@ class PlaylistService(BaseService[T]):
             
         return None
     
-    def printPlaylistDetails(self, playlistIds: List[str], includeUri: bool = False, includeId: bool = False, includeDatetime: bool = False, includeListCount: bool = False, includeSource: bool = True) -> int:
+    def printPlaylistDetails(self, playlistIds: list[str], includeUri: bool = False, includeId: bool = False, includeDatetime: bool = False, includeListCount: bool = False, includeSource: bool = True) -> int:
         """
         Print detailed info for Playlist, including details for related StreamSources and QueueStreams.
 
         Args:
-            playlistIds (List[str]): list of playlistIds to print details of
+            playlistIds (list[str]): list of playlistIds to print details of
             includeUri (bool, optional): should print include URI if any. Defaults to False
             includeId (bool, optional): should print include IDs. Defaults to False
             includeSource (bool, optional): should print include StreamSource this was fetched from. Defaults to True

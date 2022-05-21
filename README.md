@@ -109,4 +109,3 @@ Program for queueing and playing videos from list or from sources like channels 
 - rename to python-playlist
 
 - circumvent restrictions using VLC: https://www.electronicshub.org/bypass-youtube-age-restriction/#3_Using_VLC_Media_Player_on_a_Phone_or_Tablet
-- fetch videos and add in chronologic order, currently adding last video first

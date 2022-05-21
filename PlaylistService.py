@@ -44,11 +44,11 @@ class PlaylistService(BaseService[T]):
         Add QueueStreams to Playlist.
 
         Args:
-            playlistId (str): ID of Playlist to add to
-            streams (list[QueueStream]): QueueStreams to add
+            playlistId (str): ID of Playlist to add to.
+            streams (list[QueueStream]): QueueStreams to add.
 
         Returns:
-            list[QueueStream]: QueueStreams added
+            list[QueueStream]: QueueStreams added.
         """
 
         playlist = self.get(playlistId)
@@ -131,11 +131,11 @@ class PlaylistService(BaseService[T]):
         Restore QueueStreams to Playlist.
 
         Args:
-            playlistId (str): ID of Playlist to restore to
-            streamIds (list[str]): IDs of QueueStreams to restore
+            playlistId (str): ID of Playlist to restore to.
+            streamIds (list[str]): IDs of QueueStreams to restore.
 
         Returns:
-            list[QueueStream]: QueueStream restored
+            list[QueueStream]: QueueStream restored.
         """
 
         result = []
@@ -164,12 +164,12 @@ class PlaylistService(BaseService[T]):
         Move streams internally in Playlist, by index.
 
         Args:
-            playlistId (str): ID of Playlist to move in
-            fromIndex (int): index move
-            toIndex (int): index to move to
+            playlistId (str): ID of Playlist to move in.
+            fromIndex (int): index move.
+            toIndex (int): index to move to.
 
         Returns:
-            bool: success = True
+            bool: Result.
         """
 
         playlist = self.get(playlistId)
@@ -200,11 +200,11 @@ class PlaylistService(BaseService[T]):
         Add StreamSources to Playlist.
 
         Args:
-            playlistId (str): ID of Playlist to add to
-            streamSources (list[StreamSource]): StreamSources to add
+            playlistId (str): ID of Playlist to add to.
+            streamSources (list[StreamSource]): StreamSources to add.
 
         Returns:
-            list[StreamSource]: StreamSources added
+            list[StreamSource]: StreamSources added.
         """
 
         playlist = self.get(playlistId)
@@ -247,11 +247,11 @@ class PlaylistService(BaseService[T]):
         (Soft) Delete StreamSources from Playlist.
 
         Args:
-            playlistId (str): ID of Playlist to delete from
-            streamSourceIds (list[str]): IDs of StreamSources to delete
+            playlistId (str): ID of Playlist to delete from.
+            streamSourceIds (list[str]): IDs of StreamSources to delete.
 
         Returns:
-            list[StreamSource]: StreamSources deleted
+            list[StreamSource]: StreamSources deleted.
         """
 
         result = []
@@ -280,11 +280,11 @@ class PlaylistService(BaseService[T]):
         Restore StreamSources to Playlist.
 
         Args:
-            playlistId (str): ID of Playlist to restore to
-            streamSourceIds (list[str]): IDs of StreamSources to restore
+            playlistId (str): ID of Playlist to restore to.
+            streamSourceIds (list[str]): IDs of StreamSources to restore.
 
         Returns:
-            list[StreamSource]: StreamSource restored
+            list[StreamSource]: StreamSource restored.
         """
 
         result = []
@@ -313,11 +313,11 @@ class PlaylistService(BaseService[T]):
         Get all QueueStreams in playlist from playlistId.
 
         Args:
-            playlistId (str): ID of playlist to add to
-            includeSoftDeleted (bool): should include soft-deleted entities
+            playlistId (str): ID of playlist to add to.
+            includeSoftDeleted (bool): should include soft-deleted entities.
 
         Returns:
-            list[QueueStream]: QueueStreams if any, else empty list
+            list[QueueStream]: QueueStreams if any, else empty list.
         """
 
         playlist = self.get(playlistId, includeSoftDeleted)
@@ -340,11 +340,11 @@ class PlaylistService(BaseService[T]):
         Get unwatched QueueStreams in playlist from playlistId.
 
         Args:
-            playlistId (str): ID of playlist to get from
-            includeSoftDeleted (bool): should include soft-deleted entities
+            playlistId (str): ID of playlist to get from.
+            includeSoftDeleted (bool): should include soft-deleted entities.
 
         Returns:
-            list[QueueStream]: QueueStreams if any, else empty list
+            list[QueueStream]: QueueStreams if any, else empty list.
         """
 
         playlist = self.get(playlistId, includeSoftDeleted)
@@ -368,11 +368,11 @@ class PlaylistService(BaseService[T]):
         Get StreamSources in playlist from playlistId.
 
         Args:
-            playlistId (str): ID of playlist to get from
-            includeSoftDeleted (bool): should include soft-deleted entities
+            playlistId (str): ID of playlist to get from.
+            includeSoftDeleted (bool): should include soft-deleted entities.
 
         Returns:
-            list[StreamSource]: StreamSources if any, else empty list
+            list[StreamSource]: StreamSources if any, else empty list.
         """
 
         playlist = self.get(playlistId, includeSoftDeleted)
@@ -398,11 +398,11 @@ class PlaylistService(BaseService[T]):
         Create a Playlist, using a YouTube playlist as the starting point. Videos will be added as streams in the playlist TODO? and source will be the playlist.
 
         Args:
-            playlist (Playlist): Playlist to save to
-            url (str): URI to YouTube playlist
+            playlist (Playlist): Playlist to save to.
+            url (str): URI to YouTube playlist.
 
         Returns:
-            Playlist: Playlist if created, else None
+            Playlist: Playlist if created, else None.
         """
         
         if(playlist == None):
@@ -442,13 +442,13 @@ class PlaylistService(BaseService[T]):
         Print detailed info for Playlist, including details for related StreamSources and QueueStreams.
 
         Args:
-            playlistIds (list[str]): list of playlistIds to print details of
-            includeUri (bool, optional): should print include URI if any. Defaults to False
-            includeId (bool, optional): should print include IDs. Defaults to False
-            includeSource (bool, optional): should print include StreamSource this was fetched from. Defaults to True
+            playlistIds (list[str]): list of playlistIds to print details of.
+            includeUri (bool, optional): should print include URI if any. Defaults to False.
+            includeId (bool, optional): should print include IDs. Defaults to False.
+            includeSource (bool, optional): should print include StreamSource this was fetched from. Defaults to True.
             
         Returns:
-            int: number of playlists printed for
+            int: number of playlists printed for.
         """
         
         result = 0

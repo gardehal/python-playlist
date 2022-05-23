@@ -163,3 +163,48 @@ class SharedCliController():
         
         return data
     
+    def reset(self, playlistId: str, includeSoftDeleted: bool = False, permanentlyDelete: bool = False) -> Playlist:
+        """
+        Reset the fetch-status for StreamSources of Playlist given by playlistId and deletes all QueueStreams in it.
+
+        Args:
+            playlistId (str): ID of Playlist to reset.
+            includeSoftDeleted (bool, optional): Should include soft-deleted entities. Defaults to False.
+            permanentlyDelete (bool, optional): Should entities be permanently deleted. Defaults to False.
+            
+        Returns:
+            Playlist: Result.
+        """
+        
+        if(playlistId == None):
+            printS("DEBUG: reset - Missing input: playlistId", color = BashColor.WARNING, doPrint = DEBUG)
+            return None
+        
+        data = self.fetchService.prepareReset(playlistId, includeSoftDeleted)
+        if(not data["Playlist"] or (not data["QueueStream"] and not data["StreamSource"])):
+            printS("Reset aborted, nothing to reset.", color = BashColor.OKGREEN)
+            return None
+        
+        qTitle = f"QueueStream(s) - {len(data['QueueStream'])}"
+        qDataList = [(_.id + " - " + _.name) for _ in data["QueueStream"]]
+        sTitle = f"StreamSource(s) - {len(data['StreamSource'])}"
+        sDataList = [(_.id + " - " + _.name) for _ in data["StreamSource"]]
+        pTitle = f"Playlist(s) updated - {len(data['Playlist'])}"
+        pDataList = [(_.id + " - " + _.name) for _ in data["Playlist"]]
+        
+        printLists([qDataList, sDataList, pDataList], [qTitle, sTitle, pTitle])
+        printS("\nDo you want to ", ("PERMANENTLY REMOVE" if permanentlyDelete else "DELETE"), " this data?", color = BashColor.WARNING)
+        inputArgs = input("(y/n): ")
+        
+        if(inputArgs not in StaticUtil.affirmative):
+            printS("Reset aborted by user.", color = BashColor.WARNING)
+            return None
+        else:
+            result = self.fetchService.doReset(data, includeSoftDeleted, permanentlyDelete)
+            if(result):
+                printS("Reset completed.", color = BashColor.OKGREEN)
+            else:
+                printS("Reset failed.", color = BashColor.FAIL)
+        
+        return data
+    

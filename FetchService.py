@@ -4,7 +4,8 @@ from datetime import datetime
 from typing import List
 
 from dotenv import load_dotenv
-from grdException import ArgumentException, DatabaseException
+from grdException.ArgumentException import ArgumentException
+from grdException.DatabaseException import DatabaseException
 from grdUtil.BashColor import BashColor
 from grdUtil.FileUtil import mkdir
 from grdUtil.InputUtil import sanitize
@@ -232,3 +233,60 @@ class FetchService():
                 
         return result
     
+    def prepareReset(self, playlistId: str, includeSoftDeleted: bool = False, permanentlyDelete: bool = False) -> dict[list[QueueStream], list[StreamSource], Playlist]:
+        """
+        Prepare to reset the fetch-status for StreamSources of Playlist given by data and deletes all QueueStreams in it.
+
+        Args:
+            playlistId (str): ID of Playlist to reset.
+            includeSoftDeleted (bool, optional): Should include soft-deleted entities. Defaults to False.
+            permanentlyDelete (bool, optional): Should entities be permanently deleted. Defaults to False.
+            
+        Returns:
+            dict[list[QueueStream], list[StreamSource], Playlist]: Entities to reset.
+        """
+        
+        if(not playlistId):
+            raise ArgumentException(f"prepareReset - missing playlistId.")
+        
+        dataEmpty = {"QueueStream": [], "StreamSource": [], "Playlist": None}
+        data = dataEmpty.copy()
+        
+        playlist = self.playlistService.get(playlistId, includeSoftDeleted)
+        data["QueueStream"] = [] # TODO get all by ids
+        data["StreamSource"] = [] # TODO get all by ids
+        data["Playlist"] = playlist
+        
+        return data
+    
+    def doReset(self, data: dict[list[QueueStream], list[StreamSource], Playlist], includeSoftDeleted: bool = False, permanentlyDelete: bool = False) -> Playlist:
+        """
+        Reset the fetch-status for StreamSources of Playlist given by data and deletes all QueueStreams in it.
+
+        Args:
+            data (dict[list[QueueStream], list[StreamSource], Playlist]): Data to reset.
+            includeSoftDeleted (bool, optional): Should include soft-deleted entities. Defaults to False.
+            permanentlyDelete (bool, optional): Should entities be permanently deleted. Defaults to False.
+            
+        Returns:
+            Playlist: Result.
+        """
+        
+        if(not data["Playlist"] or not data["Playlist"].id):
+            raise ArgumentException(f"doReset - missing Playlist data or Playlist ID.")
+        
+        playlist = self.playlistService.get(data["Playlist"].id, includeSoftDeleted)
+        
+        deleteResult = self.playlistService.deleteStreams(playlist.id, playlist.streamIds, includeSoftDeleted, permanentlyDelete)
+        if(not deleteResult):
+            raise DatabaseException(f"doReset - failed to update Playlist {playlist.name} with id {playlist.id}.")
+        
+        for id in playlist.streamSourceIds:
+            entity = self.streamSourceService.get(id, includeSoftDeleted)
+            entity.lastFetched = None
+            entity.lastFetchedIds = []
+            updateResult = self.streamSourceService.update(entity)
+            if(not updateResult):
+                raise DatabaseException(f"doReset - failed to update StreamSource {entity.name} with id {entity.id}.")
+        
+        return self.playlistService.get(playlist.id, includeSoftDeleted)

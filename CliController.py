@@ -1,6 +1,7 @@
 import os
 
 from dotenv import load_dotenv
+from grdException.ArgumentException import ArgumentException
 from grdUtil.BashColor import BashColor
 from grdUtil.PrintUtil import printLists, printS
 from grdUtil.StaticUtil import StaticUtil
@@ -40,12 +41,12 @@ class SharedCliController():
         self.sharedService = SharedService()
         self.streamSourceService = StreamSourceService()
         
-    def prune(self, id: str, includeSoftDeleted: bool = False, permanentlyDelete: bool = False) -> dict[list[Playlist], list[QueueStream]]:
+    def prune(self, playlistId: str, includeSoftDeleted: bool = False, permanentlyDelete: bool = False) -> dict[list[Playlist], list[QueueStream]]:
         """
         Removes watched streams from a Playlist if it does not allow replaying of already played streams (playWatchedStreams == False).
 
         Args:
-            id (str): ID of Playlists to prune.
+            playlistId (str): ID of Playlist to prune.
             includeSoftDeleted (bool, optional): Should include soft-deleted entities. Defaults to False.
             permanentlyDelete (bool, optional): Should entities be permanently deleted. Defaults to False.
 
@@ -53,18 +54,17 @@ class SharedCliController():
             dict[list[QueueStream], list[str]]: Result.
         """
         
-        if(id == None):
-            printS("Missing input: playlistId or index.", color = BashColor.FAIL)
-            return None
+        if(playlistId == None):
+            raise ArgumentException(f"prune - Missing input: playlistId.")
         
-        data = self.sharedService.preparePrune(id, includeSoftDeleted)
+        data = self.sharedService.preparePrune(playlistId, includeSoftDeleted)
         if(not data["QueueStream"] and not data["Playlist"]):
             printS("Prune aborted, nothing to prune.", color = BashColor.OKGREEN)
             return None
         
-        pTitle = "Playlist"
+        pTitle = f"Playlist"
         pDataList = [(_.id + " - " + _.name) for _ in data["Playlist"]]
-        qTitle = "QueueStream(s)"
+        qTitle = f"QueueStream(s) - {len(data['QueueStream'])}"
         qDataList = [(_.id + " - " + _.name) for _ in data["QueueStream"]]
         
         printLists([pDataList, qDataList], [pTitle, qTitle])
@@ -100,11 +100,11 @@ class SharedCliController():
             printS("Purge aborted, nothing to purge.", color = BashColor.OKGREEN)
             return None
         
-        qTitle = "QueueStream(s)"
+        qTitle = f"QueueStream(s) - {len(data['QueueStream'])}"
         qDataList = [(_.id + " - " + _.name) for _ in data["QueueStream"]]
-        sTitle = "StreamSource(s)"
+        sTitle = f"StreamSource(s) - {len(data['StreamSource'])}"
         sDataList = [(_.id + " - " + _.name) for _ in data["StreamSource"]]
-        pTitle = "Playlist(s) updated"
+        pTitle = f"Playlist(s) updated - {len(data['Playlist'])}"
         pDataList = [(_.id + " - " + _.name) for _ in data["Playlist"]]
         
         printLists([qDataList, sDataList, pDataList], [qTitle, sTitle, pTitle])
@@ -140,11 +140,11 @@ class SharedCliController():
             printS("Purge aborted, nothing to purge.", color = BashColor.OKGREEN)
             return None
         
-        qTitle = "QueueStream(s)"
+        qTitle = f"QueueStream(s) - {len(data['QueueStream'])}"
         qDataList = [(_.id + " - " + _.name) for _ in data["QueueStream"]]
-        sTitle = "StreamSource(s)"
+        sTitle = f"StreamSource(s) - {len(data['StreamSource'])}"
         sDataList = [(_.id + " - " + _.name) for _ in data["StreamSource"]]
-        pTitle = "Playlist(s)"
+        pTitle = f"Playlist(s) - {len(data['Playlist'])}"
         pDataList = [(_.id + " - " + _.name) for _ in data["Playlist"]]
         
         printLists([qDataList, sDataList, pDataList], [qTitle, sTitle, pTitle])

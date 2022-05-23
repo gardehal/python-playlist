@@ -170,13 +170,6 @@ class SharedService():
         qIds = self.queueStreamService.getAllIds(includeSoftDeleted)
         sIds = self.streamSourceService.getAllIds(includeSoftDeleted)
         
-        # Get all playlists
-        # get all qs and ss ids from playlists
-        # get all IDs of qs and ss
-        # remove overlapping playlist ids with all ids, the remaining are unlinked qs and ss
-        
-        # for each id in unlinked entities, if id in playlist, add playlist to list
-        
         allPlaylistQueueStreamIds = []
         allPlaylistStreamStreamIds = []
         for playlist in playlists:

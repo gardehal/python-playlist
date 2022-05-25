@@ -1,6 +1,5 @@
 from typing import List
 from datetime import datetime
-import uuid
 
 class Playlist():
     def __init__(self, 

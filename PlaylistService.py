@@ -4,12 +4,14 @@ from datetime import datetime
 import pytube
 import validators
 from dotenv import load_dotenv
-from grdException import ArgumentException, NotFoundException
+from grdException.ArgumentException import ArgumentException
+from grdException.DatabaseException import DatabaseException
+from grdException.NotFoundException import NotFoundException
 from grdService.BaseService import BaseService
 from grdUtil.BashColor import BashColor
 from grdUtil.InputUtil import sanitize
 from grdUtil.LocalJsonRepository import LocalJsonRepository
-from grdUtil.PrintUtil import disablePrint, enablePrint, printS
+from grdUtil.PrintUtil import printS
 
 from model.Playlist import Playlist
 from model.QueueStream import QueueStream
@@ -68,11 +70,10 @@ class PlaylistService(BaseService[T]):
                 printS("\"", stream.name, "\" / ", stream.uri, " already exists in Playlist \"", playlist.name, "\" and allow duplicates for this Playlist is disabled.", color = BashColor.WARNING)
                 continue
 
-            # Ignore errors
-            disablePrint()
             addResult = self.queueStreamService.add(stream)
-            enablePrint()
-
+            if(not addResult): # Will abort add if an entity already exists with that ID
+                raise DatabaseException(f"addStreams - Failed to add streams to Playlist {playlist.name}, ID: {playlist.id}.")
+            
             playlist.streamIds.append(stream.id)
             added.append(addResult)
 

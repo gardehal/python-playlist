@@ -3,6 +3,7 @@ import random
 import subprocess
 from datetime import datetime
 from typing import List
+import uuid
 
 from dotenv import load_dotenv
 from grdUtil.BashColor import BashColor
@@ -251,7 +252,9 @@ class PlaybackService():
             return result
         
         for id in ids:
-            addResult = self.playlistService.addStreams(id, [queueStream])
+            newQueueStream = queueStream
+            newQueueStream.id = str(uuid.uuid4())
+            addResult = self.playlistService.addStreams(id, [newQueueStream])
             if(len(addResult) > 0):
                 playlist = self.playlistService.get(id)
                 result.append(playlist)

@@ -108,7 +108,6 @@ Program for queueing and playing videos from list or from sources like channels 
 - controller layer, main: parse args and call controller, controller: service call, handle input (?), print all except debug, service: manage data and call repo, repo: save/get from storage
 - rename to python-playlist
 
-- prune still doesn't remove watched streams when AddTo is run on them. video is marked as watched and still in playlist. prune must be the issue then
 - update purge and dp responses to include purge with purgePlaylists for dangleing ids, include indexes when lising even missing streams
 - circumvent restrictions using VLC: https://www.electronicshub.org/bypass-youtube-age-restriction/#3_Using_VLC_Media_Player_on_a_Phone_or_Tablet
 - watched x / y streams when finishing a playback session

@@ -1,3 +1,4 @@
+from copy import copy
 import os
 import random
 import subprocess
@@ -25,6 +26,8 @@ DOWNLOAD_WEB_STREAMS = eval(os.environ.get("DOWNLOAD_WEB_STREAMS"))
 REMOVE_WATCHED_ON_FETCH = eval(os.environ.get("REMOVE_WATCHED_ON_FETCH"))
 PLAYED_ALWAYS_WATCHED = eval(os.environ.get("PLAYED_ALWAYS_WATCHED"))
 WATCHED_LOG_FILEPATH = os.environ.get("WATCHED_LOG_FILEPATH")
+LOG_DIR_PATH = os.environ.get("LOG_DIR_PATH")
+LOG_LEVEL = os.environ.get("LOG_LEVEL")
 BROWSER_BIN = os.environ.get("BROWSER_BIN")
 
 class PlaybackService():
@@ -252,7 +255,7 @@ class PlaybackService():
             return result
         
         for id in ids:
-            newQueueStream = queueStream
+            newQueueStream = copy(queueStream)
             newQueueStream.id = str(uuid.uuid4())
             addResult = self.playlistService.addStreams(id, [newQueueStream])
             if(len(addResult) > 0):

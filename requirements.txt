@@ -1,5 +1,5 @@
-grdUtil==1.3.5
-mechanize==0.4.7
+grdUtil==1.4.1
+mechanize==0.4.8
 python-dotenv==0.20.0
-pytube==12.0.0
+pytube==12.1.0
 validators==0.18.2

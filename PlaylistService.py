@@ -60,7 +60,7 @@ class PlaylistService(BaseService[T]):
 
         playlist = self.get(playlistId)
         if(playlist == None):
-            self.log.logAsText(f"addStreams - Playlist with ID {playlistId} was not found.", LogLevel.CRITICAL)
+            self.log.logAsText(f"addStreams - Playlist with ID {playlistId} was not found.", logLevel = LogLevel.CRITICAL)
             raise NotFoundException(f"addStreams - Playlist with ID {playlistId} was not found.")
 
         playlistStreamUris = []
@@ -73,13 +73,13 @@ class PlaylistService(BaseService[T]):
         added = []
         for stream in streams:            
             if(not playlist.allowDuplicates and (stream.uri in playlistStreamUris or stream.name in playlistStreamNames)):
-                self.log.logAsText(f"addStreams - Attempted to add stream {stream.uri} but Playlist with ID {playlistId} does not allow duplicates.", LogLevel.VERBOSE)
+                self.log.logAsText(f"addStreams - Attempted to add stream {stream.uri} but Playlist with ID {playlistId} does not allow duplicates.", logLevel = LogLevel.VERBOSE)
                 printS("\"", stream.name, "\" / ", stream.uri, " already exists in Playlist \"", playlist.name, "\" and allow duplicates for this Playlist is disabled.", color = BashColor.WARNING)
                 continue
 
             addResult = self.queueStreamService.add(stream)
             if(not addResult): # Will abort add if an entity already exists with that ID
-                self.log.logAsText(f"addStreams - Failed to add streams to Playlist {playlist.name}, ID: {playlist.id}.", LogLevel.CRITICAL)
+                self.log.logAsText(f"addStreams - Failed to add streams to Playlist {playlist.name}, ID: {playlist.id}.", logLevel = LogLevel.CRITICAL)
                 raise DatabaseException(f"addStreams - Failed to add streams to Playlist {playlist.name}, ID: {playlist.id}.")
             
             playlist.streamIds.append(stream.id)
@@ -90,7 +90,7 @@ class PlaylistService(BaseService[T]):
         if(len(added) > 0 and updateResult != None):
             return added
         else:
-            self.log.logAsText(f"addStreams - No streams added and updateResult failed, removing potentially added QueueStreams.", LogLevel.CRITICAL)
+            self.log.logAsText(f"addStreams - No streams added and updateResult failed, removing potentially added QueueStreams.", logLevel = LogLevel.CRITICAL)
             # Delete added QueueStreams if update of Playlist failed
             for stream in added:
                 self.queueStreamService.remove(stream.id, includeSoftDeleted = True)
@@ -114,21 +114,21 @@ class PlaylistService(BaseService[T]):
         result = []
         playlist = self.get(playlistId, includeSoftDeleted)
         if(playlist == None):
-            self.log.logAsText(f"deleteStreams - Playlist with ID {playlistId} was not found.", LogLevel.CRITICAL)
+            self.log.logAsText(f"deleteStreams - Playlist with ID {playlistId} was not found.", logLevel = LogLevel.CRITICAL)
             raise NotFoundException(f"deleteStreams - Playlist with ID {playlistId} was not found.")
 
         for id in streamIds:
             stream = self.queueStreamService.get(id, includeSoftDeleted)
             if(stream == None):
-                self.log.logAsText("deleteStreams - Continued loop, stream == None. id: ", id, LogLevel.INFO)
+                self.log.logAsText("deleteStreams - Continued loop, stream == None. id: ", id, logLevel = LogLevel.INFO)
                 continue
             
             removeResult = None
             if(permanentlyDelete):
-                self.log.logAsText("deleteStreams - Remove. id: ", id, LogLevel.INFO)
+                self.log.logAsText("deleteStreams - Remove. id: ", id, logLevel = LogLevel.INFO)
                 removeResult = self.queueStreamService.remove(id, includeSoftDeleted)
             else:
-                self.log.logAsText("deleteStreams - Delete. id: ", id, LogLevel.INFO)
+                self.log.logAsText("deleteStreams - Delete. id: ", id, logLevel = LogLevel.INFO)
                 removeResult = self.queueStreamService.delete(id)
             if(removeResult != None):
                 playlist.streamIds.remove(stream.id)
@@ -138,7 +138,7 @@ class PlaylistService(BaseService[T]):
         if(updateResult != None):
             return result
         else:
-            self.log.logAsText("deleteStreams failed, updateResult None. PlaylistId: ", playlistId, "  streamIds: ", streamIds, LogLevel.ERROR)
+            self.log.logAsText("deleteStreams failed, updateResult None. PlaylistId: ", playlistId, "  streamIds: ", streamIds, logLevel = LogLevel.ERROR)
             return []
         
     def restoreStreams(self, playlistId: str, streamIds: list[str]) -> list[QueueStream]:

@@ -6,8 +6,10 @@ from datetime import datetime
 import validators
 from dotenv import load_dotenv
 from grdUtil.BashColor import BashColor
+from grdUtil.LogUtil import LogUtil
+from grdUtil.LogLevel import LogLevel
 from grdUtil.FileUtil import makeFiles
-from grdUtil.InputUtil import extractArgs, getIdsFromInput, getIfExists, isNumber
+from grdUtil.InputUtil import extractArgs, getIdsFromInput, getIfExists, isNumber, getEnumFromValueName
 from grdUtil.PrintUtil import printLists, printS
 
 from CliController import SharedCliController
@@ -28,6 +30,8 @@ DEBUG = eval(os.environ.get("DEBUG"))
 LOCAL_STORAGE_PATH = os.environ.get("LOCAL_STORAGE_PATH")
 WATCHED_LOG_FILEPATH = os.environ.get("WATCHED_LOG_FILEPATH")
 FETCH_LIMIT_SINGLE_SOURCE = int(os.environ.get("FETCH_LIMIT_SINGLE_SOURCE"))
+LOG_DIR_PATH = os.environ.get("LOG_DIR_PATH")
+LOG_LEVEL = os.environ.get("LOG_LEVEL")
 
 class Main:
     fetchService = FetchService()
@@ -65,6 +69,11 @@ class Main:
                 elif(arg in Main.commands.testCommands):
                     inputArgs = extractArgs(argIndex, argV)
                     printS("Test", color = BashColor.OKBLUE)
+                    
+                    # c = getEnumFromValueName(LogLevel, LOG_LEVEL.upper())
+                    # print(c)
+                    l = LogUtil("c:/python/logs/playlist", DEBUG, "DEBUG")
+                    print(l.logAsText("some message.", logLevel = LogLevel.NONE))
                     
                     quit()            
                     

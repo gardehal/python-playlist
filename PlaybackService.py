@@ -59,14 +59,14 @@ class PlaybackService():
         Start playing streams from this playlist.
 
         Args:
-            playlistId (str): ID of playlist to play from
-            quitSymbols (List[str]): input from user which should end the playback. Defaults to ["quit"]
-            startIndex (int): index to start playing from
-            shuffle (bool): shuffle videos
-            repeatPlaylist (bool): repeat playlist once it reaches the end
+            playlistId (str): ID of playlist to play from.
+            quitSymbols (List[str]): Input from user which should end the playback. Defaults to ["quit"].
+            startIndex (int): Index to start playing from.
+            shuffle (bool): Shuffle videos.
+            repeatPlaylist (bool): repeat playlist once it reaches the end.
 
         Returns:
-            bool: finished = True
+            bool: Finished.
         """
 
         playlist = self.playlistService.get(playlistId)
@@ -91,32 +91,37 @@ class PlaybackService():
         printS("Playing ", playlist.name, ".")
         printS("Starting at stream number: ", (startIndex + 1), ", shuffle is ", ("on" if shuffle else "off"), ", repeat playlist is ", ("on" if repeatPlaylist else "off"), ", played videos set to watched is ", ("on" if PLAYED_ALWAYS_WATCHED else "off"), ".")
 
-        playResult = False
+        playResult = 0
         try:
-            if(True): # Playlist mode
-                playResult = self.playCmd(playlist, streams)
+            if(True): # Play in CLI mode
+                playResult = self.playCli(playlist, streams)
         except:
             printStack(doPrint = DEBUG)
-
-        printS("Playlist \"", playlist.name, "\" finished.")
+            
+        resultPrint = ""
+        if(PLAYED_ALWAYS_WATCHED):
+            resultPrint = f" {playResult}/{len(playlist.streamIds)} QueueStreams watched"
+            
+        printS("Playlist \"", playlist.name, "\" finished", resultPrint, ".")
 
         if(repeatPlaylist):
-            self.play(playlistId, startIndex, shuffle, repeatPlaylist)
+            return self.play(playlistId, startIndex, shuffle, repeatPlaylist)
 
-        return playResult
+        return playResult > 0
     
-    def playCmd(self, playlist: Playlist, streams: List[QueueStream]) -> bool:
+    def playCli(self, playlist: Playlist, streams: List[QueueStream]) -> int:
         """
         Use CLI when playing from playback.
 
         Args:
-            playlist (Playlist): Playlist which is currently playing
-            streams (List[QueueStream]): QueueStreams to play from Playlist playlist
+            playlist (Playlist): Playlist which is currently playing.
+            streams (List[QueueStream]): QueueStreams to play from Playlist playlist.
 
         Returns:
-            bool: finished = True
+            int: Number of streams watched.
         """
         
+        nWatched = 0
         for i, stream in enumerate(streams):
             if(stream.watched != None and not playlist.playWatchedStreams):
                 checkLogsMessage = " Check your logs (" + WATCHED_LOG_FILEPATH + ") for date/time watched." if LOG_WATCHED else " Logging is disabled and date/time watched is not available."
@@ -158,24 +163,26 @@ class PlaybackService():
                 stream.watched = now
                 
                 updateSuccess = self.queueStreamService.update(stream)
-                if(not updateSuccess):
+                if(updateSuccess):
+                    nWatched += 1
+                else:
                     printS("\"", stream.name, "\" could not be updated as watched.", color=BashColor.WARNING)
                     
-        return True
+        return nWatched
 
     def handlePlaybackInput(self, playlist: Playlist, stream: QueueStream) -> int:
         """
         Handles user input and returns an int code for what the calling method should do regarding it's own loop.
         
         Args:
-            playlist (Playlist): Playlist currently playing
-            stream (QueueStream): QueueStream currently playing
+            playlist (Playlist): Playlist currently playing.
+            stream (QueueStream): QueueStream currently playing.
             
         Return codes: 
-        0 - Error, internal loop failed to return any other code
-        1 - No action needed, parent loop should be allowed to finish as normal
-        2 - continue parent loop
-        3 - break parent loop
+        0 - Error, internal loop failed to return any other code.
+        1 - No action needed, parent loop should be allowed to finish as normal.
+        2 - continue parent loop.
+        3 - break parent loop.
         """
         
         while 1: # Infinite loop until a return is hit
@@ -196,7 +203,7 @@ class PlaybackService():
             
             elif(len(self.repeatInputs) > 0 and inputArgs in self.repeatInputs):
                 printS("Repeating.", color = BashColor.OKGREEN)
-                self.playCmd(playlist, [stream]) # A little weird with prints and continueing but it works
+                self.playCli(playlist, [stream]) # A little weird with prints and continuing but it works
             
             elif(len(self.listPlaylistInputs) > 0 and inputArgs in self.listPlaylistInputs):
                 result = self.playlistService.getAll()
@@ -237,11 +244,11 @@ class PlaybackService():
         Add the QueueStream currently playing in playback, to another Playlist.
 
         Args:
-            queueStream (QueueStream): QueueStream to add
-            idsIndices (List[str]): ID or index of Playlist to add stream to
+            queueStream (QueueStream): QueueStream to add.
+            idsIndices (List[str]): ID or index of Playlist to add stream to.
 
         Returns:
-            Playlist: Playlist the stream was added to
+            Playlist: Updated Playlist the stream was added to.
         """
         
         result = []

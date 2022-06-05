@@ -5,6 +5,8 @@ from typing import List
 import mechanize
 from dotenv import load_dotenv
 from grdUtil.BashColor import BashColor
+from grdUtil.DateTimeUtil import getDateTimeAsNumber
+from grdUtil.FileUtil import mkdir
 from grdUtil.InputUtil import sanitize
 from grdUtil.PrintUtil import printS
 from pytube import YouTube
@@ -19,6 +21,7 @@ from StreamSourceService import StreamSourceService
 
 load_dotenv()
 DEBUG = eval(os.environ.get("DEBUG"))
+LOCAL_STORAGE_PATH = os.environ.get("LOCAL_STORAGE_PATH")
 
 class SharedService():
     playlistService: PlaylistService = None
@@ -311,3 +314,24 @@ class SharedService():
                 data["Playlist"].append(entity)
         
         return data
+
+    def downloadYoutube(self, url: str, fileExtension: str = "mp4") -> str:
+        """
+        Download a Youtube video to given directory.
+
+        Args:
+            url (str): URL to video to download.
+
+        Returns:
+            str: Absolute path of file.
+        """
+        
+        videoDir = os.path.join(LOCAL_STORAGE_PATH, "video", "youtube")
+        mkdir(videoDir)
+        
+        youtube = YouTube(url)
+        videoFilename = f"{str(getDateTimeAsNumber())}_{sanitize(youtube.title)}.{fileExtension}".replace(" ", "_").lower()
+        youtube.streams.filter(progressive = True, file_extension = fileExtension).order_by("resolution").desc().first().download(videoDir, videoFilename)
+                
+        return os.path.join(videoDir, videoFilename)
+    

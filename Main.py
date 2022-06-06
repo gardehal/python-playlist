@@ -6,10 +6,9 @@ from datetime import datetime
 import validators
 from dotenv import load_dotenv
 from grdUtil.BashColor import BashColor
-from grdUtil.LogUtil import LogUtil
-from grdUtil.LogLevel import LogLevel
 from grdUtil.FileUtil import makeFiles
-from grdUtil.InputUtil import extractArgs, getIdsFromInput, getIfExists, isNumber, getEnumFromValueName
+from grdUtil.InputUtil import (extractArgs, getIdsFromInput, getIfExists,
+                               isNumber)
 from grdUtil.PrintUtil import printLists, printS
 
 from CliController import SharedCliController
@@ -69,11 +68,6 @@ class Main:
                 elif(arg in Main.commands.testCommands):
                     inputArgs = extractArgs(argIndex, argV)
                     printS("Test", color = BashColor.OKBLUE)
-                    
-                    # c = getEnumFromValueName(LogLevel, LOG_LEVEL.upper())
-                    # print(c)
-                    l = LogUtil("c:/python/logs/playlist", DEBUG, "DEBUG")
-                    print(l.logAsText("some message.", logLevel = LogLevel.NONE))
                     
                     quit()            
                     

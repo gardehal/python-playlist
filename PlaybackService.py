@@ -100,14 +100,14 @@ class PlaybackService():
             
         resultPrint = ""
         if(PLAYED_ALWAYS_WATCHED):
-            resultPrint = f" {playResult}/{len(playlist.streamIds)} QueueStreams watched"
+            resultPrint = f", {playResult}/{len(playlist.streamIds)} QueueStreams watched"
             
         printS("Playlist \"", playlist.name, "\" finished", resultPrint, ".")
 
         if(repeatPlaylist):
             return self.play(playlistId, startIndex, shuffle, repeatPlaylist)
 
-        return playResult > 0
+        return True
     
     def playCli(self, playlist: Playlist, streams: List[QueueStream]) -> int:
         """

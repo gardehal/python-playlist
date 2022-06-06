@@ -3,16 +3,16 @@ import uuid
 
 class StreamSource:
     def __init__(self, 
-                 name: str = None, 
-                 uri: str = None, 
+                 name: str = None,
+                 uri: str = None,
                  isWeb: bool = None,
-                 streamSourceTypeId: int = None, 
-                 enableFetch: bool = None, 
-                 lastFetched: datetime = None, 
+                 streamSourceTypeId: int = 0,
+                 enableFetch: bool = None,
+                 lastFetched: datetime = None,
                  lastSuccessfulFetched: datetime = None,
                  lastFetchedId: str = None, # Legacy
-                 lastFetchedIds: list[str] = None,
-                 backgroundContent: bool = False, 
+                 lastFetchedIds: list[str] = [],
+                 backgroundContent: bool = False,
                  deleted: datetime = None,
                  added: datetime = datetime.now(),
                  id: str = None):

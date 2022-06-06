@@ -74,8 +74,10 @@ class FetchService():
             if(source.isWeb):
                 if(source.streamSourceTypeId == StreamSourceType.YOUTUBE.value):
                     fetchedStreams = self.fetchYoutube(source, batchSize, _takeAfter, takeBefore, takeNewOnly)
+                # elif(source.streamSourceTypeId == StreamSourceType.ODYSEE.value):
+                #     fetchedStreams = self.fetchOdysee(source, batchSize, _takeAfter, takeBefore, takeNewOnly)
                 else:
-                    # TODO handle other sources
+                    printS("\t Source \"", source.name, "\" could not be fetched as it is not implemented for this source.", color = BashColor.WARNING)
                     continue
             else:
                 fetchedStreams = self.fetchDirectory(source, batchSize, _takeAfter, takeBefore, takeNewOnly)
@@ -98,6 +100,26 @@ class FetchService():
             return len(newStreams)
         else:
             return 0
+
+    def fetchDirectory(self, streamSource: StreamSource, batchSize: int = 10, takeAfter: datetime = None, takeBefore: datetime = None, takeNewOnly: bool = False) -> tuple[List[QueueStream], str]:
+        """
+        Fetch streams from a local directory.
+
+        Args:
+            batchSize (int): Number of videos to check at a time, unrelated to max videos that will be read.  Defaults to 10.
+            takeAfter (datetime): Limit to take video after.  Defaults to None.
+            takeBefore (datetime): Limit to take video before.  Defaults to None.
+            takeNewOnly (bool): Only take streams marked as new. Disables takeAfter and takeBefore-checks. To use takeAfter and/or takeBefore, set this to False.  Defaults to False.
+
+        Returns:
+            tuple[List[QueueStream], str]: A tuple of List of QueueStream, and the last filename fetched.
+        """
+        
+        if(streamSource == None):
+            raise ArgumentException("fetchDirectory - streamSource was None")
+
+        emptyReturn = ([], streamSource.lastFetchedIds)
+        return emptyReturn
 
     def fetchYoutube(self, streamSource: StreamSource, batchSize: int = 10, takeAfter: datetime = None, takeBefore: datetime = None, takeNewOnly: bool = False) -> tuple[List[QueueStream], List[str]]:
         """
@@ -177,26 +199,6 @@ class FetchService():
             streamSource.lastFetchedIds.pop(0)
         
         return (newQueueStreams, streamSource.lastFetchedIds)
-
-    def fetchDirectory(self, streamSource: StreamSource, batchSize: int = 10, takeAfter: datetime = None, takeBefore: datetime = None, takeNewOnly: bool = False) -> tuple[List[QueueStream], str]:
-        """
-        Fetch streams from a local directory.
-
-        Args:
-            batchSize (int): Number of videos to check at a time, unrelated to max videos that will be read.  Defaults to 10.
-            takeAfter (datetime): Limit to take video after.  Defaults to None.
-            takeBefore (datetime): Limit to take video before.  Defaults to None.
-            takeNewOnly (bool): Only take streams marked as new. Disables takeAfter and takeBefore-checks. To use takeAfter and/or takeBefore, set this to False.  Defaults to False.
-
-        Returns:
-            tuple[List[QueueStream], str]: A tuple of List of QueueStream, and the last filename fetched.
-        """
-        
-        if(streamSource == None):
-            raise ArgumentException("fetchDirectory - streamSource was None")
-
-        emptyReturn = ([], streamSource.lastFetchedIds)
-        return emptyReturn
     
     def resetPlaylistFetch(self, playlistIds: List[str]) -> int:
         """

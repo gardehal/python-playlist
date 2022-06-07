@@ -250,7 +250,50 @@ class FetchService():
             printS("DEBUG: fetchOdysee - return due to takeNewOnly and takeAfter == None and lastStreamId in streamSource.lastFetchedIds", color = BashColor.WARNING, doPrint = DEBUG)
             return emptyReturn
         
-        return emptyReturn # testing
+        for i, stream in enumerate(streams):
+            title = sanitize(stream.getElementsByTagName("title")[0].firstChild.nodeValue)
+            pubDateRaw = stream.getElementsByTagName("pubDate")[0].firstChild.nodeValue
+            pubDate = stringToDatetime(pubDateRaw, "%a, %d %b %Y %H:%M:%S %Z") #Mon, 07 Jun 2021 04:57:59 GMT
+            link = stream.getElementsByTagName("link")[0].firstChild.nodeValue
+            videoGuid = link.split(":")[-1]
+            
+            if(takeNewOnly and id in streamSource.lastFetchedIds):
+                printS("DEBUG: fetchOdysee - name \"", title, "\", Odysee ID \"", videoGuid, "\"", color = BashColor.WARNING, doPrint = DEBUG)
+                printS("DEBUG: fetchOdysee - break due to takeNewOnly and videoGuid in streamSource.lastFetchedIds", color = BashColor.WARNING, doPrint = DEBUG)
+                break
+            elif(not takeNewOnly and takeAfter != None and pubDate < takeAfter):
+                printS("DEBUG: fetchOdysee - break due to not takeNewOnly and takeAfter != None and pubDate < takeAfter", color = BashColor.WARNING, doPrint = DEBUG)
+                break
+            elif(not takeNewOnly and takeBefore != None and pubDate > takeBefore):
+                printS("DEBUG: fetchOdysee - continue due to not takeNewOnly and takeBefore != None and pubDate > takeBefore", color = BashColor.WARNING, doPrint = DEBUG)
+                continue
+            elif(i > batchSize):
+                printS("DEBUG: fetchOdysee - break due to i > batchSize", color = BashColor.WARNING, doPrint = DEBUG)
+                break
+            
+            newStreams.append(OdyseeStream(title, pubDate, link, videoGuid))
+            
+        if(len(newStreams) == 0):
+            return emptyReturn
+        
+        newStreams.reverse()
+        for stream in newStreams:
+            printS("\tAdding \"", stream.title, "\".")
+            queueStream = QueueStream(name = stream.title, 
+                uri = stream.link, 
+                isWeb = True,
+                streamSourceId = streamSource.id,
+                watched = None,
+                backgroundContent = streamSource.backgroundContent,
+                added = datetime.now())
+            
+            newQueueStreams.append(queueStream)
+            
+        streamSource.lastFetchedIds.append(lastStreamId)
+        if(len(streamSource.lastFetchedIds) > batchSize):
+            streamSource.lastFetchedIds.pop(0)
+        
+        return (newQueueStreams, streamSource.lastFetchedIds)
     
     def resetPlaylistFetch(self, playlistIds: List[str]) -> int:
         """

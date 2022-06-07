@@ -66,7 +66,7 @@ class FetchService():
             source = self.streamSourceService.get(sourceId)
             
             if(source == None):
-                printS("StreamSource with ID ", sourceId, " could not be found. Consider removing it using the purge commands.", color = BashColor.FAIL)
+                printS("StreamSource with ID ", sourceId, " could not be found. Consider removing it using the purge or purgeplaylists commands.", color = BashColor.FAIL)
                 continue
             
             if(not source.enableFetch):

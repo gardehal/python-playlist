@@ -108,6 +108,5 @@ Program for queueing and playing videos from list or from sources like channels 
 - controller layer, main: parse args and call controller, controller: service call, handle input (?), print all except debug, service: manage data and call repo, repo: save/get from storage
 - rename to python-playlist
 
-- update purge and dp responses to include purge with purgePlaylists for dangleing ids, include indexes when lising even missing streams
 - circumvent restrictions using VLC: https://www.electronicshub.org/bypass-youtube-age-restriction/#3_Using_VLC_Media_Player_on_a_Phone_or_Tablet
 - replace datetime.now with nowutc().isoformat with timezone like in logutil

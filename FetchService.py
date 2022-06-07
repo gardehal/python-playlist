@@ -2,17 +2,21 @@ import os
 import sys
 from datetime import datetime
 from typing import List
+from xml.dom.minidom import parseString
 
+import requests
 from dotenv import load_dotenv
 from grdException.ArgumentException import ArgumentException
 from grdException.DatabaseException import DatabaseException
 from grdUtil.BashColor import BashColor
+from grdUtil.DateTimeUtil import stringToDatetime
 from grdUtil.FileUtil import mkdir
 from grdUtil.InputUtil import sanitize
 from grdUtil.PrintUtil import printS
 from pytube import Channel
 
 from enums.StreamSourceType import StreamSourceType
+from model.OdyseeStream import OdyseeStream
 from model.Playlist import Playlist
 from model.QueueStream import QueueStream
 from model.StreamSource import StreamSource
@@ -74,8 +78,8 @@ class FetchService():
             if(source.isWeb):
                 if(source.streamSourceTypeId == StreamSourceType.YOUTUBE.value):
                     fetchedStreams = self.fetchYoutube(source, batchSize, _takeAfter, takeBefore, takeNewOnly)
-                # elif(source.streamSourceTypeId == StreamSourceType.ODYSEE.value):
-                #     fetchedStreams = self.fetchOdysee(source, batchSize, _takeAfter, takeBefore, takeNewOnly)
+                elif(source.streamSourceTypeId == StreamSourceType.ODYSEE.value):
+                    fetchedStreams = self.fetchOdysee(source, batchSize, _takeAfter, takeBefore, takeNewOnly)
                 else:
                     printS("\t Source \"", source.name, "\" could not be fetched as it is not implemented for this source.", color = BashColor.WARNING)
                     continue
@@ -142,13 +146,13 @@ class FetchService():
         channel = Channel(streamSource.uri)
 
         if(channel == None or channel.channel_name == None):
-            printS("Channel \"", streamSource.name, "\" (URL: ", streamSource.uri, ") could not be found or is not valid. Please remove it and add it back.", color = BashColor.FAIL)
+            printS(f"Channel {streamSource.name} (URL: {streamSource.uri}) could not be found or is not valid. Please remove it and add it back.", color = BashColor.FAIL)
             return emptyReturn
 
-        printS("Fetching videos from ", channel.channel_name, "...")
+        printS(f"Fetching videos from {channel.channel_name}...")
         sys.stdout.flush()
         if(len(channel.video_urls) < 1):
-            printS("Channel \"", channel.channel_name, "\" has no videos.", color = BashColor.WARNING)
+            printS(f"Channel {channel.channel_name} has no videos.", color = BashColor.WARNING)
             return emptyReturn
 
         newStreams = []
@@ -199,6 +203,54 @@ class FetchService():
             streamSource.lastFetchedIds.pop(0)
         
         return (newQueueStreams, streamSource.lastFetchedIds)
+    
+    def fetchOdysee(self, streamSource: StreamSource, batchSize: int = 10, takeAfter: datetime = None, takeBefore: datetime = None, takeNewOnly: bool = False) -> tuple[List[QueueStream], List[str]]:
+        """
+        Fetch videos from Odysee.
+
+        Args:
+            batchSize (int): Number of videos to check at a time, unrelated to max videos that will be read.  Defaults to 10.
+            takeAfter (datetime): Limit to take video after.  Defaults to None.
+            takeBefore (datetime): Limit to take video before.  Defaults to None.
+            takeNewOnly (bool): Only take streams marked as new. Disables takeAfter and takeBefore-checks. To use takeAfter and/or takeBefore, set this to False.  Defaults to False.
+
+        Returns:
+            tuple[List[QueueStream], List[str]]: A tuple of List of QueueStream, and List of last Odysee IDs fetched.
+        """
+        
+        if(streamSource == None):
+            raise ArgumentException("fetchOdysee - streamSource was None.")
+
+        emptyReturn = ([], streamSource.lastFetchedIds)
+        channelName = "".join(["@", streamSource.uri.split("@")[-1]])
+        rssUri = f"https://odysee.com/$/rss/{channelName}"
+        rssRequest = requests.get(rssUri)
+        xml = rssRequest.content
+        document = None
+        
+        try:
+            document = parseString(xml)
+        except:
+            printS("Channel \"", streamSource.name, "\" (URL: ", streamSource.uri, ") could not be found or is not valid. Please remove it and add it back.", color = BashColor.FAIL)
+            return emptyReturn
+
+        streams = document.getElementsByTagName("item")
+        printS(f"Fetching videos from {streamSource.name}...")
+        sys.stdout.flush()
+        if(len(streams) < 1):
+            printS(f"Channel {streamSource.name} has no videos.", color = BashColor.WARNING)
+            return emptyReturn
+
+        newStreams = []
+        newQueueStreams = []
+        lastStreamTitle = sanitize(streams[0].getElementsByTagName("title")[0].firstChild.nodeValue)
+        lastStreamId = streams[0].getElementsByTagName("link")[0].firstChild.nodeValue.split(":")[-1]
+        if(takeNewOnly and takeAfter == None and lastStreamId in streamSource.lastFetchedIds):
+            printS("DEBUG: fetchOdysee - last video fetched: \"", lastStreamTitle, "\", Odysee ID \"", lastStreamId, "\"", color = BashColor.WARNING, doPrint = DEBUG)
+            printS("DEBUG: fetchOdysee - return due to takeNewOnly and takeAfter == None and lastStreamId in streamSource.lastFetchedIds", color = BashColor.WARNING, doPrint = DEBUG)
+            return emptyReturn
+        
+        return emptyReturn # testing
     
     def resetPlaylistFetch(self, playlistIds: List[str]) -> int:
         """

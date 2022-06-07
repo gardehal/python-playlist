@@ -257,7 +257,7 @@ class FetchService():
             link = stream.getElementsByTagName("link")[0].firstChild.nodeValue
             videoGuid = link.split(":")[-1]
             
-            if(takeNewOnly and id in streamSource.lastFetchedIds):
+            if(takeNewOnly and videoGuid in streamSource.lastFetchedIds):
                 printS("DEBUG: fetchOdysee - name \"", title, "\", Odysee ID \"", videoGuid, "\"", color = BashColor.WARNING, doPrint = DEBUG)
                 printS("DEBUG: fetchOdysee - break due to takeNewOnly and videoGuid in streamSource.lastFetchedIds", color = BashColor.WARNING, doPrint = DEBUG)
                 break

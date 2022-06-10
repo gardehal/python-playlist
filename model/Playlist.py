@@ -1,5 +1,8 @@
-from typing import List
 from datetime import datetime
+from typing import List
+
+from grdUtil.DateTimeUtil import getDateTime
+
 
 class Playlist():
     def __init__(self, 
@@ -11,8 +14,8 @@ class Playlist():
                  streamSourceIds: List[str] = List[str],
                  description: str = None,
                  deleted: datetime = None,
-                 updated: datetime = datetime.now(),
-                 added: datetime = datetime.now(),
+                 updated: datetime = getDateTime(),
+                 added: datetime = getDateTime(),
                  id: str = None):
         self.name: str = name
         self.streamIds: List[str] = streamIds

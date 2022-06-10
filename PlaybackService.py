@@ -1,22 +1,22 @@
-from copy import copy
 import os
 import random
 import subprocess
-from datetime import datetime
-from typing import List
 import uuid
+from copy import copy
+from typing import List
 
 from dotenv import load_dotenv
 from grdUtil.BashColor import BashColor
+from grdUtil.DateTimeUtil import getDateTime
 from grdUtil.InputUtil import getIdsFromInput, sanitize
-from grdUtil.PrintUtil import printS, printLists, printStack
+from grdUtil.PrintUtil import printLists, printS, printStack
 
+from Commands import Commands
 from model.Playlist import Playlist
 from model.QueueStream import QueueStream
 from PlaylistService import PlaylistService
 from QueueStreamService import QueueStreamService
 from StreamSourceService import StreamSourceService
-from Commands import Commands
 
 load_dotenv()
 DEBUG = eval(os.environ.get("DEBUG"))
@@ -153,7 +153,7 @@ class PlaybackService():
             
             # subprocessStream.terminate() # TODO Doesn't seem to work with browser, at least not new tabs
             
-            now = datetime.now()
+            now = getDateTime()
             if(LOG_WATCHED and len(WATCHED_LOG_FILEPATH) > 0):
                 logLine = f"{str(now)} - Playlist \"{playlist.name}\" (ID: {playlist.id}), watched video \"{stream.name}\" (ID: {stream.id})\n" 
                 with open(WATCHED_LOG_FILEPATH, "a") as file:

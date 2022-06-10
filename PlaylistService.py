@@ -1,5 +1,4 @@
 import os
-from datetime import datetime
 
 import pytube
 import validators
@@ -9,6 +8,7 @@ from grdException.DatabaseException import DatabaseException
 from grdException.NotFoundException import NotFoundException
 from grdService.BaseService import BaseService
 from grdUtil.BashColor import BashColor
+from grdUtil.DateTimeUtil import getDateTime
 from grdUtil.InputUtil import sanitize
 from grdUtil.LocalJsonRepository import LocalJsonRepository
 from grdUtil.LogLevel import LogLevel
@@ -85,7 +85,7 @@ class PlaylistService(BaseService[T]):
             playlist.streamIds.append(stream.id)
             added.append(addResult)
 
-        playlist.updated = datetime.now()
+        playlist.updated = getDateTime()
         updateResult = self.update(playlist)
         if(len(added) > 0 and updateResult != None):
             return added
@@ -207,7 +207,7 @@ class PlaylistService(BaseService[T]):
         playlist.streamIds.pop(fromIndex)
         playlist.streamIds.insert(toIndex, entry)
 
-        playlist.updated = datetime.now()
+        playlist.updated = getDateTime()
         return self.update(playlist)
     
     def addStreamSources(self, playlistId: str, streamSources: list[StreamSource]) -> list[StreamSource]:
@@ -247,7 +247,7 @@ class PlaylistService(BaseService[T]):
             playlist.streamSourceIds.append(source.id)
             added.append(addResult)
 
-        playlist.updated = datetime.now()
+        playlist.updated = getDateTime()
         updateResult = self.update(playlist)
         if(len(added) > 0 and updateResult != None):
             return added

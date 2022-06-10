@@ -1,5 +1,7 @@
 from datetime import datetime
-import uuid
+
+from grdUtil.DateTimeUtil import getDateTime
+
 
 class StreamSource:
     def __init__(self, 
@@ -14,7 +16,7 @@ class StreamSource:
                  lastFetchedIds: list[str] = [],
                  backgroundContent: bool = False,
                  deleted: datetime = None,
-                 added: datetime = datetime.now(),
+                 added: datetime = getDateTime(),
                  id: str = None):
         self.name: str = name
         self.uri: str = uri

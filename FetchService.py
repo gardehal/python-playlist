@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 from grdException.ArgumentException import ArgumentException
 from grdException.DatabaseException import DatabaseException
 from grdUtil.BashColor import BashColor
-from grdUtil.DateTimeUtil import stringToDatetime
+from grdUtil.DateTimeUtil import stringToDatetime, getDateTime
 from grdUtil.FileUtil import mkdir
 from grdUtil.InputUtil import sanitize
 from grdUtil.PrintUtil import printS
@@ -87,10 +87,10 @@ class FetchService():
                 fetchedStreams = self.fetchDirectory(source, batchSize, _takeAfter, takeBefore, takeNewOnly)
 
             if(len(fetchedStreams) > 0):
-                source.lastSuccessfulFetched = datetime.now()
+                source.lastSuccessfulFetched = getDateTime()
             
             source.lastFetchedIds = fetchedStreams[1]
-            source.lastFetched = datetime.now()
+            source.lastFetched = getDateTime()
             updateSuccess = self.streamSourceService.update(source)
             if(updateSuccess):
                 newStreams += fetchedStreams[0]
@@ -194,7 +194,7 @@ class FetchService():
                 streamSourceId = streamSource.id,
                 watched = None,
                 backgroundContent = streamSource.backgroundContent,
-                added = datetime.now())
+                added = getDateTime())
             
             newQueueStreams.append(queueStream)
             
@@ -285,7 +285,7 @@ class FetchService():
                 streamSourceId = streamSource.id,
                 watched = None,
                 backgroundContent = streamSource.backgroundContent,
-                added = datetime.now())
+                added = getDateTime())
             
             newQueueStreams.append(queueStream)
             

@@ -23,6 +23,18 @@ class QueueStream:
         self.deleted: datetime = deleted
         self.added: datetime = added
         self.id: str = id
+        
+    def default(self):
+        self.name: str = "name"
+        self.uri: str = "uri"
+        self.isWeb: bool = False
+        self.streamSourceId: str = "streamSourceId"
+        self.watched: datetime = getDateTime()
+        self.backgroundContent: bool = False
+        self.deleted: datetime = datetime.now()
+        self.added: datetime = getDateTime()
+        self.id: str = "id"
+        return self
 
     def summaryString(self):
         return "".join(map(str, ["Name: ", self.name, 

@@ -228,6 +228,10 @@ class FetchService():
         xml = rssRequest.content
         document = None
         
+        if(rssRequest.status_code != 200): # TODO code might be 200 with empty content or "oops nothing here". Test when Odysee is down next and update this
+            printS("Channel \"", streamSource.name, "\" (URL: ", streamSource.uri, ") could not be fetched, the connection likely timed out. Try again later", color = BashColor.WARNING)
+            return emptyReturn
+        
         try:
             document = parseString(xml)
         except:

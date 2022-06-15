@@ -110,3 +110,4 @@ Program for queueing and playing videos from list or from sources like channels 
 
 - move more code from main to Controllers (one per service)
 - circumvent restrictions using VLC: https://www.electronicshub.org/bypass-youtube-age-restriction/#3_Using_VLC_Media_Player_on_a_Phone_or_Tablet
+- fetch from odysee sometimes fail (timeout), add extra check so it doesnt show as "channel does not exist"

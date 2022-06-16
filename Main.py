@@ -15,6 +15,7 @@ from CliController import SharedCliController
 from Commands import Commands
 from FetchService import FetchService
 from LegacyService import LegacyService
+from PlaylistCliController import PlaylistCliController
 from model.Playlist import Playlist
 from model.QueueStream import QueueStream
 from model.StreamSource import StreamSource
@@ -42,6 +43,7 @@ class Main:
     streamSourceService = StreamSourceService()
     commands = Commands()
     sharedCliController: SharedCliController = SharedCliController()
+    playlistCliController: PlaylistCliController = PlaylistCliController()
 
     def main():
         argC = len(sys.argv)
@@ -68,6 +70,8 @@ class Main:
                 elif(arg in Main.commands.testCommands):
                     inputArgs = extractArgs(argIndex, argV)
                     printS("Test", color = BashColor.OKBLUE)
+                    
+                    print(type(None))
                     
                     quit()            
                     
@@ -113,13 +117,8 @@ class Main:
                     allowDuplicates = eval(inputArgs[2]) if(len(inputArgs) > 2) else True
                     streamSourceIds = getIdsFromInput(inputArgs[3:], Main.playlistService.getAllIds(), Main.playlistService.getAll(), debug = DEBUG) if(len(inputArgs) > 3) else []
 
-                    entity = Playlist(name = name, playWatchedStreams = playWatchedStreams, allowDuplicates = allowDuplicates, streamSourceIds = streamSourceIds)
-                    result = Main.playlistService.add(entity)
-                    if(result != None):
-                        printS("Playlist \"", result.name, "\" added successfully.", color = BashColor.OKGREEN)
-                    else:
-                        printS("Failed to create Playlist.", color = BashColor.FAIL)
-
+                    Main.playlistCliController.addPlaylist(name, playWatchedStreams, allowDuplicates, streamSourceIds)
+                    
                     argIndex += len(inputArgs) + 1
                     continue
                 

@@ -1,14 +1,13 @@
 import os
 
 from dotenv import load_dotenv
-from grdException.ArgumentException import ArgumentException
 from grdUtil.BashColor import BashColor
 from grdUtil.PrintUtil import printLists, printS
-from grdUtil.StaticUtil import StaticUtil
 
 from model.Playlist import Playlist
-from model.QueueStream import QueueStream
 from PlaylistService import PlaylistService
+from QueueStreamService import QueueStreamService
+from StreamSourceService import StreamSourceService
 
 load_dotenv()
 DEBUG = eval(os.environ.get("DEBUG"))
@@ -16,9 +15,13 @@ LOCAL_STORAGE_PATH = os.environ.get("LOCAL_STORAGE_PATH")
 
 class PlaylistCliController():
     playlistService: PlaylistService = None
+    queueStreamService: QueueStreamService = None
+    streamSourceService: StreamSourceService = None
 
     def __init__(self):
         self.playlistService = PlaylistService()
+        self.queueStreamService = QueueStreamService()
+        self.streamSourceService = StreamSourceService()
         
     def addPlaylist(self, name: str, playWatchedStreams: bool, allowDuplicates: bool, streamSourceIds: list[str]) -> Playlist:
         """
@@ -72,19 +75,68 @@ class PlaylistCliController():
         Delete Playlists given by IDs.
 
         Args:
-            ids (list[str]): List of IDs or indices to add to Playlist.
+            ids (list[str]): List of IDs or indices to delete from storage.
 
         Returns:
             list[Playlist]: Playlists deleted.
         """
         
-        deletedPlaylists = []         
+        entitiesAltered = []         
         for id in ids:
             result = self.playlistService.delete(id)
             if(result != None):
                 printS("Playlist \"", result.name, "\" deleted successfully.", color = BashColor.OKGREEN)
-                deletedPlaylists.append(result)
+                entitiesAltered.append(result)
             else:
                 printS("Failed to delete Playlist.", color = BashColor.FAIL)
 
-        return deletedPlaylists
+        return entitiesAltered
+        
+    def restorePlaylists(self, ids: list[str]) -> list[Playlist]:
+        """
+        Restore Playlists given by IDs.
+
+        Args:
+            ids (list[str]): List of IDs or indices to restore (must be deleted).
+
+        Returns:
+            list[Playlist]: Playlists restored.
+        """
+        
+        entitiesAltered = []
+        for id in ids:
+            result = self.playlistService.restore(id)
+            if(result != None):
+                printS("Playlist \"", result.name, "\" restore successfully.", color = BashColor.OKGREEN)
+                entitiesAltered.append(result)
+            else:
+                printS("Failed to restore Playlist.", color = BashColor.FAIL)
+
+        return entitiesAltered
+        
+    def listPlaylists(self, includeSoftDeleted: bool) -> list[Playlist]:
+        """
+        List Playlist in console.
+
+        Args:
+            includeSoftDeleted (bool,): Should include soft-deleted entities?
+
+        Returns:
+            list[Playlist]: Playlists restored.
+        """
+        
+        data = []
+        result = self.playlistService.getAll(includeSoftDeleted)
+        if(len(result) > 0):
+            nPlaylists = len(result)
+            nQueueStreams = len(self.queueStreamService.getAll(includeSoftDeleted))
+            nStreamSources = len(self.streamSourceService.getAll(includeSoftDeleted))
+            titles = [str(nPlaylists) + " Playlists, " + str(nQueueStreams) + " QueueStreams, " + str(nStreamSources) + " StreamSources."]
+            
+            for (i, entry) in enumerate(result):
+                data.append(str(i) + " - " + entry.summaryString())
+                
+            printLists([data], titles)
+
+        return data
+    

@@ -159,14 +159,9 @@ class Main:
                         printS("Failed to restore Playlists, missing playlistIds or indices.", color = BashColor.FAIL)
                         argIndex += len(inputArgs) + 1
                         continue
-                    
-                    for id in ids:
-                        result = Main.playlistService.restore(id)
-                        if(result != None):
-                            printS("Playlist \"", result.name, "\" restore successfully.", color = BashColor.OKGREEN)
-                        else:
-                            printS("Failed to restore Playlist.", color = BashColor.FAIL)
 
+                    Main.playlistCliController.restorePlaylists(ids)
+                    
                     argIndex += len(inputArgs) + 1
                     continue
 
@@ -174,19 +169,8 @@ class Main:
                     # Expected input: includeSoftDeleted?
                     inputArgs = extractArgs(argIndex, argV)
                     includeSoftDeleted = eval(inputArgs[0]) if(len(inputArgs) > 0) else False
-
-                    result = Main.playlistService.getAll(includeSoftDeleted)
-                    if(len(result) > 0):
-                        nPlaylists = len(result)
-                        nQueueStreams = len(Main.queueStreamService.getAll(includeSoftDeleted))
-                        nStreamSources = len(Main.streamSourceService.getAll(includeSoftDeleted))
-                        titles = [str(nPlaylists) + " Playlists, " + str(nQueueStreams) + " QueueStreams, " + str(nStreamSources) + " StreamSources."]
                         
-                        data = []
-                        for (i, entry) in enumerate(result):
-                            data.append(str(i) + " - " + entry.summaryString())
-                            
-                        printLists([data], titles)
+                    Main.playlistCliController.listPlaylists(includeSoftDeleted)
 
                     argIndex += len(inputArgs) + 1
                     continue

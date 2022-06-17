@@ -130,13 +130,8 @@ class Main:
                     playWatchedStreams = eval(inputArgs[2]) if(len(inputArgs) > 2) else None
                     allowDuplicates = eval(inputArgs[3]) if(len(inputArgs) > 3) else True
 
-                    entity = Playlist(name = name, playWatchedStreams = playWatchedStreams, allowDuplicates = allowDuplicates)
-                    result = Main.playlistService.addYouTubePlaylist(entity, url)
-                    if(result != None):
-                        printS("Playlist \"", result.name, "\" added successfully from YouTube playlist.", color = BashColor.OKGREEN)
-                    else:
-                        printS("Failed to create Playlist.", color = BashColor.FAIL)
-
+                    Main.playlistCliController.addPlaylist(url, name, playWatchedStreams, allowDuplicates)
+                    
                     argIndex += len(inputArgs) + 1
                     continue
 
@@ -150,12 +145,7 @@ class Main:
                         argIndex += len(inputArgs) + 1
                         continue
                     
-                    for id in ids:
-                        result = Main.playlistService.delete(id)
-                        if(result != None):
-                            printS("Playlist \"", result.name, "\" deleted successfully.", color = BashColor.OKGREEN)
-                        else:
-                            printS("Failed to delete Playlist.", color = BashColor.FAIL)
+                    Main.playlistCliController.deletePlaylists(ids)
 
                     argIndex += len(inputArgs) + 1
                     continue

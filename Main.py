@@ -170,7 +170,7 @@ class Main:
                     inputArgs = extractArgs(argIndex, argV)
                     includeSoftDeleted = eval(inputArgs[0]) if(len(inputArgs) > 0) else False
                         
-                    Main.playlistCliController.listPlaylists(includeSoftDeleted)
+                    Main.playlistCliController.printPlaylists(includeSoftDeleted)
 
                     argIndex += len(inputArgs) + 1
                     continue
@@ -191,11 +191,7 @@ class Main:
                         argIndex += len(inputArgs) + 1
                         continue
                     
-                    result = Main.playlistService.printPlaylistDetails(ids, includeUri, includeId, includeDatetime, includeListCount, includeSource)
-                    if(result):
-                        printS("Finished printing ", result, " details.", color = BashColor.OKGREEN)
-                    else:
-                        printS("Failed print details.", color = BashColor.FAIL)
+                    Main.playlistCliController.printPlaylistsDetailed(ids, includeUri, includeId, includeDatetime, includeListCount, includeSource)
                             
                     argIndex += len(inputArgs) + 1
                     continue
@@ -219,10 +215,7 @@ class Main:
                         argIndex += len(inputArgs) + 1
                         continue
                     
-                    for id in ids:
-                        result = Main.fetchService.fetch(id, batchSize = FETCH_LIMIT_SINGLE_SOURCE, takeAfter = takeAfter, takeBefore = takeBefore, takeNewOnly = takeNewOnly)
-                        playlist = Main.playlistService.get(id)
-                        printS("Fetched ", result, " for playlist \"", playlist.name, "\" successfully.", color = BashColor.OKGREEN)
+                    Main.playlistCliController.fetchPlaylists(ids, FETCH_LIMIT_SINGLE_SOURCE, takeAfter, takeBefore, takeNewOnly)
 
                     argIndex += len(inputArgs) + 1
                     continue

@@ -1,9 +1,11 @@
 import os
+from datetime import datetime
 
 from dotenv import load_dotenv
 from grdUtil.BashColor import BashColor
 from grdUtil.PrintUtil import printLists, printS
 
+from FetchService import FetchService
 from model.Playlist import Playlist
 from PlaylistService import PlaylistService
 from QueueStreamService import QueueStreamService
@@ -14,11 +16,13 @@ DEBUG = eval(os.environ.get("DEBUG"))
 LOCAL_STORAGE_PATH = os.environ.get("LOCAL_STORAGE_PATH")
 
 class PlaylistCliController():
+    fetchService = FetchService()
     playlistService: PlaylistService = None
     queueStreamService: QueueStreamService = None
     streamSourceService: StreamSourceService = None
 
     def __init__(self):
+        self.fetchService = FetchService()
         self.playlistService = PlaylistService()
         self.queueStreamService = QueueStreamService()
         self.streamSourceService = StreamSourceService()
@@ -114,7 +118,7 @@ class PlaylistCliController():
 
         return entitiesAltered
         
-    def listPlaylists(self, includeSoftDeleted: bool) -> list[Playlist]:
+    def printPlaylists(self, includeSoftDeleted: bool) -> list[Playlist]:
         """
         List Playlist in console.
 
@@ -140,3 +144,46 @@ class PlaylistCliController():
 
         return data
     
+    def printPlaylistsDetailed(self, playlistIds: list[str], includeUri: bool, includeId: bool, includeDatetime: bool, includeListCount: bool, includeSource: bool) -> int:
+        """
+        Print detailed info for Playlist, including details for related StreamSources and QueueStreams.
+
+        Args:
+            playlistIds (list[str]): list of playlistIds to print details of.
+            includeUri (bool, optional): should print include URI if any. Defaults to False.
+            includeId (bool, optional): should print include IDs. Defaults to False.
+            includeSource (bool, optional): should print include StreamSource this was fetched from. Defaults to True.
+            
+        Returns:
+            int: number of playlists printed for.
+        """
+        
+        result = self.playlistService.printPlaylistDetails(playlistIds, includeUri, includeId, includeDatetime, includeListCount, includeSource)
+        if(result):
+            printS("Finished printing ", result, " details.", color = BashColor.OKGREEN)
+        else:
+            printS("Failed print details.", color = BashColor.FAIL)
+
+        return result
+    
+    def fetchPlaylists(self, playlistId: str, batchSize: int = 10, takeAfter: datetime = None, takeBefore: datetime = None, takeNewOnly: bool = False) -> int:
+        """
+        Fetch new videos from watched sources, adding them in chronological order.
+
+        Args:
+            batchSize (int): Number of videos to check at a time, unrelated to max videos that will be read.  Defaults to 10.
+            takeAfter (datetime): Limit to take video after.  Defaults to None.
+            takeBefore (datetime): Limit to take video before.  Defaults to None.
+            takeNewOnly (bool): Only take streams marked as new. Disables takeAfter and takeBefore-checks. To use takeAfter and/or takeBefore, set this to False.  Defaults to False.
+
+        Returns:
+            int: Number of videos added.
+        """
+        
+        result = 0
+        for id in playlistId:
+            result += self.fetchService.fetch(id, batchSize, takeAfter, takeBefore, takeNewOnly)
+            playlist = self.playlistService.get(id)
+            printS("Fetched ", result, " for playlist \"", playlist.name, "\" successfully.", color = BashColor.OKGREEN)
+    
+        return result

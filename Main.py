@@ -259,13 +259,8 @@ class Main:
                         printS("Failed to reset fetch-status of playlists, missing playlistIds or indices.", color = BashColor.FAIL)
                         argIndex += len(inputArgs) + 1
                         continue
-                        
-                    result = Main.fetchService.resetPlaylistFetch(ids)
-                    playlist = Main.playlistService.get(id)
-                    if(result):
-                        printS("Finished resetting fetch statuses for sources in Playlist \"", playlist.name, "\".", color = BashColor.OKGREEN)
-                    else:
-                        printS("Failed to reset fetch statuses for sources in Playlist \"", playlist.name, "\".", color = BashColor.FAIL)
+                    
+                    Main.playlistCliController.resetPlaylists(ids)
 
                     argIndex += len(inputArgs) + 1
                     continue
@@ -288,11 +283,7 @@ class Main:
                         argIndex += len(inputArgs) + 1
                         continue
                     
-                    startIndex = int(float(startIndex))
-                    result = Main.playbackService.play(ids[0], startIndex, shuffle, repeat)
-                    if(not result):
-                        playlist = Main.playlistService.get(ids[0])
-                        printS("Failed to play Playlist \"", playlist.name, "\".", color = BashColor.FAIL)
+                    Main.playlistCliController.playPlaylists(ids[0], int(startIndex), shuffle, repeat)
 
                     argIndex += len(inputArgs) + 1
                     continue

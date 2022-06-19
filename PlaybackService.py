@@ -60,13 +60,12 @@ class PlaybackService():
 
         Args:
             playlistId (str): ID of playlist to play from.
-            quitSymbols (List[str]): Input from user which should end the playback. Defaults to ["quit"].
             startIndex (int): Index to start playing from.
             shuffle (bool): Shuffle videos.
             repeatPlaylist (bool): repeat playlist once it reaches the end.
 
         Returns:
-            bool: Finished.
+            bool: Finished successfully.
         """
 
         playlist = self.playlistService.get(playlistId)

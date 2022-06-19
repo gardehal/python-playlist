@@ -15,11 +15,10 @@ from CliController import SharedCliController
 from Commands import Commands
 from FetchService import FetchService
 from LegacyService import LegacyService
-from PlaylistCliController import PlaylistCliController
-from model.Playlist import Playlist
+from controllers.StreamSourceCliController import StreamSourceCliController
 from model.QueueStream import QueueStream
 from model.StreamSource import StreamSource
-from PlaybackService import PlaybackService
+from PlaylistCliController import PlaylistCliController
 from PlaylistService import PlaylistService
 from QueueStreamService import QueueStreamService
 from SharedService import SharedService
@@ -36,7 +35,6 @@ LOG_LEVEL = os.environ.get("LOG_LEVEL")
 class Main:
     fetchService = FetchService()
     legacyService = LegacyService()
-    playbackService = PlaybackService()
     playlistService = PlaylistService()
     queueStreamService = QueueStreamService()
     sharedService = SharedService()
@@ -44,6 +42,7 @@ class Main:
     commands = Commands()
     sharedCliController: SharedCliController = SharedCliController()
     playlistCliController: PlaylistCliController = PlaylistCliController()
+    streamSourceCliController: StreamSourceCliController = StreamSourceCliController()
 
     def main():
         argC = len(sys.argv)

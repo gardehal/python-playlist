@@ -11,14 +11,14 @@ from grdUtil.InputUtil import (extractArgs, getIdsFromInput, getIfExists,
                                isNumber)
 from grdUtil.PrintUtil import printLists, printS
 
-from CliController import SharedCliController
 from Commands import Commands
+from controllers.CliController import SharedCliController
+from controllers.PlaylistCliController import PlaylistCliController
+from controllers.StreamSourceCliController import StreamSourceCliController
 from FetchService import FetchService
 from LegacyService import LegacyService
-from controllers.StreamSourceCliController import StreamSourceCliController
 from model.QueueStream import QueueStream
 from model.StreamSource import StreamSource
-from PlaylistCliController import PlaylistCliController
 from PlaylistService import PlaylistService
 from QueueStreamService import QueueStreamService
 from SharedService import SharedService

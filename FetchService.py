@@ -45,10 +45,10 @@ class FetchService():
         Fetch new videos from watched sources, adding them in chronological order.
 
         Args:
-            batchSize (int): Number of videos to check at a time, unrelated to max videos that will be read.  Defaults to 10.
-            takeAfter (datetime): Limit to take video after.  Defaults to None.
-            takeBefore (datetime): Limit to take video before.  Defaults to None.
-            takeNewOnly (bool): Only take streams marked as new. Disables takeAfter and takeBefore-checks. To use takeAfter and/or takeBefore, set this to False.  Defaults to False.
+            batchSize (int): Number of videos to check at a time, unrelated to max videos that will be read. Defaults to 10.
+            takeAfter (datetime): Limit to take video after. Defaults to None.
+            takeBefore (datetime): Limit to take video before. Defaults to None.
+            takeNewOnly (bool): Only take streams marked as new. Disables takeAfter and takeBefore-checks. To use takeAfter and/or takeBefore, set this to False. Defaults to False.
 
         Returns:
             int: Number of videos added.
@@ -110,10 +110,10 @@ class FetchService():
         Fetch streams from a local directory.
 
         Args:
-            batchSize (int): Number of videos to check at a time, unrelated to max videos that will be read.  Defaults to 10.
-            takeAfter (datetime): Limit to take video after.  Defaults to None.
-            takeBefore (datetime): Limit to take video before.  Defaults to None.
-            takeNewOnly (bool): Only take streams marked as new. Disables takeAfter and takeBefore-checks. To use takeAfter and/or takeBefore, set this to False.  Defaults to False.
+            batchSize (int): Number of videos to check at a time, unrelated to max videos that will be read. Defaults to 10.
+            takeAfter (datetime): Limit to take video after. Defaults to None.
+            takeBefore (datetime): Limit to take video before. Defaults to None.
+            takeNewOnly (bool): Only take streams marked as new. Disables takeAfter and takeBefore-checks. To use takeAfter and/or takeBefore, set this to False. Defaults to False.
 
         Returns:
             tuple[List[QueueStream], str]: A tuple of List of QueueStream, and the last filename fetched.
@@ -130,10 +130,10 @@ class FetchService():
         Fetch videos from YouTube.
 
         Args:
-            batchSize (int): Number of videos to check at a time, unrelated to max videos that will be read.  Defaults to 10.
-            takeAfter (datetime): Limit to take video after.  Defaults to None.
-            takeBefore (datetime): Limit to take video before.  Defaults to None.
-            takeNewOnly (bool): Only take streams marked as new. Disables takeAfter and takeBefore-checks. To use takeAfter and/or takeBefore, set this to False.  Defaults to False.
+            batchSize (int): Number of videos to check at a time, unrelated to max videos that will be read. Defaults to 10.
+            takeAfter (datetime): Limit to take video after. Defaults to None.
+            takeBefore (datetime): Limit to take video before. Defaults to None.
+            takeNewOnly (bool): Only take streams marked as new. Disables takeAfter and takeBefore-checks. To use takeAfter and/or takeBefore, set this to False. Defaults to False.
 
         Returns:
             tuple[List[QueueStream], List[str]]: A tuple of List of QueueStream, and List of last YouTube IDs fetched.
@@ -209,10 +209,10 @@ class FetchService():
         Fetch videos from Odysee.
 
         Args:
-            batchSize (int): Number of videos to check at a time, unrelated to max videos that will be read.  Defaults to 10.
-            takeAfter (datetime): Limit to take video after.  Defaults to None.
-            takeBefore (datetime): Limit to take video before.  Defaults to None.
-            takeNewOnly (bool): Only take streams marked as new. Disables takeAfter and takeBefore-checks. To use takeAfter and/or takeBefore, set this to False.  Defaults to False.
+            batchSize (int): Number of videos to check at a time, unrelated to max videos that will be read. Defaults to 10.
+            takeAfter (datetime): Limit to take video after. Defaults to None.
+            takeBefore (datetime): Limit to take video before. Defaults to None.
+            takeNewOnly (bool): Only take streams marked as new. Disables takeAfter and takeBefore-checks. To use takeAfter and/or takeBefore, set this to False. Defaults to False.
 
         Returns:
             tuple[List[QueueStream], List[str]]: A tuple of List of QueueStream, and List of last Odysee IDs fetched.

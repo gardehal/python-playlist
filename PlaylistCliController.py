@@ -7,6 +7,7 @@ from grdUtil.PrintUtil import printLists, printS
 
 from FetchService import FetchService
 from model.Playlist import Playlist
+from PlaybackService import PlaybackService
 from PlaylistService import PlaylistService
 from QueueStreamService import QueueStreamService
 from StreamSourceService import StreamSourceService
@@ -16,13 +17,15 @@ DEBUG = eval(os.environ.get("DEBUG"))
 LOCAL_STORAGE_PATH = os.environ.get("LOCAL_STORAGE_PATH")
 
 class PlaylistCliController():
-    fetchService = FetchService()
+    fetchService: FetchService() = None
+    playbackService: PlaybackService = None
     playlistService: PlaylistService = None
     queueStreamService: QueueStreamService = None
     streamSourceService: StreamSourceService = None
 
     def __init__(self):
         self.fetchService = FetchService()
+        self.playbackService = PlaybackService()
         self.playlistService = PlaylistService()
         self.queueStreamService = QueueStreamService()
         self.streamSourceService = StreamSourceService()
@@ -166,24 +169,65 @@ class PlaylistCliController():
 
         return result
     
-    def fetchPlaylists(self, playlistId: str, batchSize: int = 10, takeAfter: datetime = None, takeBefore: datetime = None, takeNewOnly: bool = False) -> int:
+    def fetchPlaylists(self, playlistIds: list[str], batchSize: int, takeAfter: datetime, takeBefore: datetime, takeNewOnly: bool) -> int:
         """
         Fetch new videos from watched sources, adding them in chronological order.
 
         Args:
-            batchSize (int): Number of videos to check at a time, unrelated to max videos that will be read.  Defaults to 10.
-            takeAfter (datetime): Limit to take video after.  Defaults to None.
-            takeBefore (datetime): Limit to take video before.  Defaults to None.
-            takeNewOnly (bool): Only take streams marked as new. Disables takeAfter and takeBefore-checks. To use takeAfter and/or takeBefore, set this to False.  Defaults to False.
+            playlistIds (list[str]): IDs of Playlists to fetch for.
+            batchSize (int): Number of videos to check at a time, unrelated to max videos that will be read. 
+            takeAfter (datetime): Limit to take video after.
+            takeBefore (datetime): Limit to take video before.
+            takeNewOnly (bool): Only take streams marked as new. Disables takeAfter and takeBefore-checks. To use takeAfter and/or takeBefore, set this to False.
 
         Returns:
             int: Number of videos added.
         """
         
         result = 0
-        for id in playlistId:
+        for id in playlistIds:
             result += self.fetchService.fetch(id, batchSize, takeAfter, takeBefore, takeNewOnly)
             playlist = self.playlistService.get(id)
             printS("Fetched ", result, " for playlist \"", playlist.name, "\" successfully.", color = BashColor.OKGREEN)
+    
+        return result
+      
+    def resetPlaylists(self, playlistIds: list[str]) -> int:
+        """
+        Fetch new videos from watched sources, adding them in chronological order.
+
+        Args:
+            playlistIds (list[str]): IDs of Playlists to fetch for.
+
+        Returns:
+            int: Number of Playlists reset.
+        """
+        
+        result = self.fetchService.resetPlaylistFetch(playlistIds)
+        for id in playlistIds:
+            playlist = self.playlistService.get(id)
+            printS("Finished resetting fetch statuses for sources in Playlist \"", playlist.name, "\".", color = BashColor.OKGREEN, doPrint = (result > 0))
+            printS("Failed to reset fetch statuses for sources in Playlist \"", playlist.name, "\".", color = BashColor.FAIL, doPrint = (result == 0))
+    
+        return result
+      
+    def playPlaylists(self, playlistId: str, startIndex: int, shuffle: bool, repeat: bool) -> int:
+        """
+        Start playing streams from this playlist.
+
+        Args:
+            playlistId (str): ID of playlist to play from.
+            startIndex (int): Index to start playing from.
+            shuffle (bool): Shuffle videos.
+            repeatPlaylist (bool): repeat playlist once it reaches the end.
+
+        Returns:
+            bool: Finished successfully.
+        """
+        
+        result = self.playbackService.play(playlistId, startIndex, shuffle, repeat)
+        if(not result):
+            playlist = self.playlistService.get(playlistId)
+            printS("Failed to play Playlist \"", playlist.name, "\".", color = BashColor.FAIL)
     
         return result

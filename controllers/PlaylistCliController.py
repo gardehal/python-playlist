@@ -4,12 +4,11 @@ from datetime import datetime
 from dotenv import load_dotenv
 from grdUtil.BashColor import BashColor
 from grdUtil.PrintUtil import printLists, printS
-
-from FetchService import FetchService
 from model.Playlist import Playlist
 from PlaybackService import PlaybackService
 from PlaylistService import PlaylistService
 from QueueStreamService import QueueStreamService
+from services.FetchService import FetchService
 from StreamSourceService import StreamSourceService
 
 load_dotenv()

@@ -5,15 +5,14 @@ from grdException.ArgumentException import ArgumentException
 from grdUtil.BashColor import BashColor
 from grdUtil.PrintUtil import printLists, printS
 from grdUtil.StaticUtil import StaticUtil
-
-from FetchService import FetchService
-from LegacyService import LegacyService
 from model.Playlist import Playlist
 from model.QueueStream import QueueStream
 from model.StreamSource import StreamSource
 from PlaybackService import PlaybackService
 from PlaylistService import PlaylistService
 from QueueStreamService import QueueStreamService
+from services.FetchService import FetchService
+from services.LegacyService import LegacyService
 from SharedService import SharedService
 from StreamSourceService import StreamSourceService
 

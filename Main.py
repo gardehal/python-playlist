@@ -15,12 +15,10 @@ from Commands import Commands
 from controllers.CliController import SharedCliController
 from controllers.PlaylistCliController import PlaylistCliController
 from controllers.StreamSourceCliController import StreamSourceCliController
-from FetchService import FetchService
-from LegacyService import LegacyService
-from model.QueueStream import QueueStream
 from model.StreamSource import StreamSource
 from PlaylistService import PlaylistService
 from QueueStreamService import QueueStreamService
+from services.LegacyService import LegacyService
 from SharedService import SharedService
 from StreamSourceService import StreamSourceService
 
@@ -29,11 +27,8 @@ DEBUG = eval(os.environ.get("DEBUG"))
 LOCAL_STORAGE_PATH = os.environ.get("LOCAL_STORAGE_PATH")
 WATCHED_LOG_FILEPATH = os.environ.get("WATCHED_LOG_FILEPATH")
 FETCH_LIMIT_SINGLE_SOURCE = int(os.environ.get("FETCH_LIMIT_SINGLE_SOURCE"))
-LOG_DIR_PATH = os.environ.get("LOG_DIR_PATH")
-LOG_LEVEL = os.environ.get("LOG_LEVEL")
 
 class Main:
-    fetchService = FetchService()
     legacyService = LegacyService()
     playlistService = PlaylistService()
     queueStreamService = QueueStreamService()
@@ -310,14 +305,8 @@ class Main:
                     if(name == None):
                         name = "New QueueStream"
                         printS("Could not automatically get the web name for this QueueStream, will be named \"" , name, "\".", color = BashColor.WARNING)
-
-                    playlist = Main.playlistService.get(ids[0])
-                    entity = QueueStream(name = name, uri = uri)
-                    addResult = Main.playlistService.addStreams(playlist.id, [entity])
-                    if(len(addResult) > 0):
-                        printS("Added QueueStream \"", addResult[0].name, "\" to Playlist \"", playlist.name, "\".", color = BashColor.OKGREEN)
-                    else:
-                        printS("Failed to create QueueStream.", color = BashColor.FAIL)
+                        
+                    Main.queueStreamService.addQueueStream(ids[0], name, uri)
 
                     argIndex += len(inputArgs) + 1
                     continue
@@ -339,6 +328,7 @@ class Main:
                         argIndex += len(inputArgs) + 1
                         continue
                     
+                    # Main.queueStreamService.deleteQueueStreams(playlistIds[0], queueStreamIds)
                     result = Main.playlistService.deleteStreams(playlist.id, queueStreamIds)
                     if(len(result) > 0):
                         printS("Deleted ", len(result), " QueueStreams successfully from Playlist \"", playlist.name, "\".", color = BashColor.OKGREEN)
@@ -365,6 +355,7 @@ class Main:
                         argIndex += len(inputArgs) + 1
                         continue
                     
+                    # Main.queueStreamService.restoreQueueStreams(playlistIds[0], queueStreamIds)
                     result = Main.playlistService.restoreStreams(playlist.id, queueStreamIds)
                     if(len(result) > 0):
                         printS("Restored ", len(result), " QueueStreams successfully from Playlist \"", playlist.name, "\".", color = BashColor.OKGREEN)

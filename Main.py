@@ -16,11 +16,11 @@ from controllers.CliController import SharedCliController
 from controllers.PlaylistCliController import PlaylistCliController
 from controllers.StreamSourceCliController import StreamSourceCliController
 from model.StreamSource import StreamSource
-from PlaylistService import PlaylistService
-from QueueStreamService import QueueStreamService
 from services.LegacyService import LegacyService
-from SharedService import SharedService
-from StreamSourceService import StreamSourceService
+from services.PlaylistService import PlaylistService
+from services.QueueStreamService import QueueStreamService
+from services.SharedService import SharedService
+from services.StreamSourceService import StreamSourceService
 
 load_dotenv()
 DEBUG = eval(os.environ.get("DEBUG"))

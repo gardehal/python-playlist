@@ -108,7 +108,7 @@ class PlaylistService(BaseService[T]):
             permanentlyDelete (bool, optional): Should entities be permanently deleted. Defaults to False.
 
         Returns:
-            list[QueueStream]: QueueStream deleted/removed.
+            list[QueueStream]: QueueStreams deleted/removed.
         """
 
         result = []
@@ -150,7 +150,7 @@ class PlaylistService(BaseService[T]):
             streamIds (list[str]): IDs of QueueStreams to restore.
 
         Returns:
-            list[QueueStream]: QueueStream restored.
+            list[QueueStream]: QueueStreams restored.
         """
 
         result = []

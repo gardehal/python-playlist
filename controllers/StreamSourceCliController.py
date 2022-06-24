@@ -3,8 +3,7 @@ import os
 from dotenv import load_dotenv
 from grdUtil.BashColor import BashColor
 from grdUtil.PrintUtil import printLists, printS
-
-from StreamSourceService import StreamSourceService
+from services.StreamSourceService import StreamSourceService
 
 load_dotenv()
 DEBUG = eval(os.environ.get("DEBUG"))

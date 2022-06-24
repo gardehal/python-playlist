@@ -5,11 +5,11 @@ from dotenv import load_dotenv
 from grdUtil.BashColor import BashColor
 from grdUtil.PrintUtil import printLists, printS
 from model.Playlist import Playlist
-from PlaybackService import PlaybackService
-from PlaylistService import PlaylistService
-from QueueStreamService import QueueStreamService
 from services.FetchService import FetchService
-from StreamSourceService import StreamSourceService
+from services.PlaybackService import PlaybackService
+from services.PlaylistService import PlaylistService
+from services.QueueStreamService import QueueStreamService
+from services.StreamSourceService import StreamSourceService
 
 load_dotenv()
 DEBUG = eval(os.environ.get("DEBUG"))

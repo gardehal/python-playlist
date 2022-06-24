@@ -4,8 +4,8 @@ from dotenv import load_dotenv
 from grdUtil.BashColor import BashColor
 from grdUtil.PrintUtil import printS
 from model.QueueStream import QueueStream
-from PlaylistService import PlaylistService
-from QueueStreamService import QueueStreamService
+from services.PlaylistService import PlaylistService
+from services.QueueStreamService import QueueStreamService
 
 load_dotenv()
 DEBUG = eval(os.environ.get("DEBUG"))

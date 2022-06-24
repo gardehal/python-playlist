@@ -7,9 +7,9 @@ from dotenv import load_dotenv
 from grdUtil.BashColor import BashColor
 from grdUtil.PrintUtil import printS, printStack
 
-from PlaylistService import PlaylistService
-from QueueStreamService import QueueStreamService
-from StreamSourceService import StreamSourceService
+from services.PlaylistService import PlaylistService
+from services.QueueStreamService import QueueStreamService
+from services.StreamSourceService import StreamSourceService
 
 load_dotenv()
 DEBUG = eval(os.environ.get("DEBUG"))

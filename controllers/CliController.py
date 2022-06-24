@@ -8,13 +8,13 @@ from grdUtil.StaticUtil import StaticUtil
 from model.Playlist import Playlist
 from model.QueueStream import QueueStream
 from model.StreamSource import StreamSource
-from PlaybackService import PlaybackService
-from PlaylistService import PlaylistService
-from QueueStreamService import QueueStreamService
 from services.FetchService import FetchService
 from services.LegacyService import LegacyService
-from SharedService import SharedService
-from StreamSourceService import StreamSourceService
+from services.PlaybackService import PlaybackService
+from services.PlaylistService import PlaylistService
+from services.QueueStreamService import QueueStreamService
+from services.SharedService import SharedService
+from services.StreamSourceService import StreamSourceService
 
 load_dotenv()
 DEBUG = eval(os.environ.get("DEBUG"))

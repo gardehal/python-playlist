@@ -299,12 +299,6 @@ class Main:
                         printS("Failed to add QueueStream, missing uri.", color = BashColor.FAIL)
                         argIndex += len(inputArgs) + 1
                         continue
-
-                    if(name == None and validators.url(uri)):
-                        name = Main.sharedService.getPageTitle(uri)
-                    if(name == None):
-                        name = "New QueueStream"
-                        printS("Could not automatically get the web name for this QueueStream, will be named \"" , name, "\".", color = BashColor.WARNING)
                         
                     Main.queueStreamService.addQueueStream(ids[0], name, uri)
 
@@ -328,12 +322,7 @@ class Main:
                         argIndex += len(inputArgs) + 1
                         continue
                     
-                    # Main.queueStreamService.deleteQueueStreams(playlistIds[0], queueStreamIds)
-                    result = Main.playlistService.deleteStreams(playlist.id, queueStreamIds)
-                    if(len(result) > 0):
-                        printS("Deleted ", len(result), " QueueStreams successfully from Playlist \"", playlist.name, "\".", color = BashColor.OKGREEN)
-                    else:
-                        printS("Failed to delete QueueStreams.", color = BashColor.FAIL)
+                    Main.queueStreamService.deleteQueueStreams(playlistIds[0], queueStreamIds)
 
                     argIndex += len(inputArgs) + 1
                     continue

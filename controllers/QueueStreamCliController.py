@@ -1,11 +1,13 @@
 import os
 
+import validators
 from dotenv import load_dotenv
 from grdUtil.BashColor import BashColor
 from grdUtil.PrintUtil import printS
 from model.QueueStream import QueueStream
 from services.PlaylistService import PlaylistService
 from services.QueueStreamService import QueueStreamService
+from services.SharedService import SharedService
 
 load_dotenv()
 DEBUG = eval(os.environ.get("DEBUG"))
@@ -13,10 +15,12 @@ DEBUG = eval(os.environ.get("DEBUG"))
 class QueueStreamCliController():
     playlistService: PlaylistService = None
     queueStreamService: QueueStreamService = None
+    sharedService: SharedService = None
 
     def __init__(self):
         self.playlistService = PlaylistService()
         self.queueStreamService = QueueStreamService()
+        self.sharedService = SharedService()
 
     def addQueueStream(self, playlistId: str, uri: str, name: str) -> list[QueueStream]:
         """
@@ -30,8 +34,14 @@ class QueueStreamCliController():
         Returns:
             list[QueueStream]: QueueStreams added.
         """
-        
-        playlist = self.playlistService.get(playlistId)
+     
+        if(name == None and validators.url(uri)):
+            name = self.sharedService.getPageTitle(uri)
+            if(name == None):
+                printS("Could not automatically get the web name for this QueueStream, try setting it manually.", color = BashColor.FAIL)
+                return []
+            
+        playlist = self.playlistService.get(playlistId)   
         entity = QueueStream(name = name, uri = uri)
         result = self.playlistService.addStreams(playlist.id, [entity])
         if(len(result) > 0):
@@ -41,17 +51,16 @@ class QueueStreamCliController():
             
         return result
     
-    def deleteQueueStream(self, playlistId: str, uri: str, name: str) -> list[QueueStream]:
+    def deleteQueueStream(self, playlistId: str, queueStreamIds: list[str]) -> list[QueueStream]:
         """
-        Add QueueStreams to Playlist.
+        (Soft) Delete/remove QueueStreams from Playlist.
         
         Args:
             playlistId (str): ID of Playlist to add to.
-            uri (str): URI of stream to add.
-            name (str): Displayname of QueueStream.
+            streamIds (list[str]): IDs of QueueStreams to remove.
 
         Returns:
-            list[QueueStream]: QueueStreams added.
+            list[QueueStream]: QueueStream deleted/removed.
         """
         
         playlist = self.playlistService.get(playlistId)

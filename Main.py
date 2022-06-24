@@ -205,7 +205,7 @@ class Main:
                         if(takeBefore != None):
                             takeBefore = datetime.strptime(takeBefore, "%Y-%m-%d")
                     except:
-                        printS("Dates for takeAfter and takeBefore were not valid, see -help print for format.", color = BashColor.FAIL)
+                        printS("Dates for takeAfter and takeBefore were not valid, see help print for format.", color = BashColor.FAIL)
                         argIndex += len(inputArgs) + 1
                         continue
                     
@@ -515,7 +515,7 @@ class Main:
 
                 # Invalid
                 else:
-                    printS("Argument not recognized: \"", arg, "\", please see documentation or run with \"-help\" for help.", color = BashColor.WARNING)
+                    printS("Argument not recognized: \"", arg, "\", please see documentation or run with \"help\" for help.", color = BashColor.WARNING)
                     argIndex += 1
                     
         except KeyboardInterrupt:

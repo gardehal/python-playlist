@@ -60,7 +60,7 @@ class QueueStreamCliController():
             streamIds (list[str]): IDs of QueueStreams to remove.
 
         Returns:
-            list[QueueStream]: QueueStream deleted/removed.
+            list[QueueStream]: QueueStreams deleted/removed.
         """
         
         playlist = self.playlistService.get(playlistId)
@@ -69,5 +69,26 @@ class QueueStreamCliController():
             printS("Deleted ", len(result), " QueueStreams successfully from Playlist \"", playlist.name, "\".", color = BashColor.OKGREEN)
         else:
             printS("Failed to delete QueueStreams.", color = BashColor.FAIL)
+            
+        return result
+    
+    def restoreQueueStream(self, playlistId: str, queueStreamIds: list[str]) -> list[QueueStream]:
+        """
+        Restore QueueStreams to Playlist.
+        
+        Args:
+            playlistId (str): ID of Playlist to add to.
+            streamIds (list[str]): IDs of QueueStreams to remove.
+
+        Returns:
+            list[QueueStream]: QueueStreams restored.
+        """
+        
+        playlist = self.playlistService.get(playlistId)
+        result = self.playlistService.restoreStreams(playlist.id, queueStreamIds)
+        if(len(result) > 0):
+            printS("Restored ", len(result), " QueueStreams successfully from Playlist \"", playlist.name, "\".", color = BashColor.OKGREEN)
+        else:
+            printS("Failed to restore QueueStreams.", color = BashColor.FAIL)
             
         return result

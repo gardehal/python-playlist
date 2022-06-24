@@ -344,12 +344,7 @@ class Main:
                         argIndex += len(inputArgs) + 1
                         continue
                     
-                    # Main.queueStreamService.restoreQueueStreams(playlistIds[0], queueStreamIds)
-                    result = Main.playlistService.restoreStreams(playlist.id, queueStreamIds)
-                    if(len(result) > 0):
-                        printS("Restored ", len(result), " QueueStreams successfully from Playlist \"", playlist.name, "\".", color = BashColor.OKGREEN)
-                    else:
-                        printS("Failed to restore QueueStreams.", color = BashColor.FAIL)
+                    Main.queueStreamService.restoreQueueStreams(playlistIds[0], queueStreamIds)
 
                     argIndex += len(inputArgs) + 1
                     continue

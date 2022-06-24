@@ -44,17 +44,22 @@ class SharedService():
             str: Title of page.
         """
         
-        isYouTubeChannel = "user" in url or "channel" in url  
+        isYouTubeChannel = "user" in url or "channel" in url
+        title = None
         if(StreamSourceTypeUtil.strToStreamSourceType(url) == StreamSourceType.YOUTUBE and not isYouTubeChannel):
             printS("DEBUG: getPageTitle - Getting title from pytube.", color = BashColor.WARNING, doPrint = DEBUG)
             yt = YouTube(url)
             title = yt.title
         else:
             printS("DEBUG: getPageTitle - Getting title from mechanize.", color = BashColor.WARNING, doPrint = DEBUG)
-            br = mechanize.Browser()
-            br.open(url)
-            title = br.title()
-            br.close()
+            try:
+                br = mechanize.Browser()
+                br.open(url)
+                title = br.title()
+                br.close()
+            except Exception as e:
+                printS(f"Could not fetch name from URL {url}:\n{e}", color = BashColor.FAIL)
+                return None
 
         return sanitize(title).strip()
 

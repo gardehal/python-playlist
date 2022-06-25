@@ -34,7 +34,15 @@ class QueueStreamCliController():
         Returns:
             list[QueueStream]: QueueStreams added.
         """
-     
+
+        if(playlistId == None):
+            printS("Failed to add QueueStream, missing playlistId or index.", color = BashColor.FAIL)
+            return []
+
+        if(uri == None):
+            printS("Failed to add QueueStream, missing uri.", color = BashColor.FAIL)
+            return []
+        
         if(name == None and validators.url(uri)):
             name = self.sharedService.getPageTitle(uri)
             if(name == None):
@@ -63,7 +71,15 @@ class QueueStreamCliController():
             list[QueueStream]: QueueStreams deleted/removed.
         """
         
-        playlist = self.playlistService.get(playlistId)
+        # if(playlistId == None):
+        #     printS("Failed to delete QueueStreams, missing playlistId or index.", color = BashColor.FAIL)
+        #     return []
+        
+        # playlist = self.playlistService.get(playlistId)
+        # if(len(queueStreamIds) == 0):
+        #     printS("Failed to delete QueueStreams, missing queueStreamIds or indices.", color = BashColor.FAIL)
+        #     return []
+        
         result = self.playlistService.deleteStreams(playlist.id, queueStreamIds)
         if(len(result) > 0):
             printS("Deleted ", len(result), " QueueStreams successfully from Playlist \"", playlist.name, "\".", color = BashColor.OKGREEN)

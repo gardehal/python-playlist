@@ -14,6 +14,7 @@ from grdUtil.PrintUtil import printLists, printS
 from Commands import Commands
 from controllers.CliController import SharedCliController
 from controllers.PlaylistCliController import PlaylistCliController
+from controllers.QueueStreamCliController import QueueStreamCliController
 from controllers.StreamSourceCliController import StreamSourceCliController
 from model.StreamSource import StreamSource
 from services.LegacyService import LegacyService
@@ -37,6 +38,7 @@ class Main:
     commands = Commands()
     sharedCliController: SharedCliController = SharedCliController()
     playlistCliController: PlaylistCliController = PlaylistCliController()
+    queueStreamCliController: QueueStreamCliController = QueueStreamCliController()
     streamSourceCliController: StreamSourceCliController = StreamSourceCliController()
 
     def main():
@@ -286,21 +288,11 @@ class Main:
                 elif(arg in Main.commands.addStreamCommands):
                     # Expected input: playlistId or index, uri, name?
                     inputArgs = extractArgs(argIndex, argV)
-                    ids = getIdsFromInput(inputArgs, Main.playlistService.getAllIds(), Main.playlistService.getAll(), 1, debug = DEBUG)
+                    playlistIds = getIdsFromInput(inputArgs, Main.playlistService.getAllIds(), Main.playlistService.getAll(), 1, setDefaultId = False, debug = DEBUG)
                     uri = inputArgs[1] if len(inputArgs) > 1 else None
                     name = inputArgs[2] if len(inputArgs) > 2 else None
-
-                    if(len(ids) == 0):
-                        printS("Failed to add QueueStream, missing playlistId or index.", color = BashColor.FAIL)
-                        argIndex += len(inputArgs) + 1
-                        continue
-
-                    if(uri == None):
-                        printS("Failed to add QueueStream, missing uri.", color = BashColor.FAIL)
-                        argIndex += len(inputArgs) + 1
-                        continue
-                        
-                    Main.queueStreamService.addQueueStream(ids[0], name, uri)
+                    
+                    Main.queueStreamCliController.addQueueStream(getIfExists(playlistIds, 0), name, uri)
 
                     argIndex += len(inputArgs) + 1
                     continue
@@ -308,8 +300,8 @@ class Main:
                 elif(arg in Main.commands.deleteStreamCommands):
                     # Expected input: playlistId or index, queueStreamIds or indices
                     inputArgs = extractArgs(argIndex, argV)
-
-                    playlistIds = getIdsFromInput(inputArgs, Main.playlistService.getAllIds(), Main.playlistService.getAll(), 1, debug = DEBUG)
+                    playlistIds = getIdsFromInput(inputArgs, Main.playlistService.getAllIds(), Main.playlistService.getAll(), 1, setDefaultId = False, debug = DEBUG)
+                    
                     if(len(playlistIds) == 0):
                         printS("Failed to delete QueueStreams, missing playlistId or index.", color = BashColor.FAIL)
                         argIndex += len(inputArgs) + 1
@@ -322,7 +314,7 @@ class Main:
                         argIndex += len(inputArgs) + 1
                         continue
                     
-                    Main.queueStreamService.deleteQueueStreams(playlistIds[0], queueStreamIds)
+                    Main.queueStreamCliController.deleteQueueStreams(getIfExists(playlistIds, 0), queueStreamIds)
 
                     argIndex += len(inputArgs) + 1
                     continue
@@ -344,7 +336,7 @@ class Main:
                         argIndex += len(inputArgs) + 1
                         continue
                     
-                    Main.queueStreamService.restoreQueueStreams(playlistIds[0], queueStreamIds)
+                    Main.queueStreamCliController.restoreQueueStreams(playlistIds[0], queueStreamIds)
 
                     argIndex += len(inputArgs) + 1
                     continue

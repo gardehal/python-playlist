@@ -3,6 +3,7 @@ import os
 import validators
 from dotenv import load_dotenv
 from grdUtil.BashColor import BashColor
+from grdUtil.InputUtil import getIdsFromInput
 from grdUtil.PrintUtil import printS
 from model.QueueStream import QueueStream
 from services.PlaylistService import PlaylistService
@@ -71,14 +72,15 @@ class QueueStreamCliController():
             list[QueueStream]: QueueStreams deleted/removed.
         """
         
-        # if(playlistId == None):
-        #     printS("Failed to delete QueueStreams, missing playlistId or index.", color = BashColor.FAIL)
-        #     return []
+        if(playlistId == None):
+            printS("Failed to delete QueueStreams, missing playlistId or index.", color = BashColor.FAIL)
+            return []
         
-        # playlist = self.playlistService.get(playlistId)
-        # if(len(queueStreamIds) == 0):
-        #     printS("Failed to delete QueueStreams, missing queueStreamIds or indices.", color = BashColor.FAIL)
-        #     return []
+        playlist = self.playlistService.get(playlistId)
+        queueStreamIds = getIdsFromInput(queueStreamIds, playlist.streamIds, self.playlistService.getStreamsByPlaylistId(playlistId), debug = DEBUG)
+        if(len(queueStreamIds) == 0):
+            printS("Failed to delete QueueStreams, missing queueStreamIds or indices.", color = BashColor.FAIL)
+            return []
         
         result = self.playlistService.deleteStreams(playlist.id, queueStreamIds)
         if(len(result) > 0):
@@ -99,6 +101,18 @@ class QueueStreamCliController():
         Returns:
             list[QueueStream]: QueueStreams restored.
         """
+        
+        if(len(playlistId) == 0):
+            printS("Failed to restore QueueStreams, missing playlistId or index.", color = BashColor.FAIL)
+            return []
+        
+        
+        playlist = Main.playlistService.get(playlistId)
+        queueStreamIds = getIdsFromInput(inputArgs[1:], Main.queueStreamService.getAllIds(includeSoftDeleted = True), Main.playlistService.getStreamsByPlaylistId(playlist.id, includeSoftDeleted = True), setDefaultId = False, debug = DEBUG)
+        if(len(queueStreamIds) == 0):
+            printS("Failed to restore QueueStreams, missing queueStreamIds or indices.", color = BashColor.FAIL)
+            return []
+        
         
         playlist = self.playlistService.get(playlistId)
         result = self.playlistService.restoreStreams(playlist.id, queueStreamIds)

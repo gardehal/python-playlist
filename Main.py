@@ -301,18 +301,7 @@ class Main:
                     # Expected input: playlistId or index, queueStreamIds or indices
                     inputArgs = extractArgs(argIndex, argV)
                     playlistIds = getIdsFromInput(inputArgs, Main.playlistService.getAllIds(), Main.playlistService.getAll(), 1, setDefaultId = False, debug = DEBUG)
-                    
-                    if(len(playlistIds) == 0):
-                        printS("Failed to delete QueueStreams, missing playlistId or index.", color = BashColor.FAIL)
-                        argIndex += len(inputArgs) + 1
-                        continue
-                    
-                    playlist = Main.playlistService.get(playlistIds[0])
-                    queueStreamIds = getIdsFromInput(inputArgs[1:], playlist.streamIds, Main.playlistService.getStreamsByPlaylistId(playlist.id), debug = DEBUG)
-                    if(len(queueStreamIds) == 0):
-                        printS("Failed to delete QueueStreams, missing queueStreamIds or indices.", color = BashColor.FAIL)
-                        argIndex += len(inputArgs) + 1
-                        continue
+                    queueStreamIds = inputArgs[1:] if len(inputArgs) > 1 else []
                     
                     Main.queueStreamCliController.deleteQueueStreams(getIfExists(playlistIds, 0), queueStreamIds)
 
@@ -322,21 +311,10 @@ class Main:
                 elif(arg in Main.commands.restoreStreamCommands):
                     # Expected input: playlistId or index, queueStreamIds or indices
                     inputArgs = extractArgs(argIndex, argV)
-
-                    playlistIds = getIdsFromInput(inputArgs, Main.playlistService.getAllIds(), Main.playlistService.getAll(), 1, debug = DEBUG)
-                    if(len(playlistIds) == 0):
-                        printS("Failed to restore QueueStreams, missing playlistId or index.", color = BashColor.FAIL)
-                        argIndex += len(inputArgs) + 1
-                        continue
-                    
-                    playlist = Main.playlistService.get(playlistIds[0])
-                    queueStreamIds = getIdsFromInput(inputArgs[1:], Main.queueStreamService.getAllIds(includeSoftDeleted = True), Main.playlistService.getStreamsByPlaylistId(playlist.id, includeSoftDeleted = True), debug = DEBUG)
-                    if(len(queueStreamIds) == 0):
-                        printS("Failed to restore QueueStreams, missing queueStreamIds or indices.", color = BashColor.FAIL)
-                        argIndex += len(inputArgs) + 1
-                        continue
-                    
-                    Main.queueStreamCliController.restoreQueueStreams(playlistIds[0], queueStreamIds)
+                    playlistIds = getIdsFromInput(inputArgs, Main.playlistService.getAllIds(), Main.playlistService.getAll(), 1, setDefaultId = False, debug = DEBUG)
+                    queueStreamIds = inputArgs[1:] if len(inputArgs) > 1 else []
+                                        
+                    Main.queueStreamCliController.restoreQueueStreams(getIfExists(playlistIds, 0), queueStreamIds)
 
                     argIndex += len(inputArgs) + 1
                     continue

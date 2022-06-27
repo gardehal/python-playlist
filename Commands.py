@@ -67,24 +67,6 @@ class Commands():
         self.listSettingsCommands = ["settings", "secrets"]
         self.listSoftDeletedCommands = ["listsoftdeleted", "listdeleted", "lsd", "ld"]
         self.refactorCommands = ["refactor"]
-    
-    def getAllSettingsAsString(self) -> str:
-        """
-        Print settings in .env settings/secrets file.
-
-        Returns:
-            str: a string of all settings/secrets in project from .env.
-        """
-
-        printS("DEBUG: ", DEBUG,
-               "\n", "LOCAL_STORAGE_PATH: ", LOCAL_STORAGE_PATH,
-               "\n", "LOG_WATCHED: ", LOG_WATCHED,
-               "\n", "DOWNLOAD_WEB_STREAMS: ", DOWNLOAD_WEB_STREAMS,
-               "\n", "REMOVE_WATCHED_ON_FETCH: ", REMOVE_WATCHED_ON_FETCH,
-               "\n", "PLAYED_ALWAYS_WATCHED: ", PLAYED_ALWAYS_WATCHED,
-               "\n", "WATCHED_LOG_FILEPATH: ", WATCHED_LOG_FILEPATH,
-               "\n", "BROWSER_BIN: ", BROWSER_BIN,
-               "\n", "FETCH_LIMIT_SINGLE_SOURCE: ", FETCH_LIMIT_SINGLE_SOURCE)
         
     def getHelpString(self) -> str:
         """

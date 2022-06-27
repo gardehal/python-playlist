@@ -3,7 +3,6 @@ import subprocess
 import sys
 from datetime import datetime
 
-import validators
 from dotenv import load_dotenv
 from grdUtil.BashColor import BashColor
 from grdUtil.FileUtil import makeFiles
@@ -22,6 +21,7 @@ from services.PlaylistService import PlaylistService
 from services.QueueStreamService import QueueStreamService
 from services.SharedService import SharedService
 from services.StreamSourceService import StreamSourceService
+from Settings import Settings
 
 load_dotenv()
 DEBUG = eval(os.environ.get("DEBUG"))
@@ -36,6 +36,7 @@ class Main:
     sharedService = SharedService()
     streamSourceService = StreamSourceService()
     commands = Commands()
+    settings = Settings()
     sharedCliController: SharedCliController = SharedCliController()
     playlistCliController: PlaylistCliController = PlaylistCliController()
     queueStreamCliController: QueueStreamCliController = QueueStreamCliController()
@@ -448,7 +449,7 @@ class Main:
                 elif(arg in Main.commands.listSettingsCommands):
                     # Expected input: none
                     
-                    result = Main.commands.getAllSettingsAsString()
+                    result = Main.settings.getAllSettingsAsTable()
                     print(result)
 
                     argIndex += 1

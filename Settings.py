@@ -48,3 +48,43 @@ class Settings():
                "\n", "LOG_DIR_PATH: ", self.logDirPath,
                "\n", "BROWSER_BIN: ", self.browserBin,
                "\n", "FETCH_LIMIT_SINGLE_SOURCE: ", self.fetchLimitSingleSource)
+        
+    def getAllSettingsAsTable(self) -> str:
+        """
+        Get settings in .env settings/secrets file as a table.
+
+        Returns:
+            str: a string of all settings/secrets in project from .env as a table.
+        """
+
+        names = ["DEBUG",
+            "LOCAL_STORAGE_PATH", 
+            "LOG_WATCHED", 
+            "DOWNLOAD_WEB_STREAMS", 
+            "REMOVE_WATCHED_ON_FETCH", 
+            "PLAYED_ALWAYS_WATCHED", 
+            "WATCHED_LOG_FILEPATH", 
+            "LOG_DIR_PATH", 
+            "BROWSER_BIN", 
+            "FETCH_LIMIT_SINGLE_SOURCE"]
+        settings = [self.debug,
+            self.localStoragePath,
+            self.logWatched,
+            self.downloadWebStreams,
+            self.removeWatchedOnFetch,
+            self.playedAlwaysWatched,
+            self.watchedLogFilepath,
+            self.logDirPath,
+            self.browserBin,
+            self.fetchLimitSingleSource]
+        settingsStrings = [str(s) for s in settings]
+        
+        overlyComplicatedSettingsListList = []
+        for i, name in enumerate(names):
+            overlyComplicatedSettingsListList.append([name, settingsStrings[i]])
+        overlyComplicatedSettingsLabels = ["Name                           ", "Value                                                         "]
+
+        # ??? 
+        # I blame asTable, needs fix for labels, but this could probably have been a list with a template for name and value like 
+        # "| {name}{namePadding} - {setting}{settingPadding} |" or something equally dumb since there's no current column option for asTable, only rows
+        return asTable(overlyComplicatedSettingsListList, overlyComplicatedSettingsLabels)

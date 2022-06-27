@@ -108,6 +108,7 @@ Program for queueing and playing videos from list or from sources like channels 
 - controller layer, main: parse args and call controller, controller: service call, handle input (?), print all except debug, service: manage data and call repo, repo: save/get from storage
 - rename to python-playlist
 
-- settings method to avoid importing settings like "DEBUG = eval(os.environ.get("DEBUG"))"
+- settings method to avoid importing settings like "DEBUG = eval(os.environ.get("DEBUG"))", implement
+- util function for concatting and joining any to single string
 - move more code from main to Controllers (one per service)
 - circumvent restrictions using VLC: https://www.electronicshub.org/bypass-youtube-age-restriction/#3_Using_VLC_Media_Player_on_a_Phone_or_Tablet

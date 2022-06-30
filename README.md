@@ -103,14 +103,11 @@ Program for queueing and playing videos from list or from sources like channels 
 - option to download and watch (requires implement file/folder)
 - minor print issues and wording/use of IDs. Some prints can be simplified due to context (e.g. "Added StreamSource "X"", "StreamSource" unnecessary)
 - tests for core functions like fetch and play?
-- sometimes add source fails due to webrequests/title?
 - fetch youtube still slow, probably still loading all videos from channel, in library pytube
-- controller layer, main: parse args and call controller, controller: service call, handle input (?), print all except debug, service: manage data and call repo, repo: save/get from storage
 - rename to python-playlist
 
 - setting for prune_on_fetch not implemented?
-- use arrows in playback as replacement for skip (and add backwards/replay)
 - settings method to avoid importing settings like "DEBUG = eval(os.environ.get("DEBUG"))", implement
-- util function for concatting and joining any to single string
-- move more code from main to Controllers (one per service)
-- circumvent restrictions using VLC: https://www.electronicshub.org/bypass-youtube-age-restriction/#3_Using_VLC_Media_Player_on_a_Phone_or_Tablet
+- controller layer, main: parse args and call controller, controller: service call, handle input (?), print all except debug, service: manage data and call repo, repo: save/get from storage
+- use arrows in playback as replacement for skip (and add backwards/replay)
+- circumvent restrictions using VLC: https://www.electronicshub.org/bypass-youtube-age-restriction/#3_Using_VLC_Media_Player_on_a_Phone_or_Tablet - or offer to open download page which can circumvent...

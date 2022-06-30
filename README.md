@@ -108,6 +108,8 @@ Program for queueing and playing videos from list or from sources like channels 
 - controller layer, main: parse args and call controller, controller: service call, handle input (?), print all except debug, service: manage data and call repo, repo: save/get from storage
 - rename to python-playlist
 
+- setting for prune_on_fetch not implemented?
+- use arrows in playback as replacement for skip (and add backwards/replay)
 - settings method to avoid importing settings like "DEBUG = eval(os.environ.get("DEBUG"))", implement
 - util function for concatting and joining any to single string
 - move more code from main to Controllers (one per service)

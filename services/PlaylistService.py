@@ -312,8 +312,8 @@ class PlaylistService(BaseService[T]):
             if(source == None):
                 continue
             
-            result = self.streamSourceService.restore(id)
-            if(result != None):
+            restoreResult = self.streamSourceService.restore(id)
+            if(restoreResult != None):
                 playlist.streamSourceIds.append(source.id)
                 result.append(source)
 

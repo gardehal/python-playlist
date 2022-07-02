@@ -167,7 +167,7 @@ class Main:
                     continue
                 
                 elif(arg in Main.commands.detailsPlaylistCommands):
-                    # Expected input: playlistIds or indices, includeUri, includeId, includeDatertime, includeListCount, includeSource
+                    # Expected input: playlistIds or indices, includeUri, includeId, includeDatetime, includeListCount, includeSource
                     inputArgs = extractArgs(argIndex, argV)
                     ids = getIdsFromInput(inputArgs, Main.playlistService.getAllIds(), Main.playlistService.getAll(), returnOnNonIds = True, debug = Main.settings.debug)
                     lenIds = len(ids)

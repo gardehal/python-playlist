@@ -1,4 +1,3 @@
-import os
 import subprocess
 
 from dotenv import load_dotenv
@@ -12,8 +11,6 @@ from services.StreamSourceService import StreamSourceService
 from Settings import Settings
 
 load_dotenv()
-DEBUG = eval(os.environ.get("DEBUG"))
-LOCAL_STORAGE_PATH = os.environ.get("LOCAL_STORAGE_PATH")
 
 class StreamSourceCliController():
     playlistService: PlaylistService = None

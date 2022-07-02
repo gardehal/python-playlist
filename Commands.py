@@ -166,8 +166,8 @@ class Commands():
 
         result = ""
         result += "\n" + str(self.addStreamCommands) + " [playlistId or index: str] [uri: string] [? name: str]: Add a stream to a Playlist from ID or index, from uri: URL, and name: name (set automatically if not given)."
-        result += "\n" + str(self.deleteStreamCommands) + " [playlistId or index: str] [streamIds or indices: list]: delete QueueStreams from Playlist."
-        result += "\n" + str(self.restoreStreamCommands) + " [playlistId or index: str] [streamIds or indices: str]: restore soft deleted QueueStreams from database."
+        result += "\n" + str(self.deleteStreamCommands) + " [playlistId or index: str] [streamIds or indices: list]: Delete QueueStreams from Playlist."
+        result += "\n" + str(self.restoreStreamCommands) + " [playlistId or index: str] [streamIds or indices: str]: Restore soft deleted QueueStreams from database."
 
         return result
     
@@ -181,7 +181,8 @@ class Commands():
 
         result = ""
         result += "\n" + str(self.addSourcesCommands) + " [playlistId or index: str] [uri: string] [? enableFetch: bool] [? backgroundContent: bool] [? name: str]: Add a StreamSources from uri: URL, enableFetch: if the Playlist should fetch new QueueStream from this StreamSource, backgroundContent; if the QueueStream from this source are things you would play in the background, and name: name (set automatically if not given)."
-        result += "\n" + str(self.restoreSourceCommands) + " [playlistId or index: str] [sourceIds or indices: str]: restore soft deleted StreamSources from database."
+        result += "\n" + str(self.deleteSourceCommands) + " [playlistId or index: str] [sourceIds or indices: str]: Delete StreamSources from database."
+        result += "\n" + str(self.restoreSourceCommands) + " [playlistId or index: str] [sourceIds or indices: str]: Restore soft deleted StreamSources from database."
         result += "\n" + str(self.listSourcesCommands) + " [? includeSoftDeleted: bool]: Lists StreamSources with indices that can be used instead of IDs in other commands."
         result += "\n" + str(self.openSourceCommands) + "[sourceIds or indices: str]: open StreamSources in web if it is a web source, or directory if not."
 

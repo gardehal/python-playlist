@@ -163,8 +163,8 @@ class PlaylistService(BaseService[T]):
             if(stream == None):
                 continue
             
-            result = self.queueStreamService.restore(id)
-            if(result != None):
+            restoreResult = self.queueStreamService.restore(id)
+            if(restoreResult != None):
                 playlist.streamIds.append(stream.id)
                 result.append(stream)
 

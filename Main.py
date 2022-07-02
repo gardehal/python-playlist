@@ -1,5 +1,4 @@
 import os
-import subprocess
 import sys
 from datetime import datetime
 
@@ -14,7 +13,6 @@ from controllers.CliController import SharedCliController
 from controllers.PlaylistCliController import PlaylistCliController
 from controllers.QueueStreamCliController import QueueStreamCliController
 from controllers.StreamSourceCliController import StreamSourceCliController
-from model.StreamSource import StreamSource
 from services.LegacyService import LegacyService
 from services.PlaylistService import PlaylistService
 from services.QueueStreamService import QueueStreamService
@@ -355,13 +353,8 @@ class Main:
                     # Expected input: includeSoftDeleted
                     inputArgs = extractArgs(argIndex, argV)
                     includeSoftDeleted = eval(inputArgs[0]) if(len(inputArgs) > 0) else False
-
-                    result = Main.streamSourceService.getAll(includeSoftDeleted)
-                    if(len(result) > 0):
-                        for (i, entry) in enumerate(result):
-                            printS(i, " - ", entry.summaryString())
-                    else:
-                        printS("No QueueStreams found.", color = BashColor.WARNING)
+                    
+                    Main.streamSourceCliController.listStreamSources(includeSoftDeleted)
 
                     argIndex += len(inputArgs) + 1
                     continue
@@ -369,20 +362,9 @@ class Main:
                 elif(arg in Main.commands.openSourceCommands):
                     # Expected input: streamSourceIds or indices
                     inputArgs = extractArgs(argIndex, argV)
-                    
                     streamSourceIds = getIdsFromInput(inputArgs, Main.streamSourceService.getAllIds(), Main.streamSourceService.getAll(), debug = Main.settings.debug)
-                    if(len(streamSourceIds) == 0):
-                        printS("Failed to open StreamSources, missing streamSourceIds or indices.", color = BashColor.FAIL)
-                        argIndex += len(inputArgs) + 1
-                        continue
-
-                    for id in streamSourceIds:
-                        stream = Main.streamSourceService.get(id)
-                        if(stream != None):
-                            subprocess.Popen(f"call start {stream.uri}", stdout = subprocess.PIPE, shell = True)
                     
-                        else:
-                            printS("No StreamSource found.", color = BashColor.WARNING)
+                    Main.streamSourceCliController.openStreamSource(streamSourceIds)
 
                     argIndex += len(inputArgs) + 1
                     continue

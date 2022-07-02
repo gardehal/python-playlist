@@ -1,14 +1,15 @@
 import os
+import subprocess
 
 from dotenv import load_dotenv
 from grdUtil.BashColor import BashColor
 from grdUtil.InputUtil import getIdsFromInput
 from grdUtil.PrintUtil import printS
-from Settings import Settings
 from model.StreamSource import StreamSource
 from services.PlaylistService import PlaylistService
 from services.SharedService import SharedService
 from services.StreamSourceService import StreamSourceService
+from Settings import Settings
 
 load_dotenv()
 DEBUG = eval(os.environ.get("DEBUG"))
@@ -123,4 +124,51 @@ class StreamSourceCliController():
         else:
             printS("Failed to restore StreamSources.", color = BashColor.FAIL)
             
+        return result
+
+    def listStreamSources(self, includeSoftDeleted: bool) -> list[StreamSource]:
+        """
+        Print a list of all StreamSources.
+        
+        Args:
+            includeSoftDeleted (bool): Should soft deleted be included?
+
+        Returns:
+            list[StreamSource]: StreamSources printed.
+        """
+        
+        result = self.streamSourceService.getAll(includeSoftDeleted)
+        if(len(result) > 0):
+            for (i, entry) in enumerate(result):
+                printS(i, " - ", entry.summaryString())
+        else:
+            printS("No QueueStreams found.", color = BashColor.WARNING)
+                        
+        return result
+    
+    def openStreamSource(self, streamSourceIds: list[str]) -> list[StreamSource]:
+        """
+        Open StreamSource, going to the URI provided when it was created.
+        
+        Args:
+            streamSourceIds (list[str]): IDs of StreamSources to open.
+
+        Returns:
+            list[StreamSource]: StreamSources opened.
+        """
+        
+        if(len(streamSourceIds) == 0):
+            printS("Failed to open StreamSources, missing streamSourceIds or indices.", color = BashColor.FAIL)
+            return []
+
+        result = []
+        for id in streamSourceIds:
+            stream = self.streamSourceService.get(id)
+            if(stream != None):
+                subprocess.Popen(f"call start {stream.uri}", stdout = subprocess.PIPE, shell = True) # TODO does this works for fir sources?
+                result.append(stream)
+        
+            else:
+                printS("No StreamSource found.", color = BashColor.WARNING)
+                
         return result

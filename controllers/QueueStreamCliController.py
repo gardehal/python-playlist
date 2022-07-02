@@ -60,7 +60,7 @@ class QueueStreamCliController():
             
         return result
     
-    def deleteQueueStream(self, playlistId: str, queueStreamIds: list[str]) -> list[QueueStream]:
+    def deleteQueueStreams(self, playlistId: str, queueStreamIds: list[str]) -> list[QueueStream]:
         """
         (Soft) Delete/remove QueueStreams from Playlist.
         
@@ -90,7 +90,7 @@ class QueueStreamCliController():
             
         return result
     
-    def restoreQueueStream(self, playlistId: str, queueStreamIds: list[str]) -> list[QueueStream]:
+    def restoreQueueStreams(self, playlistId: str, queueStreamIds: list[str]) -> list[QueueStream]:
         """
         Restore QueueStreams to Playlist.
         
@@ -106,13 +106,11 @@ class QueueStreamCliController():
             printS("Failed to restore QueueStreams, missing playlistId or index.", color = BashColor.FAIL)
             return []
         
-        
-        playlist = Main.playlistService.get(playlistId)
-        queueStreamIds = getIdsFromInput(inputArgs[1:], Main.queueStreamService.getAllIds(includeSoftDeleted = True), Main.playlistService.getStreamsByPlaylistId(playlist.id, includeSoftDeleted = True), setDefaultId = False, debug = DEBUG)
+        playlist = self.playlistService.get(playlistId)
+        queueStreamIds = getIdsFromInput(queueStreamIds, self.queueStreamService.getAllIds(includeSoftDeleted = True), self.playlistService.getStreamsByPlaylistId(playlist.id, includeSoftDeleted = True), setDefaultId = False, debug = DEBUG)
         if(len(queueStreamIds) == 0):
             printS("Failed to restore QueueStreams, missing queueStreamIds or indices.", color = BashColor.FAIL)
             return []
-        
         
         playlist = self.playlistService.get(playlistId)
         result = self.playlistService.restoreStreams(playlist.id, queueStreamIds)

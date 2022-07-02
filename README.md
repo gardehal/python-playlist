@@ -106,6 +106,8 @@ Program for queueing and playing videos from list or from sources like channels 
 - fetch youtube still slow, probably still loading all videos from channel, in library pytube
 - rename to python-playlist
 
+- odysee add qs fails
+- remove source fails
 - setting for prune_on_fetch not implemented?
 - settings method to avoid importing settings like "DEBUG = eval(os.environ.get("DEBUG"))", implement
 - controller layer, main: parse args and call controller, controller: service call, handle input (?), print all except debug, service: manage data and call repo, repo: save/get from storage

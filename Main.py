@@ -287,7 +287,7 @@ class Main:
                     uri = inputArgs[1] if len(inputArgs) > 1 else None
                     name = inputArgs[2] if len(inputArgs) > 2 else None
                     
-                    Main.queueStreamCliController.addQueueStream(getIfExists(playlistIds, 0), name, uri)
+                    Main.queueStreamCliController.addQueueStream(getIfExists(playlistIds, 0), uri, name)
 
                     argIndex += len(inputArgs) + 1
                     continue

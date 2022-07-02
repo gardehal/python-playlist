@@ -106,6 +106,7 @@ Program for queueing and playing videos from list or from sources like channels 
 - fetch youtube still slow, probably still loading all videos from channel, in library pytube
 - rename to python-playlist
 
+- move all handleing of ards to controllers from Main. Including method usage like getIdsFromInput?
 - setting for prune_on_fetch not implemented?
 - prune methods must remove IDs of removed sources in QueueStreams, DP but allow for deleted sources
 - settings method to avoid importing settings like "DEBUG = eval(os.environ.get("DEBUG"))", implement

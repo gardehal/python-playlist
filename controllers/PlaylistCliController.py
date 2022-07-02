@@ -1,7 +1,5 @@
-import os
 from datetime import datetime
 
-from dotenv import load_dotenv
 from grdUtil.BashColor import BashColor
 from grdUtil.PrintUtil import printLists, printS
 from model.Playlist import Playlist
@@ -10,10 +8,8 @@ from services.PlaybackService import PlaybackService
 from services.PlaylistService import PlaylistService
 from services.QueueStreamService import QueueStreamService
 from services.StreamSourceService import StreamSourceService
+from Settings import Settings
 
-load_dotenv()
-DEBUG = eval(os.environ.get("DEBUG"))
-LOCAL_STORAGE_PATH = os.environ.get("LOCAL_STORAGE_PATH")
 
 class PlaylistCliController():
     fetchService: FetchService() = None
@@ -21,6 +17,7 @@ class PlaylistCliController():
     playlistService: PlaylistService = None
     queueStreamService: QueueStreamService = None
     streamSourceService: StreamSourceService = None
+    settings: Settings = None
 
     def __init__(self):
         self.fetchService = FetchService()
@@ -28,6 +25,7 @@ class PlaylistCliController():
         self.playlistService = PlaylistService()
         self.queueStreamService = QueueStreamService()
         self.streamSourceService = StreamSourceService()
+        self.settings = Settings()
         
     def addPlaylist(self, name: str, playWatchedStreams: bool, allowDuplicates: bool, streamSourceIds: list[str]) -> Playlist:
         """

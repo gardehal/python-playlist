@@ -1,5 +1,4 @@
 import validators
-from dotenv import load_dotenv
 from grdUtil.BashColor import BashColor
 from grdUtil.InputUtil import getIdsFromInput
 from grdUtil.PrintUtil import printS
@@ -9,7 +8,6 @@ from services.QueueStreamService import QueueStreamService
 from services.SharedService import SharedService
 from Settings import Settings
 
-load_dotenv()
 
 class QueueStreamCliController():
     playlistService: PlaylistService = None

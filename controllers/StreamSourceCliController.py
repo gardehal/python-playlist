@@ -1,6 +1,5 @@
 import subprocess
 
-from dotenv import load_dotenv
 from grdUtil.BashColor import BashColor
 from grdUtil.InputUtil import getIdsFromInput
 from grdUtil.PrintUtil import printS
@@ -10,7 +9,6 @@ from services.SharedService import SharedService
 from services.StreamSourceService import StreamSourceService
 from Settings import Settings
 
-load_dotenv()
 
 class StreamSourceCliController():
     playlistService: PlaylistService = None

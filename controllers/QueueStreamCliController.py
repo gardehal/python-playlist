@@ -62,14 +62,14 @@ class QueueStreamCliController():
     
     def deleteQueueStreams(self, playlistId: str, queueStreamIds: list[str]) -> list[QueueStream]:
         """
-        (Soft) Delete/remove QueueStreams from Playlist.
+        (Soft) Delete QueueStreams from Playlist.
         
         Args:
-            playlistId (str): ID of Playlist to add to.
-            streamIds (list[str]): IDs of QueueStreams to remove.
+            playlistId (str): ID of Playlist to delete from.
+            queueStreamIds (list[str]): IDs of QueueStreams to delete.
 
         Returns:
-            list[QueueStream]: QueueStreams deleted/removed.
+            list[QueueStream]: QueueStreams deleted.
         """
         
         if(playlistId == None):
@@ -95,14 +95,14 @@ class QueueStreamCliController():
         Restore QueueStreams to Playlist.
         
         Args:
-            playlistId (str): ID of Playlist to add to.
-            streamIds (list[str]): IDs of QueueStreams to remove.
+            playlistId (str): ID of Playlist to restore to.
+            queueStreamIds (list[str]): IDs of QueueStreams to restore.
 
         Returns:
             list[QueueStream]: QueueStreams restored.
         """
         
-        if(len(playlistId) == 0):
+        if(playlistId == None):
             printS("Failed to restore QueueStreams, missing playlistId or index.", color = BashColor.FAIL)
             return []
         

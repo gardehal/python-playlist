@@ -466,9 +466,10 @@ class PlaylistService(BaseService[T]):
             int: number of playlists printed for.
         """
         
+        includeSoftDeleted = True
         result = 0
         for id in playlistIds:
-            playlist = self.get(id)
+            playlist = self.get(id, includeSoftDeleted)
               
             playlistDetailsString = playlist.detailsString(includeUri, includeId, includeDatetime, includeListCount = False)
             if(includeListCount):
@@ -485,7 +486,7 @@ class PlaylistService(BaseService[T]):
                 printS("\tNo sources added yet.")
             
             for i, sourceId in enumerate(playlist.streamSourceIds):
-                source = self.streamSourceService.get(sourceId)
+                source = self.streamSourceService.get(sourceId, includeSoftDeleted)
                 if(source == None):
                     printS("\tStreamSource not found (ID: \"", sourceId, "\").", color = BashColor.FAIL)
                     continue
@@ -499,7 +500,7 @@ class PlaylistService(BaseService[T]):
                 printS("\tNo streams added yet.")
             
             for i, streamId in enumerate(playlist.streamIds):
-                stream = self.queueStreamService.get(streamId)
+                stream = self.queueStreamService.get(streamId, includeSoftDeleted)
                 if(stream == None):
                     printS("\tQueueStream not found (ID: \"", streamId, "\").", color = BashColor.FAIL)
                     continue
@@ -507,7 +508,7 @@ class PlaylistService(BaseService[T]):
                 color = "WHITE" if i % 2 == 0 else "GREYBG"
                 sourceString = ""
                 if(includeSource and stream.streamSourceId != None):
-                    streamSource = self.streamSourceService.get(stream.streamSourceId)
+                    streamSource = self.streamSourceService.get(stream.streamSourceId, includeSoftDeleted)
                     
                     if(streamSource == None):
                         printS("\tStreamSource not found (ID: \"", streamId, "\").", color = BashColor.FAIL)

@@ -107,6 +107,7 @@ Program for queueing and playing videos from list or from sources like channels 
 - rename to python-playlist
 
 - setting for prune_on_fetch not implemented?
+- prune methods must remove IDs of removed sources in QueueStreams, DP but allow for deleted sources
 - settings method to avoid importing settings like "DEBUG = eval(os.environ.get("DEBUG"))", implement
 - controller layer, main: parse args and call controller, controller: service call, handle input (?), print all except debug, service: manage data and call repo, repo: save/get from storage
 - use arrows in playback as replacement for skip (and add backwards/replay)

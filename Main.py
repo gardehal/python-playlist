@@ -318,35 +318,13 @@ class Main:
                 elif(arg in Main.commands.addSourcesCommands):
                     # Expected input: playlistId or index, uri, enableFetch?, backgroundContent?, name?
                     inputArgs = extractArgs(argIndex, argV)
-                    ids = getIdsFromInput(inputArgs, Main.playlistService.getAllIds(), Main.playlistService.getAll(), 1, debug = Main.settings.debug)
+                    playlistIds = getIdsFromInput(inputArgs, Main.playlistService.getAllIds(), Main.playlistService.getAll(), 1, debug = Main.settings.debug)
                     uri = inputArgs[1] if len(inputArgs) > 1 else None
-                    enableFetch = eval(inputArgs[2]) if len(inputArgs) > 2 else False
+                    enableFetch = eval(inputArgs[2]) if len(inputArgs) > 2 else True
                     bgContent = eval(inputArgs[3]) if len(inputArgs) > 3 else False
                     name = inputArgs[4] if len(inputArgs) > 4 else None
-
-                    if(len(ids) == 0):
-                        printS("Failed to add StreamSource, missing playlistId or index.", color = BashColor.FAIL)
-                        argIndex += len(inputArgs) + 1
-                        continue
-
-                    if(uri == None):
-                        printS("Failed to add StreamSource, missing uri.", color = BashColor.FAIL)
-                        argIndex += len(inputArgs) + 1
-                        continue
-
-                    if(name == None):
-                        name = Main.sharedService.getPageTitle(uri)
-                    if(name == None):
-                        name = "New StreamSource"
-                        printS("Could not automatically get the web name for this StreamSource, will be named \"" , name, "\".", color = BashColor.WARNING)                  
-                        
-                    playlist = Main.playlistService.get(ids[0])
-                    entity = StreamSource(name = name, uri = uri, enableFetch = enableFetch, backgroundContent = bgContent)
-                    addResult = Main.playlistService.addStreamSources(playlist.id, [entity])
-                    if(len(addResult) > 0):
-                        printS("Added StreamSource \"", addResult[0].name, "\" to Playlist \"", playlist.name, "\".", color = BashColor.OKGREEN)
-                    else:
-                        printS("Failed to create StreamSource.", color = BashColor.FAIL)
+                    
+                    Main.streamSourceCliController.addStreamSource(getIfExists(playlistIds, 0), uri, enableFetch, bgContent, name)
 
                     argIndex += len(inputArgs) + 1
                     continue
@@ -354,51 +332,21 @@ class Main:
                 elif(arg in Main.commands.deleteSourceCommands):
                     # Expected input: playlistId or index, streamSourceIds or indices
                     inputArgs = extractArgs(argIndex, argV)
-
                     playlistIds = getIdsFromInput(inputArgs, Main.playlistService.getAllIds(), Main.playlistService.getAll(), 1, debug = Main.settings.debug)
-                    if(len(playlistIds) == 0):
-                        printS("Failed to delete StreamSources, missing playlistId or index.", color = BashColor.FAIL)
-                        argIndex += len(inputArgs) + 1
-                        continue
-                    
-                    playlist = Main.playlistService.get(playlistIds[0])
-                    streamSourceIds = getIdsFromInput(inputArgs[1:], playlist.streamSourceIds, Main.playlistService.getSourcesByPlaylistId(playlist.id), debug = Main.settings.debug)
-                    if(len(streamSourceIds) == 0):
-                        printS("Failed to delete StreamSources, missing streamSourceIds or indices.", color = BashColor.FAIL)
-                        argIndex += len(inputArgs) + 1
-                        continue
-                    
-                    result = Main.playlistService.deleteStreamSources(playlist.id, streamSourceIds)
-                    if(len(result) > 0):
-                        printS("Deleted ", len(result), " StreamSources successfully from playlist \"", playlist.name, "\".", color = BashColor.OKGREEN)
-                    else:
-                        printS("Failed to delete StreamSources.", color = BashColor.FAIL)
+                    streamSourceIds = inputArgs[1:] if len(inputArgs) > 1 else []
 
+                    Main.streamSourceCliController.deleteStreamSources(getIfExists(playlistIds, 0), streamSourceIds)
+                    
                     argIndex += len(inputArgs) + 1
                     continue
                 
                 elif(arg in Main.commands.restoreSourceCommands):
                     # Expected input: playlistId or index, streamSourceIds or indices
                     inputArgs = extractArgs(argIndex, argV)
-
                     playlistIds = getIdsFromInput(inputArgs, Main.playlistService.getAllIds(), Main.playlistService.getAll(), 1, debug = Main.settings.debug)
-                    if(len(playlistIds) == 0):
-                        printS("Failed to restore StreamSources, missing playlistId or index.", color = BashColor.FAIL)
-                        argIndex += len(inputArgs) + 1
-                        continue
+                    streamSourceIds = inputArgs[1:] if len(inputArgs) > 1 else []
                     
-                    playlist = Main.playlistService.get(playlistIds[0])
-                    streamSourceIds = getIdsFromInput(inputArgs[1:], Main.streamSourceService.getAllIds(includeSoftDeleted = True), Main.playlistService.getSourcesByPlaylistId(playlist.id, includeSoftDeleted = True), debug = Main.settings.debug)
-                    if(len(streamSourceIds) == 0):
-                        printS("Failed to restore StreamSources, missing streamSourceIds or indices.", color = BashColor.FAIL)
-                        argIndex += len(inputArgs) + 1
-                        continue
-                    
-                    result = Main.playlistService.restoreStreamSources(playlist.id, streamSourceIds)
-                    if(len(result) > 0):
-                        printS("Restored ", len(result), " StreamSources successfully from Playlist \"", playlist.name, "\".", color = BashColor.OKGREEN)
-                    else:
-                        printS("Failed to restore StreamSources.", color = BashColor.FAIL)
+                    Main.streamSourceCliController.restoreStreamSources(getIfExists(playlistIds, 0), streamSourceIds)
 
                     argIndex += len(inputArgs) + 1
                     continue

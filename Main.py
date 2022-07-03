@@ -137,14 +137,9 @@ class Main:
                 elif(arg in Main.commands.restorePlaylistCommands):
                     # Expected input: playlistIds or indices
                     inputArgs = extractArgs(argIndex, argV)
-                    ids = getIdsFromInput(inputArgs, Main.playlistService.getAllIds(), Main.playlistService.getAll(), debug = Main.settings.debug)
+                    playlistIds = inputArgs[0:] if(len(inputArgs) > 0) else []
                     
-                    if(len(ids) == 0):
-                        printS("Failed to restore Playlists, missing playlistIds or indices.", color = BashColor.FAIL)
-                        argIndex += len(inputArgs) + 1
-                        continue
-
-                    Main.playlistCliController.restorePlaylists(ids)
+                    Main.playlistCliController.restorePlaylists(playlistIds)
                     
                     argIndex += len(inputArgs) + 1
                     continue

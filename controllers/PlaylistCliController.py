@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from grdUtil.BashColor import BashColor
+from grdUtil.InputUtil import getIdsFromInput
 from grdUtil.PrintUtil import printLists, printS
 from model.Playlist import Playlist
 from services.FetchService import FetchService
@@ -38,12 +39,13 @@ class PlaylistCliController():
             streamSourceIds (list[str]): List of IDs or indices to add to Playlist.
 
         Returns:
-            Playlist: Result.
+            Playlist: Playlist added.
         """
         
-        entity = Playlist(name = name, playWatchedStreams = playWatchedStreams, allowDuplicates = allowDuplicates, streamSourceIds = streamSourceIds)
-        result = self.playlistService.add(entity)
+        _streamSourceIds = getIdsFromInput(streamSourceIds, self.streamSourceService.getAllIds(), self.streamSourceService.getAll(), setDefaultId = False, debug = self.settings.debug)
         
+        entity = Playlist(name = name, playWatchedStreams = playWatchedStreams, allowDuplicates = allowDuplicates, streamSourceIds = _streamSourceIds)
+        result = self.playlistService.add(entity)
         if(result != None):
             printS("Playlist \"", result.name, "\" added successfully.", color = BashColor.OKGREEN)
         else:
@@ -62,7 +64,7 @@ class PlaylistCliController():
             allowDuplicates (bool): Should Playlist allow duplicate QueueStreams (URLs)?
 
         Returns:
-            Playlist: Result.
+            Playlist: Playlist added.
         """
         
         entity = Playlist(name = name, playWatchedStreams = playWatchedStreams, allowDuplicates = allowDuplicates)
@@ -74,27 +76,33 @@ class PlaylistCliController():
 
         return result
         
-    def deletePlaylists(self, ids: list[str]) -> list[Playlist]:
+    def deletePlaylists(self, playlistIds: list[str]) -> list[Playlist]:
         """
         Delete Playlists given by IDs.
 
         Args:
-            ids (list[str]): List of IDs or indices to delete from storage.
+            playlistIds (list[str]): List of IDs or indices to delete from storage.
 
         Returns:
             list[Playlist]: Playlists deleted.
         """
         
-        entitiesAltered = []         
-        for id in ids:
-            result = self.playlistService.delete(id)
-            if(result != None):
-                printS("Playlist \"", result.name, "\" deleted successfully.", color = BashColor.OKGREEN)
-                entitiesAltered.append(result)
+        _playlistIds = getIdsFromInput(playlistIds, self.playlistService.getAllIds(), self.playlistService.getAll(), debug = self.settings.debug)
+        
+        if(len(_playlistIds) == 0):
+            printS("Failed to delete Playlists, missing playlistIds or indices.", color = BashColor.FAIL)
+            return []
+        
+        result = []         
+        for id in _playlistIds:
+            deleteResult = self.playlistService.delete(id)
+            if(deleteResult != None):
+                printS("Playlist \"", deleteResult.name, "\" deleted successfully.", color = BashColor.OKGREEN)
+                result.append(deleteResult)
             else:
                 printS("Failed to delete Playlist.", color = BashColor.FAIL)
 
-        return entitiesAltered
+        return result
         
     def restorePlaylists(self, ids: list[str]) -> list[Playlist]:
         """

@@ -104,7 +104,7 @@ class Main:
                     name = inputArgs[0] if(len(inputArgs) > 0) else "New Playlist"
                     playWatchedStreams = eval(inputArgs[1]) if(len(inputArgs) > 1) else True
                     allowDuplicates = eval(inputArgs[2]) if(len(inputArgs) > 2) else False
-                    streamSourceIds = getIdsFromInput(inputArgs[3:], Main.playlistService.getAllIds(), Main.playlistService.getAll(), debug = Main.settings.debug) if(len(inputArgs) > 3) else []
+                    streamSourceIds = inputArgs[3:] if(len(inputArgs) > 3) else []
 
                     Main.playlistCliController.addPlaylist(name, playWatchedStreams, allowDuplicates, streamSourceIds)
                     
@@ -116,10 +116,10 @@ class Main:
                     inputArgs = extractArgs(argIndex, argV)
                     url = inputArgs[0] if(len(inputArgs) > 0) else None
                     name = inputArgs[1] if(len(inputArgs) > 1) else None
-                    playWatchedStreams = eval(inputArgs[2]) if(len(inputArgs) > 2) else None
-                    allowDuplicates = eval(inputArgs[3]) if(len(inputArgs) > 3) else True
+                    playWatchedStreams = eval(inputArgs[2]) if(len(inputArgs) > 2) else True
+                    allowDuplicates = eval(inputArgs[3]) if(len(inputArgs) > 3) else False
 
-                    Main.playlistCliController.addPlaylist(url, name, playWatchedStreams, allowDuplicates)
+                    Main.playlistCliController.addYouTubePlaylist(url, name, playWatchedStreams, allowDuplicates)
                     
                     argIndex += len(inputArgs) + 1
                     continue
@@ -127,14 +127,9 @@ class Main:
                 elif(arg in Main.commands.deletePlaylistCommands):
                     # Expected input: playlistIds or indices
                     inputArgs = extractArgs(argIndex, argV)
-                    ids = getIdsFromInput(inputArgs, Main.playlistService.getAllIds(), Main.playlistService.getAll(), debug = Main.settings.debug)
+                    playlistIds = inputArgs[0:] if(len(inputArgs) > 0) else []
                     
-                    if(len(ids) == 0):
-                        printS("Failed to delete Playlists, missing playlistIds or indices.", color = BashColor.FAIL)
-                        argIndex += len(inputArgs) + 1
-                        continue
-                    
-                    Main.playlistCliController.deletePlaylists(ids)
+                    Main.playlistCliController.deletePlaylists(playlistIds)
 
                     argIndex += len(inputArgs) + 1
                     continue

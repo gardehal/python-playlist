@@ -441,7 +441,7 @@ class PlaylistService(BaseService[T]):
         streamsToAdd = []
         for videoUrl in ytPlaylist.video_urls:
             video = pytube.YouTube(videoUrl)
-            stream = QueueStream(name = sanitize(video.title), uri = video.video_url)
+            stream = QueueStream(name = sanitize(video.title), uri = video.watch_url)
             streamsToAdd.append(stream)
         
         addPlaylistResult = self.add(playlist)

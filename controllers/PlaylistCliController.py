@@ -88,12 +88,12 @@ class PlaylistCliController():
         """
         
         _playlistIds = getIdsFromInput(playlistIds, self.playlistService.getAllIds(), self.playlistService.getAll(), debug = self.settings.debug)
+        result = []
         
         if(len(_playlistIds) == 0):
             printS("Failed to delete Playlists, missing playlistIds or indices.", color = BashColor.FAIL)
-            return []
-        
-        result = []         
+            return result
+              
         for id in _playlistIds:
             deleteResult = self.playlistService.delete(id)
             if(deleteResult != None):
@@ -104,27 +104,33 @@ class PlaylistCliController():
 
         return result
         
-    def restorePlaylists(self, ids: list[str]) -> list[Playlist]:
+    def restorePlaylists(self, playlistIds: list[str]) -> list[Playlist]:
         """
         Restore Playlists given by IDs.
 
         Args:
-            ids (list[str]): List of IDs or indices to restore (must be deleted).
+            playlistIds (list[str]): List of IDs or indices to restore (must be deleted but not removed).
 
         Returns:
             list[Playlist]: Playlists restored.
         """
+                    
+        _playlistIds = getIdsFromInput(playlistIds, self.playlistService.getAllIds(), self.playlistService.getAll(), debug = self.settings.debug)
+        result = []
         
-        entitiesAltered = []
-        for id in ids:
-            result = self.playlistService.restore(id)
-            if(result != None):
-                printS("Playlist \"", result.name, "\" restore successfully.", color = BashColor.OKGREEN)
-                entitiesAltered.append(result)
+        if(len(_playlistIds) == 0):
+            printS("Failed to restore Playlists, missing playlistIds or indices.", color = BashColor.FAIL)
+            return result
+                    
+        for id in _playlistIds:
+            restoreResult = self.playlistService.restore(id)
+            if(restoreResult != None):
+                printS("Playlist \"", restoreResult.name, "\" restore successfully.", color = BashColor.OKGREEN)
+                result.append(restoreResult)
             else:
                 printS("Failed to restore Playlist.", color = BashColor.FAIL)
 
-        return entitiesAltered
+        return result
         
     def printPlaylists(self, includeSoftDeleted: bool) -> list[Playlist]:
         """
@@ -137,20 +143,20 @@ class PlaylistCliController():
             list[Playlist]: Playlists restored.
         """
         
-        data = []
-        result = self.playlistService.getAll(includeSoftDeleted)
-        if(len(result) > 0):
-            nPlaylists = len(result)
+        result = []
+        all = self.playlistService.getAll(includeSoftDeleted)
+        if(len(all) > 0):
+            nPlaylists = len(all)
             nQueueStreams = len(self.queueStreamService.getAll(includeSoftDeleted))
             nStreamSources = len(self.streamSourceService.getAll(includeSoftDeleted))
             titles = [str(nPlaylists) + " Playlists, " + str(nQueueStreams) + " QueueStreams, " + str(nStreamSources) + " StreamSources."]
             
-            for (i, entry) in enumerate(result):
-                data.append(str(i) + " - " + entry.summaryString())
+            for (i, entry) in enumerate(all):
+                result.append(str(i) + " - " + entry.summaryString())
                 
-            printLists([data], titles)
+            printLists([result], titles)
 
-        return data
+        return result
     
     def printPlaylistsDetailed(self, playlistIds: list[str], includeUri: bool, includeId: bool, includeDatetime: bool, includeListCount: bool, includeSource: bool) -> int:
         """

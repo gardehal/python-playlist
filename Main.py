@@ -102,8 +102,8 @@ class Main:
                     # Expected input: name, playWatchedStreams?, allowDuplicates?, streamSourceIds/indices?
                     inputArgs = extractArgs(argIndex, argV)
                     name = inputArgs[0] if(len(inputArgs) > 0) else "New Playlist"
-                    playWatchedStreams = eval(inputArgs[1]) if(len(inputArgs) > 1) else None
-                    allowDuplicates = eval(inputArgs[2]) if(len(inputArgs) > 2) else True
+                    playWatchedStreams = eval(inputArgs[1]) if(len(inputArgs) > 1) else True
+                    allowDuplicates = eval(inputArgs[2]) if(len(inputArgs) > 2) else False
                     streamSourceIds = getIdsFromInput(inputArgs[3:], Main.playlistService.getAllIds(), Main.playlistService.getAll(), debug = Main.settings.debug) if(len(inputArgs) > 3) else []
 
                     Main.playlistCliController.addPlaylist(name, playWatchedStreams, allowDuplicates, streamSourceIds)

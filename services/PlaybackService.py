@@ -1,4 +1,3 @@
-import os
 import random
 import subprocess
 import uuid
@@ -6,31 +5,23 @@ from copy import copy
 from typing import List
 
 from Commands import Commands
-from dotenv import load_dotenv
 from grdUtil.BashColor import BashColor
 from grdUtil.DateTimeUtil import getDateTime
 from grdUtil.InputUtil import getIdsFromInput, sanitize
 from grdUtil.PrintUtil import printD, printLists, printS, printStack
-from Settings import Settings
 from model.Playlist import Playlist
 from model.QueueStream import QueueStream
+from Settings import Settings
 
 from services.PlaylistService import PlaylistService
 from services.QueueStreamService import QueueStreamService
 from services.StreamSourceService import StreamSourceService
 
-load_dotenv()
-DEBUG = eval(os.environ.get("DEBUG"))
-LOCAL_STORAGE_PATH = os.environ.get("LOCAL_STORAGE_PATH")
-LOG_WATCHED = eval(os.environ.get("LOG_WATCHED"))
-PLAYED_ALWAYS_WATCHED = eval(os.environ.get("PLAYED_ALWAYS_WATCHED"))
-WATCHED_LOG_FILEPATH = os.environ.get("WATCHED_LOG_FILEPATH")
-BROWSER_BIN = os.environ.get("BROWSER_BIN")
 
 class PlaybackService():
     commands: Commands = None
     settings: Settings = None
-    storagePath: str = LOCAL_STORAGE_PATH
+    storagePath: str = None
     playlistService: PlaylistService = None
     queueStreamService: QueueStreamService = None
     streamSourceService: StreamSourceService = None
@@ -42,6 +33,7 @@ class PlaybackService():
     def __init__(self):
         self.commands = Commands()
         self.settings = Settings()
+        self.storagePath = self.settings.localStoragePath
         self.playlistService = PlaylistService()
         self.queueStreamService = QueueStreamService()
         self.streamSourceService = StreamSourceService()
@@ -69,7 +61,7 @@ class PlaybackService():
 
         playlist = self.playlistService.get(playlistId)
         if(playlist == None):
-            printD("Playlist with ID ", playlistId, " was not found.", doPrint = DEBUG)
+            printD("Playlist with ID ", playlistId, " was not found.", doPrint = self.settings.debug)
             return False
 
         if(len(playlist.streamIds) == 0):
@@ -88,17 +80,17 @@ class PlaybackService():
             random.shuffle(streams)
 
         printS("Playing ", playlist.name, ".")
-        printS("Starting at stream number: ", (startIndex + 1), ", shuffle is ", ("on" if shuffle else "off"), ", repeat playlist is ", ("on" if repeatPlaylist else "off"), ", played videos set to watched is ", ("on" if PLAYED_ALWAYS_WATCHED else "off"), ".")
+        printS("Starting at stream number: ", (startIndex + 1), ", shuffle is ", ("on" if shuffle else "off"), ", repeat playlist is ", ("on" if repeatPlaylist else "off"), ", played videos set to watched is ", ("on" if self.settings.playedAlwaysWatched else "off"), ".")
 
         playResult = 0
         try:
             if(True): # Play in CLI mode
                 playResult = self.playCli(playlist, streams)
         except:
-            printStack(doPrint = DEBUG)
+            printStack(doPrint = self.settings.debug)
             
         resultPrint = ""
-        if(PLAYED_ALWAYS_WATCHED):
+        if(self.settings.playedAlwaysWatched):
             resultPrint = f", {playResult}/{len(playlist.streamIds)} QueueStreams watched"
             
         printS("Playlist \"", playlist.name, "\" finished", resultPrint, ".")
@@ -123,7 +115,7 @@ class PlaybackService():
         nWatched = 0
         for i, stream in enumerate(streams):
             if(stream.watched != None and not playlist.playWatchedStreams):
-                checkLogsMessage = " Check your logs (" + WATCHED_LOG_FILEPATH + ") for date/time watched." if LOG_WATCHED else " Logging is disabled and date/time watched is not available."
+                checkLogsMessage = " Check your logs (" + self.settings.watchedLogFilepath + ") for date/time watched." if self.settings.logWatched else " Logging is disabled and date/time watched is not available."
                 printS("Stream \"", stream.name, "\" (ID: ", stream.id, ") has been marked as watched.", checkLogsMessage, color = BashColor.WARNING)
                 continue
 
@@ -132,7 +124,7 @@ class PlaybackService():
                 subprocessStream = subprocess.Popen(f"call start {stream.uri}", stdout=subprocess.PIPE, shell=True) # PID set by this is not PID of browser, just subprocess which opens browser
                 
                 # https://stackoverflow.com/questions/7989922/opening-a-process-with-popen-and-getting-the-pid
-                # subprocessStream = subprocess.Popen([BROWSER_BIN, f"{stream.uri}"], stdout=subprocess.PIPE, shell=False) # PID set by this SHOULD be browser, but is not
+                # subprocessStream = subprocess.Popen([self.settings.browserBin, f"{stream.uri}"], stdout=subprocess.PIPE, shell=False) # PID set by this SHOULD be browser, but is not
             else:
                 # TODO
                 printS("Non-web streams currently not supported, skipping video ", stream.name, color = BashColor.ERROR)
@@ -153,12 +145,12 @@ class PlaybackService():
             # subprocessStream.terminate() # TODO Doesn't seem to work with browser, at least not new tabs
             
             now = getDateTime()
-            if(LOG_WATCHED and len(WATCHED_LOG_FILEPATH) > 0):
+            if(self.settings.logWatched and len(self.settings.watchedLogFilepath) > 0):
                 logLine = f"{str(now)} - Playlist \"{playlist.name}\" (ID: {playlist.id}), watched video \"{stream.name}\" (ID: {stream.id})\n" 
-                with open(WATCHED_LOG_FILEPATH, "a") as file:
+                with open(self.settings.watchedLogFilepath, "a") as file:
                     file.write(logLine)
                     
-            if(PLAYED_ALWAYS_WATCHED):
+            if(self.settings.playedAlwaysWatched):
                 stream.watched = now
                 
                 updateSuccess = self.queueStreamService.update(stream)
@@ -255,7 +247,7 @@ class PlaybackService():
             printS("Missing arguments, cross-adding stream requires IDs of Playlists to add to.", color = BashColor.WARNING)
             return result
         
-        ids = getIdsFromInput(idsIndices, self.playlistService.getAllIds(), self.playlistService.getAll(), debug = DEBUG)
+        ids = getIdsFromInput(idsIndices, self.playlistService.getAllIds(), self.playlistService.getAll(), debug = self.settings.debug)
         if(len(ids) == 0):
             printS("Failed to add cross-add streams, missing playlistIds or indices.", color = BashColor.WARNING)
             return result

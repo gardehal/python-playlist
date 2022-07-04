@@ -173,13 +173,13 @@ class Main:
                 elif(arg in Main.commands.fetchPlaylistSourcesCommands):
                     # Expected input: playlistIds or indices, fromDateTime?, toDatetime?, takeNewOnly?
                     inputArgs = extractArgs(argIndex, argV)
-                    ids = getIdsFromInput(inputArgs, Main.playlistService.getAllIds(), Main.playlistService.getAll(), returnOnNonIds = True, debug = Main.settings.debug)
-                    lenIds = len(ids)
-                    takeAfter = inputArgs[lenIds] if(len(inputArgs) > lenIds) else None
-                    takeBefore = inputArgs[lenIds + 1] if(len(inputArgs) > lenIds + 1) else None
-                    takeNewOnly = eval(inputArgs[lenIds + 2]) if(len(inputArgs) > lenIds + 2) else True
+                    playlistIds = getIdsFromInput(inputArgs, Main.playlistService.getAllIds(), Main.playlistService.getAll(), returnOnNonIds = True, debug = Main.settings.debug)
+                    lenPlaylistIds = len(playlistIds)
+                    takeAfter = inputArgs[lenPlaylistIds] if(len(inputArgs) > lenPlaylistIds) else None
+                    takeBefore = inputArgs[lenPlaylistIds + 1] if(len(inputArgs) > lenPlaylistIds + 1) else None
+                    takeNewOnly = eval(inputArgs[lenPlaylistIds + 2]) if(len(inputArgs) > lenPlaylistIds + 2) else True
                     
-                    Main.playlistCliController.fetchPlaylists(ids, Main.settings.fetchLimitSingleSource, takeAfter, takeBefore, takeNewOnly)
+                    Main.playlistCliController.fetchPlaylists(playlistIds, Main.settings.fetchLimitSingleSource, takeAfter, takeBefore, takeNewOnly)
 
                     argIndex += len(inputArgs) + 1
                     continue
@@ -187,12 +187,12 @@ class Main:
                 elif(arg in Main.commands.prunePlaylistCommands):
                     # Expected input: playlistIds or indices, includeSoftDeleted, permanentlyDelete, "accept changes" input within method
                     inputArgs = extractArgs(argIndex, argV)
-                    ids = getIdsFromInput(inputArgs, Main.playlistService.getAllIds(), Main.playlistService.getAll(), returnOnNonIds = True, debug = Main.settings.debug)
-                    lenIds = len(ids)
-                    includeSoftDeleted = eval(getIfExists(inputArgs, lenIds, "False"))
-                    permanentlyDelete = eval(getIfExists(inputArgs, lenIds + 1, "False"))
+                    playlistIds = getIdsFromInput(inputArgs, Main.playlistService.getAllIds(), Main.playlistService.getAll(), returnOnNonIds = True, debug = Main.settings.debug)
+                    lenPlaylistIds = len(playlistIds)
+                    includeSoftDeleted = eval(getIfExists(inputArgs, lenPlaylistIds, False))
+                    permanentlyDelete = eval(getIfExists(inputArgs, lenPlaylistIds + 1, False))
                     
-                    for id in ids:
+                    for id in playlistIds:
                         Main.sharedCliController.prune(id, includeSoftDeleted, permanentlyDelete)
 
                     argIndex += len(inputArgs) + 1
@@ -217,14 +217,9 @@ class Main:
                 elif(arg in Main.commands.resetPlaylistFetchCommands):
                     # Expected input: playlistIds or indices
                     inputArgs = extractArgs(argIndex, argV)
-                    ids = getIdsFromInput(inputArgs, Main.playlistService.getAllIds(), Main.playlistService.getAll(), debug = Main.settings.debug)
+                    playlistIds = getIdsFromInput(inputArgs, Main.playlistService.getAllIds(), Main.playlistService.getAll(), debug = Main.settings.debug)
                     
-                    if(len(ids) == 0):
-                        printS("Failed to reset fetch-status of playlists, missing playlistIds or indices.", color = BashColor.FAIL)
-                        argIndex += len(inputArgs) + 1
-                        continue
-                    
-                    Main.playlistCliController.resetPlaylists(ids)
+                    Main.playlistCliController.resetPlaylists(playlistIds)
 
                     argIndex += len(inputArgs) + 1
                     continue
@@ -232,22 +227,12 @@ class Main:
                 elif(arg in Main.commands.playCommands):
                     # Expected input: playlistId or index, startIndex, shuffle, repeat
                     inputArgs = extractArgs(argIndex, argV)
-                    ids = getIdsFromInput(inputArgs, Main.playlistService.getAllIds(), Main.playlistService.getAll(), 1, debug = Main.settings.debug)
+                    playlistIds = getIdsFromInput(inputArgs, Main.playlistService.getAllIds(), Main.playlistService.getAll(), 1, debug = Main.settings.debug)
                     startIndex = inputArgs[1] if(len(inputArgs) > 1) else 0
                     shuffle = eval(inputArgs[2]) if(len(inputArgs) > 2) else False
                     repeat = eval(inputArgs[3]) if(len(inputArgs) > 3) else False
                     
-                    if(len(ids) == 0):
-                        printS("Failed to play playlist, missing playlistIds or indices.", color = BashColor.FAIL)
-                        argIndex += len(inputArgs) + 1
-                        continue
-                    
-                    if(not isNumber(startIndex, intOnly = True)):
-                        printS("Failed to play playlist, input startIndex must be an integer.", color = BashColor.FAIL)
-                        argIndex += len(inputArgs) + 1
-                        continue
-                    
-                    Main.playlistCliController.playPlaylists(ids[0], int(startIndex), shuffle, repeat)
+                    Main.playlistCliController.playPlaylists(getIfExists(playlistIds, 0), int(startIndex), shuffle, repeat)
 
                     argIndex += len(inputArgs) + 1
                     continue

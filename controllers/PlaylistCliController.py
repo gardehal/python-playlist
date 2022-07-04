@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from grdUtil.BashColor import BashColor
+from grdUtil.InputUtil import getIdsFromInput, isNumber
 from grdUtil.PrintUtil import printLists, printS
 from model.Playlist import Playlist
 from services.FetchService import FetchService
@@ -233,6 +234,11 @@ class PlaylistCliController():
             int: Number of Playlists reset.
         """
         
+        result = 0
+        if(len(playlistIds) == 0):
+            printS("Failed to reset fetch-status of playlists, missing playlistIds or indices.", color = BashColor.FAIL)
+            return result
+        
         result = self.fetchService.resetPlaylistFetch(playlistIds)
         for id in playlistIds:
             playlist = self.playlistService.get(id)
@@ -254,6 +260,15 @@ class PlaylistCliController():
         Returns:
             bool: Finished successfully.
         """
+        
+        result = False
+        if(playlistId == None):
+            printS("Failed to play playlist, missing playlistIds or indices.", color = BashColor.FAIL)
+            return result
+        
+        if(not isNumber(startIndex, intOnly = True)):
+            printS("Failed to play playlist, input startIndex must be an integer.", color = BashColor.FAIL)
+            return result
         
         result = self.playbackService.play(playlistId, startIndex, shuffle, repeat)
         if(not result):

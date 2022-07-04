@@ -133,7 +133,7 @@ class Main:
                 elif(arg in Main.commands.restorePlaylistCommands):
                     # Expected input: playlistIds or indices
                     inputArgs = extractArgs(argIndex, argV)
-                    playlistIds = getIdsFromInput(inputArgs, Main.playlistService.getAllIds(), Main.playlistService.getAll(), debug = Main.settings.debug)
+                    playlistIds = getIdsFromInput(inputArgs, Main.playlistService.getAllIds(True), Main.playlistService.getAll(True), debug = Main.settings.debug)
                     
                     Main.playlistCliController.restorePlaylists(playlistIds)
                     
@@ -260,7 +260,7 @@ class Main:
                 elif(arg in Main.commands.restoreStreamCommands):
                     # Expected input: playlistId or index, queueStreamIds or indices
                     inputArgs = extractArgs(argIndex, argV)
-                    playlistIds = getIdsFromInput(inputArgs, Main.playlistService.getAllIds(), Main.playlistService.getAll(), 1, setDefaultId = False, debug = Main.settings.debug)
+                    playlistIds = getIdsFromInput(inputArgs, Main.playlistService.getAllIds(True), Main.playlistService.getAll(True), 1, setDefaultId = False, debug = Main.settings.debug)
                     queueStreamIds = inputArgs[1:] if len(inputArgs) > 1 else []
                                         
                     Main.queueStreamCliController.restoreQueueStreams(getIfExists(playlistIds, 0), queueStreamIds)
@@ -297,7 +297,7 @@ class Main:
                 elif(arg in Main.commands.restoreSourceCommands):
                     # Expected input: playlistId or index, streamSourceIds or indices
                     inputArgs = extractArgs(argIndex, argV)
-                    playlistIds = getIdsFromInput(inputArgs, Main.playlistService.getAllIds(), Main.playlistService.getAll(), 1, debug = Main.settings.debug)
+                    playlistIds = getIdsFromInput(inputArgs, Main.playlistService.getAllIds(True), Main.playlistService.getAll(True), 1, debug = Main.settings.debug)
                     streamSourceIds = inputArgs[1:] if len(inputArgs) > 1 else []
                     
                     Main.streamSourceCliController.restoreStreamSources(getIfExists(playlistIds, 0), streamSourceIds)

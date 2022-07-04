@@ -70,7 +70,7 @@ class PlaybackService():
 
         playlist = self.playlistService.get(playlistId)
         if(playlist == None):
-            printD("Playlist with ID ", playlistId, " was not found.")
+            printD("Playlist with ID ", playlistId, " was not found.", doPrint = DEBUG)
             return False
 
         if(len(playlist.streamIds) == 0):

@@ -1,11 +1,9 @@
 import os
 import sys
-from datetime import datetime
 
 from grdUtil.BashColor import BashColor
 from grdUtil.FileUtil import makeFiles
-from grdUtil.InputUtil import (extractArgs, getIdsFromInput, getIfExists,
-                               isNumber)
+from grdUtil.InputUtil import extractArgs, getIdsFromInput, getIfExists
 from grdUtil.PrintUtil import printLists, printS
 
 from Commands import Commands
@@ -15,20 +13,18 @@ from controllers.QueueStreamCliController import QueueStreamCliController
 from controllers.StreamSourceCliController import StreamSourceCliController
 from services.LegacyService import LegacyService
 from services.PlaylistService import PlaylistService
-from services.QueueStreamService import QueueStreamService
 from services.SharedService import SharedService
 from services.StreamSourceService import StreamSourceService
 from Settings import Settings
 
 
 class Main:
-    legacyService = LegacyService()
-    playlistService = PlaylistService()
-    queueStreamService = QueueStreamService()
-    sharedService = SharedService()
-    streamSourceService = StreamSourceService()
     commands = Commands()
     settings = Settings()
+    legacyService = LegacyService()
+    playlistService = PlaylistService()
+    sharedService = SharedService()
+    streamSourceService = StreamSourceService()
     sharedCliController: SharedCliController = SharedCliController()
     playlistCliController: PlaylistCliController = PlaylistCliController()
     queueStreamCliController: QueueStreamCliController = QueueStreamCliController()

@@ -3,32 +3,31 @@ import re
 from typing import List
 
 import mechanize
-from dotenv import load_dotenv
 from enums.StreamSourceType import StreamSourceType, StreamSourceTypeUtil
 from grdUtil.BashColor import BashColor
 from grdUtil.DateTimeUtil import getDateTimeAsNumber
 from grdUtil.FileUtil import mkdir
 from grdUtil.InputUtil import sanitize
-from grdUtil.PrintUtil import printS
+from grdUtil.PrintUtil import printD, printS
 from model.Playlist import Playlist
 from model.QueueStream import QueueStream
 from model.StreamSource import StreamSource
 from pytube import YouTube
+from Settings import Settings
 
 from services.PlaylistService import PlaylistService
 from services.QueueStreamService import QueueStreamService
 from services.StreamSourceService import StreamSourceService
 
-load_dotenv()
-DEBUG = eval(os.environ.get("DEBUG"))
-LOCAL_STORAGE_PATH = os.environ.get("LOCAL_STORAGE_PATH")
 
 class SharedService():
+    settings: Settings = None
     playlistService: PlaylistService = None
     queueStreamService: QueueStreamService = None
     streamSourceService: StreamSourceService = None
 
     def __init__(self):
+        self.settings = Settings()
         self.playlistService: PlaylistService = PlaylistService()
         self.queueStreamService: QueueStreamService = QueueStreamService()
         self.streamSourceService: StreamSourceService = StreamSourceService()
@@ -47,11 +46,11 @@ class SharedService():
         isYouTubeChannel = "user" in url or "channel" in url
         title = None
         if(StreamSourceTypeUtil.strToStreamSourceType(url) == StreamSourceType.YOUTUBE and not isYouTubeChannel):
-            printS("DEBUG: getPageTitle - Getting title from pytube.", color = BashColor.WARNING, doPrint = DEBUG)
+            printD(" Getting title from pytube.", color = BashColor.WARNING, doPrint = self.settings.debug)
             yt = YouTube(url)
             title = yt.title
         else:
-            printS("DEBUG: getPageTitle - Getting title from mechanize.", color = BashColor.WARNING, doPrint = DEBUG)
+            printD("Getting title from mechanize.", color = BashColor.WARNING, doPrint = self.settings.debug)
             try:
                 br = mechanize.Browser()
                 br.open(url)
@@ -115,7 +114,7 @@ class SharedService():
                 playlist.streamIds.remove(stream.id)
                 result = self.playlistService.update(playlist)
                 if(not result):
-                    printS("DEBUG: doPrune - failed to update Playlist \"", playlist.name, "\".", color = BashColor.WARNING, doPrint = DEBUG)
+                    printD("failed to update Playlist \"", playlist.name, "\".", color = BashColor.WARNING, doPrint = self.settings.debug)
                     return False
                     
         return True
@@ -271,13 +270,13 @@ class SharedService():
                 data["Playlist"].append(entity)
         
         found = len(data["QueueStream"]) > 0 or len(data["StreamSource"]) > 0 or len(data["Playlist"]) > 0
-        printS("DEBUG: search - no results", color = BashColor.WARNING, doPrint = DEBUG and not found)
+        printD("no results", color = BashColor.WARNING, doPrint = self.settings.debug and not found)
         
         return data 
     
     def searchFields(self, searchTerm: str, *fields) -> int:
         """
-        Searchs *fields for Regex-enabled searchTerm.
+        Searches *fields for Regex-enabled searchTerm.
 
         Args:
             searchTerm (str): Regex-enabled term to search for.
@@ -331,7 +330,7 @@ class SharedService():
             str: Absolute path of file.
         """
         
-        videoDir = os.path.join(LOCAL_STORAGE_PATH, "video", "youtube")
+        videoDir = os.path.join(self.settings.localStoragePath, "video", "youtube")
         mkdir(videoDir)
         
         youtube = YouTube(url)

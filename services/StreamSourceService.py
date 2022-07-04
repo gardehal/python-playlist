@@ -1,22 +1,19 @@
 import os
 
 import validators
-from dotenv import load_dotenv
-from grdService.BaseService import BaseService
-
 from enums.StreamSourceType import StreamSourceTypeUtil
+from grdService.BaseService import BaseService
 from model.StreamSource import StreamSource
-
-load_dotenv()
-DEBUG = eval(os.environ.get("DEBUG"))
-LOCAL_STORAGE_PATH = os.environ.get("LOCAL_STORAGE_PATH")
+from Settings import Settings
 
 T = StreamSource
 
 class StreamSourceService(BaseService[T]):
+    settings: Settings = None
 
     def __init__(self):
-        BaseService.__init__(self, T, DEBUG, os.path.join(LOCAL_STORAGE_PATH, "StreamSource"))
+        self.settings = Settings()
+        BaseService.__init__(self, T, self.settings.debug, os.path.join(self.settings.localStoragePath, "StreamSource"))
 
     def add(self, streamSource: T) -> T:
         """

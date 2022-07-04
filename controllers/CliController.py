@@ -1,9 +1,6 @@
-import os
-
-from dotenv import load_dotenv
 from grdException.ArgumentException import ArgumentException
 from grdUtil.BashColor import BashColor
-from grdUtil.PrintUtil import printLists, printS
+from grdUtil.PrintUtil import printD, printLists, printS
 from grdUtil.StaticUtil import StaticUtil
 from model.Playlist import Playlist
 from model.QueueStream import QueueStream
@@ -15,14 +12,11 @@ from services.PlaylistService import PlaylistService
 from services.QueueStreamService import QueueStreamService
 from services.SharedService import SharedService
 from services.StreamSourceService import StreamSourceService
+from Settings import Settings
 
-load_dotenv()
-DEBUG = eval(os.environ.get("DEBUG"))
-LOCAL_STORAGE_PATH = os.environ.get("LOCAL_STORAGE_PATH")
-WATCHED_LOG_FILEPATH = os.environ.get("WATCHED_LOG_FILEPATH")
-FETCH_LIMIT_SINGLE_SOURCE = int(os.environ.get("FETCH_LIMIT_SINGLE_SOURCE"))
 
 class SharedCliController():
+    settings: Settings = None
     fetchService: FetchService = None
     legacyService: LegacyService = None
     playbackService: PlaybackService = None
@@ -32,6 +26,7 @@ class SharedCliController():
     streamSourceService: StreamSourceService = None
 
     def __init__(self):
+        self.settings = Settings()
         self.fetchService = FetchService()
         self.legacyService = LegacyService()
         self.playbackService = PlaybackService()
@@ -176,7 +171,7 @@ class SharedCliController():
         """
         
         if(playlistId == None):
-            printS("DEBUG: reset - Missing input: playlistId", color = BashColor.WARNING, doPrint = DEBUG)
+            printD("Missing input: playlistId", color = BashColor.WARNING, doPrint = self.settings.debug)
             return None
         
         data = self.fetchService.prepareReset(playlistId, includeSoftDeleted)

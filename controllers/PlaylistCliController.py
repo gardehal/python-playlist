@@ -13,20 +13,20 @@ from Settings import Settings
 
 
 class PlaylistCliController():
+    settings: Settings = None
     fetchService: FetchService() = None
     playbackService: PlaybackService = None
     playlistService: PlaylistService = None
     queueStreamService: QueueStreamService = None
     streamSourceService: StreamSourceService = None
-    settings: Settings = None
 
     def __init__(self):
+        self.settings = Settings()
         self.fetchService = FetchService()
         self.playbackService = PlaybackService()
         self.playlistService = PlaylistService()
         self.queueStreamService = QueueStreamService()
         self.streamSourceService = StreamSourceService()
-        self.settings = Settings()
         
     def addPlaylist(self, name: str, playWatchedStreams: bool, allowDuplicates: bool, streamSourceIds: list[str]) -> Playlist:
         """
@@ -151,6 +151,8 @@ class PlaylistCliController():
                 result.append(str(i) + " - " + entry.summaryString())
                 
             printLists([result], titles)
+        else:
+            printS("No Playlists found.")
 
         return result
     

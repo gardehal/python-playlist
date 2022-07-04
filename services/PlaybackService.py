@@ -11,6 +11,7 @@ from grdUtil.BashColor import BashColor
 from grdUtil.DateTimeUtil import getDateTime
 from grdUtil.InputUtil import getIdsFromInput, sanitize
 from grdUtil.PrintUtil import printD, printLists, printS, printStack
+from Settings import Settings
 from model.Playlist import Playlist
 from model.QueueStream import QueueStream
 
@@ -22,16 +23,13 @@ load_dotenv()
 DEBUG = eval(os.environ.get("DEBUG"))
 LOCAL_STORAGE_PATH = os.environ.get("LOCAL_STORAGE_PATH")
 LOG_WATCHED = eval(os.environ.get("LOG_WATCHED"))
-DOWNLOAD_WEB_STREAMS = eval(os.environ.get("DOWNLOAD_WEB_STREAMS"))
-REMOVE_WATCHED_ON_FETCH = eval(os.environ.get("REMOVE_WATCHED_ON_FETCH"))
 PLAYED_ALWAYS_WATCHED = eval(os.environ.get("PLAYED_ALWAYS_WATCHED"))
 WATCHED_LOG_FILEPATH = os.environ.get("WATCHED_LOG_FILEPATH")
-LOG_DIR_PATH = os.environ.get("LOG_DIR_PATH")
-LOG_LEVEL = os.environ.get("LOG_LEVEL")
 BROWSER_BIN = os.environ.get("BROWSER_BIN")
 
 class PlaybackService():
     commands: Commands = None
+    settings: Settings = None
     storagePath: str = LOCAL_STORAGE_PATH
     playlistService: PlaylistService = None
     queueStreamService: QueueStreamService = None
@@ -42,17 +40,18 @@ class PlaybackService():
     printDetailsInputs: List[str] = None
 
     def __init__(self):
-        self.playlistService: PlaylistService = PlaylistService()
-        self.queueStreamService: QueueStreamService = QueueStreamService()
-        self.streamSourceService: StreamSourceService = StreamSourceService()
-        self.commands: Commands = Commands()
-        self.quitInputs: List[str] = self.commands.quitArguments
-        self.skipInputs: List[str] = self.commands.skipArguments
-        self.repeatInputs: List[str] = self.commands.repeatArguments
-        self.listPlaylistInputs: List[str] = self.commands.listPlaylistArguments
-        self.addToInputs: List[str] = self.commands.addCurrentToPlaylistArguments
-        self.printDetailsInputs: List[str] = self.commands.printPlaybackDetailsArguments
-        self.printHelpInputs: List[str] = self.commands.printPlaybackHelpArguments
+        self.commands = Commands()
+        self.settings = Settings()
+        self.playlistService = PlaylistService()
+        self.queueStreamService = QueueStreamService()
+        self.streamSourceService = StreamSourceService()
+        self.quitInputs = self.commands.quitArguments
+        self.skipInputs = self.commands.skipArguments
+        self.repeatInputs = self.commands.repeatArguments
+        self.listPlaylistInputs = self.commands.listPlaylistArguments
+        self.addToInputs = self.commands.addCurrentToPlaylistArguments
+        self.printDetailsInputs = self.commands.printPlaybackDetailsArguments
+        self.printHelpInputs = self.commands.printPlaybackHelpArguments
 
     def play(self, playlistId: str, startIndex: int = 0, shuffle: bool = False, repeatPlaylist: bool = False) -> bool:
         """

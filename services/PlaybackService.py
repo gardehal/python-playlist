@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 from grdUtil.BashColor import BashColor
 from grdUtil.DateTimeUtil import getDateTime
 from grdUtil.InputUtil import getIdsFromInput, sanitize
-from grdUtil.PrintUtil import printLists, printS, printStack
+from grdUtil.PrintUtil import printD, printLists, printS, printStack
 from model.Playlist import Playlist
 from model.QueueStream import QueueStream
 
@@ -70,6 +70,7 @@ class PlaybackService():
 
         playlist = self.playlistService.get(playlistId)
         if(playlist == None):
+            printD("Playlist with ID ", playlistId, " was not found.")
             return False
 
         if(len(playlist.streamIds) == 0):

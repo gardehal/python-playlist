@@ -1,7 +1,6 @@
 from datetime import datetime
 
 from grdUtil.BashColor import BashColor
-from grdUtil.InputUtil import getIdsFromInput
 from grdUtil.PrintUtil import printLists, printS
 from model.Playlist import Playlist
 from services.FetchService import FetchService
@@ -171,6 +170,11 @@ class PlaylistCliController():
         Returns:
             int: number of playlists printed for.
         """
+            
+        result = []
+        if(len(playlistIds) == 0):
+            printS("Failed to print details, missing playlistIds or indices.", color = BashColor.FAIL)
+            return result
         
         result = self.playlistService.printPlaylistDetails(playlistIds, includeUri, includeId, includeDatetime, includeListCount, includeSource)
         if(result):
@@ -194,10 +198,25 @@ class PlaylistCliController():
         Returns:
             int: Number of videos added.
         """
-        
+
         result = 0
+        _takeAfter = None
+        _takeBefore = None
+        try:
+            if(takeAfter != None):
+                _takeAfter = datetime.strptime(takeAfter, "%Y-%m-%d")
+            if(takeBefore != None):
+                _takeBefore = datetime.strptime(takeBefore, "%Y-%m-%d")
+        except:
+            printS("Dates for takeAfter or takeBefore were not valid, see help print for format.", color = BashColor.FAIL)
+            return result
+        
+        if(len(playlistIds) == 0):
+            printS("Failed to fetch, missing playlistIds or indices.", color = BashColor.FAIL)
+            return result
+        
         for id in playlistIds:
-            result += self.fetchService.fetch(id, batchSize, takeAfter, takeBefore, takeNewOnly)
+            result += self.fetchService.fetch(id, batchSize, _takeAfter, _takeBefore, takeNewOnly)
             playlist = self.playlistService.get(id)
             printS("Fetched ", result, " for playlist \"", playlist.name, "\" successfully.", color = BashColor.OKGREEN)
     

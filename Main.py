@@ -157,20 +157,15 @@ class Main:
                 elif(arg in Main.commands.detailsPlaylistCommands):
                     # Expected input: playlistIds or indices, includeUri, includeId, includeDatetime, includeListCount, includeSource
                     inputArgs = extractArgs(argIndex, argV)
-                    ids = getIdsFromInput(inputArgs, Main.playlistService.getAllIds(), Main.playlistService.getAll(), returnOnNonIds = True, debug = Main.settings.debug)
-                    lenIds = len(ids)
-                    includeUri = eval(inputArgs[lenIds]) if(len(inputArgs) > lenIds) else False
-                    includeId = eval(inputArgs[lenIds + 1]) if(len(inputArgs) > lenIds + 1) else False
-                    includeDatetime = eval(inputArgs[lenIds + 2]) if(len(inputArgs) > lenIds + 2) else False
-                    includeListCount = eval(inputArgs[lenIds + 3]) if(len(inputArgs) > lenIds + 3) else True
-                    includeSource = eval(inputArgs[lenIds + 4]) if(len(inputArgs) > lenIds + 4) else True
+                    playlistIds = getIdsFromInput(inputArgs, Main.playlistService.getAllIds(), Main.playlistService.getAll(), returnOnNonIds = True, debug = Main.settings.debug)
+                    lenPlaylistIds = len(playlistIds)
+                    includeUri = eval(inputArgs[lenPlaylistIds]) if(len(inputArgs) > lenPlaylistIds) else False
+                    includeId = eval(inputArgs[lenPlaylistIds + 1]) if(len(inputArgs) > lenPlaylistIds + 1) else False
+                    includeDatetime = eval(inputArgs[lenPlaylistIds + 2]) if(len(inputArgs) > lenPlaylistIds + 2) else False
+                    includeListCount = eval(inputArgs[lenPlaylistIds + 3]) if(len(inputArgs) > lenPlaylistIds + 3) else True
+                    includeSource = eval(inputArgs[lenPlaylistIds + 4]) if(len(inputArgs) > lenPlaylistIds + 4) else True
                     
-                    if(len(ids) == 0):
-                        printS("Failed to print details, missing playlistIds or indices.", color = BashColor.FAIL)
-                        argIndex += len(inputArgs) + 1
-                        continue
-                    
-                    Main.playlistCliController.printPlaylistsDetailed(ids, includeUri, includeId, includeDatetime, includeListCount, includeSource)
+                    Main.playlistCliController.printPlaylistsDetailed(playlistIds, includeUri, includeId, includeDatetime, includeListCount, includeSource)
                             
                     argIndex += len(inputArgs) + 1
                     continue
@@ -183,16 +178,6 @@ class Main:
                     takeAfter = inputArgs[lenIds] if(len(inputArgs) > lenIds) else None
                     takeBefore = inputArgs[lenIds + 1] if(len(inputArgs) > lenIds + 1) else None
                     takeNewOnly = eval(inputArgs[lenIds + 2]) if(len(inputArgs) > lenIds + 2) else True
-                    
-                    try:
-                        if(takeAfter != None):
-                            takeAfter = datetime.strptime(takeAfter, "%Y-%m-%d")
-                        if(takeBefore != None):
-                            takeBefore = datetime.strptime(takeBefore, "%Y-%m-%d")
-                    except:
-                        printS("Dates for takeAfter and takeBefore were not valid, see help print for format.", color = BashColor.FAIL)
-                        argIndex += len(inputArgs) + 1
-                        continue
                     
                     Main.playlistCliController.fetchPlaylists(ids, Main.settings.fetchLimitSingleSource, takeAfter, takeBefore, takeNewOnly)
 

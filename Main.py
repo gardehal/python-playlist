@@ -100,7 +100,7 @@ class Main:
                     name = inputArgs[0] if(len(inputArgs) > 0) else "New Playlist"
                     playWatchedStreams = eval(inputArgs[1]) if(len(inputArgs) > 1) else True
                     allowDuplicates = eval(inputArgs[2]) if(len(inputArgs) > 2) else False
-                    streamSourceIds = inputArgs[3:] if(len(inputArgs) > 3) else []
+                    streamSourceIds = getIdsFromInput(inputArgs[3:], Main.playlistService.getAllIds(), Main.playlistService.getAll(), debug = Main.settings.debug) if(len(inputArgs) > 3) else []
 
                     Main.playlistCliController.addPlaylist(name, playWatchedStreams, allowDuplicates, streamSourceIds)
                     
@@ -123,7 +123,7 @@ class Main:
                 elif(arg in Main.commands.deletePlaylistCommands):
                     # Expected input: playlistIds or indices
                     inputArgs = extractArgs(argIndex, argV)
-                    playlistIds = inputArgs[0:] if(len(inputArgs) > 0) else []
+                    playlistIds = getIdsFromInput(inputArgs, Main.playlistService.getAllIds(), Main.playlistService.getAll(), debug = Main.settings.debug)
                     
                     Main.playlistCliController.deletePlaylists(playlistIds)
 
@@ -133,7 +133,7 @@ class Main:
                 elif(arg in Main.commands.restorePlaylistCommands):
                     # Expected input: playlistIds or indices
                     inputArgs = extractArgs(argIndex, argV)
-                    playlistIds = inputArgs[0:] if(len(inputArgs) > 0) else []
+                    playlistIds = getIdsFromInput(inputArgs, Main.playlistService.getAllIds(), Main.playlistService.getAll(), debug = Main.settings.debug)
                     
                     Main.playlistCliController.restorePlaylists(playlistIds)
                     

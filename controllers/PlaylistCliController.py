@@ -121,7 +121,7 @@ class PlaylistCliController():
         for id in playlistIds:
             restoreResult = self.playlistService.restore(id)
             if(restoreResult != None):
-                printS("Playlist \"", restoreResult.name, "\" restore successfully.", color = BashColor.OKGREEN)
+                printS("Playlist \"", restoreResult.name, "\" restored successfully.", color = BashColor.OKGREEN)
                 result.append(restoreResult)
             else:
                 printS("Failed to restore Playlist.", color = BashColor.FAIL)

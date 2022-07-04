@@ -28,9 +28,9 @@ class SharedService():
 
     def __init__(self):
         self.settings = Settings()
-        self.playlistService: PlaylistService = PlaylistService()
-        self.queueStreamService: QueueStreamService = QueueStreamService()
-        self.streamSourceService: StreamSourceService = StreamSourceService()
+        self.playlistService = PlaylistService()
+        self.queueStreamService = QueueStreamService()
+        self.streamSourceService = StreamSourceService()
 
     def getPageTitle(self, url: str) -> str:
         """

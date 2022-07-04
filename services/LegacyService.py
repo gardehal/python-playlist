@@ -3,19 +3,17 @@ import random
 import re
 from typing import Pattern
 
-from dotenv import load_dotenv
 from grdUtil.BashColor import BashColor
-from grdUtil.PrintUtil import printS, printStack
+from grdUtil.PrintUtil import printD, printStack
+from Settings import Settings
 
 from services.PlaylistService import PlaylistService
 from services.QueueStreamService import QueueStreamService
 from services.StreamSourceService import StreamSourceService
 
-load_dotenv()
-DEBUG = eval(os.environ.get("DEBUG"))
-LOCAL_STORAGE_PATH = os.environ.get("LOCAL_STORAGE_PATH")
 
 class LegacyService():
+    settings: Settings = None
     playlistService: PlaylistService = None
     queueStreamService: QueueStreamService = None
     streamSourceService: StreamSourceService = None
@@ -23,6 +21,7 @@ class LegacyService():
     stringValueRegex: Pattern[str] = None
     
     def __init__(self):
+        self.settings = Settings()
         self.playlistService = PlaylistService()
         self.queueStreamService = QueueStreamService()
         self.streamSourceService = StreamSourceService()
@@ -42,13 +41,13 @@ class LegacyService():
         """
         
         if(self.playlistService.get(id) != None):
-            return os.path.join(LOCAL_STORAGE_PATH, "Playlist", f"{id}.json")
+            return os.path.join(self.settings.localStoragePath, "Playlist", f"{id}.json")
         
         if(self.streamSourceService.get(id) != None):
-            return os.path.join(LOCAL_STORAGE_PATH, "StreamSource", f"{id}.json")
+            return os.path.join(self.settings.localStoragePath, "StreamSource", f"{id}.json")
         
         if(self.queueStreamService.get(id) != None):
-            return os.path.join(LOCAL_STORAGE_PATH, "QueueStream", f"{id}.json")
+            return os.path.join(self.settings.localStoragePath, "QueueStream", f"{id}.json")
         
         return None
         
@@ -76,7 +75,7 @@ class LegacyService():
                     break
             
             id = all[index].id
-            printS("DEBUG: refactorCheckLastFetchedId - Checking ", (i+1), "/", nChecks, ": ", id, color = BashColor.WARNING, doPrint = DEBUG)
+            printD("Checking ", (i+1), "/", nChecks, ": ", id, color = BashColor.WARNING, doPrint = self.settings.debug)
             with open(self.getFilePath(id), "r") as file:
                 content = file.read()
                 if(re.search(self.lastFetchedIdRegex, content)):

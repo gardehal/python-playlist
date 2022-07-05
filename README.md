@@ -106,6 +106,5 @@ Program for queueing and playing videos from list or from sources like channels 
 - fetch youtube still slow, probably still loading all videos from channel, in library pytube
 - rename to python-playlist
 
-- DP but allow for deleted sources
 - controller layer, main: parse args and call controller, controller: service call, handle input (?), print all except debug, service: manage data and call repo, repo: save/get from storage
 - circumvent restrictions using VLC: https://www.electronicshub.org/bypass-youtube-age-restriction/#3_Using_VLC_Media_Player_on_a_Phone_or_Tablet - or offer to open download page which can circumvent...

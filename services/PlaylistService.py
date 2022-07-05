@@ -503,10 +503,9 @@ class PlaylistService(BaseService[T]):
                     streamSource = self.streamSourceService.get(stream.streamSourceId, includeSoftDeleted)
                     
                     if(streamSource == None):
-                        printS("\tStreamSource not found (ID: \"", streamId, "\").", color = BashColor.FAIL)
-                        continue
-                    
-                    sourceString = ", StreamSource: \"" + streamSource.name + "\"" 
+                        sourceString = ", StreamSource: [missing]" 
+                    else:
+                        sourceString = ", StreamSource: \"" + streamSource.name + "\"" 
                 printS("\t", str(i), " - ", stream.detailsString(includeUri, includeId, includeDatetime, includeListCount), sourceString, color = BashColor[color])
                 
             result += 1

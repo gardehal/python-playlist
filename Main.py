@@ -7,7 +7,7 @@ from grdUtil.InputUtil import extractArgs, getIdsFromInput, getIfExists
 from grdUtil.PrintUtil import printLists, printS
 
 from Commands import Commands
-from controllers.CliController import SharedCliController
+from controllers.SharedCliController import SharedCliController
 from controllers.PlaylistCliController import PlaylistCliController
 from controllers.QueueStreamCliController import QueueStreamCliController
 from controllers.StreamSourceCliController import StreamSourceCliController

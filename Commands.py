@@ -46,7 +46,7 @@ class Commands():
         self.resetPlaylistFetchCommands = ["reset"]
         self.playCommands = ["play", "p"]
         self.quitArguments = StaticUtil.quit
-        self.skipArguments = ["skip", "s"]
+        self.skipArguments = ["skip", "s", "[C"] # [C = right arrow
         self.repeatArguments = ["repeat", "r"]
         self.listPlaylistArguments = ["listplaylists", "lp"]
         self.addCurrentToPlaylistArguments = ["addto", "at"]

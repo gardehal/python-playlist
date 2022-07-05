@@ -75,7 +75,7 @@ class LegacyService():
                     break
             
             id = all[index].id
-            printD("Checking ", (i+1), "/", nChecks, ": ", id, color = BashColor.WARNING, doPrint = self.settings.debug)
+            printD("Checking ", (i+1), "/", nChecks, ": ", id, color = BashColor.WARNING, debug = self.settings.debug)
             with open(self.getFilePath(id), "r") as file:
                 content = file.read()
                 if(re.search(self.lastFetchedIdRegex, content)):

@@ -46,11 +46,11 @@ class SharedService():
         isYouTubeChannel = "user" in url or "channel" in url
         title = None
         if(StreamSourceTypeUtil.strToStreamSourceType(url) == StreamSourceType.YOUTUBE and not isYouTubeChannel):
-            printD(" Getting title from pytube.", color = BashColor.WARNING, doPrint = self.settings.debug)
+            printD(" Getting title from pytube.", color = BashColor.WARNING, debug = self.settings.debug)
             yt = YouTube(url)
             title = yt.title
         else:
-            printD("Getting title from mechanize.", color = BashColor.WARNING, doPrint = self.settings.debug)
+            printD("Getting title from mechanize.", color = BashColor.WARNING, debug = self.settings.debug)
             try:
                 br = mechanize.Browser()
                 br.open(url)
@@ -114,7 +114,7 @@ class SharedService():
                 playlist.streamIds.remove(stream.id)
                 result = self.playlistService.update(playlist)
                 if(not result):
-                    printD("failed to update Playlist \"", playlist.name, "\".", color = BashColor.WARNING, doPrint = self.settings.debug)
+                    printD("failed to update Playlist \"", playlist.name, "\".", color = BashColor.WARNING, debug = self.settings.debug)
                     return False
                     
         return True
@@ -270,7 +270,7 @@ class SharedService():
                 data["Playlist"].append(entity)
         
         found = len(data["QueueStream"]) > 0 or len(data["StreamSource"]) > 0 or len(data["Playlist"]) > 0
-        printD("no results", color = BashColor.WARNING, doPrint = self.settings.debug and not found)
+        printD("no results", color = BashColor.WARNING, debug = self.settings.debug and not found)
         
         return data 
     

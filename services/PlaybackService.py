@@ -61,7 +61,7 @@ class PlaybackService():
 
         playlist = self.playlistService.get(playlistId)
         if(playlist == None):
-            printD("Playlist with ID ", playlistId, " was not found.", doPrint = self.settings.debug)
+            printD("Playlist with ID ", playlistId, " was not found.", debug = self.settings.debug)
             return False
 
         if(len(playlist.streamIds) == 0):
@@ -216,7 +216,7 @@ class PlaybackService():
                 if(len(crossAddPlaylistResult) > 0):
                     printS("\"", stream.name, "\" added to \"", crossAddPlaylistResult[0].name, "\".", color = BashColor.OKGREEN)
                 else:
-                    printS("\"", stream.name, "\" could not be added to any playlists.", color = BashColor.FAIL, doPrint = (len(crossAddPlaylistResult) == 0))
+                    printS("\"", stream.name, "\" could not be added to any playlists.", color = BashColor.FAIL)
                 
             elif(len(self.printDetailsInputs) > 0 and inputArgs in self.printDetailsInputs):
                 self.playlistService.printPlaylistDetails([playlist.id])

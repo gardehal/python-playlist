@@ -171,7 +171,7 @@ class SharedCliController():
         """
         
         if(playlistId == None):
-            printD("Missing input: playlistId", color = BashColor.WARNING, doPrint = self.settings.debug)
+            printD("Missing input: playlistId", color = BashColor.WARNING, debug = self.settings.debug)
             return None
         
         data = self.fetchService.prepareReset(playlistId, includeSoftDeleted)

@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from grdUtil.BashColor import BashColor
-from grdUtil.InputUtil import getIdsFromInput, isNumber
+from grdUtil.InputUtil import isNumber
 from grdUtil.PrintUtil import printLists, printS
 from model.Playlist import Playlist
 from services.FetchService import FetchService
@@ -11,6 +11,8 @@ from services.QueueStreamService import QueueStreamService
 from services.StreamSourceService import StreamSourceService
 from Settings import Settings
 
+from controllers.SharedCliController import SharedCliController
+
 
 class PlaylistCliController():
     settings: Settings = None
@@ -19,6 +21,7 @@ class PlaylistCliController():
     playlistService: PlaylistService = None
     queueStreamService: QueueStreamService = None
     streamSourceService: StreamSourceService = None
+    sharedCliController: SharedCliController = None
 
     def __init__(self):
         self.settings = Settings()
@@ -27,6 +30,7 @@ class PlaylistCliController():
         self.playlistService = PlaylistService()
         self.queueStreamService = QueueStreamService()
         self.streamSourceService = StreamSourceService()
+        self.sharedCliController = SharedCliController()
         
     def addPlaylist(self, name: str, playWatchedStreams: bool, allowDuplicates: bool, streamSourceIds: list[str]) -> Playlist:
         """
@@ -215,6 +219,10 @@ class PlaylistCliController():
             return result
         
         for id in playlistIds:
+            if(self.settings.removeWatchedOnFetch):
+                self.sharedCliController.prune(id)
+                print("") # Space before fetching
+            
             result += self.fetchService.fetch(id, batchSize, _takeAfter, _takeBefore, takeNewOnly)
             playlist = self.playlistService.get(id)
             printS("Fetched ", result, " for playlist \"", playlist.name, "\" successfully.", color = BashColor.OKGREEN)

@@ -1,11 +1,9 @@
-import os
 import sys
 from datetime import datetime
 from typing import List
 from xml.dom.minidom import parseString
 
 import requests
-from dotenv import load_dotenv
 from enums.StreamSourceType import StreamSourceType
 from grdException.ArgumentException import ArgumentException
 from grdException.DatabaseException import DatabaseException
@@ -13,32 +11,32 @@ from grdUtil.BashColor import BashColor
 from grdUtil.DateTimeUtil import getDateTime, stringToDatetime
 from grdUtil.FileUtil import mkdir
 from grdUtil.InputUtil import sanitize
-from grdUtil.PrintUtil import printS
+from grdUtil.PrintUtil import printD, printS
 from model.OdyseeStream import OdyseeStream
 from model.Playlist import Playlist
 from model.QueueStream import QueueStream
 from model.StreamSource import StreamSource
 from pytube import Channel
+from Settings import Settings
 
 from services.PlaylistService import PlaylistService
 from services.QueueStreamService import QueueStreamService
 from services.StreamSourceService import StreamSourceService
 
-load_dotenv()
-DEBUG = eval(os.environ.get("DEBUG"))
-LOCAL_STORAGE_PATH = os.environ.get("LOCAL_STORAGE_PATH")
 
 class FetchService():
+    settings: Settings = None
     playlistService: PlaylistService = None
     queueStreamService: QueueStreamService = None
     streamSourceService: StreamSourceService = None
 
     def __init__(self):
-        self.playlistService: PlaylistService = PlaylistService()
-        self.queueStreamService: QueueStreamService = QueueStreamService()
-        self.streamSourceService: StreamSourceService = StreamSourceService()
+        self.settings = Settings()
+        self.playlistService = PlaylistService()
+        self.queueStreamService = QueueStreamService()
+        self.streamSourceService = StreamSourceService()
 
-        mkdir(LOCAL_STORAGE_PATH)
+        mkdir(self.settings.localStoragePath)
 
     def fetch(self, playlistId: str, batchSize: int = 10, takeAfter: datetime = None, takeBefore: datetime = None, takeNewOnly: bool = False) -> int:
         """
@@ -160,23 +158,23 @@ class FetchService():
         streams = list(channel.videos)
         lastStreamId = streams[0].video_id
         if(takeNewOnly and takeAfter == None and lastStreamId in streamSource.lastFetchedIds):
-            printS("DEBUG: fetchYoutube - last video fetched: \"", sanitize(streams[0].title), "\", YouTube ID \"", lastStreamId, "\"", color = BashColor.WARNING, doPrint = DEBUG)
-            printS("DEBUG: fetchYoutube - return due to takeNewOnly and takeAfter == None and lastStreamId in streamSource.lastFetchedIds", color = BashColor.WARNING, doPrint = DEBUG)
+            printD("Last video fetched: \"", sanitize(streams[0].title), "\", YouTube ID \"", lastStreamId, "\"", color = BashColor.WARNING, debug = self.settings.debug)
+            printD("Return due to takeNewOnly and takeAfter == None and lastStreamId in streamSource.lastFetchedIds", color = BashColor.WARNING, debug = self.settings.debug)
             return emptyReturn
             
         for i, stream in enumerate(streams):
             if(takeNewOnly and stream.video_id in streamSource.lastFetchedIds):
-                printS("DEBUG: fetchYoutube - name \"", sanitize(stream.title), "\", YouTube ID \"", stream.video_id, "\"", color = BashColor.WARNING, doPrint = DEBUG)
-                printS("DEBUG: fetchYoutube - break due to takeNewOnly and stream.video_id in streamSource.lastFetchedIds", color = BashColor.WARNING, doPrint = DEBUG)
+                printD("Name \"", sanitize(stream.title), "\", YouTube ID \"", stream.video_id, "\"", color = BashColor.WARNING, debug = self.settings.debug)
+                printD("Break due to takeNewOnly and stream.video_id in streamSource.lastFetchedIds", color = BashColor.WARNING, debug = self.settings.debug)
                 break
             elif(not takeNewOnly and takeAfter != None and stream.publish_date < takeAfter):
-                printS("DEBUG: fetchYoutube - break due to not takeNewOnly and takeAfter != None and stream.publish_date < takeAfter", color = BashColor.WARNING, doPrint = DEBUG)
+                printD("Break due to not takeNewOnly and takeAfter != None and stream.publish_date < takeAfter", color = BashColor.WARNING, debug = self.settings.debug)
                 break
             elif(not takeNewOnly and takeBefore != None and stream.publish_date > takeBefore):
-                printS("DEBUG: fetchYoutube - continue due to not takeNewOnly and takeBefore != None and stream.publish_date > takeBefore", color = BashColor.WARNING, doPrint = DEBUG)
+                printD("Continue due to not takeNewOnly and takeBefore != None and stream.publish_date > takeBefore", color = BashColor.WARNING, debug = self.settings.debug)
                 continue
             elif(i > batchSize):
-                printS("DEBUG: fetchYoutube - break due to i > batchSize", color = BashColor.WARNING, doPrint = DEBUG)
+                printD("Break due to i > batchSize", color = BashColor.WARNING, debug = self.settings.debug)
                 break
             
             newStreams.append(stream)
@@ -250,8 +248,8 @@ class FetchService():
         lastStreamTitle = sanitize(streams[0].getElementsByTagName("title")[0].firstChild.nodeValue)
         lastStreamId = streams[0].getElementsByTagName("link")[0].firstChild.nodeValue.split(":")[-1]
         if(takeNewOnly and takeAfter == None and lastStreamId in streamSource.lastFetchedIds):
-            printS("DEBUG: fetchOdysee - last video fetched: \"", lastStreamTitle, "\", Odysee ID \"", lastStreamId, "\"", color = BashColor.WARNING, doPrint = DEBUG)
-            printS("DEBUG: fetchOdysee - return due to takeNewOnly and takeAfter == None and lastStreamId in streamSource.lastFetchedIds", color = BashColor.WARNING, doPrint = DEBUG)
+            printD("Last video fetched: \"", lastStreamTitle, "\", Odysee ID \"", lastStreamId, "\"", color = BashColor.WARNING, debug = self.settings.debug)
+            printD("Return due to takeNewOnly and takeAfter == None and lastStreamId in streamSource.lastFetchedIds", color = BashColor.WARNING, debug = self.settings.debug)
             return emptyReturn
         
         for i, stream in enumerate(streams):
@@ -262,17 +260,17 @@ class FetchService():
             videoGuid = link.split(":")[-1]
             
             if(takeNewOnly and videoGuid in streamSource.lastFetchedIds):
-                printS("DEBUG: fetchOdysee - name \"", title, "\", Odysee ID \"", videoGuid, "\"", color = BashColor.WARNING, doPrint = DEBUG)
-                printS("DEBUG: fetchOdysee - break due to takeNewOnly and videoGuid in streamSource.lastFetchedIds", color = BashColor.WARNING, doPrint = DEBUG)
+                printD("Name \"", title, "\", Odysee ID \"", videoGuid, "\"", color = BashColor.WARNING, debug = self.settings.debug)
+                printD("Break due to takeNewOnly and videoGuid in streamSource.lastFetchedIds", color = BashColor.WARNING, debug = self.settings.debug)
                 break
             elif(not takeNewOnly and takeAfter != None and pubDate < takeAfter):
-                printS("DEBUG: fetchOdysee - break due to not takeNewOnly and takeAfter != None and pubDate < takeAfter", color = BashColor.WARNING, doPrint = DEBUG)
+                printD("Break due to not takeNewOnly and takeAfter != None and pubDate < takeAfter", color = BashColor.WARNING, debug = self.settings.debug)
                 break
             elif(not takeNewOnly and takeBefore != None and pubDate > takeBefore):
-                printS("DEBUG: fetchOdysee - continue due to not takeNewOnly and takeBefore != None and pubDate > takeBefore", color = BashColor.WARNING, doPrint = DEBUG)
+                printD("Continue due to not takeNewOnly and takeBefore != None and pubDate > takeBefore", color = BashColor.WARNING, debug = self.settings.debug)
                 continue
             elif(i > batchSize):
-                printS("DEBUG: fetchOdysee - break due to i > batchSize", color = BashColor.WARNING, doPrint = DEBUG)
+                printD("Beak due to i > batchSize", color = BashColor.WARNING, debug = self.settings.debug)
                 break
             
             newStreams.append(OdyseeStream(title, pubDate, link, videoGuid))

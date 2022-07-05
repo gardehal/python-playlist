@@ -2,7 +2,6 @@ import os
 
 import pytube
 import validators
-from dotenv import load_dotenv
 from grdException.ArgumentException import ArgumentException
 from grdException.DatabaseException import DatabaseException
 from grdException.NotFoundException import NotFoundException
@@ -13,38 +12,31 @@ from grdUtil.InputUtil import sanitize
 from grdUtil.LocalJsonRepository import LocalJsonRepository
 from grdUtil.LogLevel import LogLevel
 from grdUtil.LogUtil import LogUtil
-from grdUtil.PrintUtil import printS
+from grdUtil.PrintUtil import printD, printS
 from model.Playlist import Playlist
 from model.QueueStream import QueueStream
 from model.StreamSource import StreamSource
+from Settings import Settings
 
 from services.QueueStreamService import QueueStreamService
 from services.StreamSourceService import StreamSourceService
 
-load_dotenv()
-DEBUG = eval(os.environ.get("DEBUG"))
-LOCAL_STORAGE_PATH = os.environ.get("LOCAL_STORAGE_PATH")
-LOG_WATCHED = eval(os.environ.get("LOG_WATCHED"))
-DOWNLOAD_WEB_STREAMS = eval(os.environ.get("DOWNLOAD_WEB_STREAMS"))
-REMOVE_WATCHED_ON_FETCH = eval(os.environ.get("REMOVE_WATCHED_ON_FETCH"))
-PLAYED_ALWAYS_WATCHED = eval(os.environ.get("PLAYED_ALWAYS_WATCHED"))
-WATCHED_LOG_FILEPATH = os.environ.get("WATCHED_LOG_FILEPATH")
-LOG_DIR_PATH = os.environ.get("LOG_DIR_PATH")
-LOG_LEVEL = os.environ.get("LOG_LEVEL")
-
 T = Playlist
 
 class PlaylistService(BaseService[T]):
+    settings: Settings = None
     playlistRepository: LocalJsonRepository = None
     queueStreamService: QueueStreamService = None
     streamSourceService: StreamSourceService = None
     log: LogUtil = None
 
     def __init__(self):
-        BaseService.__init__(self, T, DEBUG, os.path.join(LOCAL_STORAGE_PATH, "Playlist"))
-        self.queueStreamService: QueueStreamService = QueueStreamService()
-        self.streamSourceService: StreamSourceService = StreamSourceService()
-        self.log: LogUtil = LogUtil(LOG_DIR_PATH, DEBUG, LogLevel.VERBOSE)
+        self.settings = Settings()
+        self.queueStreamService = QueueStreamService()
+        self.streamSourceService = StreamSourceService()
+        self.log = LogUtil(self.settings.logDirPath, self.settings.debug, LogLevel.VERBOSE)
+        
+        BaseService.__init__(self, T, self.settings.debug, os.path.join(self.settings.localStoragePath, "Playlist"))
 
     def addStreams(self, playlistId: str, streams: list[QueueStream]) -> list[QueueStream]:
         """
@@ -193,7 +185,7 @@ class PlaylistService(BaseService[T]):
 
         listLength = len(playlist.streamIds)
         if(fromIndex == toIndex):
-            printS("DEBUG: moveStream - Index from and to were the same. No update needed.", color=BashColor.WARNING, doPrint = DEBUG)
+            printD("Index from and to were the same. No update needed.", color=BashColor.WARNING, doPrint = self.settings.debug)
             return True
         if(fromIndex < 0 or fromIndex >= listLength):
             printS("Index to move from (", fromIndex, ") was out or range.", color=BashColor.WARNING)

@@ -1,16 +1,19 @@
 import random
+import re
 import subprocess
 import uuid
 from copy import copy
 from typing import List
 
 from Commands import Commands
+from enums.StreamSourceType import StreamSourceType, StreamSourceTypeUtil
 from grdUtil.BashColor import BashColor
 from grdUtil.DateTimeUtil import getDateTime
 from grdUtil.InputUtil import getIdsFromInput, sanitize
 from grdUtil.PrintUtil import printD, printLists, printS, printStack
 from model.Playlist import Playlist
 from model.QueueStream import QueueStream
+from psutil import Popen
 from Settings import Settings
 
 from services.PlaylistService import PlaylistService
@@ -28,6 +31,7 @@ class PlaybackService():
     quitInputs: List[str] = None
     skipInputs: List[str] = None
     addToInputs: List[str] = None
+    circumventRestricted: List[str] = None
     printDetailsInputs: List[str] = None
 
     def __init__(self):
@@ -42,6 +46,7 @@ class PlaybackService():
         self.repeatInputs = self.commands.repeatArguments
         self.listPlaylistInputs = self.commands.listPlaylistArguments
         self.addToInputs = self.commands.addCurrentToPlaylistArguments
+        self.circumventRestricted = self.commands.circumventRestricted
         self.printDetailsInputs = self.commands.printPlaybackDetailsArguments
         self.printHelpInputs = self.commands.printPlaybackHelpArguments
 
@@ -121,10 +126,7 @@ class PlaybackService():
 
             subprocessStream = None
             if(stream.isWeb):
-                subprocessStream = subprocess.Popen(f"call start {stream.uri}", stdout=subprocess.PIPE, shell=True) # PID set by this is not PID of browser, just subprocess which opens browser
-                
-                # https://stackoverflow.com/questions/7989922/opening-a-process-with-popen-and-getting-the-pid
-                # subprocessStream = subprocess.Popen([self.settings.browserBin, f"{stream.uri}"], stdout=subprocess.PIPE, shell=False) # PID set by this SHOULD be browser, but is not
+                subprocessStream = self.openQueueStreamBrowser(stream.uri)
             else:
                 # TODO
                 printS("Non-web streams currently not supported, skipping video ", stream.name, color = BashColor.ERROR)
@@ -160,6 +162,23 @@ class PlaybackService():
                     printS("\"", stream.name, "\" could not be updated as watched.", color=BashColor.WARNING)
                     
         return nWatched
+    
+    def openQueueStreamBrowser(self, url: str) -> Popen:
+        """
+        Open a URL in the browser.
+
+        Args:
+            url (str): url to open.
+
+        Returns:
+            Popen: PID if new process created. (?)
+        """
+        
+        return subprocess.Popen(f"call start {url}", stdout=subprocess.PIPE, shell=True) # PID set by this is not PID of browser, just subprocess which opens browser
+        
+        # https://stackoverflow.com/questions/7989922/opening-a-process-with-popen-and-getting-the-pid
+        # return subprocess.Popen([self.settings.browserBin, f"{stream.uri}"], stdout=subprocess.PIPE, shell=False) # PID set by this SHOULD be browser, but is not
+                
 
     def handlePlaybackInput(self, playlist: Playlist, stream: QueueStream) -> int:
         """
@@ -218,6 +237,9 @@ class PlaybackService():
                 else:
                     printS("\"", stream.name, "\" could not be added to any playlists.", color = BashColor.FAIL)
                 
+            elif(len(self.circumventRestricted) > 0 and inputArgs in self.circumventRestricted):
+                self.openRestricted(stream)
+            
             elif(len(self.printDetailsInputs) > 0 and inputArgs in self.printDetailsInputs):
                 self.playlistService.printPlaylistDetails([playlist.id])
                 
@@ -261,3 +283,45 @@ class PlaybackService():
                 result.append(playlist)
         
         return result
+
+    def openRestricted(self, queueStream: QueueStream) -> bool:
+        """
+        Circumvent the restrictions on videos, for example age restriction on YouTube, which blocks watching if the watcher is not logged in.
+
+        Args:
+            queueStream (QueueStream): QueueStream to watch.
+
+        Returns:
+            bool: Result of circumvent.
+        """
+        
+        streamSourceType = StreamSourceTypeUtil.strToStreamSourceType(queueStream.uri)
+        if(streamSourceType.value == StreamSourceType.YOUTUBE.value):
+            id = self.getYouTubeId(queueStream.uri)
+            url = f"https://www.nsfwyoutube.com/watch?v={id}"
+            self.openQueueStreamBrowser(url)
+            return True
+        else:
+            sourceType = streamSourceType.name.capitalize()
+            printS("No circumvent implemented for ", sourceType, ".", color = BashColor.WARNING)
+        
+        return False
+
+    def getYouTubeId(self, url: str) -> str:
+        """
+        Get YouTube ID from URL.
+
+        Args:
+            url (str): URL with ID to get,
+
+        Returns:
+            str | None: ID if URL is valid format.
+        """
+        
+        if("youtu.be/" in url):
+            return re.search(r"youtu\.be\/(\w+)", url).group(1)
+        elif("youtube.com/watch?v=" in url):
+            return re.search(r"\/watch\?v=(\w+)", url).group(1)
+        else:
+            return None
+        

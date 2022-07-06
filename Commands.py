@@ -44,12 +44,15 @@ class Commands():
         self.purgePlaylistCommands = ["purgeplaylists", "pp"]
         self.purgeCommands = ["purge"]
         self.resetPlaylistFetchCommands = ["reset"]
+        
+        # Playback
         self.playCommands = ["play", "p"]
         self.quitArguments = StaticUtil.quit
         self.skipArguments = ["skip", "s", "[C"] # [C = right arrow
         self.repeatArguments = ["repeat", "r"]
         self.listPlaylistArguments = ["listplaylists", "lp"]
         self.addCurrentToPlaylistArguments = ["addto", "at"]
+        self.circumventRestricted = ["circumventrestricted", "circumvent", "restricted", "cr"]
         self.printPlaybackDetailsArguments = ["detailsprint", "details", "print", "dp"]
         self.printPlaybackHelpArguments = ["help", "h"]
 
@@ -151,6 +154,7 @@ class Commands():
         result += "\n\t" + str(self.repeatArguments) + ": Repeat current QueueStream."
         result += "\n\t" + str(self.listPlaylistArguments) + ": List Playlists."
         result += "\n\t" + str(self.addCurrentToPlaylistArguments) + " [playlistId or index: str]: Add the current QueueStream to another Playlist indicated by ID on index. Only available while Playlist is playing."
+        result += "\n\t" + str(self.circumventRestricted) + ": Open a website that will get around age-restricted video in case you are not logged in. Only use if you are 18 or older!"
         result += "\n\t" + str(self.printPlaybackDetailsArguments) + ": Prints details of current playing Playlist."
         result += "\n\t" + str(self.printPlaybackHelpArguments) + ": Prints relevant help during playback."
         

@@ -105,3 +105,4 @@ Program for queueing and playing videos from list or from sources like channels 
 - tests for core functions like fetch and play?
 - fetch youtube still slow, probably still loading all videos from channel, in library pytube
 - rename to python-playlist
+- Implement LogUtil? Ex. fetches, add YT playlist

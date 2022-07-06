@@ -185,8 +185,8 @@ class Main:
                     inputArgs = extractArgs(argIndex, argV)
                     playlistIds = getIdsFromInput(inputArgs, Main.playlistService.getAllIds(), Main.playlistService.getAll(), returnOnNonIds = True, debug = Main.settings.debug)
                     lenPlaylistIds = len(playlistIds)
-                    includeSoftDeleted = eval(getIfExists(inputArgs, lenPlaylistIds, False))
-                    permanentlyDelete = eval(getIfExists(inputArgs, lenPlaylistIds + 1, False))
+                    includeSoftDeleted = eval(getIfExists(inputArgs, lenPlaylistIds, "False"))
+                    permanentlyDelete = eval(getIfExists(inputArgs, lenPlaylistIds + 1, "False"))
                     
                     for id in playlistIds:
                         Main.sharedCliController.prune(id, includeSoftDeleted, permanentlyDelete)

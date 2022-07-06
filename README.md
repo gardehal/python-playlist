@@ -105,5 +105,3 @@ Program for queueing and playing videos from list or from sources like channels 
 - tests for core functions like fetch and play?
 - fetch youtube still slow, probably still loading all videos from channel, in library pytube
 - rename to python-playlist
-
-- circumvent restrictions using VLC: https://www.electronicshub.org/bypass-youtube-age-restriction/#3_Using_VLC_Media_Player_on_a_Phone_or_Tablet - or offer to open download page which can circumvent...

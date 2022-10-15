@@ -94,6 +94,13 @@ Program for queueing and playing videos from list or from sources like channels 
       - `   QueueStreams`
       - `   1 - name: Video name, isWeb: True`
 
+## Known issues
+
+- Fetch loads indefinitely:
+  - Check if any other streaming services are currently loading, close them and retry fetch. Unsure why it happens.
+- Fetch fails with error message - urllib.error.URLError: <urlopen error [WinError 10054] An existing connection was forcibly closed by the remote host>
+  - Retry fetch later. Not sure why it happens.
+
 ## TODO
 
 - play local/directory streams
@@ -106,3 +113,13 @@ Program for queueing and playing videos from list or from sources like channels 
 - fetch youtube still slow, probably still loading all videos from channel, in library pytube
 - rename to python-playlist
 - Implement LogUtil? Ex. fetches, add YT playlist
+- add length in seconds to qs
+- add alwaysDownload to source? for channels who often delete/gets deleted/restricted/unlisted
+- timeout/option to quit during fetch, stops completely on some channels, add time taken to fetch?
+- if a fetch fails, sources will be updated but playlist isn't meaning streams won't be added unless fetch is reset...
+- known issue: fetch freezes when fetching and a user is watching a live streaming website. Usually when fetching from large youtube channels.
+- reset doesn't work, not resetting sources
+- new function: download playlist, creates a new folder at path from settings, mp4s ordered by name ("0001_some video_some source")
+- restore source add source, have to check on deleted
+- cli command and functionality to order sources by number of videos since fetch sometimes messes up, to fail early - should be redundant by making every fetch channel save to playlist instead of waiting until end of fetch
+- command for re-queue/re-add stream from playlist during playback (something like "rw", removes stream, add it to the back of playlist)

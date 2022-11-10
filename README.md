@@ -123,3 +123,5 @@ Program for queueing and playing videos from list or from sources like channels 
 - restore source add source, have to check on deleted
 - cli command and functionality to order sources by number of videos since fetch sometimes messes up, to fail early - should be redundant by making every fetch channel save to playlist instead of waiting until end of fetch
 - command for re-queue/re-add stream from playlist during playback (something like "rw", removes stream, add it to the back of playlist)
+- issues related to getting videos from channel due to YT updates, see https://github.com/pytube/pytube/pull/1409
+  - pl f i0 2022-10-27 2999-01-01 False

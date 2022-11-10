@@ -16,6 +16,7 @@ from services.PlaylistService import PlaylistService
 from services.SharedService import SharedService
 from services.StreamSourceService import StreamSourceService
 from Settings import Settings
+from pytube import Channel
 
 
 class Main:
@@ -56,7 +57,19 @@ class Main:
                     inputArgs = extractArgs(argIndex, argV)
                     printS("Test", color = BashColor.OKBLUE)
                     
-                    print(type(None))
+                    c = "https://www.youtube.com/c/smartereveryday"
+                    # c = "https://www.youtube.com/c/jawed"
+                    channel = Channel(c)
+                    print(channel)
+                    print(len(channel.video_urls))
+                    print(len(channel.videos))
+                    print(channel.video_urls[-1])
+                    print(channel.video_urls[0])
+                    
+                    g = channel.videos_generator()
+                    print(g)
+                    print(channel.video_urls[-1])
+                    print(channel.video_urls[0])
                     
                     quit()            
                     

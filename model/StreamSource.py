@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import List
 
 from grdUtil.DateTimeUtil import getDateTime
 
@@ -13,7 +14,7 @@ class StreamSource:
                  lastFetched: datetime = None,
                  lastSuccessfulFetched: datetime = None,
                  lastFetchedId: str = None, # Legacy
-                 lastFetchedIds: list[str] = [],
+                 lastFetchedIds: List[str] = [],
                  backgroundContent: bool = False,
                  deleted: datetime = None,
                  added: datetime = getDateTime(),
@@ -25,7 +26,7 @@ class StreamSource:
         self.enableFetch: bool = enableFetch
         self.lastFetched: datetime = lastFetched
         self.lastSuccessfulFetched: datetime = lastSuccessfulFetched
-        self.lastFetchedIds: list[str] = lastFetchedIds
+        self.lastFetchedIds: List[str] = lastFetchedIds
         self.backgroundContent: bool = backgroundContent
         self.deleted: datetime = deleted
         self.added: datetime = added

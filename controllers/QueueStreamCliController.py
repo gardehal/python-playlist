@@ -1,3 +1,5 @@
+from typing import List
+
 import validators
 from grdUtil.BashColor import BashColor
 from grdUtil.InputUtil import getIdsFromInput
@@ -21,7 +23,7 @@ class QueueStreamCliController():
         self.sharedService = SharedService()
         self.settings = Settings()
 
-    def addQueueStream(self, playlistId: str, uri: str, name: str) -> list[QueueStream]:
+    def addQueueStream(self, playlistId: str, uri: str, name: str) -> List[QueueStream]:
         """
         Add QueueStreams to Playlist.
         
@@ -31,7 +33,7 @@ class QueueStreamCliController():
             name (str): Displayname of QueueStream.
 
         Returns:
-            list[QueueStream]: QueueStreams added.
+            List[QueueStream]: QueueStreams added.
         """
 
         if(playlistId == None):
@@ -58,7 +60,7 @@ class QueueStreamCliController():
             
         return result
     
-    def deleteQueueStreams(self, playlistId: str, queueStreamIds: list[str]) -> list[QueueStream]:
+    def deleteQueueStreams(self, playlistId: str, queueStreamIds: List[str]) -> List[QueueStream]:
         """
         (Soft) Delete QueueStreams from Playlist.
         
@@ -67,7 +69,7 @@ class QueueStreamCliController():
             queueStreamIds (list[str]): IDs of QueueStreams to delete.
 
         Returns:
-            list[QueueStream]: QueueStreams deleted.
+            List[QueueStream]: QueueStreams deleted.
         """
         
         if(playlistId == None):
@@ -88,7 +90,7 @@ class QueueStreamCliController():
             
         return result
     
-    def restoreQueueStreams(self, playlistId: str, queueStreamIds: list[str]) -> list[QueueStream]:
+    def restoreQueueStreams(self, playlistId: str, queueStreamIds: List[str]) -> List[QueueStream]:
         """
         Restore QueueStreams to Playlist.
         
@@ -97,7 +99,7 @@ class QueueStreamCliController():
             queueStreamIds (list[str]): IDs of QueueStreams to restore.
 
         Returns:
-            list[QueueStream]: QueueStreams restored.
+            List[QueueStream]: QueueStreams restored.
         """
         
         if(playlistId == None):

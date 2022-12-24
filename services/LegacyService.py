@@ -1,7 +1,7 @@
 import os
 import random
 import re
-from typing import Pattern
+from typing import List, Pattern
 
 from grdUtil.BashColor import BashColor
 from grdUtil.PrintUtil import printD, printStack
@@ -51,7 +51,7 @@ class LegacyService():
         
         return None
         
-    def refactorCheckLastFetchedId(self, checkDivisor: int = 10) -> list[str]:
+    def refactorCheckLastFetchedId(self, checkDivisor: int = 10) -> List[str]:
         """
         Check if refactor has been done on a selection of entities.
 
@@ -59,7 +59,7 @@ class LegacyService():
             checkDivisor (int): Divisor of len(self.streamSourceService.getAll())/x to check. Default 10.
 
         Returns:
-            list[str]: List of IDs of entities not refactored.
+            List[str]: List of IDs of entities not refactored.
         """
 
         notRefactored = []
@@ -83,12 +83,12 @@ class LegacyService():
         
         return notRefactored
     
-    def refactorLastFetchedId(self) -> list[str]:
+    def refactorLastFetchedId(self) -> List[str]:
         """
-        Refactor all StreamSources in database to remove field lastFetchedId: str and add field lastFetchedIds: list[str].
+        Refactor all StreamSources in database to remove field lastFetchedId: str and add field lastFetchedIds: List[str].
 
         Returns:
-            list[str]: IDs of entities refactored.
+            List[str]: IDs of entities refactored.
         """
 
         all = self.streamSourceService.getAll()[:1]

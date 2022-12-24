@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import List
 
 from grdUtil.BashColor import BashColor
 from grdUtil.DateTimeUtil import getDateTime, stringToDatetime
@@ -33,7 +34,7 @@ class PlaylistCliController():
         self.streamSourceService = StreamSourceService()
         self.sharedCliController = SharedCliController()
         
-    def addPlaylist(self, name: str, playWatchedStreams: bool, allowDuplicates: bool, streamSourceIds: list[str]) -> Playlist:
+    def addPlaylist(self, name: str, playWatchedStreams: bool, allowDuplicates: bool, streamSourceIds: List[str]) -> Playlist:
         """
         Add a playlist to storage.
 
@@ -79,7 +80,7 @@ class PlaylistCliController():
 
         return result
         
-    def deletePlaylists(self, playlistIds: list[str]) -> list[Playlist]:
+    def deletePlaylists(self, playlistIds: List[str]) -> List[Playlist]:
         """
         Delete Playlists given by IDs.
 
@@ -87,7 +88,7 @@ class PlaylistCliController():
             playlistIds (list[str]): List of IDs or indices to delete from storage.
 
         Returns:
-            list[Playlist]: Playlists deleted.
+            List[Playlist]: Playlists deleted.
         """
         
         result = []
@@ -106,7 +107,7 @@ class PlaylistCliController():
 
         return result
         
-    def restorePlaylists(self, playlistIds: list[str]) -> list[Playlist]:
+    def restorePlaylists(self, playlistIds: List[str]) -> List[Playlist]:
         """
         Restore Playlists given by IDs.
 
@@ -114,7 +115,7 @@ class PlaylistCliController():
             playlistIds (list[str]): List of IDs or indices to restore (must be deleted but not removed).
 
         Returns:
-            list[Playlist]: Playlists restored.
+            List[Playlist]: Playlists restored.
         """
 
         result = []
@@ -133,7 +134,7 @@ class PlaylistCliController():
 
         return result
         
-    def printPlaylists(self, includeSoftDeleted: bool) -> list[Playlist]:
+    def printPlaylists(self, includeSoftDeleted: bool) -> List[Playlist]:
         """
         List Playlist in console.
 
@@ -141,7 +142,7 @@ class PlaylistCliController():
             includeSoftDeleted (bool,): Should include soft-deleted entities?
 
         Returns:
-            list[Playlist]: Playlists restored.
+            List[Playlist]: Playlists restored.
         """
         
         result = []
@@ -161,12 +162,12 @@ class PlaylistCliController():
 
         return result
     
-    def printPlaylistsDetailed(self, playlistIds: list[str], includeUri: bool, includeId: bool, includeDatetime: bool, includeListCount: bool, includeSource: bool) -> int:
+    def printPlaylistsDetailed(self, playlistIds: List[str], includeUri: bool, includeId: bool, includeDatetime: bool, includeListCount: bool, includeSource: bool) -> int:
         """
         Print detailed info for Playlist, including details for related StreamSources and QueueStreams.
 
         Args:
-            playlistIds (list[str]): list of playlistIds to print details of.
+            playlistIds (list[str]): List of playlistIds to print details of.
             includeUri (bool, optional): should print include URI if any. Defaults to False.
             includeId (bool, optional): should print include IDs. Defaults to False.
             includeSource (bool, optional): should print include StreamSource this was fetched from. Defaults to True.
@@ -188,7 +189,7 @@ class PlaylistCliController():
 
         return result
     
-    def fetchPlaylists(self, playlistIds: list[str], batchSize: int, takeAfter: datetime, takeBefore: datetime, takeNewOnly: bool) -> int:
+    def fetchPlaylists(self, playlistIds: List[str], batchSize: int, takeAfter: datetime, takeBefore: datetime, takeNewOnly: bool) -> int:
         """
         Fetch new videos from watched sources, adding them in chronological order.
 
@@ -234,7 +235,7 @@ class PlaylistCliController():
     
         return result
       
-    def resetPlaylists(self, playlistIds: list[str]) -> int:
+    def resetPlaylists(self, playlistIds: List[str]) -> int:
         """
         Fetch new videos from watched sources, adding them in chronological order.
 

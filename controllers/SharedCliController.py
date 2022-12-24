@@ -1,3 +1,5 @@
+from typing import List
+
 from grdException.ArgumentException import ArgumentException
 from grdUtil.BashColor import BashColor
 from grdUtil.PrintUtil import printD, printLists, printS
@@ -35,7 +37,7 @@ class SharedCliController():
         self.sharedService = SharedService()
         self.streamSourceService = StreamSourceService()
         
-    def prune(self, playlistId: str, includeSoftDeleted: bool = False, permanentlyDelete: bool = False) -> dict[list[Playlist], list[QueueStream]]:
+    def prune(self, playlistId: str, includeSoftDeleted: bool = False, permanentlyDelete: bool = False) -> dict[list[Playlist], List[QueueStream]]:
         """
         Removes watched streams from a Playlist if it does not allow replaying of already played streams (playWatchedStreams == False).
 
@@ -45,7 +47,7 @@ class SharedCliController():
             permanentlyDelete (bool, optional): Should entities be permanently deleted. Defaults to False.
 
         Returns:
-            dict[list[QueueStream], list[str]]: Result.
+            dict[list[QueueStream], List[str]]: Result.
         """
         
         if(playlistId == None):
@@ -77,7 +79,7 @@ class SharedCliController():
         
         return data
     
-    def purgePlaylists(self, includeSoftDeleted: bool = False, permanentlyDelete: bool = False) -> dict[list[QueueStream], list[StreamSource], list[Playlist]]:
+    def purgePlaylists(self, includeSoftDeleted: bool = False, permanentlyDelete: bool = False) -> dict[list[QueueStream], List[StreamSource], List[Playlist]]:
         """
         Purges deleted entities.
 
@@ -86,7 +88,7 @@ class SharedCliController():
             permanentlyDelete (bool, optional): Should entities be permanently deleted. Defaults to False.
             
         Returns:
-            dict[list[QueueStream], list[StreamSource], list[Playlist]]: dict with lists of entities removed.
+            dict[list[QueueStream], List[StreamSource], List[Playlist]]: dict with Lists of entities removed.
         """
         
         data = self.sharedService.preparePurgePlaylists(includeSoftDeleted, permanentlyDelete)
@@ -121,12 +123,12 @@ class SharedCliController():
              
         return data
     
-    def purge(self) -> dict[list[QueueStream], list[StreamSource], list[Playlist]]:
+    def purge(self) -> dict[list[QueueStream], List[StreamSource], List[Playlist]]:
         """
         Purges deleted entities.
             
         Returns:
-            dict[list[QueueStream], list[StreamSource], list[Playlist]]: dict with lists of entities removed.
+            dict[list[QueueStream], List[StreamSource], List[Playlist]]: dict with Lists of entities removed.
         """
         
         data = self.sharedService.preparePurge()

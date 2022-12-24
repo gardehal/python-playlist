@@ -18,6 +18,7 @@ from model.QueueStream import QueueStream
 from model.StreamSource import StreamSource
 from pytube import Channel
 from Settings import Settings
+from typing import List
 
 from services.PlaylistService import PlaylistService
 from services.QueueStreamService import QueueStreamService
@@ -155,7 +156,7 @@ class FetchService():
 
         newStreams = []
         newQueueStreams = []
-        streams = list(channel.videos)
+        streams = List(channel.videos)
         lastStreamId = streams[0].video_id
         if(takeNewOnly and takeAfter == None and lastStreamId in streamSource.lastFetchedIds):
             printD("Last video fetched: \"", sanitize(streams[0].title), "\", YouTube ID \"", lastStreamId, "\"", color = BashColor.WARNING, debug = self.settings.debug)
@@ -332,7 +333,7 @@ class FetchService():
                 
         return result
     
-    def prepareReset(self, playlistId: str, includeSoftDeleted: bool = False, permanentlyDelete: bool = False) -> dict[list[QueueStream], list[StreamSource], Playlist]:
+    def prepareReset(self, playlistId: str, includeSoftDeleted: bool = False, permanentlyDelete: bool = False) -> dict[list[QueueStream], List[StreamSource], Playlist]:
         """
         Prepare to reset the fetch-status for StreamSources of Playlist given by data and deletes all QueueStreams in it.
 
@@ -342,7 +343,7 @@ class FetchService():
             permanentlyDelete (bool, optional): Should entities be permanently deleted. Defaults to False.
             
         Returns:
-            dict[list[QueueStream], list[StreamSource], Playlist]: Entities to reset.
+            dict[list[QueueStream], List[StreamSource], Playlist]: Entities to reset.
         """
         
         if(not playlistId):
@@ -358,12 +359,12 @@ class FetchService():
         
         return data
     
-    def doReset(self, data: dict[list[QueueStream], list[StreamSource], Playlist], includeSoftDeleted: bool = False, permanentlyDelete: bool = False) -> Playlist:
+    def doReset(self, data: dict[list[QueueStream], List[StreamSource], Playlist], includeSoftDeleted: bool = False, permanentlyDelete: bool = False) -> Playlist:
         """
         Reset the fetch-status for StreamSources of Playlist given by data and deletes all QueueStreams in it.
 
         Args:
-            data (dict[list[QueueStream], list[StreamSource], Playlist]): Data to reset.
+            data (dict[list[QueueStream], List[StreamSource], Playlist]): Data to reset.
             includeSoftDeleted (bool, optional): Should include soft-deleted entities. Defaults to False.
             permanentlyDelete (bool, optional): Should entities be permanently deleted. Defaults to False.
             

@@ -62,7 +62,7 @@ class SharedService():
 
         return sanitize(title).strip()
 
-    def preparePrune(self, playlistId: str, includeSoftDeleted: bool = False) -> dict[list[Playlist], list[QueueStream]]:
+    def preparePrune(self, playlistId: str, includeSoftDeleted: bool = False) -> dict[list[Playlist], List[QueueStream]]:
         """
         Prepare a prune to permanently remove all soft-deleted entities, getting data for doPrune.
         
@@ -71,7 +71,7 @@ class SharedService():
             includeSoftDeleted (bool, optional): Should include soft-deleted entities. Defaults to False.
             
         Returns:
-            dict[list[Playlist], list[QueueStream]]: Entities to remove.
+            dict[list[Playlist], List[QueueStream]]: Entities to remove.
         """
         
         dataEmpty = { "Playlist": [], "QueueStream": []}
@@ -91,12 +91,12 @@ class SharedService():
         
         return data
     
-    def doPrune(self, data: dict[list[Playlist], list[QueueStream]], includeSoftDeleted: bool = False, permanentlyDelete: bool = False) -> bool:
+    def doPrune(self, data: dict[list[Playlist], List[QueueStream]], includeSoftDeleted: bool = False, permanentlyDelete: bool = False) -> bool:
         """
         Prune (permanently remove/soft delete) watched QueueStreams from Playlists given as data.
         
         Args:
-            dict[list[Playlist], list[QueueStream]]): Data to remove.
+            dict[list[Playlist], List[QueueStream]]): Data to remove.
             includeSoftDeleted (bool): Should soft-deleted entities be deleted.
             permanentlyDelete (bool): Should entities be permanently deleted.
             
@@ -119,12 +119,12 @@ class SharedService():
                     
         return True
     
-    def preparePurge(self) -> dict[list[QueueStream], list[StreamSource], list[Playlist]]:
+    def preparePurge(self) -> dict[list[QueueStream], List[StreamSource], List[Playlist]]:
         """
         Prepare a purge to permanently remove all soft-deleted entities, getting data for doPurge.
             
         Returns:
-            dict[list[QueueStream], list[StreamSource], list[Playlist]]: Entities to remove.
+            dict[list[QueueStream], List[StreamSource], List[Playlist]]: Entities to remove.
         """
         
         dataEmpty = {"QueueStream": [], "StreamSource": [], "Playlist": []}
@@ -139,12 +139,12 @@ class SharedService():
         
         return data
     
-    def doPurge(self, data: dict[list[QueueStream], list[StreamSource], list[Playlist]]) -> bool:
+    def doPurge(self, data: dict[list[QueueStream], List[StreamSource], List[Playlist]]) -> bool:
         """
         Purge (permanently remove) all soft-deleted entities given as data.
             
         Args:
-            data (dict[list[QueueStream], list[StreamSource], list[Playlist]]): Data to remove.
+            data (dict[list[QueueStream], List[StreamSource], List[Playlist]]): Data to remove.
             
         Returns:
             bool: Result.
@@ -159,7 +159,7 @@ class SharedService():
             
         return True
     
-    def preparePurgePlaylists(self, includeSoftDeleted: bool = False, permanentlyDelete: bool = False) -> dict[list[QueueStream], list[StreamSource], list[Playlist]]:
+    def preparePurgePlaylists(self, includeSoftDeleted: bool = False, permanentlyDelete: bool = False) -> dict[list[QueueStream], List[StreamSource], List[Playlist]]:
         """
         Prepare a purge to delete/permanently remove QueueStreams and StreamSources from DB, while removing IDs with no entity from Playlists, getting data for doPurgePlaylists.
         
@@ -168,7 +168,7 @@ class SharedService():
             permanentlyDelete (bool): Should entities be permanently deleted.
             
         Returns:
-            dict[list[QueueStream], list[StreamSource], list[Playlist]]: Entities to remove.
+            dict[list[QueueStream], List[StreamSource], List[Playlist]]: Entities to remove.
         """
         
         dataEmpty = {"QueueStream": [], "StreamSource": [], "Playlist": []}
@@ -294,7 +294,7 @@ class SharedService():
     
     def getAllSoftDeleted(self) -> dict[List[QueueStream], List[StreamSource], List[Playlist]]:
         """
-        Returns a dict with lists of all soft deleted entities.
+        Returns a dict with Lists of all soft deleted entities.
 
         Returns:
             dict[List[QueueStream], List[StreamSource], List[Playlist]]: Entities that matched the searchTerm.

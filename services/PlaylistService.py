@@ -1,4 +1,5 @@
 import os
+from typing import List
 
 import pytube
 import validators
@@ -38,7 +39,7 @@ class PlaylistService(BaseService[T]):
         
         BaseService.__init__(self, T, self.settings.debug, os.path.join(self.settings.localStoragePath, "Playlist"))
 
-    def addStreams(self, playlistId: str, streams: list[QueueStream]) -> list[QueueStream]:
+    def addStreams(self, playlistId: str, streams: List[QueueStream]) -> List[QueueStream]:
         """
         Add QueueStreams to Playlist.
 
@@ -47,7 +48,7 @@ class PlaylistService(BaseService[T]):
             streams (list[QueueStream]): QueueStreams to add.
 
         Returns:
-            list[QueueStream]: QueueStreams added.
+            List[QueueStream]: QueueStreams added.
         """
 
         playlist = self.get(playlistId)
@@ -89,7 +90,7 @@ class PlaylistService(BaseService[T]):
             
             return []
 
-    def deleteStreams(self, playlistId: str, streamIds: list[str], includeSoftDeleted: bool = False, permanentlyDelete: bool = False) -> list[QueueStream]:
+    def deleteStreams(self, playlistId: str, streamIds: List[str], includeSoftDeleted: bool = False, permanentlyDelete: bool = False) -> List[QueueStream]:
         """
         (Soft) Delete/remove QueueStreams from Playlist.
 
@@ -100,7 +101,7 @@ class PlaylistService(BaseService[T]):
             permanentlyDelete (bool, optional): Should entities be permanently deleted. Defaults to False.
 
         Returns:
-            list[QueueStream]: QueueStreams deleted/removed.
+            List[QueueStream]: QueueStreams deleted/removed.
         """
 
         result = []
@@ -133,7 +134,7 @@ class PlaylistService(BaseService[T]):
             self.log.logAsText("deleteStreams failed, updateResult None. PlaylistId: ", playlistId, "  streamIds: ", streamIds, logLevel = LogLevel.ERROR)
             return []
         
-    def restoreStreams(self, playlistId: str, streamIds: list[str]) -> list[QueueStream]:
+    def restoreStreams(self, playlistId: str, streamIds: List[str]) -> List[QueueStream]:
         """
         Restore QueueStreams to Playlist.
 
@@ -142,7 +143,7 @@ class PlaylistService(BaseService[T]):
             streamIds (list[str]): IDs of QueueStreams to restore.
 
         Returns:
-            list[QueueStream]: QueueStreams restored.
+            List[QueueStream]: QueueStreams restored.
         """
 
         result = []
@@ -183,14 +184,14 @@ class PlaylistService(BaseService[T]):
         if(playlist == None):
             raise NotFoundException(f"moveStream - Playlist with ID {playlistId} was not found.")
 
-        listLength = len(playlist.streamIds)
+        ListLength = len(playlist.streamIds)
         if(fromIndex == toIndex):
             printD("Index from and to were the same. No update needed.", color=BashColor.WARNING, debug = self.settings.debug)
             return True
-        if(fromIndex < 0 or fromIndex >= listLength):
+        if(fromIndex < 0 or fromIndex >= ListLength):
             printS("Index to move from (", fromIndex, ") was out or range.", color=BashColor.WARNING)
             return False
-        if(toIndex < 0 or toIndex >= listLength):
+        if(toIndex < 0 or toIndex >= ListLength):
             printS("Index to move to (", toIndex, ") was out or range.", color=BashColor.WARNING)
             return False
 
@@ -202,7 +203,7 @@ class PlaylistService(BaseService[T]):
         playlist.updated = getDateTime()
         return self.update(playlist)
     
-    def addStreamSources(self, playlistId: str, streamSources: list[StreamSource]) -> list[StreamSource]:
+    def addStreamSources(self, playlistId: str, streamSources: List[StreamSource]) -> List[StreamSource]:
         """
         Add StreamSources to Playlist.
 
@@ -211,7 +212,7 @@ class PlaylistService(BaseService[T]):
             streamSources (list[StreamSource]): StreamSources to add.
 
         Returns:
-            list[StreamSource]: StreamSources added.
+            List[StreamSource]: StreamSources added.
         """
 
         playlist = self.get(playlistId)
@@ -249,7 +250,7 @@ class PlaylistService(BaseService[T]):
                 self.streamSourceService.remove(source.id, includeSoftDeleted = True)
             return []
     
-    def deleteStreamSources(self, playlistId: str, streamSourceIds: list[str]) -> list[StreamSource]:
+    def deleteStreamSources(self, playlistId: str, streamSourceIds: List[str]) -> List[StreamSource]:
         """
         (Soft) Delete StreamSources from Playlist.
 
@@ -258,7 +259,7 @@ class PlaylistService(BaseService[T]):
             streamSourceIds (list[str]): IDs of StreamSources to delete.
 
         Returns:
-            list[StreamSource]: StreamSources deleted.
+            List[StreamSource]: StreamSources deleted.
         """
 
         result = []
@@ -282,7 +283,7 @@ class PlaylistService(BaseService[T]):
         else:
             return []
         
-    def restoreStreamSources(self, playlistId: str, streamSourceIds: list[str]) -> list[StreamSource]:
+    def restoreStreamSources(self, playlistId: str, streamSourceIds: List[str]) -> List[StreamSource]:
         """
         Restore StreamSources to Playlist.
 
@@ -291,7 +292,7 @@ class PlaylistService(BaseService[T]):
             streamSourceIds (list[str]): IDs of StreamSources to restore.
 
         Returns:
-            list[StreamSource]: StreamSource restored.
+            List[StreamSource]: StreamSource restored.
         """
 
         result = []
@@ -315,7 +316,7 @@ class PlaylistService(BaseService[T]):
         else:
             return []
 
-    def getStreamsByPlaylistId(self, playlistId: str, includeSoftDeleted: bool = False) -> list[QueueStream]:
+    def getStreamsByPlaylistId(self, playlistId: str, includeSoftDeleted: bool = False) -> List[QueueStream]:
         """
         Get all QueueStreams in playlist from playlistId.
 
@@ -324,7 +325,7 @@ class PlaylistService(BaseService[T]):
             includeSoftDeleted (bool): should include soft-deleted entities.
 
         Returns:
-            list[QueueStream]: QueueStreams if any, else empty list.
+            List[QueueStream]: QueueStreams if any, else empty List.
         """
 
         playlist = self.get(playlistId, includeSoftDeleted)
@@ -335,14 +336,14 @@ class PlaylistService(BaseService[T]):
         for id in playlist.streamIds:
             stream = self.queueStreamService.get(id, includeSoftDeleted)
             if(stream == None):
-                printS("A QueueStream with ID: ", id, " was listed in Playlist \"", playlist.name, "\", but was not found in the database. Consider removing it by running the purge command.", color = BashColor.WARNING)
+                printS("A QueueStream with ID: ", id, " was Listed in Playlist \"", playlist.name, "\", but was not found in the database. Consider removing it by running the purge command.", color = BashColor.WARNING)
                 continue
             
             playlistStreams.append(stream)
 
         return playlistStreams
     
-    def getUnwatchedStreamsByPlaylistId(self, playlistId: str, includeSoftDeleted: bool = False) -> list[QueueStream]:
+    def getUnwatchedStreamsByPlaylistId(self, playlistId: str, includeSoftDeleted: bool = False) -> List[QueueStream]:
         """
         Get unwatched QueueStreams in playlist from playlistId.
 
@@ -351,7 +352,7 @@ class PlaylistService(BaseService[T]):
             includeSoftDeleted (bool): should include soft-deleted entities.
 
         Returns:
-            list[QueueStream]: QueueStreams if any, else empty list.
+            List[QueueStream]: QueueStreams if any, else empty List.
         """
 
         playlist = self.get(playlistId, includeSoftDeleted)
@@ -362,7 +363,7 @@ class PlaylistService(BaseService[T]):
         for id in playlist.streamIds:
             stream = self.queueStreamService.get(id, includeSoftDeleted)
             if(stream == None):
-                printS("A QueueStream with ID: ", id, " was listed in Playlist \"", playlist.name, "\", but was not found in the database. Consider removing it by running the purge command.", color = BashColor.WARNING)
+                printS("A QueueStream with ID: ", id, " was Listed in Playlist \"", playlist.name, "\", but was not found in the database. Consider removing it by running the purge command.", color = BashColor.WARNING)
                 continue
             
             if(stream.watched == None):
@@ -370,7 +371,7 @@ class PlaylistService(BaseService[T]):
 
         return playlistStreams    
     
-    def getSourcesByPlaylistId(self, playlistId: str, getFetchEnabledOnly: bool = False, includeSoftDeleted: bool = False) -> list[StreamSource]:
+    def getSourcesByPlaylistId(self, playlistId: str, getFetchEnabledOnly: bool = False, includeSoftDeleted: bool = False) -> List[StreamSource]:
         """
         Get StreamSources in playlist from playlistId.
 
@@ -379,7 +380,7 @@ class PlaylistService(BaseService[T]):
             includeSoftDeleted (bool): should include soft-deleted entities.
 
         Returns:
-            list[StreamSource]: StreamSources if any, else empty list.
+            List[StreamSource]: StreamSources if any, else empty List.
         """
 
         playlist = self.get(playlistId, includeSoftDeleted)
@@ -390,7 +391,7 @@ class PlaylistService(BaseService[T]):
         for id in playlist.streamSourceIds:
             source = self.streamSourceService.get(id, includeSoftDeleted)
             if(source == None):
-                printS("A StreamSource with ID: ", id, " was listed in Playlist \"", playlist.name, "\", but was not found in the database. Consider removing it by running the purge command.", color = BashColor.WARNING)
+                printS("A StreamSource with ID: ", id, " was Listed in Playlist \"", playlist.name, "\", but was not found in the database. Consider removing it by running the purge command.", color = BashColor.WARNING)
                 continue
             
             if(getFetchEnabledOnly and not source.enableFetch):
@@ -444,12 +445,12 @@ class PlaylistService(BaseService[T]):
             
         return None
     
-    def printPlaylistDetails(self, playlistIds: list[str], includeUri: bool = False, includeId: bool = False, includeDatetime: bool = False, includeListCount: bool = False, includeSource: bool = True) -> int:
+    def printPlaylistDetails(self, playlistIds: List[str], includeUri: bool = False, includeId: bool = False, includeDatetime: bool = False, includeListCount: bool = False, includeSource: bool = True) -> int:
         """
         Print detailed info for Playlist, including details for related StreamSources and QueueStreams.
 
         Args:
-            playlistIds (list[str]): list of playlistIds to print details of.
+            playlistIds (list[str]): List of playlistIds to print details of.
             includeUri (bool, optional): should print include URI if any. Defaults to False.
             includeId (bool, optional): should print include IDs. Defaults to False.
             includeSource (bool, optional): should print include StreamSource this was fetched from. Defaults to True.

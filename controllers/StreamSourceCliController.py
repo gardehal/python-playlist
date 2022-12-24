@@ -22,7 +22,7 @@ class StreamSourceCliController():
         self.streamSourceService = StreamSourceService()
         self.settings = Settings()
     
-    def addStreamSource(self, playlistId: str, uri: str, enableFetch: bool, backgroundContent: bool, name: str) -> list[StreamSource]:
+    def addStreamSource(self, playlistId: str, uri: str, enableFetch: bool, backgroundContent: bool, name: str) -> List[StreamSource]:
         """
         Add a StreamSource to Playlist.
         
@@ -34,7 +34,7 @@ class StreamSourceCliController():
             name (str): Displayname of StreamSource.
 
         Returns:
-            list[StreamSource]: StreamSources added.
+            List[StreamSource]: StreamSources added.
         """
         
         if(len(playlistId) == 0):
@@ -61,7 +61,7 @@ class StreamSourceCliController():
             
         return result
     
-    def deleteStreamSources(self, playlistId: str, streamSourceIds: list[str]) -> list[StreamSource]:
+    def deleteStreamSources(self, playlistId: str, streamSourceIds: List[str]) -> List[StreamSource]:
         """
         (Soft) Delete StreamSources from Playlist.
         
@@ -70,7 +70,7 @@ class StreamSourceCliController():
             streamSourceIds (list[str]): IDs of StreamSources to delete.
 
         Returns:
-            list[StreamSource]: StreamSources deleted.
+            List[StreamSource]: StreamSources deleted.
         """
         
         if(playlistId == None):
@@ -91,7 +91,7 @@ class StreamSourceCliController():
             
         return result
        
-    def restoreStreamSources(self, playlistId: str, streamSourceIds: list[str]) -> list[StreamSource]:
+    def restoreStreamSources(self, playlistId: str, streamSourceIds: List[str]) -> List[StreamSource]:
         """
         Restore StreamSources to Playlist.
         
@@ -100,7 +100,7 @@ class StreamSourceCliController():
             streamSourceIds (list[str]): IDs of StreamSources to restore.
 
         Returns:
-            list[StreamSource]: StreamSources restored.
+            List[StreamSource]: StreamSources restored.
         """
         
         if(playlistId == None):
@@ -121,15 +121,15 @@ class StreamSourceCliController():
             
         return result
 
-    def listStreamSources(self, includeSoftDeleted: bool) -> list[StreamSource]:
+    def ListStreamSources(self, includeSoftDeleted: bool) -> List[StreamSource]:
         """
-        Print a list of all StreamSources.
+        Print a List of all StreamSources.
         
         Args:
             includeSoftDeleted (bool): Should soft deleted be included?
 
         Returns:
-            list[StreamSource]: StreamSources printed.
+            List[StreamSource]: StreamSources printed.
         """
         
         result = self.streamSourceService.getAll(includeSoftDeleted)
@@ -141,7 +141,7 @@ class StreamSourceCliController():
                         
         return result
     
-    def openStreamSource(self, streamSourceIds: list[str]) -> list[StreamSource]:
+    def openStreamSource(self, streamSourceIds: List[str]) -> List[StreamSource]:
         """
         Open StreamSource, going to the URI provided when it was created.
         
@@ -149,7 +149,7 @@ class StreamSourceCliController():
             streamSourceIds (list[str]): IDs of StreamSources to open.
 
         Returns:
-            list[StreamSource]: StreamSources opened.
+            List[StreamSource]: StreamSources opened.
         """
         
         if(len(streamSourceIds) == 0):

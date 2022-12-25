@@ -1,6 +1,6 @@
 import sys
 from datetime import datetime
-from typing import List
+from typing import Dict, List, Tuple
 from xml.dom.minidom import parseString
 
 import requests
@@ -18,7 +18,6 @@ from model.QueueStream import QueueStream
 from model.StreamSource import StreamSource
 from pytube import Channel
 from Settings import Settings
-from typing import List
 
 from services.PlaylistService import PlaylistService
 from services.QueueStreamService import QueueStreamService
@@ -104,7 +103,7 @@ class FetchService():
         else:
             return 0
 
-    def fetchDirectory(self, streamSource: StreamSource, batchSize: int = 10, takeAfter: datetime = None, takeBefore: datetime = None, takeNewOnly: bool = False) -> tuple[List[QueueStream], str]:
+    def fetchDirectory(self, streamSource: StreamSource, batchSize: int = 10, takeAfter: datetime = None, takeBefore: datetime = None, takeNewOnly: bool = False) -> Tuple[List[QueueStream], str]:
         """
         Fetch streams from a local directory.
 
@@ -115,7 +114,7 @@ class FetchService():
             takeNewOnly (bool): Only take streams marked as new. Disables takeAfter and takeBefore-checks. To use takeAfter and/or takeBefore, set this to False. Defaults to False.
 
         Returns:
-            tuple[List[QueueStream], str]: A tuple of List of QueueStream, and the last filename fetched.
+            Tuple[List[QueueStream], str]: A Tuple of List of QueueStream, and the last filename fetched.
         """
         
         if(streamSource == None):
@@ -124,7 +123,7 @@ class FetchService():
         emptyReturn = ([], streamSource.lastFetchedIds)
         return emptyReturn
 
-    def fetchYoutube(self, streamSource: StreamSource, batchSize: int = 10, takeAfter: datetime = None, takeBefore: datetime = None, takeNewOnly: bool = False) -> tuple[List[QueueStream], List[str]]:
+    def fetchYoutube(self, streamSource: StreamSource, batchSize: int = 10, takeAfter: datetime = None, takeBefore: datetime = None, takeNewOnly: bool = False) -> Tuple[List[QueueStream], List[str]]:
         """
         Fetch videos from YouTube.
 
@@ -135,7 +134,7 @@ class FetchService():
             takeNewOnly (bool): Only take streams marked as new. Disables takeAfter and takeBefore-checks. To use takeAfter and/or takeBefore, set this to False. Defaults to False.
 
         Returns:
-            tuple[List[QueueStream], List[str]]: A tuple of List of QueueStream, and List of last YouTube IDs fetched.
+            Tuple[List[QueueStream], List[str]]: A Tuple of List of QueueStream, and List of last YouTube IDs fetched.
         """
         
         if(streamSource == None):
@@ -203,7 +202,7 @@ class FetchService():
         
         return (newQueueStreams, streamSource.lastFetchedIds)
     
-    def fetchOdysee(self, streamSource: StreamSource, batchSize: int = 10, takeAfter: datetime = None, takeBefore: datetime = None, takeNewOnly: bool = False) -> tuple[List[QueueStream], List[str]]:
+    def fetchOdysee(self, streamSource: StreamSource, batchSize: int = 10, takeAfter: datetime = None, takeBefore: datetime = None, takeNewOnly: bool = False) -> Tuple[List[QueueStream], List[str]]:
         """
         Fetch videos from Odysee.
 
@@ -214,7 +213,7 @@ class FetchService():
             takeNewOnly (bool): Only take streams marked as new. Disables takeAfter and takeBefore-checks. To use takeAfter and/or takeBefore, set this to False. Defaults to False.
 
         Returns:
-            tuple[List[QueueStream], List[str]]: A tuple of List of QueueStream, and List of last Odysee IDs fetched.
+            Tuple[List[QueueStream], List[str]]: A Tuple of List of QueueStream, and List of last Odysee IDs fetched.
         """
         
         if(streamSource == None):
@@ -333,7 +332,7 @@ class FetchService():
                 
         return result
     
-    def prepareReset(self, playlistId: str, includeSoftDeleted: bool = False, permanentlyDelete: bool = False) -> dict[list[QueueStream], List[StreamSource], Playlist]:
+    def prepareReset(self, playlistId: str, includeSoftDeleted: bool = False, permanentlyDelete: bool = False) -> Dict[List[QueueStream], List[StreamSource], Playlist]:
         """
         Prepare to reset the fetch-status for StreamSources of Playlist given by data and deletes all QueueStreams in it.
 
@@ -343,7 +342,7 @@ class FetchService():
             permanentlyDelete (bool, optional): Should entities be permanently deleted. Defaults to False.
             
         Returns:
-            dict[list[QueueStream], List[StreamSource], Playlist]: Entities to reset.
+            Dict[List[QueueStream], List[StreamSource], Playlist]: Entities to reset.
         """
         
         if(not playlistId):
@@ -359,12 +358,12 @@ class FetchService():
         
         return data
     
-    def doReset(self, data: dict[list[QueueStream], List[StreamSource], Playlist], includeSoftDeleted: bool = False, permanentlyDelete: bool = False) -> Playlist:
+    def doReset(self, data: Dict[List[QueueStream], List[StreamSource], Playlist], includeSoftDeleted: bool = False, permanentlyDelete: bool = False) -> Playlist:
         """
         Reset the fetch-status for StreamSources of Playlist given by data and deletes all QueueStreams in it.
 
         Args:
-            data (dict[list[QueueStream], List[StreamSource], Playlist]): Data to reset.
+            data (Dict[List[QueueStream], List[StreamSource], Playlist]): Data to reset.
             includeSoftDeleted (bool, optional): Should include soft-deleted entities. Defaults to False.
             permanentlyDelete (bool, optional): Should entities be permanently deleted. Defaults to False.
             

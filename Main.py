@@ -98,7 +98,7 @@ class Main:
 
                     result = Main.sharedService.search(searchTerm, includeSoftDeleted)
                     
-                    # result is a dict of string keys, list values, get values from [*result.values()]
+                    # result is a Dict of string keys, list values, get values from [*result.values()]
                     # list of list, for each list, for each entry, str.join id, name, and uri, then join back to list of lists of strings, ready for printLists
                     resultList = [[" - ".join([e.id, e.name]) for e in l] for l in [*result.values()]]
                     printLists(resultList, [*result.keys()])

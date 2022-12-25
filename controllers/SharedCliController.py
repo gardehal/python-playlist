@@ -1,4 +1,4 @@
-from typing import List
+from typing import Dict, List
 
 from grdException.ArgumentException import ArgumentException
 from grdUtil.BashColor import BashColor
@@ -38,7 +38,7 @@ class SharedCliController():
         self.sharedService = SharedService()
         self.streamSourceService = StreamSourceService()
         
-    def prune(self, playlistId: str, includeSoftDeleted: bool = False, permanentlyDelete: bool = False) -> dict[list[Playlist], List[QueueStream]]:
+    def prune(self, playlistId: str, includeSoftDeleted: bool = False, permanentlyDelete: bool = False) -> Dict[List[Playlist], List[QueueStream]]:
         """
         Removes watched streams from a Playlist if it does not allow replaying of already played streams (playWatchedStreams == False).
 
@@ -48,7 +48,7 @@ class SharedCliController():
             permanentlyDelete (bool, optional): Should entities be permanently deleted. Defaults to False.
 
         Returns:
-            dict[list[QueueStream], List[str]]: Result.
+            Dict[List[QueueStream], List[str]]: Result.
         """
         
         if(playlistId == None):
@@ -89,7 +89,7 @@ class SharedCliController():
             permanentlyDelete (bool, optional): Should entities be permanently deleted. Defaults to False.
             
         Returns:
-            PlaylistDetailed: dict with Lists of entities removed.
+            PlaylistDetailed: Dict with Lists of entities removed.
         """
         
         data = self.sharedService.preparePurgePlaylists(includeSoftDeleted, permanentlyDelete)
@@ -129,7 +129,7 @@ class SharedCliController():
         Purges deleted entities.
             
         Returns:
-            PlaylistDetailed: dict with Lists of entities removed.
+            PlaylistDetailed: Dict with Lists of entities removed.
         """
         
         data = self.sharedService.preparePurge()

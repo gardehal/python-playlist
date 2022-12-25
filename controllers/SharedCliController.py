@@ -5,6 +5,7 @@ from grdUtil.BashColor import BashColor
 from grdUtil.PrintUtil import printD, printLists, printS
 from grdUtil.StaticUtil import StaticUtil
 from model.Playlist import Playlist
+from model.PlaylistDetailed import PlaylistDetailed
 from model.QueueStream import QueueStream
 from model.StreamSource import StreamSource
 from services.FetchService import FetchService
@@ -79,7 +80,7 @@ class SharedCliController():
         
         return data
     
-    def purgePlaylists(self, includeSoftDeleted: bool = False, permanentlyDelete: bool = False) -> dict[list[QueueStream], List[StreamSource], List[Playlist]]:
+    def purgePlaylists(self, includeSoftDeleted: bool = False, permanentlyDelete: bool = False) -> PlaylistDetailed:
         """
         Purges deleted entities.
 
@@ -88,20 +89,20 @@ class SharedCliController():
             permanentlyDelete (bool, optional): Should entities be permanently deleted. Defaults to False.
             
         Returns:
-            dict[list[QueueStream], List[StreamSource], List[Playlist]]: dict with Lists of entities removed.
+            PlaylistDetailed: dict with Lists of entities removed.
         """
         
         data = self.sharedService.preparePurgePlaylists(includeSoftDeleted, permanentlyDelete)
-        if(not data["QueueStream"] and not data["StreamSource"] and not data["Playlist"]):
+        if(not data.queueSource and not data.streamSource and not data.playlist):
             printS("Purge aborted, nothing to purge.", color = BashColor.OKGREEN)
             return None
         
-        qTitle = f"QueueStream(s) - {len(data['QueueStream'])}"
-        qDataList = [(_.id + " - " + _.name) for _ in data["QueueStream"]]
-        sTitle = f"StreamSource(s) - {len(data['StreamSource'])}"
-        sDataList = [(_.id + " - " + _.name) for _ in data["StreamSource"]]
-        pTitle = f"Playlist(s) updated - {len(data['Playlist'])}"
-        pDataList = [(_.id + " - " + _.name) for _ in data["Playlist"]]
+        qTitle = f"QueueStream(s) - {len(data.queueSource)}"
+        qDataList = [(_.id + " - " + _.name) for _ in data.queueSource]
+        sTitle = f"StreamSource(s) - {len(data.streamSource)}"
+        sDataList = [(_.id + " - " + _.name) for _ in data.streamSource]
+        pTitle = f"Playlist(s) updated - {len(data.playlist)}"
+        pDataList = [(_.id + " - " + _.name) for _ in data]
         
         printLists([qDataList, sDataList, pDataList], [qTitle, sTitle, pTitle])
         printS("\nDo you want to ", ("PERMANENTLY REMOVE" if permanentlyDelete else "DELETE"), " this data?", color = BashColor.WARNING)
@@ -113,7 +114,7 @@ class SharedCliController():
         else:
             # Remove Playlists from purged data, will only be updated
             entitiesToRemove = data.copy()
-            entitiesToRemove["Playlist"] = []
+            entitiesToRemove.playlist = []
             result = self.sharedService.doPurge(entitiesToRemove)
             result = result and self.sharedService.doPurgePlaylists(data)
             if(result):
@@ -123,25 +124,25 @@ class SharedCliController():
              
         return data
     
-    def purge(self) -> dict[list[QueueStream], List[StreamSource], List[Playlist]]:
+    def purge(self) -> PlaylistDetailed:
         """
         Purges deleted entities.
             
         Returns:
-            dict[list[QueueStream], List[StreamSource], List[Playlist]]: dict with Lists of entities removed.
+            PlaylistDetailed: dict with Lists of entities removed.
         """
         
         data = self.sharedService.preparePurge()
-        if(not data["QueueStream"] and not data["StreamSource"] and not data["Playlist"]):
+        if(not data.queueSource and not data.streamSource and not data.playlist):
             printS("Purge aborted, nothing to purge.", color = BashColor.OKGREEN)
             return None
         
-        qTitle = f"QueueStream(s) - {len(data['QueueStream'])}"
-        qDataList = [(_.id + " - " + _.name) for _ in data["QueueStream"]]
-        sTitle = f"StreamSource(s) - {len(data['StreamSource'])}"
-        sDataList = [(_.id + " - " + _.name) for _ in data["StreamSource"]]
-        pTitle = f"Playlist(s) - {len(data['Playlist'])}"
-        pDataList = [(_.id + " - " + _.name) for _ in data["Playlist"]]
+        qTitle = f"QueueStream(s) - {len(data.queueSource)}"
+        qDataList = [(_.id + " - " + _.name) for _ in data.queueSource]
+        sTitle = f"StreamSource(s) - {len(data.streamSource)}"
+        sDataList = [(_.id + " - " + _.name) for _ in data.streamSource]
+        pTitle = f"Playlist(s) - {len(data.playlist)}"
+        pDataList = [(_.id + " - " + _.name) for _ in data.playlist]
         
         printLists([qDataList, sDataList, pDataList], [qTitle, sTitle, pTitle])
         printS("\nDo you want to PERMANENTLY REMOVE this data?", color = BashColor.WARNING)
@@ -177,16 +178,16 @@ class SharedCliController():
             return None
         
         data = self.fetchService.prepareReset(playlistId, includeSoftDeleted)
-        if(not data["Playlist"] or (not data["QueueStream"] and not data["StreamSource"])):
+        if(not data.playlist or (not data.queueSource and not data.streamSource)):
             printS("Reset aborted, nothing to reset.", color = BashColor.OKGREEN)
             return None
         
-        qTitle = f"QueueStream(s) - {len(data['QueueStream'])}"
-        qDataList = [(_.id + " - " + _.name) for _ in data["QueueStream"]]
-        sTitle = f"StreamSource(s) - {len(data['StreamSource'])}"
-        sDataList = [(_.id + " - " + _.name) for _ in data["StreamSource"]]
-        pTitle = f"Playlist(s) updated - {len(data['Playlist'])}"
-        pDataList = [(_.id + " - " + _.name) for _ in data["Playlist"]]
+        qTitle = f"QueueStream(s) - {len(data.queueSource)}"
+        qDataList = [(_.id + " - " + _.name) for _ in data.queueSource]
+        sTitle = f"StreamSource(s) - {len(data.streamSource)}"
+        sDataList = [(_.id + " - " + _.name) for _ in data.streamSource]
+        pTitle = f"Playlist(s) updated - {len(data.playlist)}"
+        pDataList = [(_.id + " - " + _.name) for _ in data.playlist]
         
         printLists([qDataList, sDataList, pDataList], [qTitle, sTitle, pTitle])
         printS("\nDo you want to ", ("PERMANENTLY REMOVE" if permanentlyDelete else "DELETE"), " this data?", color = BashColor.WARNING)

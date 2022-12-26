@@ -7,9 +7,9 @@ from model.StreamSource import StreamSource
 
 class PlaylistDetailed():
     def __init__(self,
-                 playlist: Playlist = None,
-                 queueStreams: List[QueueStream] = List[QueueStream],
+                 playlists: List[Playlist] = [],
+                 queueStreams: List[QueueStream] = [],
                  streamSources: List[StreamSource] = List[StreamSource],):
-        self.playlist: Playlist = playlist
+        self.playlists: List[Playlist] = playlists
         self.queueStreams: List[QueueStream] = queueStreams
         self.streamSources: List[StreamSource] = streamSources

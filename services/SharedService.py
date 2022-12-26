@@ -84,10 +84,10 @@ class SharedService():
         for id in playlist.streamIds:
             stream = self.queueStreamService.get(id, includeSoftDeleted)
             if(stream != None and stream.watched != None):
-                data.queueStream.append(stream)
+                data.queueStreams.append(stream)
         
-        if(len(data.queueStream) > 0):
-            data.playlist.append(playlist)
+        if(len(data.queueStreams) > 0):
+            data.playlists.append(playlist)
         
         return data
     
@@ -104,13 +104,13 @@ class SharedService():
             bool: Result.
         """
         
-        for stream in data.queueStream:
+        for stream in data.queueStreams:
             if(permanentlyDelete):
                 self.queueStreamService.remove(stream.id, includeSoftDeleted)
             else:
                 self.queueStreamService.delete(stream.id)
                 
-            for playlist in data.playlist:
+            for playlist in data.playlists:
                 playlist.streamIds.remove(stream.id)
                 result = self.playlistService.update(playlist)
                 if(not result):
@@ -130,11 +130,11 @@ class SharedService():
         data = PlaylistDetailed()
         
         allQ = self.queueStreamService.getAll(includeSoftDeleted = True)
-        data.queueStream = [_ for _ in allQ if _.deleted != None]
+        data.queueStreams = [_ for _ in allQ if _.deleted != None]
         allS = self.streamSourceService.getAll(includeSoftDeleted = True)
-        data.streamSource = [_ for _ in allS if _.deleted != None]
+        data.streamSources = [_ for _ in allS if _.deleted != None]
         allP = self.playlistService.getAll(includeSoftDeleted = True)
-        data.playlist = [_ for _ in allP if _.deleted != None]
+        data.playlists = [_ for _ in allP if _.deleted != None]
         
         return data
     
@@ -149,11 +149,11 @@ class SharedService():
             bool: Result.
         """
         
-        for _ in data.queueStream:
+        for _ in data.queueStreams:
             self.queueStreamService.remove(_.id, True)
-        for _ in data.streamSource:
+        for _ in data.streamSources:
             self.streamSourceService.remove(_.id, True)
-        for _ in data.playlist:
+        for _ in data.playlists:
             self.playlistService.remove(_.id, True)
             
         return True
@@ -188,22 +188,22 @@ class SharedService():
         for id in unlinkedPlaylistQueueStreamIds:
             if(not id in allPlaylistQueueStreamIds):
                 entity = self.queueStreamService.get(id, includeSoftDeleted)
-                data.queueStream.append(entity)
+                data.queueStreams.append(entity)
         for id in unlinkedPlaylistStreamStreamIds:
             if(not id in allPlaylistStreamStreamIds):
                 entity = self.streamSourceService.get(id, includeSoftDeleted)
-                data.streamSource.append(entity)
+                data.streamSources.append(entity)
         
         # Find IDs in Playlists with no corresponding entity
         for playlist in playlists:
             for id in playlist.streamIds:
                 if(not self.queueStreamService.exists(id)):
-                    data.playlist.append(playlist)
+                    data.playlists.append(playlist)
                     break
                 
             for id in playlist.streamSourceIds:
                 if(not self.streamSourceService.exists(id)):
-                    data.playlist.append(playlist)
+                    data.playlists.append(playlist)
                     break
                 
         return data
@@ -219,7 +219,7 @@ class SharedService():
             bool: Result.
         """
         
-        for playlist in data.playlist:
+        for playlist in data.playlists:
             updatedStreamIds = []
             updatedStreamSourceService = []
             
@@ -258,15 +258,15 @@ class SharedService():
         
         for entity in queueStreams:
             if(self.searchFields(searchTerm, entity.name, entity.uri) > 0):
-                data.queueStream.append(entity)
+                data.queueStreams.append(entity)
         for entity in streamSources:
             if(self.searchFields(searchTerm, entity.name, entity.uri) > 0):
-                data.streamSource.append(entity)
+                data.streamSources.append(entity)
         for entity in playlists:
             if(self.searchFields(searchTerm, entity.name) > 0):
-                data.playlist.append(entity)
+                data.playlists.append(entity)
         
-        found = len(data.queueStream) > 0 or len(data.streamSource) > 0 or len(data.playlist) > 0
+        found = len(data.queueStreams) > 0 or len(data.streamSources) > 0 or len(data.playlists) > 0
         printD("no results", color = BashColor.WARNING, debug = self.settings.debug and not found)
         
         return data 
@@ -305,13 +305,13 @@ class SharedService():
         
         for entity in queueStreams:
             if(entity.deleted != None):
-                data.queueStream.append(entity)
+                data.queueStreams.append(entity)
         for entity in streamSources:
             if(entity.deleted != None):
-                data.streamSource.append(entity)
+                data.streamSources.append(entity)
         for entity in playlists:
             if(entity.deleted != None):
-                data.playlist.append(entity)
+                data.playlists.append(entity)
         
         return data
 

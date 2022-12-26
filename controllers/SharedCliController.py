@@ -55,14 +55,14 @@ class SharedCliController():
             raise ArgumentException(f"prune - Missing input: playlistId.")
         
         data = self.sharedService.preparePrune(playlistId, includeSoftDeleted)
-        if(not data["QueueStream"] and not data["Playlist"]):
+        if(not data.queueStreams and not data.playlists):
             printS("Prune aborted, nothing to prune.", color = BashColor.OKGREEN)
             return None
         
         pTitle = f"Playlist"
-        pDataList = [(_.id + " - " + _.name) for _ in data["Playlist"]]
-        qTitle = f"QueueStream(s) - {len(data['QueueStream'])}"
-        qDataList = [(_.id + " - " + _.name) for _ in data["QueueStream"]]
+        pDataList = [(_.id + " - " + _.name) for _ in data.playlists]
+        qTitle = f"QueueStream(s) - {len(data.queueStreams)}"
+        qDataList = [(_.id + " - " + _.name) for _ in data.queueStreams]
         
         printLists([pDataList, qDataList], [pTitle, qTitle])
         printS("\nDo you want to ", ("PERMANENTLY REMOVE" if permanentlyDelete else "DELETE"), " this data?", color = BashColor.WARNING)
@@ -93,15 +93,15 @@ class SharedCliController():
         """
         
         data = self.sharedService.preparePurgePlaylists(includeSoftDeleted, permanentlyDelete)
-        if(not data.queueSource and not data.streamSource and not data.playlist):
+        if(not data.queueSources and not data.streamSources and not data.playlists):
             printS("Purge aborted, nothing to purge.", color = BashColor.OKGREEN)
             return None
         
-        qTitle = f"QueueStream(s) - {len(data.queueSource)}"
-        qDataList = [(_.id + " - " + _.name) for _ in data.queueSource]
-        sTitle = f"StreamSource(s) - {len(data.streamSource)}"
-        sDataList = [(_.id + " - " + _.name) for _ in data.streamSource]
-        pTitle = f"Playlist(s) updated - {len(data.playlist)}"
+        qTitle = f"QueueStream(s) - {len(data.queueSources)}"
+        qDataList = [(_.id + " - " + _.name) for _ in data.queueSources]
+        sTitle = f"StreamSource(s) - {len(data.streamSources)}"
+        sDataList = [(_.id + " - " + _.name) for _ in data.streamSources]
+        pTitle = f"Playlist(s) updated - {len(data.playlists)}"
         pDataList = [(_.id + " - " + _.name) for _ in data]
         
         printLists([qDataList, sDataList, pDataList], [qTitle, sTitle, pTitle])
@@ -133,16 +133,16 @@ class SharedCliController():
         """
         
         data = self.sharedService.preparePurge()
-        if(not data.queueSource and not data.streamSource and not data.playlist):
+        if(not data.queueSource and not data.streamSource and not data.playlists):
             printS("Purge aborted, nothing to purge.", color = BashColor.OKGREEN)
             return None
         
-        qTitle = f"QueueStream(s) - {len(data.queueSource)}"
-        qDataList = [(_.id + " - " + _.name) for _ in data.queueSource]
-        sTitle = f"StreamSource(s) - {len(data.streamSource)}"
-        sDataList = [(_.id + " - " + _.name) for _ in data.streamSource]
-        pTitle = f"Playlist(s) - {len(data.playlist)}"
-        pDataList = [(_.id + " - " + _.name) for _ in data.playlist]
+        qTitle = f"QueueStream(s) - {len(data.queueSources)}"
+        qDataList = [(_.id + " - " + _.name) for _ in data.queueSources]
+        sTitle = f"StreamSource(s) - {len(data.streamSources)}"
+        sDataList = [(_.id + " - " + _.name) for _ in data.streamSources]
+        pTitle = f"Playlist(s) - {len(data.playlists)}"
+        pDataList = [(_.id + " - " + _.name) for _ in data.playlists]
         
         printLists([qDataList, sDataList, pDataList], [qTitle, sTitle, pTitle])
         printS("\nDo you want to PERMANENTLY REMOVE this data?", color = BashColor.WARNING)
@@ -178,16 +178,16 @@ class SharedCliController():
             return None
         
         data = self.fetchService.prepareReset(playlistId, includeSoftDeleted)
-        if(not data.playlist or (not data.queueSource and not data.streamSource)):
+        if(not data.playlists or (not data.queueSource and not data.streamSource)):
             printS("Reset aborted, nothing to reset.", color = BashColor.OKGREEN)
             return None
         
-        qTitle = f"QueueStream(s) - {len(data.queueSource)}"
-        qDataList = [(_.id + " - " + _.name) for _ in data.queueSource]
-        sTitle = f"StreamSource(s) - {len(data.streamSource)}"
-        sDataList = [(_.id + " - " + _.name) for _ in data.streamSource]
-        pTitle = f"Playlist(s) updated - {len(data.playlist)}"
-        pDataList = [(_.id + " - " + _.name) for _ in data.playlist]
+        qTitle = f"QueueStream(s) - {len(data.queueSources)}"
+        qDataList = [(_.id + " - " + _.name) for _ in data.queueSources]
+        sTitle = f"StreamSource(s) - {len(data.streamSources)}"
+        sDataList = [(_.id + " - " + _.name) for _ in data.streamSources]
+        pTitle = f"Playlist(s) updated - {len(data.playlists)}"
+        pDataList = [(_.id + " - " + _.name) for _ in data.playlists]
         
         printLists([qDataList, sDataList, pDataList], [qTitle, sTitle, pTitle])
         printS("\nDo you want to ", ("PERMANENTLY REMOVE" if permanentlyDelete else "DELETE"), " this data?", color = BashColor.WARNING)

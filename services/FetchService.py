@@ -368,10 +368,10 @@ class FetchService():
             Playlist: Result.
         """
         
-        if(not data.playlist or not data.playlist.id):
+        if(not data.playlists or not data.playlists.id):
             raise ArgumentException(f"doReset - missing Playlist data or Playlist ID.")
         
-        playlist = self.playlistService.get(data.playlist.id, includeSoftDeleted)
+        playlist = self.playlistService.get(data.playlists.id, includeSoftDeleted)
         
         deleteResult = self.playlistService.deleteStreams(playlist.id, playlist.streamIds, includeSoftDeleted, permanentlyDelete)
         if(not deleteResult):

@@ -4,6 +4,7 @@ from typing import Dict, List, Tuple
 from xml.dom.minidom import parseString
 
 import requests
+from bs4 import BeautifulSoup
 from enums.StreamSourceType import StreamSourceType
 from grdException.ArgumentException import ArgumentException
 from grdException.DatabaseException import DatabaseException
@@ -230,14 +231,22 @@ class FetchService():
             return emptyReturn
 
         try:
-            document = parseString(html)
-        except:
+            # print(html) # del
+            document = BeautifulSoup(html, 'html.parser')
+        except Exception as e:
+            print(e)
             printS("Channel \"", streamSource.name, "\" (URL: ", streamSource.uri, ") could not be found or is not valid. Please remove it and add it back.", color = BashColor.FAIL)
             return emptyReturn
 
+
+        # Privacy statement, reject all and continue
+        if(document.find_all("form", {"action": "https://consent.youtube.com/save"})):
+            printS("Google/YouTube wants to use cookies and trackers. Automatically rejecting all to continue with fetch...", color = BashColor.WARNING)
+            rejectForm = document.find_all("form")[0]
+
         printS(f"Fetching videos from {streamSource.name}...")
         sys.stdout.flush()
-        streams = document.find("#contents")[0]
+        streams = document.find_all("#contents")[0]
         if(len(streams) < 1):
             printS(f"Channel {streamSource.name} has no videos.", color = BashColor.WARNING)
             return emptyReturn

@@ -11,6 +11,7 @@ from controllers.SharedCliController import SharedCliController
 from controllers.PlaylistCliController import PlaylistCliController
 from controllers.QueueStreamCliController import QueueStreamCliController
 from controllers.StreamSourceCliController import StreamSourceCliController
+from services.FetchService import FetchService
 from services.LegacyService import LegacyService
 from services.PlaylistService import PlaylistService
 from services.SharedService import SharedService
@@ -30,6 +31,7 @@ class Main:
     playlistCliController: PlaylistCliController = PlaylistCliController()
     queueStreamCliController: QueueStreamCliController = QueueStreamCliController()
     streamSourceCliController: StreamSourceCliController = StreamSourceCliController()
+    test: FetchService = FetchService()
 
     def main():
         argC = len(sys.argv)
@@ -57,19 +59,10 @@ class Main:
                     inputArgs = extractArgs(argIndex, argV)
                     printS("Test", color = BashColor.OKBLUE)
                     
-                    c = "https://www.youtube.com/c/smartereveryday"
-                    # c = "https://www.youtube.com/c/jawed"
-                    channel = Channel(c)
-                    print(channel)
-                    print(len(channel.video_urls))
-                    print(len(channel.videos))
-                    print(channel.video_urls[-1])
-                    print(channel.video_urls[0])
-                    
-                    g = channel.videos_generator()
-                    print(g)
-                    print(channel.video_urls[-1])
-                    print(channel.video_urls[0])
+                    id = "1c895925-a4cb-4628-a837-38ee5fede809"
+                    ss = Main.streamSourceService.get(id)
+                    f = Main.test.fetchYoutubeHtml(ss, 2)
+                    print(f)
                     
                     quit()            
                     

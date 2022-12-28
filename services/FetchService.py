@@ -202,6 +202,56 @@ class FetchService():
             streamSource.lastFetchedIds.pop(0)
         
         return (newQueueStreams, streamSource.lastFetchedIds)
+
+    def fetchYoutubeHtml(self, streamSource: StreamSource, batchSize: int = 10, takeAfter: datetime = None, takeBefore: datetime = None, takeNewOnly: bool = False) -> Tuple[List[QueueStream], List[str]]:
+        """
+        Fetch videos from YouTube using a scraper to get HTML.
+
+        Args:
+            batchSize (int): Number of videos to check at a time, unrelated to max videos that will be read. Defaults to 10.
+            takeAfter (datetime): Limit to take video after. Defaults to None.
+            takeBefore (datetime): Limit to take video before. Defaults to None.
+            takeNewOnly (bool): Only take streams marked as new. Disables takeAfter and takeBefore-checks. To use takeAfter and/or takeBefore, set this to False. Defaults to False.
+
+        Returns:
+            Tuple[List[QueueStream], List[str]]: A Tuple of List of QueueStream, and List of last YouTube IDs fetched.
+        """
+
+        if(streamSource == None):
+            raise ArgumentException("fetchYoutubeJson - streamSource was None.")
+
+        emptyReturn = ([], streamSource.lastFetchedIds)
+        httpRequest = requests.get(streamSource.uri)
+        html = httpRequest.content
+        document = None
+
+        if(httpRequest.status_code != 200):
+            printS("Channel \"", streamSource.name, "\" (URL: ", streamSource.uri, ") could not be fetched, the connection likely timed out. Try again later", color = BashColor.WARNING)
+            return emptyReturn
+
+        try:
+            document = parseString(html)
+        except:
+            printS("Channel \"", streamSource.name, "\" (URL: ", streamSource.uri, ") could not be found or is not valid. Please remove it and add it back.", color = BashColor.FAIL)
+            return emptyReturn
+
+        printS(f"Fetching videos from {streamSource.name}...")
+        sys.stdout.flush()
+        streams = document.find("#contents")[0]
+        if(len(streams) < 1):
+            printS(f"Channel {streamSource.name} has no videos.", color = BashColor.WARNING)
+            return emptyReturn
+
+        newStreams = []
+        newQueueStreams = []
+        # lastStreamTitle = sanitize(streams[0].getElementsByTagName("title")[0].firstChild.nodeValue)
+        # lastStreamId = streams[0].getElementsByTagName("link")[0].firstChild.nodeValue.split(":")[-1]
+        # if(takeNewOnly and takeAfter == None and lastStreamId in streamSource.lastFetchedIds):
+        #     printD("Last video fetched: \"", lastStreamTitle, "\", Odysee ID \"", lastStreamId, "\"", color = BashColor.WARNING, debug = self.settings.debug)
+        #     printD("Return due to takeNewOnly and takeAfter == None and lastStreamId in streamSource.lastFetchedIds", color = BashColor.WARNING, debug = self.settings.debug)
+        #     return emptyReturn
+
+        return (newQueueStreams, streamSource.lastFetchedIds)
     
     def fetchOdysee(self, streamSource: StreamSource, batchSize: int = 10, takeAfter: datetime = None, takeBefore: datetime = None, takeNewOnly: bool = False) -> Tuple[List[QueueStream], List[str]]:
         """

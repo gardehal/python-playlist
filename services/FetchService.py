@@ -79,8 +79,13 @@ class FetchService():
             _takeAfter = takeAfter if(not takeNewOnly) else source.lastSuccessfulFetched
             
             if(source.isWeb):
-                if(source.streamSourceTypeId == StreamSourceType.YOUTUBE.value):
+                if(False and source.streamSourceTypeId == StreamSourceType.YOUTUBE.value):
                     fetchedStreams = self.fetchYoutube(source, batchSize, _takeAfter, takeBefore, takeNewOnly)
+                if(source.streamSourceTypeId == StreamSourceType.YOUTUBE.value):
+                    if(_takeAfter != None or takeBefore != None):
+                        printS("Arguments takeAfter and takeBefore are not supported by method fetchYoutubeHtml. They will be ingored during the fetch.", color = BashColor.WARNING)
+
+                    fetchedStreams = self.fetchYoutubeHtml(source, batchSize, takeNewOnly)
                 elif(source.streamSourceTypeId == StreamSourceType.ODYSEE.value):
                     fetchedStreams = self.fetchOdysee(source, batchSize, _takeAfter, takeBefore, takeNewOnly)
                 else:
@@ -207,14 +212,14 @@ class FetchService():
         
         return (newQueueStreams, streamSource.lastFetchedIds)
 
-    def fetchYoutubeHtml(self, streamSource: StreamSource, batchSize: int = 10, takeAfter: datetime = None, takeBefore: datetime = None, takeNewOnly: bool = False) -> Tuple[List[QueueStream], List[str]]:
+    def fetchYoutubeHtml(self, streamSource: StreamSource, batchSize: int = 10, takeNewOnly: bool = False) -> Tuple[List[QueueStream], List[str]]:
         """
         Fetch videos from YouTube using a scraper to get HTML.
 
+        NOTE: takeAfter and takeBefore not available due to HTML not rendering publishdate, only "x days ago", which is too unreliable.
+
         Args:
             batchSize (int): Number of videos to check at a time, unrelated to max videos that will be read. Defaults to 10.
-            takeAfter (datetime): Limit to take video after. Defaults to None.
-            takeBefore (datetime): Limit to take video before. Defaults to None.
             takeNewOnly (bool): Only take streams marked as new. Disables takeAfter and takeBefore-checks. To use takeAfter and/or takeBefore, set this to False. Defaults to False.
 
         Returns:
@@ -252,11 +257,14 @@ class FetchService():
         streams = None
         videosScript = document.find(lambda tag:tag.name=="script" and "ytInitialData" in tag.text).text
         
-        # scripts -> var ytInitialData [] -> for each videoId
+        # scripts -> var ytInitialData = {} -> videoRenderer -> videoId / title.runs[0].text
+        videoRenderer = parse("contents..videoRenderer")
+        videoId = parse("contents..videoId")
+        title = parse("contents..title.runs[0].text")
         try:
             videosScriptJson = videosScript.split("ytInitialData = ")[1].split(";")[0]
             videosJson = json.loads(videosScriptJson)
-            jsonMatches = parse("contents..videoId").find(videosJson)
+            jsonMatches = videoRenderer.find(videosJson)
             streams = [_.value for _ in jsonMatches][0:batchSize]
         except:
             printS(f"Could not find any videos for channel {streamSource.name}.", color = BashColor.WARNING)
@@ -268,12 +276,43 @@ class FetchService():
 
         newStreams = []
         newQueueStreams = []
-        # lastStreamTitle = sanitize(streams[0].getElementsByTagName("title")[0].firstChild.nodeValue)
-        # lastStreamId = streams[0].getElementsByTagName("link")[0].firstChild.nodeValue.split(":")[-1]
-        # if(takeNewOnly and takeAfter == None and lastStreamId in streamSource.lastFetchedIds):
-        #     printD("Last video fetched: \"", lastStreamTitle, "\", Odysee ID \"", lastStreamId, "\"", color = BashColor.WARNING, debug = self.settings.debug)
-        #     printD("Return due to takeNewOnly and takeAfter == None and lastStreamId in streamSource.lastFetchedIds", color = BashColor.WARNING, debug = self.settings.debug)
-        #     return emptyReturn
+        lastStreamId = videoId.find(videosJson)[0].value
+        if(takeNewOnly and lastStreamId in streamSource.lastFetchedIds):
+            lastStreamTitle = sanitize(title.find(videosJson)[0].value)
+            printD("Last video fetched: \"", lastStreamTitle, "\", YouTube ID \"", lastStreamId, "\"", color = BashColor.WARNING, debug = self.settings.debug)
+            printD("Return due to takeNewOnly and takeAfter == None and lastStreamId in streamSource.lastFetchedIds", color = BashColor.WARNING, debug = self.settings.debug)
+            return emptyReturn
+        
+        for i, stream in enumerate(streams):
+            id = videoId.find(videosJson)[i].value
+            sanitizedTitle = sanitize(title.find(videosJson)[i].value)
+            link = "https://www.youtube.com/watch?v=" + id
+            
+            if(takeNewOnly and id in streamSource.lastFetchedIds):
+                printD("Name \"", sanitizedTitle, "\", YouTube ID \"", id, "\"", color = BashColor.WARNING, debug = self.settings.debug)
+                printD("Break due to takeNewOnly and id in streamSource.lastFetchedIds", color = BashColor.WARNING, debug = self.settings.debug)
+                break
+            elif(i > batchSize):
+                printD("Beak due to i > batchSize", color = BashColor.WARNING, debug = self.settings.debug)
+                break
+
+            queueStream = QueueStream(name = sanitizedTitle, 
+                uri = link, 
+                isWeb = True,
+                streamSourceId = streamSource.id,
+                watched = None,
+                backgroundContent = streamSource.backgroundContent,
+                added = getDateTime())
+            
+            newStreams.append(queueStream)
+            
+        if(len(newStreams) == 0):
+            return emptyReturn
+        
+        newStreams.reverse()
+        streamSource.lastFetchedIds.append(lastStreamId)
+        if(len(streamSource.lastFetchedIds) > batchSize):
+            streamSource.lastFetchedIds.pop(0)
 
         return (newQueueStreams, streamSource.lastFetchedIds)
     

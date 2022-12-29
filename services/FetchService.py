@@ -1,6 +1,7 @@
+import json
 import sys
 from datetime import datetime
-from typing import Dict, List, Tuple
+from typing import List, Tuple
 from xml.dom.minidom import parseString
 
 import mechanize
@@ -14,6 +15,7 @@ from grdUtil.DateTimeUtil import getDateTime, stringToDatetime
 from grdUtil.FileUtil import mkdir
 from grdUtil.InputUtil import sanitize
 from grdUtil.PrintUtil import printD, printS
+from jsonpath_ng import jsonpath, parse
 from model.OdyseeStream import OdyseeStream
 from model.Playlist import Playlist
 from model.PlaylistDetailed import PlaylistDetailed
@@ -233,7 +235,6 @@ class FetchService():
             return emptyReturn
 
         try:
-            # print(html) # del
             br.open(requestUrl)
             html = br.response().read()
             document = BeautifulSoup(html, 'html.parser')
@@ -241,16 +242,26 @@ class FetchService():
             printS("Channel \"", streamSource.name, "\" (URL: ", streamSource.uri, ") could not be found or is not valid. Please remove it and add it back.", color = BashColor.FAIL)
             return emptyReturn
 
-        # Privacy statement, reject all and continue
+        # Privacy statement, can't continue
         if(document.find_all("form", {"action": "https://consent.youtube.com/save"})):
             printS("Google/YouTube wants to use cookies and trackers. This was not an expected outcome.", color = BashColor.WARNING)
+            return emptyReturn
 
         printS(f"Fetching videos from {streamSource.name}...")
         sys.stdout.flush()
-        streams = document.find("div", {"id": "contents"})
-        # print(document)
-        print(requestUrl)
-        print(streams) # empty, mech only getting first page load without videos?
+        streams = None
+        videosScript = document.find(lambda tag:tag.name=="script" and "ytInitialData" in tag.text).text
+        
+        # scripts -> var ytInitialData [] -> for each videoId
+        try:
+            videosScriptJson = videosScript.split("ytInitialData = ")[1].split(";")[0]
+            videosJson = json.loads(videosScriptJson)
+            streams = parse("contents..videoId").find(videosJson)[0].value
+            print(streams)
+        except:
+            printS(f"Could not find any videos for channel {streamSource.name}.", color = BashColor.WARNING)
+            return emptyReturn
+
         if(len(streams) < 1):
             printS(f"Channel {streamSource.name} has no videos.", color = BashColor.WARNING)
             return emptyReturn

@@ -3,6 +3,7 @@ from datetime import datetime
 from typing import Dict, List, Tuple
 from xml.dom.minidom import parseString
 
+import mechanize
 import requests
 from bs4 import BeautifulSoup
 from enums.StreamSourceType import StreamSourceType
@@ -222,8 +223,9 @@ class FetchService():
             raise ArgumentException("fetchYoutubeJson - streamSource was None.")
 
         emptyReturn = ([], streamSource.lastFetchedIds)
-        httpRequest = requests.get(streamSource.uri)
-        html = httpRequest.content
+        requestUrl = streamSource.uri
+        httpRequest = requests.get(requestUrl)
+        br = mechanize.Browser()
         document = None
 
         if(httpRequest.status_code != 200):
@@ -232,21 +234,23 @@ class FetchService():
 
         try:
             # print(html) # del
+            br.open(requestUrl)
+            html = br.response().read()
             document = BeautifulSoup(html, 'html.parser')
-        except Exception as e:
-            print(e)
+        except:
             printS("Channel \"", streamSource.name, "\" (URL: ", streamSource.uri, ") could not be found or is not valid. Please remove it and add it back.", color = BashColor.FAIL)
             return emptyReturn
 
-
         # Privacy statement, reject all and continue
         if(document.find_all("form", {"action": "https://consent.youtube.com/save"})):
-            printS("Google/YouTube wants to use cookies and trackers. Automatically rejecting all to continue with fetch...", color = BashColor.WARNING)
-            rejectForm = document.find_all("form")[0]
+            printS("Google/YouTube wants to use cookies and trackers. This was not an expected outcome.", color = BashColor.WARNING)
 
         printS(f"Fetching videos from {streamSource.name}...")
         sys.stdout.flush()
-        streams = document.find_all("#contents")[0]
+        streams = document.find("div", {"id": "contents"})
+        # print(document)
+        print(requestUrl)
+        print(streams) # empty, mech only getting first page load without videos?
         if(len(streams) < 1):
             printS(f"Channel {streamSource.name} has no videos.", color = BashColor.WARNING)
             return emptyReturn

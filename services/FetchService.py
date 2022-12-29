@@ -256,8 +256,8 @@ class FetchService():
         try:
             videosScriptJson = videosScript.split("ytInitialData = ")[1].split(";")[0]
             videosJson = json.loads(videosScriptJson)
-            streams = parse("contents..videoId").find(videosJson)[0].value
-            print(streams)
+            jsonMatches = parse("contents..videoId").find(videosJson)
+            streams = [_.value for _ in jsonMatches][0:batchSize]
         except:
             printS(f"Could not find any videos for channel {streamSource.name}.", color = BashColor.WARNING)
             return emptyReturn

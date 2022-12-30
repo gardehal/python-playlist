@@ -259,7 +259,7 @@ class FetchService():
         
         # scripts -> var ytInitialData = {} -> videoRenderer -> videoId / title.runs[0].text
         videoRenderer = parse("contents..videoRenderer")
-        videoId = parse("contents..videoId")
+        videoId = parse("contents..videoRenderer.videoId")
         title = parse("contents..title.runs[0].text")
         try:
             videosScriptJson = videosScript.split("ytInitialData = ")[1].split(";")[0]
@@ -304,6 +304,7 @@ class FetchService():
                 backgroundContent = streamSource.backgroundContent,
                 added = getDateTime())
             
+            printS("\tAdding \"", queueStream.name, "\".")
             newStreams.append(queueStream)
             
         if(len(newStreams) == 0):

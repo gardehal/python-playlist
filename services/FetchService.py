@@ -79,8 +79,8 @@ class FetchService():
             _takeAfter = takeAfter if(not takeNewOnly) else source.lastSuccessfulFetched
             
             if(source.isWeb):
-                if(False and source.streamSourceTypeId == StreamSourceType.YOUTUBE.value):
-                    fetchedStreams = self.fetchYoutube(source, batchSize, _takeAfter, takeBefore, takeNewOnly)
+                # if(source.streamSourceTypeId == StreamSourceType.YOUTUBE.value):
+                #     fetchedStreams = self.fetchYoutube(source, batchSize, _takeAfter, takeBefore, takeNewOnly)
                 if(source.streamSourceTypeId == StreamSourceType.YOUTUBE.value):
                     if(_takeAfter != None or takeBefore != None):
                         printS("Arguments takeAfter and takeBefore are not supported by method fetchYoutubeHtml. They will be ingored during the fetch.", color = BashColor.WARNING)
@@ -304,13 +304,17 @@ class FetchService():
                 backgroundContent = streamSource.backgroundContent,
                 added = getDateTime())
             
-            printS("\tAdding \"", queueStream.name, "\".")
             newStreams.append(queueStream)
             
         if(len(newStreams) == 0):
             return emptyReturn
         
         newStreams.reverse()
+        for stream in newStreams:
+            printS("\tAdding \"", stream.name, "\".")
+            
+            newQueueStreams.append(stream)
+        
         streamSource.lastFetchedIds.append(lastStreamId)
         if(len(streamSource.lastFetchedIds) > batchSize):
             streamSource.lastFetchedIds.pop(0)

@@ -103,6 +103,7 @@ Program for queueing and playing videos from list or from sources like channels 
 
 ## TODO
 
+- setting for turning off print formatting (printS, printD)
 - play local/directory streams
 - support for mp3s
 - implement file/folder, Odysee, Rumble fetches

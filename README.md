@@ -103,6 +103,7 @@ Program for queueing and playing videos from list or from sources like channels 
 
 ## TODO
 
+- fetch order should be updated, rather than fething all streams then saving, it should fetch per channel, then save, then print "added xyz.."
 - setting for turning off print formatting (printS, printD)
 - play local/directory streams
 - support for mp3s

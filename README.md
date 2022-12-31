@@ -103,27 +103,19 @@ Program for queueing and playing videos from list or from sources like channels 
 
 ## TODO
 
-- fetch order should be updated, rather than fething all streams then saving, it should fetch per channel, then save, then print "added xyz.."
 - setting for turning off print formatting (printS, printD)
 - play local/directory streams
 - support for mp3s
-- implement file/folder, Odysee, Rumble fetches
-- implement background content properly, should not wait for input, just play when previous stream finished (assume no ads/breaks/pauses, need playtime in model...)
-- option to download and watch (requires implement file/folder)
+- implement file/folder, Rumble fetches
+- implement background content properly, should not wait for input, just play when previous stream finished (assume no ads/breaks/pauses, need playtime in model..)
+- add length of stream in seconds to qs
 - minor print issues and wording/use of IDs. Some prints can be simplified due to context (e.g. "Added StreamSource "X"", "StreamSource" unnecessary)
 - tests for core functions like fetch and play?
 - fetch youtube still slow, probably still loading all videos from channel, in library pytube
 - rename to python-playlist
 - Implement LogUtil? Ex. fetches, add YT playlist
-- add length in seconds to qs
-- add alwaysDownload to source? for channels who often delete/gets deleted/restricted/unlisted
-- timeout/option to quit during fetch, stops completely on some channels, add time taken to fetch?
-- if a fetch fails, sources will be updated but playlist isn't meaning streams won't be added unless fetch is reset...
-- known issue: fetch freezes when fetching and a user is watching a live streaming website. Usually when fetching from large youtube channels.
 - reset doesn't work, not resetting sources
 - new function: download playlist, creates a new folder at path from settings, mp4s ordered by name ("0001_some video_some source")
+- add alwaysDownload to source? for channels who often delete/gets deleted/restricted/unlisted
 - restore source add source, have to check on deleted
-- cli command and functionality to order sources by number of videos since fetch sometimes messes up, to fail early - should be redundant by making every fetch channel save to playlist instead of waiting until end of fetch
 - command for re-queue/re-add stream from playlist during playback (something like "rw", removes stream, add it to the back of playlist)
-- issues related to getting videos from channel due to YT updates, see https://github.com/pytube/pytube/pull/1409
-  - pl f i0 2022-10-27 2999-01-01 False

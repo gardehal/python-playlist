@@ -83,13 +83,14 @@ class FetchService():
                 #     fetchedStreams = self.fetchYoutube(source, batchSize, _takeAfter, takeBefore, takeNewOnly)
                 if(source.streamSourceTypeId == StreamSourceType.YOUTUBE.value):
                     if(_takeAfter != None or takeBefore != None):
-                        printS("Arguments takeAfter and takeBefore are not supported by method fetchYoutubeHtml. They will be ingored during the fetch.", color = BashColor.WARNING)
+                        printS("Arguments takeAfter and takeBefore are not supported by fetchYoutubeHtml, they will be ingored.", color = BashColor.WARNING)
 
                     fetchedStreams = self.fetchYoutubeHtml(source, batchSize, takeNewOnly)
                 elif(source.streamSourceTypeId == StreamSourceType.ODYSEE.value):
                     fetchedStreams = self.fetchOdysee(source, batchSize, _takeAfter, takeBefore, takeNewOnly)
                 else:
                     printS("\t Source \"", source.name, "\" could not be fetched as it is not implemented for this source.", color = BashColor.WARNING)
+                    sys.stdout.flush()
                     continue
             else:
                 fetchedStreams = self.fetchDirectory(source, batchSize, _takeAfter, takeBefore, takeNewOnly)
@@ -97,18 +98,19 @@ class FetchService():
             if(len(fetchedStreams) > 0):
                 source.lastSuccessfulFetched = getDateTime()
             
-            source.lastFetchedIds = fetchedStreams[1]
+            source.lastFetchedIds += fetchedStreams[1]
             source.lastFetched = getDateTime()
             updateSuccess = self.streamSourceService.update(source)
             if(updateSuccess):
-                newStreams += fetchedStreams[0]
+                newStreamsToAdd = fetchedStreams[0]
+                newStreams += self.playlistService.addStreams(playlist.id, newStreamsToAdd)
+                for stream in newStreamsToAdd:
+                    printS("\tAdding \"", stream.name, "\".")
             else:
                 printS("Could not update StreamSource \"", source.name, "\" (ID: ", source.id, "), streams could not be added: \n", fetchedStreams, color = BashColor.WARNING)
-                
-            sys.stdout.flush()
+                sys.stdout.flush()
 
-        updateResult = self.playlistService.addStreams(playlist.id, newStreams)
-        if(len(updateResult) > 0):
+        if(len(newStreams) > 0):
             return len(newStreams)
         else:
             return 0
@@ -195,7 +197,6 @@ class FetchService():
         newStreams.reverse()
         for stream in newStreams:
             sanitizedTitle = sanitize(stream.title)
-            printS("\tAdding \"", sanitizedTitle, "\".")
             queueStream = QueueStream(name = sanitizedTitle, 
                 uri = stream.watch_url, 
                 isWeb = True,
@@ -311,8 +312,6 @@ class FetchService():
         
         newStreams.reverse()
         for stream in newStreams:
-            printS("\tAdding \"", stream.name, "\".")
-            
             newQueueStreams.append(stream)
         
         streamSource.lastFetchedIds.append(lastStreamId)
@@ -399,7 +398,6 @@ class FetchService():
         
         newStreams.reverse()
         for stream in newStreams:
-            printS("\tAdding \"", stream.title, "\".")
             queueStream = QueueStream(name = stream.title, 
                 uri = stream.link, 
                 isWeb = True,

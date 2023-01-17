@@ -13,6 +13,7 @@ class QueueStream:
                  backgroundContent: bool = False, 
                  deleted: datetime = None,
                  added: datetime = getDateTime(),
+                 remoteId: str = None,
                  id: str = None):
         self.name: str = name
         self.uri: str = uri
@@ -22,6 +23,7 @@ class QueueStream:
         self.backgroundContent: bool = backgroundContent
         self.deleted: datetime = deleted
         self.added: datetime = added
+        self.remoteId: str = remoteId
         self.id: str = id
         
     def default(self):
@@ -33,6 +35,7 @@ class QueueStream:
         self.backgroundContent: bool = False
         self.deleted: datetime = datetime.now()
         self.added: datetime = getDateTime()
+        self.remoteId: str = "remoteId"
         self.id: str = "id"
         return self
 

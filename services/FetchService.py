@@ -98,11 +98,16 @@ class FetchService():
             if(len(fetchedStreams) > 0):
                 source.lastSuccessfulFetched = getDateTime()
             
-            source.lastFetchedIds += fetchedStreams[1]
+            fetchedIds = [_.remoteId for _ in fetchedStreams]
+            source.lastFetchedIds += fetchedIds
+            lenFetched = len(source.lastFetchedIds)
+            if(lenFetched > batchSize):
+                source.lastFetchedIds = source.lastFetchedIds[:lenFetched - batchSize]
+            
             source.lastFetched = getDateTime()
             updateSuccess = self.streamSourceService.update(source)
             if(updateSuccess):
-                newStreamsToAdd = fetchedStreams[0]
+                newStreamsToAdd = fetchedStreams
                 newStreams += self.playlistService.addStreams(playlist.id, newStreamsToAdd)
                 for stream in newStreamsToAdd:
                     printS("\tAdding \"", stream.name, "\".")
@@ -115,7 +120,7 @@ class FetchService():
         else:
             return 0
 
-    def fetchDirectory(self, streamSource: StreamSource, batchSize: int = 10, takeAfter: datetime = None, takeBefore: datetime = None, takeNewOnly: bool = False) -> Tuple[List[QueueStream], str]:
+    def fetchDirectory(self, streamSource: StreamSource, batchSize: int = 10, takeAfter: datetime = None, takeBefore: datetime = None, takeNewOnly: bool = False) -> List[QueueStream]:
         """
         Fetch streams from a local directory.
 
@@ -132,10 +137,10 @@ class FetchService():
         if(streamSource == None):
             raise ArgumentException("fetchDirectory - streamSource was None")
 
-        emptyReturn = ([], streamSource.lastFetchedIds)
+        emptyReturn = []
         return emptyReturn
 
-    def fetchYoutube(self, streamSource: StreamSource, batchSize: int = 10, takeAfter: datetime = None, takeBefore: datetime = None, takeNewOnly: bool = False) -> Tuple[List[QueueStream], List[str]]:
+    def fetchYoutube(self, streamSource: StreamSource, batchSize: int = 10, takeAfter: datetime = None, takeBefore: datetime = None, takeNewOnly: bool = False) -> List[QueueStream]:
         """
         Fetch videos from YouTube.
 
@@ -146,13 +151,13 @@ class FetchService():
             takeNewOnly (bool): Only take streams marked as new. Disables takeAfter and takeBefore-checks. To use takeAfter and/or takeBefore, set this to False. Defaults to False.
 
         Returns:
-            Tuple[List[QueueStream], List[str]]: A Tuple of List of QueueStream, and List of last YouTube IDs fetched.
+            List[QueueStream]: List of QueueStream
         """
         
         if(streamSource == None):
             raise ArgumentException("fetchYoutube - streamSource was None.")
 
-        emptyReturn = ([], streamSource.lastFetchedIds)
+        emptyReturn = []
         channel = Channel(streamSource.uri)
 
         if(channel == None or channel.channel_name == None):
@@ -203,17 +208,14 @@ class FetchService():
                 streamSourceId = streamSource.id,
                 watched = None,
                 backgroundContent = streamSource.backgroundContent,
-                added = getDateTime())
+                added = getDateTime(),
+                remoteId = stream.video_id)
             
             newQueueStreams.append(queueStream)
-            
-        streamSource.lastFetchedIds.append(lastStreamId)
-        if(len(streamSource.lastFetchedIds) > batchSize):
-            streamSource.lastFetchedIds.pop(0)
         
-        return (newQueueStreams, streamSource.lastFetchedIds)
+        return newQueueStreams
 
-    def fetchYoutubeHtml(self, streamSource: StreamSource, batchSize: int = 10, takeNewOnly: bool = False) -> Tuple[List[QueueStream], List[str]]:
+    def fetchYoutubeHtml(self, streamSource: StreamSource, batchSize: int = 10, takeNewOnly: bool = False) -> List[QueueStream]:
         """
         Fetch videos from YouTube using a scraper to get HTML.
 
@@ -224,13 +226,13 @@ class FetchService():
             takeNewOnly (bool): Only take streams marked as new. Disables takeAfter and takeBefore-checks. To use takeAfter and/or takeBefore, set this to False. Defaults to False.
 
         Returns:
-            Tuple[List[QueueStream], List[str]]: A Tuple of List of QueueStream, and List of last YouTube IDs fetched.
+            List[QueueStream]: List of QueueStream
         """
 
         if(streamSource == None):
             raise ArgumentException("fetchYoutubeJson - streamSource was None.")
 
-        emptyReturn = ([], streamSource.lastFetchedIds)
+        emptyReturn = []
         requestUrl = streamSource.uri
         httpRequest = requests.get(requestUrl)
         br = mechanize.Browser()
@@ -276,7 +278,6 @@ class FetchService():
             return emptyReturn
 
         newStreams = []
-        newQueueStreams = []
         lastStreamId = videoId.find(videosJson)[0].value
         if(takeNewOnly and lastStreamId in streamSource.lastFetchedIds):
             lastStreamTitle = sanitize(title.find(videosJson)[0].value)
@@ -303,24 +304,16 @@ class FetchService():
                 streamSourceId = streamSource.id,
                 watched = None,
                 backgroundContent = streamSource.backgroundContent,
-                added = getDateTime())
+                added = getDateTime(),
+                remoteId = id)
             
             newStreams.append(queueStream)
-            
-        if(len(newStreams) == 0):
-            return emptyReturn
         
         newStreams.reverse()
-        for stream in newStreams:
-            newQueueStreams.append(stream)
-        
-        streamSource.lastFetchedIds.append(lastStreamId)
-        if(len(streamSource.lastFetchedIds) > batchSize):
-            streamSource.lastFetchedIds.pop(0)
 
-        return (newQueueStreams, streamSource.lastFetchedIds)
+        return newStreams
     
-    def fetchOdysee(self, streamSource: StreamSource, batchSize: int = 10, takeAfter: datetime = None, takeBefore: datetime = None, takeNewOnly: bool = False) -> Tuple[List[QueueStream], List[str]]:
+    def fetchOdysee(self, streamSource: StreamSource, batchSize: int = 10, takeAfter: datetime = None, takeBefore: datetime = None, takeNewOnly: bool = False) -> List[QueueStream]:
         """
         Fetch videos from Odysee.
 
@@ -331,13 +324,13 @@ class FetchService():
             takeNewOnly (bool): Only take streams marked as new. Disables takeAfter and takeBefore-checks. To use takeAfter and/or takeBefore, set this to False. Defaults to False.
 
         Returns:
-            Tuple[List[QueueStream], List[str]]: A Tuple of List of QueueStream, and List of last Odysee IDs fetched.
+            List[QueueStream]: List of QueueStream
         """
         
         if(streamSource == None):
             raise ArgumentException("fetchOdysee - streamSource was None.")
 
-        emptyReturn = ([], streamSource.lastFetchedIds)
+        emptyReturn = []
         channelName = "".join(["@", streamSource.uri.split("@")[-1]])
         rssUri = f"https://odysee.com/$/rss/{channelName}"
         rssRequest = requests.get(rssUri)
@@ -362,7 +355,6 @@ class FetchService():
             return emptyReturn
 
         newStreams = []
-        newQueueStreams = []
         lastStreamTitle = sanitize(streams[0].getElementsByTagName("title")[0].firstChild.nodeValue)
         lastStreamId = streams[0].getElementsByTagName("link")[0].firstChild.nodeValue.split(":")[-1]
         if(takeNewOnly and takeAfter == None and lastStreamId in streamSource.lastFetchedIds):
@@ -390,29 +382,21 @@ class FetchService():
             elif(i > batchSize):
                 printD("Beak due to i > batchSize", color = BashColor.WARNING, debug = self.settings.debug)
                 break
-            
-            newStreams.append(OdyseeStream(title, pubDate, link, videoGuid))
-            
-        if(len(newStreams) == 0):
-            return emptyReturn
-        
-        newStreams.reverse()
-        for stream in newStreams:
-            queueStream = QueueStream(name = stream.title, 
-                uri = stream.link, 
+
+            queueStream = QueueStream(name = title, 
+                uri = link, 
                 isWeb = True,
                 streamSourceId = streamSource.id,
                 watched = None,
                 backgroundContent = streamSource.backgroundContent,
-                added = getDateTime())
+                added = getDateTime(),
+                remoteId = videoGuid)
             
-            newQueueStreams.append(queueStream)
+            newStreams.append(queueStream)
+                    
+        newStreams.reverse()
             
-        streamSource.lastFetchedIds.append(lastStreamId)
-        if(len(streamSource.lastFetchedIds) > batchSize):
-            streamSource.lastFetchedIds.pop(0)
-        
-        return (newQueueStreams, streamSource.lastFetchedIds)
+        return newStreams
     
     def resetPlaylistFetch(self, playlistIds: List[str]) -> int:
         """

@@ -98,11 +98,11 @@ class FetchService():
             if(len(fetchedStreams) > 0):
                 source.lastSuccessfulFetched = getDateTime()
             
+            lenFetched = len(source.lastFetchedIds)
             fetchedIds = [_.remoteId for _ in fetchedStreams]
             source.lastFetchedIds += fetchedIds
-            lenFetched = len(source.lastFetchedIds)
             if(lenFetched > batchSize):
-                source.lastFetchedIds = source.lastFetchedIds[:lenFetched - batchSize]
+                source.lastFetchedIds = source.lastFetchedIds[lenFetched - batchSize:]
             
             source.lastFetched = getDateTime()
             updateSuccess = self.streamSourceService.update(source)

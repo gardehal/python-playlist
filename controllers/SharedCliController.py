@@ -16,6 +16,7 @@ from services.QueueStreamService import QueueStreamService
 from services.SharedService import SharedService
 from services.StreamSourceService import StreamSourceService
 from Settings import Settings
+import copy
 
 
 class SharedCliController():
@@ -93,16 +94,16 @@ class SharedCliController():
         """
         
         data = self.sharedService.preparePurgePlaylists(includeSoftDeleted, permanentlyDelete)
-        if(not data.queueSources and not data.streamSources and not data.playlists):
+        if(not data.queueStreams and not data.streamSources and not data.playlists):
             printS("Purge aborted, nothing to purge.", color = BashColor.OKGREEN)
             return None
         
-        qTitle = f"QueueStream(s) - {len(data.queueSources)}"
-        qDataList = [(_.id + " - " + _.name) for _ in data.queueSources]
+        qTitle = f"QueueStream(s) - {len(data.queueStreams)}"
+        qDataList = [(_.id + " - " + _.name) for _ in data.queueStreams]
         sTitle = f"StreamSource(s) - {len(data.streamSources)}"
         sDataList = [(_.id + " - " + _.name) for _ in data.streamSources]
         pTitle = f"Playlist(s) updated - {len(data.playlists)}"
-        pDataList = [(_.id + " - " + _.name) for _ in data]
+        pDataList = [(_.id + " - " + _.name) for _ in data.playlists]
         
         printLists([qDataList, sDataList, pDataList], [qTitle, sTitle, pTitle])
         printS("\nDo you want to ", ("PERMANENTLY REMOVE" if permanentlyDelete else "DELETE"), " this data?", color = BashColor.WARNING)
@@ -113,8 +114,8 @@ class SharedCliController():
             return None
         else:
             # Remove Playlists from purged data, will only be updated
-            entitiesToRemove = data.copy()
-            entitiesToRemove.playlist = []
+            entitiesToRemove = copy.copy(data)
+            entitiesToRemove.playlists = []
             result = self.sharedService.doPurge(entitiesToRemove)
             result = result and self.sharedService.doPurgePlaylists(data)
             if(result):
@@ -137,8 +138,8 @@ class SharedCliController():
             printS("Purge aborted, nothing to purge.", color = BashColor.OKGREEN)
             return None
         
-        qTitle = f"QueueStream(s) - {len(data.queueSources)}"
-        qDataList = [(_.id + " - " + _.name) for _ in data.queueSources]
+        qTitle = f"QueueStream(s) - {len(data.queueStreams)}"
+        qDataList = [(_.id + " - " + _.name) for _ in data.queueStreams]
         sTitle = f"StreamSource(s) - {len(data.streamSources)}"
         sDataList = [(_.id + " - " + _.name) for _ in data.streamSources]
         pTitle = f"Playlist(s) - {len(data.playlists)}"
@@ -182,8 +183,8 @@ class SharedCliController():
             printS("Reset aborted, nothing to reset.", color = BashColor.OKGREEN)
             return None
         
-        qTitle = f"QueueStream(s) - {len(data.queueSources)}"
-        qDataList = [(_.id + " - " + _.name) for _ in data.queueSources]
+        qTitle = f"QueueStream(s) - {len(data.queueStreams)}"
+        qDataList = [(_.id + " - " + _.name) for _ in data.queueStreams]
         sTitle = f"StreamSource(s) - {len(data.streamSources)}"
         sDataList = [(_.id + " - " + _.name) for _ in data.streamSources]
         pTitle = f"Playlist(s) updated - {len(data.playlists)}"

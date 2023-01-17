@@ -9,7 +9,7 @@ class PlaylistDetailed():
     def __init__(self,
                  playlists: List[Playlist] = [],
                  queueStreams: List[QueueStream] = [],
-                 streamSources: List[StreamSource] = List[StreamSource],):
+                 streamSources: List[StreamSource] = [],):
         self.playlists: List[Playlist] = playlists
         self.queueStreams: List[QueueStream] = queueStreams
         self.streamSources: List[StreamSource] = streamSources

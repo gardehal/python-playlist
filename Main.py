@@ -91,10 +91,11 @@ class Main:
 
                     result = Main.sharedService.search(searchTerm, includeSoftDeleted)
                     
-                    # result is a Dict of string keys, list values, get values from [*result.values()]
-                    # list of list, for each list, for each entry, str.join id, name, and uri, then join back to list of lists of strings, ready for printLists
-                    resultList = [[" - ".join([e.id, e.name]) for e in l] for l in [*result.values()]]
-                    printLists(resultList, [*result.keys()])
+                    resultList = []
+                    resultList.append([" - ".join([e.id, e.name]) for e in result.playlists])
+                    resultList.append([" - ".join([e.id, e.name]) for e in result.streamSources])
+                    resultList.append([" - ".join([e.id, e.name]) for e in result.queueStreams])
+                    printLists(resultList, ["playlists", "streamSources", "queueStreams"])
                     
                     argIndex += len(inputArgs) + 1
                     continue

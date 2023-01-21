@@ -267,7 +267,7 @@ class SharedService():
                 data.playlists.append(entity)
         
         found = len(data.queueStreams) > 0 or len(data.streamSources) > 0 or len(data.playlists) > 0
-        printD("no results", color = BashColor.WARNING, debug = self.settings.debug and not found)
+        printS("No results", color = BashColor.WARNING, doPrint = not found)
         
         return data 
     

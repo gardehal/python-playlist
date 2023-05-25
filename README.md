@@ -103,13 +103,11 @@ Program for queueing and playing videos from list or from sources like channels 
 
 ## TODO
 
-- some errors and debug should be red text as errors (no videos found for source etc.)
 - some sources not html compatible, youtube?
 - quit and mark video as as watched
 - download entire playlists to new dir 
 - list watched streams for pls
 
-- extremely slow for some operations, memleaks? YouTube library slow, html much faster
 - setting for turning off print formatting (printS, printD)
 - play local/directory streams
 - support for mp3s

@@ -186,7 +186,7 @@ class PlaylistService(BaseService[T]):
 
         ListLength = len(playlist.streamIds)
         if(fromIndex == toIndex):
-            printD("Index from and to were the same. No update needed.", color=BashColor.WARNING, debug = self.settings.debug)
+            printD("Index from and to were the same. No update needed.", color=BashColor.OKGREEN, debug = self.settings.debug)
             return True
         if(fromIndex < 0 or fromIndex >= ListLength):
             printS("Index to move from (", fromIndex, ") was out or range.", color=BashColor.WARNING)

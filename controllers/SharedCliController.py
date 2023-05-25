@@ -70,7 +70,7 @@ class SharedCliController():
         inputArgs = input("(y/n): ")
         
         if(inputArgs not in StaticUtil.affirmative):
-            printS("Prune aborted by user.", color = BashColor.WARNING)
+            printS("Prune aborted by user.", color = BashColor.OKGREEN)
             return None
         else:
             result = self.sharedService.doPrune(data, includeSoftDeleted, permanentlyDelete)
@@ -110,7 +110,7 @@ class SharedCliController():
         inputArgs = input("(y/n): ")
         
         if(inputArgs not in StaticUtil.affirmative):
-            printS("Purge aborted by user.", color = BashColor.WARNING)
+            printS("Purge aborted by user.", color = BashColor.OKGREEN)
             return None
         else:
             # Remove Playlists from purged data, will only be updated
@@ -150,7 +150,7 @@ class SharedCliController():
         inputArgs = input("(y/n): ")
         
         if(inputArgs not in StaticUtil.affirmative):
-            printS("Purge aborted by user.", color = BashColor.WARNING)
+            printS("Purge aborted by user.", color = BashColor.OKGREEN)
             return None
         else:
             result = self.sharedService.doPurge(data)
@@ -195,7 +195,7 @@ class SharedCliController():
         inputArgs = input("(y/n): ")
         
         if(inputArgs not in StaticUtil.affirmative):
-            printS("Reset aborted by user.", color = BashColor.WARNING)
+            printS("Reset aborted by user.", color = BashColor.OKGREEN)
             return None
         else:
             result = self.fetchService.doReset(data, includeSoftDeleted, permanentlyDelete)

@@ -83,7 +83,7 @@ class FetchService():
                 #     fetchedStreams = self.fetchYoutube(source, batchSize, _takeAfter, takeBefore, takeNewOnly)
                 if(source.streamSourceTypeId == StreamSourceType.YOUTUBE.value):
                     if(_takeAfter != None or takeBefore != None):
-                        printS("Arguments takeAfter and takeBefore are not supported by fetchYoutubeHtml, they will be ingored.", color = BashColor.WARNING)
+                        printS("Arguments takeAfter and takeBefore are not supported by fetchYoutubeHtml, they will be ignored.", color = BashColor.WARNING)
 
                     fetchedStreams = self.fetchYoutubeHtml(source, batchSize, takeNewOnly)
                 elif(source.streamSourceTypeId == StreamSourceType.ODYSEE.value):
@@ -167,7 +167,7 @@ class FetchService():
         printS(f"Fetching videos from {channel.channel_name}...")
         sys.stdout.flush()
         if(len(channel.video_urls) < 1):
-            printS(f"Channel {channel.channel_name} has no videos.", color = BashColor.WARNING)
+            printS(f"Channel {channel.channel_name} has no videos.", color = BashColor.ERROR)
             return emptyReturn
 
         newStreams = []
@@ -338,7 +338,7 @@ class FetchService():
         document = None
         
         if(rssRequest.status_code != 200): # TODO code might be 200 with empty content or "oops nothing here". Test when Odysee is down next and update this
-            printS("Channel \"", streamSource.name, "\" (URL: ", streamSource.uri, ") could not be fetched, the connection likely timed out. Try again later", color = BashColor.WARNING)
+            printS("Channel \"", streamSource.name, "\" (URL: ", streamSource.uri, ") could not be fetched, the connection likely timed out. Try again later", color = BashColor.ERROR)
             return emptyReturn
         
         try:

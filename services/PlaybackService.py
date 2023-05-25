@@ -159,7 +159,7 @@ class PlaybackService():
                 if(updateSuccess):
                     nWatched += 1
                 else:
-                    printS("\"", stream.name, "\" could not be updated as watched.", color=BashColor.WARNING)
+                    printS("\"", stream.name, "\" could not be updated as watched.", color=BashColor.ERROR)
                     
         return nWatched
     

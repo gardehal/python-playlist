@@ -46,20 +46,24 @@ class SharedService():
         
         isYouTubeChannel = "user" in url or "channel" in url
         title = None
-        if(StreamSourceTypeUtil.strToStreamSourceType(url) == StreamSourceType.YOUTUBE and not isYouTubeChannel):
-            printD(" Getting title from pytube.", color = BashColor.WARNING, debug = self.settings.debug)
-            yt = YouTube(url)
-            title = yt.title
-        else:
-            printD("Getting title from mechanize.", color = BashColor.WARNING, debug = self.settings.debug)
-            try:
-                br = mechanize.Browser()
-                br.open(url)
-                title = br.title()
-                br.close()
-            except Exception as e:
-                printS(f"Could not fetch name from URL {url}:\n{e}", color = BashColor.FAIL)
-                return None
+        try:
+            if(StreamSourceTypeUtil.strToStreamSourceType(url) == StreamSourceType.YOUTUBE and not isYouTubeChannel):
+                printD("Getting title from pytube.", color = BashColor.WARNING, debug = self.settings.debug)
+                yt = YouTube(url)
+                title = yt.title
+            else:
+                printD("Getting title from mechanize.", color = BashColor.WARNING, debug = self.settings.debug)
+                try:
+                    br = mechanize.Browser()
+                    br.open(url)
+                    title = br.title()
+                    br.close()
+                except Exception as e:
+                    printS(f"Could not fetch name from URL {url}:\n{e}", color = BashColor.FAIL)
+                    return None
+        except:
+            printS(f"Could not get name from source, please try again.", color = BashColor.FAIL)
+            return None
 
         return sanitize(title).strip()
 

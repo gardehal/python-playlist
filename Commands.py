@@ -49,7 +49,7 @@ class Commands():
         # Playback
         self.playCommands = ["play", "p"]
         self.quitArguments = StaticUtil.quit
-        self.quitWatchedArguments = ["quitwatched", "qw"]
+        self.quitWatchedArguments = ["quitwatched", "qw", "wq"]
         self.skipArguments = ["skip", "s", "[C"] # [C = right arrow
         self.repeatArguments = ["repeat", "r"]
         self.listPlaylistArguments = ["listplaylists", "lp"]

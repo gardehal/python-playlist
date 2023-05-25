@@ -162,8 +162,8 @@ class PlaybackService():
                     nWatched += 1
                 else:
                     printS("\"", stream.name, "\" could not be updated as watched.", color=BashColor.ERROR)
-                    
-            elif(inputHandling == 4):
+            
+            if(inputHandling == 4):
                 break
             
         return nWatched

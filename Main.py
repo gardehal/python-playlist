@@ -172,6 +172,17 @@ class Main:
                             
                     argIndex += len(inputArgs) + 1
                     continue
+                
+                elif(arg in Main.commands.ListWatchedCommands):
+                    # Expected input: playlistIds or indices, includeUri, includeId, includeDatetime, includeListCount, includeSource
+                    inputArgs = extractArgs(argIndex, argV)
+                    playlistIds = getIdsFromInput(inputArgs, Main.playlistService.getAllIds(), Main.playlistService.getAll(), returnOnNonIds = True, debug = Main.settings.debug)
+                    lenPlaylistIds = len(playlistIds)
+                    
+                    Main.playlistCliController.printWatchedStreams(playlistIds)
+                            
+                    argIndex += len(inputArgs) + 1
+                    continue
 
                 elif(arg in Main.commands.fetchPlaylistSourcesCommands):
                     # Expected input: playlistIds or indices, fromDateTime?, toDatetime?, takeNewOnly?

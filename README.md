@@ -104,7 +104,6 @@ Program for queueing and playing videos from list or from sources like channels 
 ## TODO
 
 - some sources not html compatible, youtube?
-- quit and mark video as as watched
 - download entire playlists to new dir 
 - list watched streams for pls
 

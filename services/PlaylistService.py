@@ -506,8 +506,52 @@ class PlaylistService(BaseService[T]):
                     if(streamSource == None):
                         sourceString = ", StreamSource: [missing]" 
                     else:
-                        sourceString = ", StreamSource: \"" + streamSource.name + "\"" 
+                        sourceString = ", StreamSource: \"" + streamSource.name + "\""
+                        
                 printS("\t", str(i), " - ", stream.detailsString(includeUri, includeId, includeDatetime, includeListCount), sourceString, color = BashColor[color])
+                
+            result += 1
+                
+        return result
+    
+    def printWatchedStreams(self, playlistIds: List[str]) -> int:
+        """
+        Print watched QueueStreams in playlists given by IDs.
+
+        Args:
+            playlistIds (list[str]): List of playlistIds to print details of.
+            
+        Returns:
+            int: number of streams watched.
+        """
+        
+        includeSoftDeleted = True
+        result = 0
+        for id in playlistIds:
+            playlist = self.get(id, includeSoftDeleted)
+            
+            printS("\tWatched QueueStreams", color = BashColor.BOLD)
+            if(len(playlist.streamIds) == 0):
+                printS("\tNo streams added yet.")
+            
+            for i, streamId in enumerate(playlist.streamIds):
+                stream = self.queueStreamService.get(streamId, includeSoftDeleted)
+                
+                if(stream == None):
+                    printS("\tQueueStream not found (ID: \"", streamId, "\").", color = BashColor.FAIL)
+                    continue
+                
+                if(stream.watched == None):
+                    continue
+                
+                color = "WHITE" if i % 2 == 0 else "GREYBG"
+                sourceString = "from [missing]"
+                if(stream.streamSourceId != None):
+                    streamSource = self.streamSourceService.get(stream.streamSourceId, includeSoftDeleted)
+                    if(streamSource != None):
+                        sourceString = " from \"" + streamSource.name + "\"" 
+                        
+                printS("\t", str(i), " - ", stream.watchedString(), sourceString, color = BashColor[color])
                 
             result += 1
                 

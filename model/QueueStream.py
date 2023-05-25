@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import LiteralString, overload
 
 from grdUtil.DateTimeUtil import getDateTime
 
@@ -48,6 +49,22 @@ class QueueStream:
         return "".join(map(str, ["\"", self.name, "\"",
         ", watched" if(self.watched) else "",
         ", is web" if(self.isWeb) else ""]))
+
+    def watchedString(self):
+        return "".join(map(str, [self.id,
+        ", watched: " + str(self.watched)[0:20] if(self.watched) else "",
+        " - \"", self.withMaxLen(self.name, 20), "\" - "]))
+        
+    # TODO move to utils
+    def withMaxLen(self, s: str, maxLen: int = 0, withDots: bool = True):
+        short = s
+        if(len(short) > maxLen):
+            short = short[0:maxLen]
+        
+        if(withDots and maxLen > 3):
+            return short[0:maxLen-3] + "..."
+        
+        return short
 
     def detailsString(self, includeUri: bool = True, includeId: bool = True, includeDatetime: bool = True, includeListCount: bool = True):
         uriString = ", uri: " + self.uri if(includeUri) else ""

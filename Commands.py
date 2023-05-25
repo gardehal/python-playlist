@@ -39,6 +39,7 @@ class Commands():
         self.restorePlaylistCommands = ["restoreplaylist", "rpl", "rp"]
         self.listPlaylistCommands = ["listplaylist", "lpl", "lp"]
         self.detailsPlaylistCommands = ["detailsplaylist", "dp"]
+        self.ListWatchedCommands = ["listwatched", "lw"]
         self.fetchPlaylistSourcesCommands = ["fetch", "f", "update", "u"]
         self.prunePlaylistCommands = ["prune"]
         self.purgePlaylistCommands = ["purgeplaylists", "pp"]

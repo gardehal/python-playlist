@@ -176,12 +176,36 @@ class PlaylistCliController():
             int: number of playlists printed for.
         """
             
-        result = []
+        result = 0
         if(len(playlistIds) == 0):
             printS("Failed to print details, missing playlistIds or indices.", color = BashColor.FAIL)
             return result
         
         result = self.playlistService.printPlaylistDetails(playlistIds, includeUri, includeId, includeDatetime, includeListCount, includeSource)
+        if(result):
+            printS("Finished printing ", result, " details.", color = BashColor.OKGREEN)
+        else:
+            printS("Failed print details.", color = BashColor.FAIL)
+
+        return result
+    
+    def printWatchedStreams(self, playlistIds: List[str]) -> int:
+        """
+        Print watched QueueStreams in playlists given by IDs.
+
+        Args:
+            playlistIds (list[str]): List of playlistIds to print details of.
+            
+        Returns:
+            int: number of streams watched.
+        """
+            
+        result = 0
+        if(len(playlistIds) == 0):
+            printS("Failed to print watched streams, missing playlistIds or indices.", color = BashColor.FAIL)
+            return result
+        
+        result = self.playlistService.printWatchedStreams(playlistIds)
         if(result):
             printS("Finished printing ", result, " details.", color = BashColor.OKGREEN)
         else:

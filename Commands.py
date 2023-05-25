@@ -48,6 +48,7 @@ class Commands():
         # Playback
         self.playCommands = ["play", "p"]
         self.quitArguments = StaticUtil.quit
+        self.quitWatchedArguments = ["quitwatched", "qw"]
         self.skipArguments = ["skip", "s", "[C"] # [C = right arrow
         self.repeatArguments = ["repeat", "r"]
         self.listPlaylistArguments = ["listplaylists", "lp"]
@@ -150,6 +151,7 @@ class Commands():
 
         result = ""
         result += "\n\t" + str(self.quitArguments) + ": End current playback and continue the program without playing anymore QueueStreams in Playlist. Only available while Playlist is playing."
+        result += "\n\t" + str(self.quitWatchedArguments) + ": Mark current stream as watched and end playback as with quit. Only available while Playlist is playing."
         result += "\n\t" + str(self.skipArguments) + ": Skip current QueueStream playing. This QueueStream will not be marked as watched. Only available while Playlist is playing."
         result += "\n\t" + str(self.repeatArguments) + ": Repeat current QueueStream."
         result += "\n\t" + str(self.listPlaylistArguments) + ": List Playlists."

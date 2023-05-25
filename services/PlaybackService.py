@@ -29,6 +29,7 @@ class PlaybackService():
     queueStreamService: QueueStreamService = None
     streamSourceService: StreamSourceService = None
     quitInputs: List[str] = None
+    quitWatchedInputs: List[str] = None
     skipInputs: List[str] = None
     addToInputs: List[str] = None
     circumventRestricted: List[str] = None
@@ -42,6 +43,7 @@ class PlaybackService():
         self.queueStreamService = QueueStreamService()
         self.streamSourceService = StreamSourceService()
         self.quitInputs = self.commands.quitArguments
+        self.quitWatchedInputs = self.commands.quitWatchedArguments
         self.skipInputs = self.commands.skipArguments
         self.repeatInputs = self.commands.repeatArguments
         self.listPlaylistInputs = self.commands.listPlaylistArguments
@@ -133,15 +135,15 @@ class PlaybackService():
                 continue
 
             printS(f"{i} - Now playing \"{stream.name}\"" + ("..." if(i < (len(streams) - 1)) else ". This is the last stream in this playback, press enter to finish."), color = BashColor.BOLD)
-            inputHandleing = self.handlePlaybackInput(playlist, stream)
-            if(inputHandleing == 0):
+            inputHandling = self.handlePlaybackInput(playlist, stream)
+            if(inputHandling == 0):
                 printS("An error occurred while parsing inputs.", color = BashColor.ERROR)
                 return False
-            elif(inputHandleing == 1):
+            elif(inputHandling == 1):
                 pass
-            elif(inputHandleing == 2):
+            elif(inputHandling == 2):
                 continue
-            elif(inputHandleing == 3):
+            elif(inputHandling == 3):
                 break
             
             # subprocessStream.terminate() # TODO Doesn't seem to work with browser, at least not new tabs
@@ -161,6 +163,9 @@ class PlaybackService():
                 else:
                     printS("\"", stream.name, "\" could not be updated as watched.", color=BashColor.ERROR)
                     
+            elif(inputHandling == 4):
+                break
+            
         return nWatched
     
     def openQueueStreamBrowser(self, url: str) -> Popen:
@@ -193,6 +198,7 @@ class PlaybackService():
         1 - No action needed, parent loop should be allowed to finish as normal.
         2 - continue parent loop.
         3 - break parent loop.
+        4 - break parent loop later.
         """
         
         while 1: # Infinite loop until a return is hit
@@ -210,6 +216,9 @@ class PlaybackService():
             
             elif(len(self.quitInputs) > 0 and inputArgs in self.quitInputs):
                 return 3
+            
+            elif(len(self.quitWatchedInputs) > 0 and inputArgs in self.quitWatchedInputs):
+                return 4
             
             elif(len(self.repeatInputs) > 0 and inputArgs in self.repeatInputs):
                 printS("Repeating.", color = BashColor.OKGREEN)

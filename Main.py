@@ -377,7 +377,7 @@ class Main:
                     argIndex += 1
                     
         except KeyboardInterrupt:
-            printS("Program was aborted by user.", color = BashColor.WARNING)
+            printS("Program was aborted by user.", color = BashColor.OKGREEN)
 
 if __name__ == "__main__":
     Main.main()

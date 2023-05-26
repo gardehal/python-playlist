@@ -45,6 +45,7 @@ class Commands():
         self.purgePlaylistCommands = ["purgeplaylists", "pp"]
         self.purgeCommands = ["purge"]
         self.resetPlaylistFetchCommands = ["reset"]
+        self.downloadPlaylistCommands = ["downloadplaylist", "dwpl"]
         
         # Playback
         self.playCommands = ["play", "p"]
@@ -138,6 +139,7 @@ class Commands():
         result += "\n" + str(self.purgeCommands) + ": Purge all soft deleted entities."
         result += "\n" + str(self.resetPlaylistFetchCommands) + " [playlistIds or indices: list]: Resets fetch status of StreamSources in a Playlist and deletes QueueStreams from Playlist."
         result += "\n" + str(self.playCommands) + " [playlistId or index: str] [? startIndex: int] [? shuffle: bool] [? repeat: bool]: Start playing stream from a Playlist, order and automation (like skipping already watched QueueStreams) depending on the input and Playlist."
+        result += "\n" + str(self.downloadPlaylistCommands) + " [playlistId or index: str] [? startIndex: int] [? endIndex: int]: Download streams from web sources for given playlist, with optional start-end index."
         result += self.getPlaylistArgumentsHelpString()
         
         return result

@@ -86,7 +86,7 @@ class PlaybackService():
         if(shuffle):
             random.shuffle(streams)
 
-        printS("Playing ", playlist.name, ".")
+        printS("Playing ", playlist.name, "(", len(streams),  " streams total).")
         printS("Starting at stream number: ", (startIndex + 1), ", shuffle is ", ("on" if shuffle else "off"), ", repeat playlist is ", ("on" if repeatPlaylist else "off"), ", played videos set to watched is ", ("on" if self.settings.playedAlwaysWatched else "off"), ".")
 
         playResult = 0

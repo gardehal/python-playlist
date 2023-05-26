@@ -104,8 +104,8 @@ Program for queueing and playing videos from list or from sources like channels 
 ## TODO
 
 - some sources not html compatible, youtube?
-- download entire playlists to new dir 
-- list watched streams for pls
+- new function: download playlist, creates a new folder at path from settings, mp4s ordered by name ("0001_some video_some source")
+- option to fetch when on the last stream in playlist with fetch enabled?
 
 - setting for turning off print formatting (printS, printD)
 - play local/directory streams
@@ -113,13 +113,9 @@ Program for queueing and playing videos from list or from sources like channels 
 - implement file/folder, Rumble fetches
 - implement background content properly, should not wait for input, just play when previous stream finished (assume no ads/breaks/pauses, need playtime in model..)
 - add length of stream in seconds to qs
-- minor print issues and wording/use of IDs. Some prints can be simplified due to context (e.g. "Added StreamSource "X"", "StreamSource" unnecessary)
 - tests for core functions like fetch and play?
-- fetch youtube still slow, probably still loading all videos from channel, in library pytube
 - rename to python-playlist
-- Implement LogUtil? Ex. fetches, add YT playlist
 - reset doesn't work, not resetting sources
-- new function: download playlist, creates a new folder at path from settings, mp4s ordered by name ("0001_some video_some source")
 - add alwaysDownload to source? for channels who often delete/gets deleted/restricted/unlisted
-- restore source add source, have to check on deleted
+- restore/add source, have to check on deleted
 - command for re-queue/re-add stream from playlist during playback (something like "rw", removes stream, add it to the back of playlist)

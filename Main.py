@@ -5,33 +5,35 @@ from grdUtil.BashColor import BashColor
 from grdUtil.FileUtil import makeFiles
 from grdUtil.InputUtil import extractArgs, getIdsFromInput, getIfExists
 from grdUtil.PrintUtil import printLists, printS
+from pytube import Channel
 
 from Commands import Commands
-from controllers.SharedCliController import SharedCliController
 from controllers.PlaylistCliController import PlaylistCliController
 from controllers.QueueStreamCliController import QueueStreamCliController
+from controllers.SharedCliController import SharedCliController
 from controllers.StreamSourceCliController import StreamSourceCliController
+from services.DownloadService import DownloadService
 from services.FetchService import FetchService
 from services.LegacyService import LegacyService
 from services.PlaylistService import PlaylistService
 from services.SharedService import SharedService
 from services.StreamSourceService import StreamSourceService
 from Settings import Settings
-from pytube import Channel
 
 
 class Main:
-    commands = Commands()
-    settings = Settings()
-    legacyService = LegacyService()
-    playlistService = PlaylistService()
-    sharedService = SharedService()
-    streamSourceService = StreamSourceService()
+    commands: Commands = Commands()
+    settings: Settings = Settings()
+    downloadService: DownloadService = DownloadService()
+    fetchService: FetchService = FetchService()
+    legacyService: LegacyService = LegacyService()
+    playlistService: PlaylistService = PlaylistService()
+    sharedService: SharedService = SharedService()
+    streamSourceService: StreamSourceService = StreamSourceService()
     sharedCliController: SharedCliController = SharedCliController()
     playlistCliController: PlaylistCliController = PlaylistCliController()
     queueStreamCliController: QueueStreamCliController = QueueStreamCliController()
     streamSourceCliController: StreamSourceCliController = StreamSourceCliController()
-    test: FetchService = FetchService()
 
     def main():
         argC = len(sys.argv)
@@ -59,9 +61,7 @@ class Main:
                     inputArgs = extractArgs(argIndex, argV)
                     printS("Test", color = BashColor.OKBLUE)
                     
-                    id = "1c895925-a4cb-4628-a837-38ee5fede809"
-                    ss = Main.streamSourceService.get(id)
-                    f = Main.test.fetchYoutubeHtml(ss, 10)
+                    f = Main.downloadService.downloadOdysee("https://odysee.com/@SomeOrdinaryGamers:a/you-should-stop-using-windows-on-your:a")
                     print(f)
                     
                     quit()            
@@ -258,7 +258,7 @@ class Main:
                     startIndex = inputArgs[1] if(len(inputArgs) > 1) else 0
                     endIndex = inputArgs[2] if(len(inputArgs) > 1) else -1
 
-                    # Main.playlistCliController.downloadPlaylist(getIfExists(playlistIds, 0), int(startIndex), int(endIndex))
+                    Main.playlistCliController.downloadPlaylist(getIfExists(playlistIds, 0), int(startIndex), int(endIndex))
                     
                     argIndex += len(inputArgs) + 1
                     continue

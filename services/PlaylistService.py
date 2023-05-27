@@ -21,6 +21,7 @@ from Settings import Settings
 
 from services.QueueStreamService import QueueStreamService
 from services.StreamSourceService import StreamSourceService
+from services.StreamSourceService import StreamSourceService
 
 T = Playlist
 
@@ -552,6 +553,45 @@ class PlaylistService(BaseService[T]):
                         
                 color = "WHITE" if i % 2 == 0 else "GREYBG"
                 printS("\t", str(i), " - ", stream.watchedString(), sourceString, color = BashColor[color])
+                
+                result += 1
+                
+        return result
+    
+    def downloadPlaylist(self, playlistIds: List[str], startIndex: int = 0, endIndex: int = -1) -> int:
+        """
+        Download all/set of QueueStreams in Playlists given by IDs.
+
+        Args:
+            playlistIds (list[str]): List of playlistIds to download for.
+            startIndex (int): Start index to download for. Default 0 (first).
+            endIndex (int): End index to download for. Default -1 (last).
+            
+        Returns:
+            int: number of streams downloaded.
+        """
+        
+        includeSoftDeleted = True
+        result = 0
+        for id in playlistIds:
+            playlist = self.get(id, includeSoftDeleted)
+            
+            printS("\QueueStreams for \"", playlist.name, "\"", color = BashColor.BOLD)
+            if(len(playlist.streamIds) == 0):
+                printS("\tNo streams added yet.")
+            
+            streams = playlist.streamIds[startIndex:endIndex]
+            for i, streamId in enumerate(streams):
+                stream = self.queueStreamService.get(streamId, includeSoftDeleted)
+                
+                if(stream == None):
+                    printS("\tQueueStream not found (ID: \"", streamId, "\").", color = BashColor.FAIL)
+                    continue
+                
+                # download here
+                
+                color = "WHITE" if i % 2 == 0 else "GREYBG"
+                printS("\t", str(i), " - Downloading \"", stream.name, "\".", color = BashColor[color])
                 
                 result += 1
                 

@@ -131,13 +131,13 @@ class PlaybackService():
                 subprocessStream = self.openQueueStreamBrowser(stream.uri)
             else:
                 # TODO
-                printS("Non-web streams currently not supported, skipping video ", stream.name, color = BashColor.ERROR)
+                printS("Non-web streams currently not supported, skipping video ", stream.name, color = BashColor.FAIL)
                 continue
 
             printS(f"{i} - Now playing \"{stream.name}\"" + ("..." if(i < (len(streams) - 1)) else ". This is the last stream in this playback, press enter to finish."), color = BashColor.BOLD)
             inputHandling = self.handlePlaybackInput(playlist, stream)
             if(inputHandling == 0):
-                printS("An error occurred while parsing inputs.", color = BashColor.ERROR)
+                printS("An error occurred while parsing inputs.", color = BashColor.FAIL)
                 return False
             elif(inputHandling == 1):
                 pass

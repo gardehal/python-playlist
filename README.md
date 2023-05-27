@@ -106,6 +106,7 @@ Program for queueing and playing videos from list or from sources like channels 
 - some sources not html compatible, youtube?
 - new function: download playlist, creates a new folder at path from settings, mp4s ordered by name ("0001_some video_some source")
 - option to fetch when on the last stream in playlist with fetch enabled?
+- skip multiple streams, eg. "skip 4" skips 4, no number = 1 aka normal
 
 - setting for turning off print formatting (printS, printD)
 - play local/directory streams

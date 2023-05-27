@@ -1,13 +1,12 @@
 import json
 import sys
 from datetime import datetime
-from typing import List, Tuple
+from typing import List
 from xml.dom.minidom import parseString
 
 import mechanize
 import requests
 from bs4 import BeautifulSoup
-from enums.StreamSourceType import StreamSourceType
 from grdException.ArgumentException import ArgumentException
 from grdException.DatabaseException import DatabaseException
 from grdUtil.BashColor import BashColor
@@ -16,17 +15,18 @@ from grdUtil.FileUtil import mkdir
 from grdUtil.InputUtil import sanitize
 from grdUtil.PrintUtil import printD, printS
 from jsonpath_ng import jsonpath, parse
+from pytube import Channel
+
+from enums.StreamSourceType import StreamSourceType
 from model.OdyseeStream import OdyseeStream
 from model.Playlist import Playlist
 from model.PlaylistDetailed import PlaylistDetailed
 from model.QueueStream import QueueStream
 from model.StreamSource import StreamSource
-from pytube import Channel
-from Settings import Settings
-
 from services.PlaylistService import PlaylistService
 from services.QueueStreamService import QueueStreamService
 from services.StreamSourceService import StreamSourceService
+from Settings import Settings
 
 
 class FetchService():
@@ -167,7 +167,7 @@ class FetchService():
         printS(f"Fetching videos from {channel.channel_name}...")
         sys.stdout.flush()
         if(len(channel.video_urls) < 1):
-            printS(f"Channel {channel.channel_name} has no videos.", color = BashColor.ERROR)
+            printS(f"Channel {channel.channel_name} has no videos.", color = BashColor.FAIL)
             return emptyReturn
 
         newStreams = []
@@ -274,7 +274,7 @@ class FetchService():
             return emptyReturn
 
         if(len(streams) < 1):
-            printS(f"Channel {streamSource.name} has no videos.", color = BashColor.WARNING)
+            printS(f"Channel {streamSource.name} has no videos.", color = BashColor.FAIL)
             return emptyReturn
 
         newStreams = []
@@ -308,8 +308,6 @@ class FetchService():
                 remoteId = id)
             
             newStreams.append(queueStream)
-        
-        newStreams.reverse()
 
         return newStreams
     
@@ -338,7 +336,7 @@ class FetchService():
         document = None
         
         if(rssRequest.status_code != 200): # TODO code might be 200 with empty content or "oops nothing here". Test when Odysee is down next and update this
-            printS("Channel \"", streamSource.name, "\" (URL: ", streamSource.uri, ") could not be fetched, the connection likely timed out. Try again later", color = BashColor.ERROR)
+            printS("Channel \"", streamSource.name, "\" (URL: ", streamSource.uri, ") could not be fetched, the connection likely timed out. Try again later", color = BashColor.FAIL)
             return emptyReturn
         
         try:
@@ -351,7 +349,7 @@ class FetchService():
         printS(f"Fetching videos from {streamSource.name}...")
         sys.stdout.flush()
         if(len(streams) < 1):
-            printS(f"Channel {streamSource.name} has no videos.", color = BashColor.WARNING)
+            printS(f"Channel {streamSource.name} has no videos.", color = BashColor.FAIL)
             return emptyReturn
 
         newStreams = []

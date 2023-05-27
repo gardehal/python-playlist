@@ -498,7 +498,6 @@ class PlaylistService(BaseService[T]):
                     printS("\tQueueStream not found (ID: \"", streamId, "\").", color = BashColor.FAIL)
                     continue
                 
-                color = "WHITE" if i % 2 == 0 else "GREYBG"
                 sourceString = ""
                 if(includeSource and stream.streamSourceId != None):
                     streamSource = self.streamSourceService.get(stream.streamSourceId, includeSoftDeleted)
@@ -508,6 +507,7 @@ class PlaylistService(BaseService[T]):
                     else:
                         sourceString = ", StreamSource: \"" + streamSource.name + "\""
                         
+                color = "WHITE" if i % 2 == 0 else "GREYBG"
                 printS("\t", str(i), " - ", stream.detailsString(includeUri, includeId, includeDatetime, includeListCount), sourceString, color = BashColor[color])
                 
             result += 1
@@ -516,7 +516,7 @@ class PlaylistService(BaseService[T]):
     
     def printWatchedStreams(self, playlistIds: List[str]) -> int:
         """
-        Print watched QueueStreams in playlists given by IDs.
+        Print watched QueueStreams in Playlists given by IDs.
 
         Args:
             playlistIds (list[str]): List of playlistIds to print details of.
@@ -530,7 +530,7 @@ class PlaylistService(BaseService[T]):
         for id in playlistIds:
             playlist = self.get(id, includeSoftDeleted)
             
-            printS("\tWatched QueueStreams", color = BashColor.BOLD)
+            printS("\QueueStreams", color = BashColor.BOLD)
             if(len(playlist.streamIds) == 0):
                 printS("\tNo streams added yet.")
             
@@ -544,15 +544,15 @@ class PlaylistService(BaseService[T]):
                 if(stream.watched == None):
                     continue
                 
-                color = "WHITE" if i % 2 == 0 else "GREYBG"
                 sourceString = "from [missing]"
                 if(stream.streamSourceId != None):
                     streamSource = self.streamSourceService.get(stream.streamSourceId, includeSoftDeleted)
                     if(streamSource != None):
                         sourceString = " from \"" + streamSource.name + "\"" 
                         
+                color = "WHITE" if i % 2 == 0 else "GREYBG"
                 printS("\t", str(i), " - ", stream.watchedString(), sourceString, color = BashColor[color])
                 
-            result += 1
+                result += 1
                 
         return result

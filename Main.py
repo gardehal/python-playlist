@@ -255,8 +255,8 @@ class Main:
                     # Expected input: playlistId or index, startIndex, endIndex
                     inputArgs = extractArgs(argIndex, argV)
                     playlistIds = getIdsFromInput(inputArgs, Main.playlistService.getAllIds(), Main.playlistService.getAll(), 1, debug = Main.settings.debug)
-                    startIndex = inputArgs[1] if(len(inputArgs) > 1) else None
-                    endIndex = inputArgs[2] if(len(inputArgs) > 1) else None
+                    startIndex = inputArgs[1] if(len(inputArgs) > 1) else 0
+                    endIndex = inputArgs[2] if(len(inputArgs) > 1) else -1
 
                     # Main.playlistCliController.downloadPlaylist(getIfExists(playlistIds, 0), int(startIndex), int(endIndex))
                     

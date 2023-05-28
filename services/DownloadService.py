@@ -1,10 +1,12 @@
 import json
 import os
+import re
 import sys
 import urllib.request
 
 import mechanize
 from bs4 import BeautifulSoup
+from grdException.NotImplementedException import NotImplementedException
 from grdUtil.BashColor import BashColor
 from grdUtil.DateTimeUtil import getDateTimeAsNumber
 from grdUtil.FileUtil import mkdir
@@ -21,6 +23,28 @@ class DownloadService():
     
     def __init__(self):
         self.settings = Settings()
+        
+    def downloadStream(self, url: str, fileExtension: str = "mp4") -> str:
+        """
+        Download stream given by URL.
+
+        Args:
+            url (str): URL to stream.
+            fileExtension (str): File extension of stream.
+
+        Returns:
+            str: Absolute path of file.
+        """
+        
+        youtubeRegex = re.compile(r'\/youtu(\.?)be\.')
+        odyseeRegex = re.compile(r'(\.|\/)odysee\.')
+        
+        if(youtubeRegex.search(url)):
+            return self.downloadYoutube(url, fileExtension)
+        if(odyseeRegex.search(url)):
+            return self.downloadOdysee(url, fileExtension)
+        
+        raise NotImplementedException("No implementation for url: %s" % url)
         
     def getVideoPath(self, sourceName: str, name: str, fileExtension: str) -> str:
         """
@@ -93,17 +117,17 @@ class DownloadService():
             fileUrl = parse("$.contentUrl").find(jsonData)[0].value
             printD("File URL: ", fileUrl, debug = self.settings.debug)
             sys.stdout.flush()
-        except:
+        except Exception as e:
             printS("Failed getting video for ", url, color = BashColor.FAIL)
-            return "" # TODO throw x
+            return None
         
         if(videoTitle == None):
             videoTitle = "unknown_video"
             printS("Failed getting title, defaulting to ", videoTitle, color = BashColor.FAIL)
         
         if(fileUrl == None):
-            printS("Failed getting URL to video for ", url, color = BashColor.FAIL)
-            return "" # TODO throw x
+            printS("Failed getting source video for ", url, color = BashColor.FAIL)
+            return None
         
         printS("Downloading video from ", url)
         sys.stdout.flush()

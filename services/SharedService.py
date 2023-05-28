@@ -318,24 +318,4 @@ class SharedService():
                 data.playlists.append(entity)
         
         return data
-
-    def downloadYoutube(self, url: str, fileExtension: str = "mp4") -> str:
-        """
-        Download a Youtube video to given directory.
-
-        Args:
-            url (str): URL to video to download.
-
-        Returns:
-            str: Absolute path of file.
-        """
-        
-        videoDir = os.path.join(self.settings.localStoragePath, "video", "youtube")
-        mkdir(videoDir)
-        
-        youtube = YouTube(url)
-        videoFilename = f"{str(getDateTimeAsNumber())}_{sanitize(youtube.title)}.{fileExtension}".replace(" ", "_").lower()
-        youtube.streams.filter(progressive = True, file_extension = fileExtension).order_by("resolution").desc().first().download(videoDir, videoFilename)
-                
-        return os.path.join(videoDir, videoFilename)
     

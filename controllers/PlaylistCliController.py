@@ -5,7 +5,10 @@ from grdUtil.BashColor import BashColor
 from grdUtil.DateTimeUtil import getDateTime, stringToDatetime
 from grdUtil.InputUtil import isNumber
 from grdUtil.PrintUtil import printLists, printS
+
+from controllers.SharedCliController import SharedCliController
 from model.Playlist import Playlist
+from services.DownloadService import DownloadService
 from services.FetchService import FetchService
 from services.PlaybackService import PlaybackService
 from services.PlaylistService import PlaylistService
@@ -13,26 +16,26 @@ from services.QueueStreamService import QueueStreamService
 from services.StreamSourceService import StreamSourceService
 from Settings import Settings
 
-from controllers.SharedCliController import SharedCliController
-
 
 class PlaylistCliController():
-    settings: Settings = None
+    downloadService: DownloadService() = None
     fetchService: FetchService() = None
     playbackService: PlaybackService = None
     playlistService: PlaylistService = None
     queueStreamService: QueueStreamService = None
     streamSourceService: StreamSourceService = None
     sharedCliController: SharedCliController = None
+    settings: Settings = None
 
     def __init__(self):
-        self.settings = Settings()
+        self.downloadService = DownloadService()
         self.fetchService = FetchService()
         self.playbackService = PlaybackService()
         self.playlistService = PlaylistService()
         self.queueStreamService = QueueStreamService()
         self.streamSourceService = StreamSourceService()
         self.sharedCliController = SharedCliController()
+        self.settings = Settings()
         
     def addPlaylist(self, name: str, playWatchedStreams: bool, allowDuplicates: bool, streamSourceIds: List[str]) -> Playlist:
         """
@@ -294,7 +297,7 @@ class PlaylistCliController():
             repeatPlaylist (bool): repeat playlist once it reaches the end.
 
         Returns:
-            bool: Finished successfully.
+            int: number of streams played.
         """
         
         result = False
@@ -309,6 +312,49 @@ class PlaylistCliController():
         result = self.playbackService.play(playlistId, startIndex, shuffle, repeat)
         if(not result):
             playlist = self.playlistService.get(playlistId)
-            printS("Failed to play Playlist \"", playlist.name, "\".", color = BashColor.FAIL)
+            printS("Failed to play playlist \"", playlist.name, "\".", color = BashColor.FAIL)
+    
+        return result
+      
+    def downloadPlaylist(self, playlistId: str, startIndex: int = 0, endIndex: int = -1) -> List[str]:
+        """
+        Download all streams from playlist given by ID, starting at startIndex and ending at endIndex.
+
+        Args:
+            playlistId (str): ID of playlist to download from.
+            startIndex (int): Index of streams to start download from.
+            endIndex (int): Index of streams to end download from.
+
+        Returns:
+            List[str]: Absolute paths of streams downloaded.
+        """
+        
+        result = []
+        if(playlistId == None):
+            printS("Failed to download playlist, missing playlistIds or indices.", color = BashColor.FAIL)
+            return result
+        
+        if(not isNumber(startIndex, intOnly = True)):
+            printS("Failed to download playlist, input startIndex must be an integer.", color = BashColor.FAIL)
+            return result
+        
+        if(not isNumber(endIndex, intOnly = True)):
+            printS("Failed to download playlist, input endIndex must be an integer.", color = BashColor.FAIL)
+            return result
+        
+        playlist = self.playlistService.get(playlistId)
+        if(len(playlist.streamIds) == 0):
+            printS("Playlist \"", playlist.name, "\" has no streams, download aborted.", color = BashColor.OKGREEN)
+            
+        for streamId in playlist.streamIds:
+            stream = self.queueStreamService.get(streamId)
+            if(not stream.isWeb):
+                printS("Cannot download a non-web stream, \"", stream.name, "\" was skipped.", color = BashColor.WARNING)
+                continue
+            
+            result.append(self.downloadService.download(stream.uri, stream))
+            
+        if(len(result) == 0):
+            printS("Failed to download playlist \"", playlist.name, "\".", color = BashColor.FAIL)
     
         return result

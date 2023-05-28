@@ -3,8 +3,8 @@ jsonpath_ng==1.5.3
 mechanize==0.4.8
 psutil==5.9.0
 python-dotenv==0.21.0
-pytube==12.1.2
+pytube==15.0.0
 pytube3==9.6.4
 requests==2.26.0
 validators==0.18.2
-grdUtil==1.5.2
+grdUtil==1.5.3

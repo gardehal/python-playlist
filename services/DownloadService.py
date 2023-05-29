@@ -10,7 +10,7 @@ from grdException.NotImplementedException import NotImplementedException
 from grdUtil.BashColor import BashColor
 from grdUtil.DateTimeUtil import getDateTimeAsNumber
 from grdUtil.FileUtil import mkdir
-from grdUtil.InputUtil import sanitize
+from grdUtil.InputUtil import BashColor, sanitize
 from grdUtil.PrintUtil import printD, printS
 from jsonpath_ng import jsonpath, parse
 from pytube import YouTube
@@ -24,7 +24,7 @@ class DownloadService():
     def __init__(self):
         self.settings = Settings()
         
-    def downloadStream(self, url: str, fileExtension: str = "mp4") -> str:
+    def download(self, url: str, fileExtension: str = "mp4") -> str:
         """
         Download stream given by URL.
 
@@ -36,7 +36,7 @@ class DownloadService():
             str: Absolute path of file.
         """
         
-        youtubeRegex = re.compile(r'\/youtu(\.?)be\.')
+        youtubeRegex = re.compile(r'(\.|\/)youtu(\.?)be(\.|\/)')
         odyseeRegex = re.compile(r'(\.|\/)odysee\.')
         
         if(youtubeRegex.search(url)):
@@ -81,7 +81,13 @@ class DownloadService():
         youtube = YouTube(url)
         printS("Downloading video from ", url)
         videoPath = self.getVideoPath("youtube", youtube.title, fileExtension)
-        youtube.streams.filter(progressive = True, file_extension = fileExtension).order_by("resolution").desc().first().download(videoPath)
+        path = "/".join(videoPath.split("/")[0:-1])
+        name = videoPath.split("/")[-1]
+        try:
+            youtube.streams.filter(progressive = True, file_extension = fileExtension).order_by("resolution").desc().first().download(path, name)
+        except Exception as e:
+            printS("Failed download video: ", e, color = BashColor.FAIL)
+            return None
                 
         return videoPath
 
@@ -108,6 +114,10 @@ class DownloadService():
             br.open(url)
             html = br.response().read()
             document = BeautifulSoup(html, 'html.parser')
+            if(not "script" in document):
+                printS("No video data was found for url ", url, color = BashColor.FAIL)
+                return None
+            
             jsonString = document.find("script", { "type": "application/ld+json" }).text.strip()
             printD(jsonString, debug = (self.settings.debug and False))
             printD("Reading JSON...", debug = self.settings.debug)
@@ -118,7 +128,7 @@ class DownloadService():
             printD("File URL: ", fileUrl, debug = self.settings.debug)
             sys.stdout.flush()
         except Exception as e:
-            printS("Failed getting video for ", url, color = BashColor.FAIL)
+            printS("Failed getting video: ", e, color = BashColor.FAIL)
             return None
         
         if(videoTitle == None):
@@ -129,10 +139,13 @@ class DownloadService():
             printS("Failed getting source video for ", url, color = BashColor.FAIL)
             return None
         
-        printS("Downloading video from ", url)
-        sys.stdout.flush()
         videoPath = self.getVideoPath("odysee", videoTitle, fileExtension)
-        urllib.request.urlretrieve(fileUrl, videoPath) 
+        sys.stdout.flush()
+        try:
+            urllib.request.urlretrieve(fileUrl, videoPath) 
+        except Exception as e:
+            printS("Failed download video: ", e, color = BashColor.FAIL)
+            return None
                 
         return videoPath
     

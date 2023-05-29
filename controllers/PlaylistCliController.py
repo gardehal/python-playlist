@@ -352,7 +352,7 @@ class PlaylistCliController():
                 printS("Cannot download a non-web stream, \"", stream.name, "\" was skipped.", color = BashColor.WARNING)
                 continue
             
-            result.append(self.downloadService.download(stream.uri, stream))
+            result.append(self.downloadService.download(stream.uri))
             
         if(len(result) == 0):
             printS("Failed to download playlist \"", playlist.name, "\".", color = BashColor.FAIL)

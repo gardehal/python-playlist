@@ -24,12 +24,13 @@ class DownloadService():
     def __init__(self):
         self.settings = Settings()
         
-    def download(self, url: str, fileExtension: str = "mp4") -> str:
+    def download(self, url: str, directory: str, fileExtension: str = "mp4") -> str:
         """
         Download stream given by URL.
 
         Args:
             url (str): URL to stream.
+            directory (str): Directory (under self.settings.localStoragePath) to save downloaded content.
             fileExtension (str): File extension of stream.
 
         Returns:
@@ -40,9 +41,9 @@ class DownloadService():
         odyseeRegex = re.compile(r'(\.|\/)odysee\.')
         
         if(youtubeRegex.search(url)):
-            return self.downloadYoutube(url, fileExtension)
+            return self.downloadYoutube(url, directory, fileExtension)
         if(odyseeRegex.search(url)):
-            return self.downloadOdysee(url, fileExtension)
+            return self.downloadOdysee(url, directory, fileExtension)
         
         raise NotImplementedException("No implementation for url: %s" % url)
         
@@ -59,19 +60,21 @@ class DownloadService():
             str: Absolute path of file.
         """
         
-        directory = os.path.join(self.settings.localStoragePath, "video", sourceName)
+        source = sanitize(sourceName).replace(" ", "_").lower()
+        directory = os.path.join(self.settings.localStoragePath, "video", source)
         mkdir(directory)
         
         videoFilename = f"{str(getDateTimeAsNumber())}_{sanitize(name)}.{fileExtension}".replace(" ", "_").lower()
     
         return os.path.join(directory, videoFilename)
 
-    def downloadYoutube(self, url: str, fileExtension: str = "mp4") -> str:
+    def downloadYoutube(self, url: str, directory: str = "youtube", fileExtension: str = "mp4") -> str:
         """
         Download a Youtube video to given directory.
 
         Args:
             url (str): URL to video to download.
+            directory (str): Directory (under self.settings.localStoragePath) to save downloaded content.
             fileExtension (str): File extension of stream.
 
         Returns:
@@ -80,7 +83,7 @@ class DownloadService():
         
         youtube = YouTube(url)
         printS("Downloading video from ", url)
-        videoPath = self.getVideoPath("youtube", youtube.title, fileExtension)
+        videoPath = self.getVideoPath(directory, youtube.title, fileExtension)
         path = "/".join(videoPath.split("/")[0:-1])
         name = videoPath.split("/")[-1]
         try:
@@ -91,12 +94,13 @@ class DownloadService():
                 
         return videoPath
 
-    def downloadOdysee(self, url: str, fileExtension: str = "mp4") -> str:
+    def downloadOdysee(self, url: str, directory: str = "odysee", fileExtension: str = "mp4") -> str:
         """
         Download a Youtube video to given directory.
 
         Args:
             url (str): URL to video to download.
+            directory (str): Directory (under self.settings.localStoragePath) to save downloaded content.
             fileExtension (str): File extension of stream.
 
         Returns:
@@ -117,6 +121,7 @@ class DownloadService():
             scriptContent = document.find("script", { "type": "application/ld+json" })
             if(scriptContent == None):
                 printS("No content was found for URL \"", url, "\". Please check that the URL is correct.", color = BashColor.FAIL)
+                sys.stdout.flush()
                 return None
             
             jsonString = scriptContent.text.strip()
@@ -140,12 +145,13 @@ class DownloadService():
             videoTitle = "unknown_video"
             printS("Failed getting title, defaulting to ", videoTitle, color = BashColor.FAIL)
         
-        videoPath = self.getVideoPath("odysee", videoTitle, fileExtension)
+        videoPath = self.getVideoPath(directory, videoTitle, fileExtension)
         sys.stdout.flush()
         try:
             urllib.request.urlretrieve(fileUrl, videoPath) 
         except Exception as e:
             printS("Failed download video: ", e, color = BashColor.FAIL)
+            sys.stdout.flush()
             return None
 
         return videoPath

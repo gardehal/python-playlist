@@ -316,12 +316,13 @@ class PlaylistCliController():
     
         return result
       
-    def downloadPlaylist(self, playlistId: str, startIndex: int = 0, endIndex: int = -1) -> List[str]:
+    def downloadPlaylist(self, playlistId: str, directory: str = None, startIndex: int = None, endIndex: int = None) -> List[str]:
         """
         Download all streams from playlist given by ID, starting at startIndex and ending at endIndex.
 
         Args:
             playlistId (str): ID of playlist to download from.
+            directory (str): Directory (under self.settings.localStoragePath) to save downloaded content.
             startIndex (int): Index of streams to start download from.
             endIndex (int): Index of streams to end download from.
 
@@ -334,11 +335,11 @@ class PlaylistCliController():
             printS("Failed to download playlist, missing playlistIds or indices.", color = BashColor.FAIL)
             return result
         
-        if(not isNumber(startIndex, intOnly = True)):
+        if(startIndex != None and not isNumber(startIndex, intOnly = True)):
             printS("Failed to download playlist, input startIndex must be an integer.", color = BashColor.FAIL)
             return result
         
-        if(not isNumber(endIndex, intOnly = True)):
+        if(endIndex != None and not isNumber(endIndex, intOnly = True)):
             printS("Failed to download playlist, input endIndex must be an integer.", color = BashColor.FAIL)
             return result
         
@@ -346,15 +347,16 @@ class PlaylistCliController():
         if(len(playlist.streamIds) == 0):
             printS("Playlist \"", playlist.name, "\" has no streams, download aborted.", color = BashColor.OKGREEN)
             
-        for streamId in playlist.streamIds:
+        downloadDirectory = directory if(directory != None) else playlist.name
+        for streamId in playlist.streamIds[startIndex:endIndex]:
             stream = self.queueStreamService.get(streamId)
             if(not stream.isWeb):
                 printS("Cannot download a non-web stream, \"", stream.name, "\" was skipped.", color = BashColor.WARNING)
                 continue
             
-            result.append(self.downloadService.download(stream.uri))
+            result.append(self.downloadService.download(stream.uri, downloadDirectory))
             
         if(len(result) == 0):
-            printS("Failed to download playlist \"", playlist.name, "\".", color = BashColor.FAIL)
+            printS("Nothing was downloaded for playlist \"", playlist.name, "\".", color = BashColor.FAIL)
     
         return result

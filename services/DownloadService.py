@@ -109,16 +109,17 @@ class DownloadService():
         videoTitle = None
         fileUrl = None
         try:
-            printS("Fetching data for video ", url, " ...")
+            printS("Fetching data for video ", url)
             sys.stdout.flush()
             br.open(url)
             html = br.response().read()
             document = BeautifulSoup(html, 'html.parser')
-            if(not "script" in document):
-                printS("No video data was found for url ", url, color = BashColor.FAIL)
+            scriptContent = document.find("script", { "type": "application/ld+json" })
+            if(scriptContent == None):
+                printS("No content was found for URL \"", url, "\". Please check that the URL is correct.", color = BashColor.FAIL)
                 return None
             
-            jsonString = document.find("script", { "type": "application/ld+json" }).text.strip()
+            jsonString = scriptContent.text.strip()
             printD(jsonString, debug = (self.settings.debug and False))
             printD("Reading JSON...", debug = self.settings.debug)
             sys.stdout.flush()
@@ -131,13 +132,13 @@ class DownloadService():
             printS("Failed getting video: ", e, color = BashColor.FAIL)
             return None
         
-        if(videoTitle == None):
-            videoTitle = "unknown_video"
-            printS("Failed getting title, defaulting to ", videoTitle, color = BashColor.FAIL)
-        
         if(fileUrl == None):
             printS("Failed getting source video for ", url, color = BashColor.FAIL)
             return None
+        
+        if(videoTitle == None):
+            videoTitle = "unknown_video"
+            printS("Failed getting title, defaulting to ", videoTitle, color = BashColor.FAIL)
         
         videoPath = self.getVideoPath("odysee", videoTitle, fileExtension)
         sys.stdout.flush()
@@ -146,6 +147,6 @@ class DownloadService():
         except Exception as e:
             printS("Failed download video: ", e, color = BashColor.FAIL)
             return None
-                
+
         return videoPath
     

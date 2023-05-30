@@ -1,3 +1,5 @@
+import re
+import sys
 from datetime import datetime
 from typing import List
 
@@ -316,7 +318,7 @@ class PlaylistCliController():
     
         return result
       
-    def downloadPlaylist(self, playlistId: str, directory: str = None, startIndex: int = None, endIndex: int = None) -> List[str]:
+    def downloadPlaylist(self, playlistId: str, directory: str = None, startIndex: int = None, endIndex: int = None, nameRegex: str = None) -> List[str]:
         """
         Download all streams from playlist given by ID, starting at startIndex and ending at endIndex.
 
@@ -325,6 +327,7 @@ class PlaylistCliController():
             directory (str): Directory (under self.settings.localStoragePath) to save downloaded content.
             startIndex (int): Index of streams to start download from.
             endIndex (int): Index of streams to end download from.
+            nameRegex (str): Regex to use for name. Must be compilable to regex.
 
         Returns:
             List[str]: Absolute paths of streams downloaded.
@@ -343,10 +346,19 @@ class PlaylistCliController():
             printS("Failed to download playlist, input endIndex must be an integer.", color = BashColor.FAIL)
             return result
         
+        if(nameRegex != None):
+            try:
+                re.compile(nameRegex)
+                # nameRegex OK
+            except:
+                printS("Failed to download playlist, input nameRegex must compile to a regex pattern.", color = BashColor.FAIL)
+                return result
+        
         playlist = self.playlistService.get(playlistId)
         if(len(playlist.streamIds) == 0):
             printS("Playlist \"", playlist.name, "\" has no streams, download aborted.", color = BashColor.OKGREEN)
             
+        nameRegexCompiled = re.compile(nameRegex)
         downloadDirectory = directory if(directory != None) else playlist.name
         for streamId in playlist.streamIds[startIndex:endIndex]:
             stream = self.queueStreamService.get(streamId)
@@ -354,7 +366,12 @@ class PlaylistCliController():
                 printS("Cannot download a non-web stream, \"", stream.name, "\" was skipped.", color = BashColor.WARNING)
                 continue
             
-            result.append(self.downloadService.download(stream.uri, downloadDirectory))
+            try:
+                result.append(self.downloadService.download(stream.uri, downloadDirectory, nameRegex = nameRegexCompiled))
+            except Exception as e:
+                printS("Failed to download stream \"", stream.name, "\": ", e, color = BashColor.FAIL)
+                sys.stdout.flush()
+                continue
             
         if(len(result) == 0):
             printS("Nothing was downloaded for playlist \"", playlist.name, "\".", color = BashColor.FAIL)

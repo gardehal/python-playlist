@@ -3,9 +3,11 @@ import os
 import re
 import sys
 import urllib.request
+from re import Pattern
 
 import mechanize
 from bs4 import BeautifulSoup
+from grdException.ArgumentException import ArgumentException
 from grdException.NotImplementedException import NotImplementedException
 from grdUtil.BashColor import BashColor
 from grdUtil.DateTimeUtil import getDateTimeAsNumber
@@ -24,7 +26,7 @@ class DownloadService():
     def __init__(self):
         self.settings = Settings()
         
-    def download(self, url: str, directory: str, fileExtension: str = "mp4") -> str:
+    def download(self, url: str, directory: str, fileExtension: str = "mp4", nameRegex: Pattern[str] = None) -> str:
         """
         Download stream given by URL.
 
@@ -32,6 +34,7 @@ class DownloadService():
             url (str): URL to stream.
             directory (str): Directory (under self.settings.localStoragePath) to save downloaded content.
             fileExtension (str): File extension of stream.
+            nameRegex (Pattern[str]): Regex to use for name.
 
         Returns:
             str: Absolute path of file.
@@ -41,34 +44,50 @@ class DownloadService():
         odyseeRegex = re.compile(r'(\.|\/)odysee\.')
         
         if(youtubeRegex.search(url)):
-            return self.downloadYoutube(url, directory, fileExtension)
+            return self.downloadYoutube(url, directory, fileExtension, nameRegex)
         if(odyseeRegex.search(url)):
-            return self.downloadOdysee(url, directory, fileExtension)
+            return self.downloadOdysee(url, directory, fileExtension, nameRegex)
         
         raise NotImplementedException("No implementation for url: %s" % url)
         
-    def getVideoPath(self, sourceName: str, name: str, fileExtension: str) -> str:
+    def getVideoPath(self, sourceName: str, name: str, fileExtension: str, nameRegex: Pattern[str] = None) -> str:
         """
         Get absolute path to download videos to, filename, with extension.
 
         Args:
             sourceName (str): Name of source.
             name (str): Name of stream.
-            fileExtension (str): File extension of stream.
+            fileExtension (str): File extension (without .) of stream.
+            nameRegex (Pattern[str]): Regex to use for name.
 
         Returns:
             str: Absolute path of file.
         """
         
-        source = sanitize(sourceName).replace(" ", "_").lower()
-        directory = os.path.join(self.settings.localStoragePath, "video", source)
+        directory = os.path.join(self.settings.localStoragePath, "video", sanitize(sourceName))
         mkdir(directory)
         
-        videoFilename = f"{str(getDateTimeAsNumber())}_{sanitize(name)}.{fileExtension}".replace(" ", "_").lower()
+        useDefaultName = True
+        customName = sanitize(name, mode = 2)
+        if(nameRegex != None):
+            useDefaultName = False
+            customNameSearch = nameRegex.search(customName)
+            if(len(customNameSearch.groups()) > 0):
+                customNameMatch = customNameSearch.groups()[0]
+                printS("Using Regex: \"", nameRegex, "\" on name \"", customName, "\". Result: \"", customNameMatch, "\"", color = BashColor.OKGREEN)
+                sys.stdout.flush()
+                customName = customNameMatch
+            else:
+                raise ArgumentException(f"The supplied Regex: \"{nameRegex}\" did not match anything in stream named \"{name}\". Could not determine desired name.")
+
+        videoFilename = f"{customName}.{fileExtension}"
+        
+        if(useDefaultName):
+            videoFilename = f"{str(getDateTimeAsNumber())}_{videoFilename}".replace(" ", "_").lower()
     
         return os.path.join(directory, videoFilename)
 
-    def downloadYoutube(self, url: str, directory: str = "youtube", fileExtension: str = "mp4") -> str:
+    def downloadYoutube(self, url: str, directory: str = "youtube", fileExtension: str = "mp4", nameRegex: Pattern[str] = None) -> str:
         """
         Download a Youtube video to given directory.
 
@@ -76,6 +95,7 @@ class DownloadService():
             url (str): URL to video to download.
             directory (str): Directory (under self.settings.localStoragePath) to save downloaded content.
             fileExtension (str): File extension of stream.
+            nameRegex (Pattern[str]): Regex to use for name.
 
         Returns:
             str: Absolute path of file.
@@ -83,7 +103,7 @@ class DownloadService():
         
         youtube = YouTube(url)
         printS("Downloading video from ", url)
-        videoPath = self.getVideoPath(directory, youtube.title, fileExtension)
+        videoPath = self.getVideoPath(directory, youtube.title, fileExtension, nameRegex)
         path = "/".join(videoPath.split("/")[0:-1])
         name = videoPath.split("/")[-1]
         try:
@@ -94,7 +114,7 @@ class DownloadService():
                 
         return videoPath
 
-    def downloadOdysee(self, url: str, directory: str = "odysee", fileExtension: str = "mp4") -> str:
+    def downloadOdysee(self, url: str, directory: str = "odysee", fileExtension: str = "mp4", nameRegex: Pattern[str] = None) -> str:
         """
         Download a Youtube video to given directory.
 
@@ -102,6 +122,7 @@ class DownloadService():
             url (str): URL to video to download.
             directory (str): Directory (under self.settings.localStoragePath) to save downloaded content.
             fileExtension (str): File extension of stream.
+            nameRegex (Pattern[str]): Regex to use for name.
 
         Returns:
             str: Absolute path of file.
@@ -139,14 +160,15 @@ class DownloadService():
         
         if(fileUrl == None):
             printS("Failed getting source video for ", url, color = BashColor.FAIL)
+            sys.stdout.flush()
             return None
         
         if(videoTitle == None):
             videoTitle = "unknown_video"
             printS("Failed getting title, defaulting to ", videoTitle, color = BashColor.FAIL)
+            sys.stdout.flush()
         
-        videoPath = self.getVideoPath(directory, videoTitle, fileExtension)
-        sys.stdout.flush()
+        videoPath = self.getVideoPath(directory, videoTitle, fileExtension, nameRegex)
         try:
             urllib.request.urlretrieve(fileUrl, videoPath) 
         except Exception as e:

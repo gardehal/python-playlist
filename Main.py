@@ -61,8 +61,10 @@ class Main:
                     inputArgs = extractArgs(argIndex, argV)
                     printS("Test", color = BashColor.OKBLUE)
                     
-                    f = Main.downloadService.downloadOdysee("https://odysee.com/@SomeOrdinaryGamers:a/you-should-stop-using-windows-on-your:a")
-                    print(f)
+                    
+                    x = [1, 2, 3, 4, 5, 6, 7]
+                    printS(x[None:None])
+                    c = int(None)
                     
                     quit()            
                     
@@ -252,13 +254,14 @@ class Main:
                     continue
 
                 elif(arg in Main.commands.downloadPlaylistCommands):
-                    # Expected input: playlistId or index, startIndex, endIndex
+                    # Expected input: playlistId or index, directoryName, startIndex, endIndex
                     inputArgs = extractArgs(argIndex, argV)
                     playlistIds = getIdsFromInput(inputArgs, Main.playlistService.getAllIds(), Main.playlistService.getAll(), 1, debug = Main.settings.debug)
-                    startIndex = inputArgs[1] if(len(inputArgs) > 1) else 0
-                    endIndex = inputArgs[2] if(len(inputArgs) > 1) else -1
-
-                    Main.playlistCliController.downloadPlaylist(getIfExists(playlistIds, 0), int(startIndex), int(endIndex))
+                    directoryName = inputArgs[1] if(len(inputArgs) > 1) else None
+                    startIndex = int(inputArgs[2]) if(len(inputArgs) > 2) else None
+                    endIndex = int(inputArgs[3]) if(len(inputArgs) > 3) else None
+                    
+                    Main.playlistCliController.downloadPlaylist(getIfExists(playlistIds, 0), directoryName, startIndex, endIndex)
                     
                     argIndex += len(inputArgs) + 1
                     continue

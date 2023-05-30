@@ -103,15 +103,16 @@ Program for queueing and playing videos from list or from sources like channels 
 
 ## TODO
 
+- printS and printD NEED sys.stdout.flush()
 - option to fetch when on the last stream in playlist with fetch enabled?
 - skip multiple streams, eg. "skip 4" skips 4, no number = 1 aka normal
 - playback option to replay stream
 - add names of things, like when deleting streams from playlist (better feedback for user) 
 - fix some of the index/int usage, should use index in printing lists
 - new argument to add multiple streams to playlist, like ["addmultiple", "am"], like normal add, but list of streams
-- print lits etc. in alphabetical order, add prop for favourite playlists, printed in special block at the top (or bottom)
+- print lists etc. in alphabetical order, add prop for favourite playlists, printed in special block at the top (or bottom)
 - download streams, set index+1 as prefix?
-- naming regex for downloaded videos (eg. 20 videos names "Duplicate text: actual title", regex would be "^.{0,16}(.{0,}$)" or ": (.*)")
+- naming for downloaded videos, enumerate streams
 
 - setting for turning off print formatting (printS, printD)
 - play local/directory streams

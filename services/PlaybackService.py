@@ -5,20 +5,21 @@ import uuid
 from copy import copy
 from typing import List
 
-from Commands import Commands
-from enums.StreamSourceType import StreamSourceType, StreamSourceTypeUtil
 from grdUtil.BashColor import BashColor
 from grdUtil.DateTimeUtil import getDateTime
-from grdUtil.InputUtil import getIdsFromInput, sanitize
+from grdUtil.InputUtil import getIdsFromInput, isNumber, sanitize
 from grdUtil.PrintUtil import printD, printLists, printS, printStack
+from psutil import Popen
+
+from Commands import Commands
+from enums.StreamSourceType import StreamSourceType, StreamSourceTypeUtil
+from model.PlaybackInput import PlaybackInput
 from model.Playlist import Playlist
 from model.QueueStream import QueueStream
-from psutil import Popen
-from Settings import Settings
-
 from services.PlaylistService import PlaylistService
 from services.QueueStreamService import QueueStreamService
 from services.StreamSourceService import StreamSourceService
+from Settings import Settings
 
 
 class PlaybackService():
@@ -120,7 +121,13 @@ class PlaybackService():
         """
         
         nWatched = 0
+        streamsToSkip = 0
         for i, stream in enumerate(streams):
+            if(streamsToSkip > 0):
+                streamsToSkip = streamsToSkip - 1
+                printS("Skipping \"", stream.name, "\".", color = BashColor.OKGREEN)
+                continue
+            
             if(stream.watched != None and not playlist.playWatchedStreams):
                 checkLogsMessage = " Check your logs (" + self.settings.watchedLogFilepath + ") for date/time watched." if self.settings.logWatched else " Logging is disabled and date/time watched is not available."
                 printS("Stream \"", stream.name, "\" (ID: ", stream.id, ") has been marked as watched.", checkLogsMessage, color = BashColor.WARNING)
@@ -139,11 +146,12 @@ class PlaybackService():
             if(inputHandling == 0):
                 printS("An error occurred while parsing inputs.", color = BashColor.FAIL)
                 return False
-            elif(inputHandling == 1):
+            elif(inputHandling.code == 1):
                 pass
-            elif(inputHandling == 2):
+            elif(inputHandling.code == 2):
+                streamsToSkip = inputHandling.nSkip
                 continue
-            elif(inputHandling == 3):
+            elif(inputHandling.code == 3):
                 break
             
             # subprocessStream.terminate() # TODO Doesn't seem to work with browser, at least not new tabs
@@ -163,7 +171,7 @@ class PlaybackService():
                 else:
                     printS("\"", stream.name, "\" could not be updated as watched.", color=BashColor.ERROR)
             
-            if(inputHandling == 4):
+            if(inputHandling.code == 4):
                 break
             
         return nWatched
@@ -185,7 +193,7 @@ class PlaybackService():
         # return subprocess.Popen([self.settings.browserBin, f"{stream.uri}"], stdout=subprocess.PIPE, shell=False) # PID set by this SHOULD be browser, but is not
                 
 
-    def handlePlaybackInput(self, playlist: Playlist, stream: QueueStream) -> int:
+    def handlePlaybackInput(self, playlist: Playlist, stream: QueueStream) -> PlaybackInput:
         """
         Handles user input and returns an int code for what the calling method should do regarding it's own loop.
         
@@ -199,6 +207,9 @@ class PlaybackService():
         2 - continue parent loop.
         3 - break parent loop.
         4 - break parent loop later.
+        
+        Returns:
+            PlaybackInput: Object with code and other arguments.
         """
         
         while 1: # Infinite loop until a return is hit
@@ -208,17 +219,26 @@ class PlaybackService():
             inputArgs = sanitize(input(inputMessage).strip(), mode = 2)
                 
             if(inputArgs == ""):
-                return 1
+                return PlaybackInput(1)
             
-            elif(len(self.skipInputs) > 0 and inputArgs in self.skipInputs):
-                printS("Skipping.", color = BashColor.OKGREEN)
-                return 2
+            elif((len(self.skipInputs) > 0 and inputArgs in self.skipInputs) or (" " in inputArgs and inputArgs.split(" ")[0] in self.skipInputs)):
+                if(" " not in inputArgs):
+                    printS("Skipping stream...", color = BashColor.OKGREEN)
+                    return PlaybackInput(2, 0)
+                
+                nSkip = inputArgs.split(" ")[1]
+                if(len(nSkip) > 0 and isNumber(nSkip, intOnly = True)):
+                    printS("Skipping ", nSkip, " stream(s)...", color = BashColor.OKGREEN)
+                    return PlaybackInput(2, int(nSkip))
+                else:
+                    printS("Could not skip multiple streams, \"", nSkip, "\" is not a number.", color = BashColor.FAIL)
+                    return PlaybackInput(2, 0)
             
             elif(len(self.quitInputs) > 0 and inputArgs in self.quitInputs):
-                return 3
+                return PlaybackInput(3)
             
             elif(len(self.quitWatchedInputs) > 0 and inputArgs in self.quitWatchedInputs):
-                return 4
+                return PlaybackInput(4)
             
             elif(len(self.repeatInputs) > 0 and inputArgs in self.repeatInputs):
                 printS("Repeating.", color = BashColor.OKGREEN)

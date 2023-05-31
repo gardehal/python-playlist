@@ -155,7 +155,7 @@ class Commands():
         result = ""
         result += "\n\t" + str(self.quitArguments) + ": End current playback and continue the program without playing anymore QueueStreams in Playlist. Only available while Playlist is playing."
         result += "\n\t" + str(self.quitWatchedArguments) + ": Mark current stream as watched and end playback as with quit. Only available while Playlist is playing."
-        result += "\n\t" + str(self.skipArguments) + ": Skip current QueueStream playing. This QueueStream will not be marked as watched. Only available while Playlist is playing."
+        result += "\n\t" + str(self.skipArguments) + " [nSkip: int]: Skip current QueueStream playing. This QueueStream will not be marked as watched. Only available while Playlist is playing. Optional argument to skip multiple by giving number to skip, default 0 (current stream only)."
         result += "\n\t" + str(self.repeatArguments) + ": Repeat current QueueStream."
         result += "\n\t" + str(self.listPlaylistArguments) + ": List Playlists."
         result += "\n\t" + str(self.addCurrentToPlaylistArguments) + " [playlistId or index: str]: Add the current QueueStream to another Playlist indicated by ID on index. Only available while Playlist is playing."

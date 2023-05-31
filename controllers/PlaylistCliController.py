@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import List
 
 from grdUtil.BashColor import BashColor
-from grdUtil.DateTimeUtil import getDateTime, stringToDatetime
+from grdUtil.DateTimeUtil import getDateTime
 from grdUtil.InputUtil import isNumber
 from grdUtil.PrintUtil import printLists, printS
 
@@ -318,7 +318,7 @@ class PlaylistCliController():
     
         return result
       
-    def downloadPlaylist(self, playlistId: str, directory: str = None, startIndex: int = None, endIndex: int = None, nameRegex: str = None) -> List[str]:
+    def downloadPlaylist(self, playlistId: str, directory: str = None, startIndex: int = None, endIndex: int = None, nameRegex: str = None, useIndex: bool = True) -> List[str]:
         """
         Download all streams from playlist given by ID, starting at startIndex and ending at endIndex.
 
@@ -328,6 +328,7 @@ class PlaylistCliController():
             startIndex (int): Index of streams to start download from.
             endIndex (int): Index of streams to end download from.
             nameRegex (str): Regex to use for name. Must be compilable to regex.
+            useIndex (bool): Add index to the stream name, in the order streams appear in playlist.
 
         Returns:
             List[str]: Absolute paths of streams downloaded.
@@ -346,9 +347,10 @@ class PlaylistCliController():
             printS("Failed to download playlist, input endIndex must be an integer.", color = BashColor.FAIL)
             return result
         
+        nameRegexCompiled = None
         if(nameRegex != None):
             try:
-                re.compile(nameRegex)
+                nameRegexCompiled = re.compile(nameRegex)
                 # nameRegex OK
             except:
                 printS("Failed to download playlist, input nameRegex must compile to a regex pattern.", color = BashColor.FAIL)
@@ -358,16 +360,20 @@ class PlaylistCliController():
         if(len(playlist.streamIds) == 0):
             printS("Playlist \"", playlist.name, "\" has no streams, download aborted.", color = BashColor.OKGREEN)
             
-        nameRegexCompiled = re.compile(nameRegex)
         downloadDirectory = directory if(directory != None) else playlist.name
-        for streamId in playlist.streamIds[startIndex:endIndex]:
+        for i, streamId in enumerate(playlist.streamIds[startIndex:endIndex]):
             stream = self.queueStreamService.get(streamId)
             if(not stream.isWeb):
                 printS("Cannot download a non-web stream, \"", stream.name, "\" was skipped.", color = BashColor.WARNING)
                 continue
             
             try:
-                result.append(self.downloadService.download(stream.uri, downloadDirectory, nameRegex = nameRegexCompiled))
+                prefix = f"{i+1} " if(useIndex) else None
+                result.append(self.downloadService.download(stream.uri, downloadDirectory, nameRegex = nameRegexCompiled, prefix = prefix))
+            except AttributeError as e:
+                printS("Failed to download stream \"", stream.name, "\": Regex was not matched", color = BashColor.FAIL)
+                sys.stdout.flush()
+                continue
             except Exception as e:
                 printS("Failed to download stream \"", stream.name, "\": ", e, color = BashColor.FAIL)
                 sys.stdout.flush()

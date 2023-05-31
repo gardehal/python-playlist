@@ -26,7 +26,7 @@ class DownloadService():
     def __init__(self):
         self.settings = Settings()
         
-    def download(self, url: str, directory: str, fileExtension: str = "mp4", nameRegex: Pattern[str] = None) -> str:
+    def download(self, url: str, directory: str, fileExtension: str = "mp4", nameRegex: Pattern[str] = None, prefix: str = None) -> str:
         """
         Download stream given by URL.
 
@@ -35,6 +35,7 @@ class DownloadService():
             directory (str): Directory (under self.settings.localStoragePath) to save downloaded content.
             fileExtension (str): File extension of stream.
             nameRegex (Pattern[str]): Regex to use for name.
+            prefix (str): Any string to prefix filename with.
 
         Returns:
             str: Absolute path of file.
@@ -44,13 +45,13 @@ class DownloadService():
         odyseeRegex = re.compile(r'(\.|\/)odysee\.')
         
         if(youtubeRegex.search(url)):
-            return self.downloadYoutube(url, directory, fileExtension, nameRegex)
+            return self.downloadYoutube(url, directory, fileExtension, nameRegex, prefix)
         if(odyseeRegex.search(url)):
-            return self.downloadOdysee(url, directory, fileExtension, nameRegex)
+            return self.downloadOdysee(url, directory, fileExtension, nameRegex, prefix)
         
         raise NotImplementedException("No implementation for url: %s" % url)
         
-    def getVideoPath(self, sourceName: str, name: str, fileExtension: str, nameRegex: Pattern[str] = None) -> str:
+    def getVideoPath(self, sourceName: str, name: str, fileExtension: str, nameRegex: Pattern[str] = None, prefix: str = None) -> str:
         """
         Get absolute path to download videos to, filename, with extension.
 
@@ -59,6 +60,7 @@ class DownloadService():
             name (str): Name of stream.
             fileExtension (str): File extension (without .) of stream.
             nameRegex (Pattern[str]): Regex to use for name.
+            prefix (str): Any string to prefix filename with.
 
         Returns:
             str: Absolute path of file.
@@ -81,13 +83,16 @@ class DownloadService():
                 raise ArgumentException(f"The supplied Regex: \"{nameRegex}\" did not match anything in stream named \"{name}\". Could not determine desired name.")
 
         videoFilename = f"{customName}.{fileExtension}"
-        
+            
         if(useDefaultName):
             videoFilename = f"{str(getDateTimeAsNumber())}_{videoFilename}".replace(" ", "_").lower()
+        
+        if(prefix != None):
+            videoFilename = f"{prefix}{videoFilename}"
     
         return os.path.join(directory, videoFilename)
 
-    def downloadYoutube(self, url: str, directory: str = "youtube", fileExtension: str = "mp4", nameRegex: Pattern[str] = None) -> str:
+    def downloadYoutube(self, url: str, directory: str = "youtube", fileExtension: str = "mp4", nameRegex: Pattern[str] = None, prefix: str = None) -> str:
         """
         Download a Youtube video to given directory.
 
@@ -96,6 +101,7 @@ class DownloadService():
             directory (str): Directory (under self.settings.localStoragePath) to save downloaded content.
             fileExtension (str): File extension of stream.
             nameRegex (Pattern[str]): Regex to use for name.
+            prefix (str): Any string to prefix filename with.
 
         Returns:
             str: Absolute path of file.
@@ -103,7 +109,7 @@ class DownloadService():
         
         youtube = YouTube(url)
         printS("Downloading video from ", url)
-        videoPath = self.getVideoPath(directory, youtube.title, fileExtension, nameRegex)
+        videoPath = self.getVideoPath(directory, youtube.title, fileExtension, nameRegex, prefix)
         path = "/".join(videoPath.split("/")[0:-1])
         name = videoPath.split("/")[-1]
         try:
@@ -114,7 +120,7 @@ class DownloadService():
                 
         return videoPath
 
-    def downloadOdysee(self, url: str, directory: str = "odysee", fileExtension: str = "mp4", nameRegex: Pattern[str] = None) -> str:
+    def downloadOdysee(self, url: str, directory: str = "odysee", fileExtension: str = "mp4", nameRegex: Pattern[str] = None, prefix: str = None) -> str:
         """
         Download a Youtube video to given directory.
 
@@ -123,6 +129,7 @@ class DownloadService():
             directory (str): Directory (under self.settings.localStoragePath) to save downloaded content.
             fileExtension (str): File extension of stream.
             nameRegex (Pattern[str]): Regex to use for name.
+            prefix (str): Any string to prefix filename with.
 
         Returns:
             str: Absolute path of file.
@@ -168,7 +175,7 @@ class DownloadService():
             printS("Failed getting title, defaulting to ", videoTitle, color = BashColor.FAIL)
             sys.stdout.flush()
         
-        videoPath = self.getVideoPath(directory, videoTitle, fileExtension, nameRegex)
+        videoPath = self.getVideoPath(directory, videoTitle, fileExtension, nameRegex, prefix)
         try:
             urllib.request.urlretrieve(fileUrl, videoPath) 
         except Exception as e:

@@ -139,7 +139,7 @@ class Commands():
         result += "\n" + str(self.purgeCommands) + ": Purge all soft deleted entities."
         result += "\n" + str(self.resetPlaylistFetchCommands) + " [playlistIds or indices: list]: Resets fetch status of StreamSources in a Playlist and deletes QueueStreams from Playlist."
         result += "\n" + str(self.playCommands) + " [playlistId or index: str] [? startIndex: int] [? shuffle: bool] [? repeat: bool]: Start playing stream from a Playlist, order and automation (like skipping already watched QueueStreams) depending on the input and Playlist."
-        result += "\n" + str(self.downloadPlaylistCommands) + " [playlistId or index: str] [? directoryName: str] [? startIndex: int] [? endIndex: int] [? streamNameRegex: str]: Download streams from web sources for given playlist, with optional directory name (under localStoragePath in settings), start-end index, and a regex for naming streams (e.g. all streams are named \"Podcast guys: Actual Title\", use regex \": (.*)\", including \"s)."
+        result += "\n" + str(self.downloadPlaylistCommands) + " [playlistId or index: str] [? directoryName: str] [? startIndex: int] [? endIndex: int] [? streamNameRegex: str] [? useIndex: bool]: Download streams from web sources for given playlist, with optional directory name (under localStoragePath in settings), start-end index, regex for naming streams (e.g. all streams are named \"Podcast guys: Actual Title\", use regex \": (.*)\", including \"s), and option to add index (+1) on stream names so they naturally sort in order."
         result += self.getPlaylistArgumentsHelpString()
         
         return result

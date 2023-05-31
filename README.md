@@ -103,7 +103,14 @@ Program for queueing and playing videos from list or from sources like channels 
 
 ## TODO
 
+util:
+- respect max width of terminal window
 - printS and printD NEED sys.stdout.flush()
+- move withmaxlenth to util, extension method?
+- sanitize make replacement an arg
+- setting for turning off print formatting (printS, printD)
+
+- update pips
 - option to fetch when on the last stream in playlist with fetch enabled?
 - skip multiple streams, eg. "skip 4" skips 4, no number = 1 aka normal
 - playback option to replay stream
@@ -114,15 +121,14 @@ Program for queueing and playing videos from list or from sources like channels 
 - download streams, set index+1 as prefix?
 - naming for downloaded videos, enumerate streams
 
-- setting for turning off print formatting (printS, printD)
 - play local/directory streams
 - support for mp3s
 - implement file/folder, Rumble fetches
 - implement background content properly, should not wait for input, just play when previous stream finished (assume no ads/breaks/pauses, need playtime in model..)
-- add length of stream in seconds to qs
 - tests for core functions like fetch and play?
 - rename to python-playlist
 - reset doesn't work, not resetting sources
-- add alwaysDownload to source? for channels who often delete/gets deleted/restricted/unlisted
 - restore/add source, have to check on deleted
 - command for re-queue/re-add stream from playlist during playback (something like "rw", removes stream, add it to the back of playlist)
+- add length of stream in seconds to qs
+- add alwaysDownload to source? for channels who often delete/gets deleted/restricted/unlisted

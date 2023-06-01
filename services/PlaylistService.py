@@ -533,11 +533,10 @@ class PlaylistService(BaseService[T]):
         for id in playlistIds:
             playlist = self.get(id, includeSoftDeleted)
             
-            print("\n")
             if(len(playlist.streamIds) == 0):
                 printS("\tNo streams added yet.")
             
-            j = streamStartIndex + 1
+            j = streamStartIndex
             for i, streamId in enumerate(playlist.streamIds[streamStartIndex:]):
                 stream = self.queueStreamService.get(streamId, includeSoftDeleted)
                 if(stream == None):

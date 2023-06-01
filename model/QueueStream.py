@@ -49,6 +49,9 @@ class QueueStream:
         ", watched" if(self.watched) else "",
         ", is web" if(self.isWeb) else ""]))
 
+    def shortString(self):
+        return "".join(map(str, ["\"", self.withMaxLen(self.name, 40), "\""]))
+
     def watchedString(self):
         return "".join(map(str, [self.id,
         ", watched: " + str(self.watched)[0:20] if(self.watched) else "",

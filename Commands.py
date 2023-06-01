@@ -57,6 +57,7 @@ class Commands():
         self.addCurrentToPlaylistArguments = ["addto", "at"]
         self.circumventRestricted = ["circumventrestricted", "circumvent", "restricted", "cr"]
         self.printPlaybackDetailsArguments = ["detailsprint", "details", "print", "dp"]
+        self.nextArguments = ["next", "n"]
         self.printPlaybackHelpArguments = ["help", "h"]
 
         # Stream
@@ -161,6 +162,7 @@ class Commands():
         result += "\n\t" + str(self.addCurrentToPlaylistArguments) + " [playlistId or index: str]: Add the current QueueStream to another Playlist indicated by ID on index. Only available while Playlist is playing."
         result += "\n\t" + str(self.circumventRestricted) + ": Open a website that will get around age-restricted video in case you are not logged in. Only use if you are 18 or older!"
         result += "\n\t" + str(self.printPlaybackDetailsArguments) + ": Prints details of current playing Playlist."
+        result += "\n\t" + str(self.nextArguments) + ": Prints simple list of next streams."
         result += "\n\t" + str(self.printPlaybackHelpArguments) + ": Prints relevant help during playback."
         
         return result

@@ -111,6 +111,7 @@ util:
 - setting for turning off print formatting (printS, printD)
 - extractArgs must allow None and not escape it to string "None"
 
+- "next" command in playback that gives less cluttered/infomaxxed output than dp
 - update pips
 - option to fetch when on the last stream in playlist with fetch enabled?
 - playback option to replay stream

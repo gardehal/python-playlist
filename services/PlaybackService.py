@@ -51,6 +51,7 @@ class PlaybackService():
         self.addToInputs = self.commands.addCurrentToPlaylistArguments
         self.circumventRestricted = self.commands.circumventRestricted
         self.printDetailsInputs = self.commands.printPlaybackDetailsArguments
+        self.nextInputs = self.commands.nextArguments
         self.printHelpInputs = self.commands.printPlaybackHelpArguments
 
     def play(self, playlistId: str, startIndex: int = 0, shuffle: bool = False, repeatPlaylist: bool = False) -> bool:
@@ -191,7 +192,6 @@ class PlaybackService():
         
         # https://stackoverflow.com/questions/7989922/opening-a-process-with-popen-and-getting-the-pid
         # return subprocess.Popen([self.settings.browserBin, f"{stream.uri}"], stdout=subprocess.PIPE, shell=False) # PID set by this SHOULD be browser, but is not
-                
 
     def handlePlaybackInput(self, playlist: Playlist, stream: QueueStream) -> PlaybackInput:
         """
@@ -271,6 +271,10 @@ class PlaybackService():
             
             elif(len(self.printDetailsInputs) > 0 and inputArgs in self.printDetailsInputs):
                 self.playlistService.printPlaylistDetails([playlist.id])
+                
+            elif(len(self.nextInputs) > 0 and inputArgs in self.nextInputs):
+                streamStartIndex = playlist.streamIds.index(stream.id) + 1
+                self.playlistService.printPlaylistShort([playlist.id], streamStartIndex = streamStartIndex)
                 
             elif(len(self.printHelpInputs) > 0 and inputArgs in self.printHelpInputs):
                 help = self.commands.getPlaylistArgumentsHelpString()

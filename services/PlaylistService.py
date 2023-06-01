@@ -515,6 +515,53 @@ class PlaylistService(BaseService[T]):
                 
         return result
     
+    def printPlaylistShort(self, playlistIds: List[str], streamStartIndex: int = 0, includeSource: bool = True) -> int:
+        """
+        Print short info for Playlist.
+
+        Args:
+            playlistIds (list[str]): List of playlistIds to print details of.
+            streamStartIndex (int, optional): Stream to start print from. Defaults to 0.
+            includeSource (bool, optional): Should print include StreamSource this was fetched from. Defaults to True.
+            
+        Returns:
+            int: number of playlists printed for.
+        """
+        
+        includeSoftDeleted = True
+        result = 0
+        for id in playlistIds:
+            playlist = self.get(id, includeSoftDeleted)
+            
+            print("\n")
+            if(len(playlist.streamIds) == 0):
+                printS("\tNo streams added yet.")
+            
+            j = streamStartIndex + 1
+            for i, streamId in enumerate(playlist.streamIds[streamStartIndex:]):
+                stream = self.queueStreamService.get(streamId, includeSoftDeleted)
+                if(stream == None):
+                    printS("\tQueueStream not found (ID: \"", streamId, "\").", color = BashColor.FAIL)
+                    continue
+                
+                sourceString = ""
+                if(includeSource and stream.streamSourceId != None):
+                    streamSource = self.streamSourceService.get(stream.streamSourceId, includeSoftDeleted)
+                    
+                    if(streamSource == None):
+                        sourceString = ", from [source missing]" 
+                    else:
+                        sourceString = ", from \"" + streamSource.name + "\""
+                        
+                color = "WHITE" if i % 2 == 0 else "GREYBG"
+                printS("\t", str(j), " - ", stream.shortString(), sourceString, color = BashColor[color])
+                
+                j += 1
+                
+            result += 1
+                
+        return result
+    
     def printWatchedStreams(self, playlistIds: List[str]) -> int:
         """
         Print watched QueueStreams in Playlists given by IDs.

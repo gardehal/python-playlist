@@ -105,10 +105,10 @@ Program for queueing and playing videos from list or from sources like channels 
 
 - option to fetch when on the last stream in playlist with fetch enabled?
 - playback option to replay stream
-- add names of things, like when deleting streams from playlist (better feedback for user) 
-- fix some of the index/int usage, should use index in printing lists
-- new argument to add multiple streams to playlist, like ["addmultiple", "am"], like normal add, but list of streams
+- add names of things, like when deleting streams from playlist (better feedback for user) - and confirmation y/n
+- fix some of the index/int usage, should use consistent index/count in printing 
 - print lists etc. in alphabetical order, add prop for favourite playlists, printed in special block at the top (or bottom)
+- duplicate name check function? same videos (songs) from different sources can be added and not trigger duplication check
 
 - play local/directory streams
 - support for mp3s

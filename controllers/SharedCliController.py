@@ -134,7 +134,7 @@ class SharedCliController():
         """
         
         data = self.sharedService.preparePurge()
-        if(not data.queueSource and not data.streamSource and not data.playlists):
+        if(not data.queueStreams and not data.streamSources and not data.playlists):
             printS("Purge aborted, nothing to purge.", color = BashColor.OKGREEN)
             return None
         
@@ -179,7 +179,7 @@ class SharedCliController():
             return None
         
         data = self.fetchService.prepareReset(playlistId, includeSoftDeleted)
-        if(not data.playlists or (not data.queueSource and not data.streamSource)):
+        if(not data.playlists or (not data.queueStreams and not data.streamSources)):
             printS("Reset aborted, nothing to reset.", color = BashColor.OKGREEN)
             return None
         

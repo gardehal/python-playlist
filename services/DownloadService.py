@@ -70,7 +70,7 @@ class DownloadService():
         mkdir(directory)
         
         useDefaultName = True
-        customName = sanitize(name, mode = 2)
+        customName = name
         if(nameRegex != None):
             useDefaultName = False
             customNameSearch = nameRegex.search(customName)
@@ -90,6 +90,7 @@ class DownloadService():
         if(prefix != None):
             videoFilename = f"{prefix}{videoFilename}"
     
+        videoFilename = sanitize(videoFilename, mode = 3)
         return os.path.join(directory, videoFilename)
 
     def downloadYoutube(self, url: str, directory: str = "youtube", fileExtension: str = "mp4", nameRegex: Pattern[str] = None, prefix: str = None) -> str:

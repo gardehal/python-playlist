@@ -1,5 +1,5 @@
 beautifulsoup4==4.12.2
-grdUtil==1.5.3
+grdUtil==1.5.4
 jsonpath_ng==1.5.3
 mechanize==0.4.8
 psutil==5.9.5

@@ -56,13 +56,13 @@ class StreamSource:
         
         return "".join(map(str, ["name: ", self.name,
         uriString,
-        ", isWeb: ", self.isWeb,
-        ", streamSourceTypeId: ", self.streamSourceTypeId,
-        ", enableFetch: ", self.enableFetch,
+        # ", isWeb: ", self.isWeb,
+        # ", streamSourceTypeId: ", self.streamSourceTypeId,
+        ", fetch: ", self.enableFetch,
         lastFetchedString,
         lastSuccessfulFetchedString,
         lastFetchedIdsString,
-        ", backgroundContent: ", self.backgroundContent, 
+        # ", backgroundContent: ", self.backgroundContent, 
         deletedString,
         addedString,
         idString]))

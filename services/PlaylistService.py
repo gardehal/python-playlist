@@ -14,14 +14,14 @@ from grdUtil.LocalJsonRepository import LocalJsonRepository
 from grdUtil.LogLevel import LogLevel
 from grdUtil.LogUtil import LogUtil
 from grdUtil.PrintUtil import printD, printS
+from grdUtil.StrUtil import maxLen
+
 from model.Playlist import Playlist
 from model.QueueStream import QueueStream
 from model.StreamSource import StreamSource
-from Settings import Settings
-
 from services.QueueStreamService import QueueStreamService
 from services.StreamSourceService import StreamSourceService
-from services.StreamSourceService import StreamSourceService
+from Settings import Settings
 
 T = Playlist
 
@@ -464,7 +464,7 @@ class PlaylistService(BaseService[T]):
         result = 0
         for id in playlistIds:
             playlist = self.get(id, includeSoftDeleted)
-              
+            
             playlistDetailsString = playlist.detailsString(includeUri, includeId, includeDatetime, includeListCount = False)
             if(includeListCount):
                 unwatchedStreams = self.getUnwatchedStreamsByPlaylistId(playlist.id)
@@ -504,9 +504,9 @@ class PlaylistService(BaseService[T]):
                     streamSource = self.streamSourceService.get(stream.streamSourceId, includeSoftDeleted)
                     
                     if(streamSource == None):
-                        sourceString = ", StreamSource: [missing]" 
+                        sourceString = ", from: [missing]" 
                     else:
-                        sourceString = ", StreamSource: \"" + streamSource.name + "\""
+                        sourceString = ", from: \"" + maxLen(streamSource.name, 20) + "\""
                         
                 color = "WHITE" if i % 2 == 0 else "GREYBG"
                 printS("\t", str(i), " - ", stream.detailsString(includeUri, includeId, includeDatetime, includeListCount), sourceString, color = BashColor[color])
@@ -550,7 +550,7 @@ class PlaylistService(BaseService[T]):
                     if(streamSource == None):
                         sourceString = ", from [source missing]" 
                     else:
-                        sourceString = ", from \"" + streamSource.name + "\""
+                        sourceString = ", from: \"" + maxLen(streamSource.name, 20) + "\""
                         
                 color = "WHITE" if i % 2 == 0 else "GREYBG"
                 printS("\t", str(j), " - ", stream.shortString(), sourceString, color = BashColor[color])
@@ -595,7 +595,7 @@ class PlaylistService(BaseService[T]):
                 if(stream.streamSourceId != None):
                     streamSource = self.streamSourceService.get(stream.streamSourceId, includeSoftDeleted)
                     if(streamSource != None):
-                        sourceString = " from \"" + streamSource.name + "\"" 
+                        sourceString = ", from: \"" + maxLen(streamSource.name, 20) + "\""
                         
                 color = "WHITE" if i % 2 == 0 else "GREYBG"
                 printS("\t", str(i), " - ", stream.watchedString(), sourceString, color = BashColor[color])

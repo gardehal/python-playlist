@@ -159,7 +159,7 @@ class PlaylistCliController():
             titles = [str(nPlaylists) + " Playlists, " + str(nQueueStreams) + " QueueStreams, " + str(nStreamSources) + " StreamSources."]
             
             for (i, entry) in enumerate(all):
-                result.append(str(i) + " - " + entry.summaryString())
+                result.append(str(i) + " - " + entry.summaryString(False))
                 
             printLists([result], titles)
         else:

@@ -29,9 +29,11 @@ class Playlist():
         self.added: datetime = added
         self.id: str = id
 
-    def summaryString(self):
+    def summaryString(self, includeId: bool = True):
+        idString = ", ID: " + self.id if(includeId) else ""
+        
         return "".join(map(str, ["Name: ", self.name, 
-        ", ID: ", self.id, 
+        idString, 
         ", Streams: ", len(self.streamIds),
         ", Sources: ", len(self.streamSourceIds)]))
 
@@ -46,13 +48,13 @@ class Playlist():
         updatedString = ", updated: " + str(self.updated) if(includeDatetime) else ""
         addedString = ", added: " + str(self.added) if(includeDatetime) else ""
         lenStreamString = ", n streamIds: " + str(len(self.streamIds)) if(includeListCount) else ""
-        lenStreamStreamString = ", n streamSourceIds: " + str(len(self.streamIds)) if(includeListCount) else ""
+        lenStreamStreamString = ", n sources: " + str(len(self.streamIds)) if(includeListCount) else ""
         
         return "".join(map(str, ["name: ", self.name, 
         lenStreamString, 
-        ", lastWatchedIndex: ", self.lastWatchedIndex, 
-        ", playWatchedStreams: ", self.playWatchedStreams, 
-        ", allowDuplicates: ", self.allowDuplicates, 
+        # ", lastWatchedIndex: ", self.lastWatchedIndex, 
+        ", play watched: ", self.playWatchedStreams, 
+        ", allow duplicates: ", self.allowDuplicates, 
         lenStreamStreamString,
         ", description: ", self.description,
         deletedString,

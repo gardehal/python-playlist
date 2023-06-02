@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from grdUtil.StrUtil import maxLen
 from grdUtil.DateTimeUtil import getDateTime
 
 
@@ -50,23 +51,12 @@ class QueueStream:
         ", is web" if(self.isWeb) else ""]))
 
     def shortString(self):
-        return "".join(map(str, ["\"", self.withMaxLen(self.name, 40), "\""]))
+        return "".join(map(str, ["\"", maxLen(self.name, 40), "\""]))
 
     def watchedString(self):
         return "".join(map(str, [self.id,
         ", watched: " + str(self.watched)[0:20] if(self.watched) else "",
-        " - \"", self.withMaxLen(self.name, 20), "\" - "]))
-        
-    # TODO move to utils
-    def withMaxLen(self, s: str, maxLen: int = 0, withDots: bool = True):
-        short = s
-        if(len(short) > maxLen):
-            short = short[0:maxLen]
-        
-        if(withDots and maxLen > 3):
-            return short[0:maxLen-3] + "..."
-        
-        return short
+        " - \"", maxLen(self.name, 20), "\" - "]))
 
     def detailsString(self, includeUri: bool = True, includeId: bool = True, includeDatetime: bool = True, includeListCount: bool = True):
         uriString = ", uri: " + self.uri if(includeUri) else ""
@@ -76,12 +66,12 @@ class QueueStream:
         deletedString = ", deleted: " + str(self.deleted) if(includeDatetime) else ""
         addedString = ", added: " + str(self.added) if(includeDatetime) else ""
         
-        return "".join(map(str, ["name: ", self.name,
+        return "".join(map(str, ["name: ",  maxLen(self.name, 40),
         uriString,
-        ", isWeb: ", self.isWeb, 
+        # ", isWeb: ", self.isWeb, 
         streamSourceIdString,
         watchedString, 
-        ", backgroundContent: ", self.backgroundContent, 
+        # ", backgroundContent: ", self.backgroundContent, 
         deletedString,
         addedString,
         idString]))

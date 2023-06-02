@@ -76,8 +76,7 @@ class DownloadService():
             customNameSearch = nameRegex.search(customName)
             if(len(customNameSearch.groups()) > 0):
                 customNameMatch = customNameSearch.groups()[0]
-                printS("Using Regex: \"", nameRegex, "\" on name \"", customName, "\". Result: \"", customNameMatch, "\"", color = BashColor.OKGREEN)
-                sys.stdout.flush()
+                printS("Using Regex: \"", nameRegex, "\" on name \"", customName, "\". Result: \"", customNameMatch, "\"", color = BashColor.OKGREEN)()
                 customName = customNameMatch
             else:
                 raise ArgumentException(f"The supplied Regex: \"{nameRegex}\" did not match anything in stream named \"{name}\". Could not determine desired name.")
@@ -142,46 +141,39 @@ class DownloadService():
         videoTitle = None
         fileUrl = None
         try:
-            printS("Fetching data for video ", url)
-            sys.stdout.flush()
+            printS("Fetching data for video ", url)()
             br.open(url)
             html = br.response().read()
             document = BeautifulSoup(html, 'html.parser')
             scriptContent = document.find("script", { "type": "application/ld+json" })
             if(scriptContent == None):
-                printS("No content was found for URL \"", url, "\". Please check that the URL is correct.", color = BashColor.FAIL)
-                sys.stdout.flush()
+                printS("No content was found for URL \"", url, "\". Please check that the URL is correct.", color = BashColor.FAIL)()
                 return None
             
             jsonString = scriptContent.text.strip()
             printD(jsonString, debug = (self.settings.debug and False))
-            printD("Reading JSON...", debug = self.settings.debug)
-            sys.stdout.flush()
+            printD("Reading JSON...", debug = self.settings.debug)()
             jsonData = json.loads(jsonString)
             videoTitle = parse("$.name").find(jsonData)[0].value
             fileUrl = parse("$.contentUrl").find(jsonData)[0].value
-            printD("File URL: ", fileUrl, debug = self.settings.debug)
-            sys.stdout.flush()
+            printD("File URL: ", fileUrl, debug = self.settings.debug)()
         except Exception as e:
             printS("Failed getting video: ", e, color = BashColor.FAIL)
             return None
         
         if(fileUrl == None):
-            printS("Failed getting source video for ", url, color = BashColor.FAIL)
-            sys.stdout.flush()
+            printS("Failed getting source video for ", url, color = BashColor.FAIL)()
             return None
         
         if(videoTitle == None):
             videoTitle = "unknown_video"
-            printS("Failed getting title, defaulting to ", videoTitle, color = BashColor.FAIL)
-            sys.stdout.flush()
+            printS("Failed getting title, defaulting to ", videoTitle, color = BashColor.FAIL)()
         
         videoPath = self.getVideoPath(directory, videoTitle, fileExtension, nameRegex, prefix)
         try:
             urllib.request.urlretrieve(fileUrl, videoPath) 
         except Exception as e:
-            printS("Failed download video: ", e, color = BashColor.FAIL)
-            sys.stdout.flush()
+            printS("Failed download video: ", e, color = BashColor.FAIL)()
             return None
 
         return videoPath

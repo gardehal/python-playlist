@@ -372,11 +372,9 @@ class PlaylistCliController():
                 result.append(self.downloadService.download(stream.uri, downloadDirectory, nameRegex = nameRegexCompiled, prefix = prefix))
             except AttributeError as e:
                 printS("Failed to download stream \"", stream.name, "\": Regex was not matched", color = BashColor.FAIL)
-                sys.stdout.flush()
                 continue
             except Exception as e:
                 printS("Failed to download stream \"", stream.name, "\": ", e, color = BashColor.FAIL)
-                sys.stdout.flush()
                 continue
             
         if(len(result) == 0):

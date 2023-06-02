@@ -62,6 +62,7 @@ class Commands():
 
         # Stream
         self.addStreamCommands = ["add", "a"]
+        self.addMultipleStreamsCommands = ["addmultiple", "am"]
         self.deleteStreamCommands = ["delete", "dm", "d"]
         self.restoreStreamCommands = ["restore", "r"]
         # Sources
@@ -176,7 +177,8 @@ class Commands():
         """
 
         result = ""
-        result += "\n" + str(self.addStreamCommands) + " [playlistId or index: str] [uri: string] [? name: str]: Add a stream to a Playlist from ID or index, from uri: URL, and name: name (set automatically if not given)."
+        result += "\n" + str(self.addStreamCommands) + " [playlistId or index: str] [uri: str] [? name: str]: Add a stream to a Playlist from ID or index, from uri: URL, and name: name (set automatically if not given)."
+        result += "\n" + str(self.addMultipleStreamsCommands) + " [playlistId or index: str] [uris: str]: Add multiple streams to a Playlist from ID or index, from uris (set automatically)."
         result += "\n" + str(self.deleteStreamCommands) + " [playlistId or index: str] [streamIds or indices: list]: Delete QueueStreams from Playlist."
         result += "\n" + str(self.restoreStreamCommands) + " [playlistId or index: str] [streamIds or indices: str]: Restore soft deleted QueueStreams from database."
 

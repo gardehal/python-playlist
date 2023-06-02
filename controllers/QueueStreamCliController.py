@@ -59,6 +59,33 @@ class QueueStreamCliController():
             printS("Failed to create QueueStream.", color = BashColor.FAIL)
             
         return result
+
+    def addQueueStreams(self, playlistId: str, uris: List[str]) -> List[QueueStream]:
+        """
+        Add multiple QueueStreams to Playlist.
+        
+        Args:
+            playlistId (str): ID of Playlist to add to.
+            uris (List[str]): URIs of streams to add.
+
+        Returns:
+            List[QueueStream]: QueueStreams added.
+        """
+
+        if(playlistId == None):
+            printS("Failed to add QueueStreams, missing playlistId or index.", color = BashColor.FAIL)
+            return []
+
+        if(uris == None or len(uris) < 1):
+            printS("Failed to add QueueStreams, missing uri(s).", color = BashColor.FAIL)
+            return []
+            
+        result = []
+        for uri in uris:
+            added = self.addQueueStream(playlistId, uri, None)
+            result.append(*added)
+            
+        return result
     
     def deleteQueueStreams(self, playlistId: str, queueStreamIds: List[str]) -> List[QueueStream]:
         """

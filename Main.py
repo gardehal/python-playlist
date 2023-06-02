@@ -281,6 +281,18 @@ class Main:
                     argIndex += len(inputArgs) + 1
                     continue
 
+                # Streams
+                elif(arg in Main.commands.addMultipleStreamsCommands):
+                    # Expected input: playlistId or index, uris
+                    inputArgs = extractArgs(argIndex, argV)
+                    playlistIds = getIdsFromInput(inputArgs, Main.playlistService.getAllIds(), Main.playlistService.getAll(), 1, setDefaultId = False, debug = Main.settings.debug)
+                    uris = inputArgs[1:] if len(inputArgs) > 1 else None
+                    
+                    Main.queueStreamCliController.addQueueStreams(getIfExists(playlistIds, 0), uris)
+
+                    argIndex += len(inputArgs) + 1
+                    continue
+
                 elif(arg in Main.commands.deleteStreamCommands):
                     # Expected input: playlistId or index, queueStreamIds or indices
                     inputArgs = extractArgs(argIndex, argV)

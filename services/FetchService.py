@@ -89,7 +89,7 @@ class FetchService():
                 elif(source.streamSourceTypeId == StreamSourceType.ODYSEE.value):
                     fetchedStreams = self.fetchOdysee(source, batchSize, _takeAfter, takeBefore, takeNewOnly)
                 else:
-                    printS("\t Source \"", source.name, "\" could not be fetched as it is not implemented for this source.", color = BashColor.WARNING)()
+                    printS("\t Source \"", source.name, "\" could not be fetched as it is not implemented for this source.", color = BashColor.WARNING)
                     continue
             else:
                 fetchedStreams = self.fetchDirectory(source, batchSize, _takeAfter, takeBefore, takeNewOnly)
@@ -111,7 +111,7 @@ class FetchService():
                 for stream in newStreamsToAdd:
                     printS("\tAdding \"", stream.name, "\".")
             else:
-                printS("Could not update StreamSource \"", source.name, "\" (ID: ", source.id, "), streams could not be added: \n", fetchedStreams, color = BashColor.WARNING)()
+                printS("Could not update StreamSource \"", source.name, "\" (ID: ", source.id, "), streams could not be added: \n", fetchedStreams, color = BashColor.WARNING)
 
         if(len(newStreams) > 0):
             return len(newStreams)
@@ -162,7 +162,7 @@ class FetchService():
             printS(f"Channel {streamSource.name} (URL: {streamSource.uri}) could not be found or is not valid. Please remove it and add it back.", color = BashColor.FAIL)
             return emptyReturn
 
-        printS(f"Fetching videos from {channel.channel_name}...")()
+        printS(f"Fetching videos from {channel.channel_name}...")
         if(len(channel.video_urls) < 1):
             printS(f"Channel {channel.channel_name} has no videos.", color = BashColor.FAIL)
             return emptyReturn
@@ -342,7 +342,7 @@ class FetchService():
             return emptyReturn
 
         streams = document.getElementsByTagName("item")
-        printS(f"Fetching videos from {streamSource.name}...")()
+        printS(f"Fetching videos from {streamSource.name}...")
         if(len(streams) < 1):
             printS(f"Channel {streamSource.name} has no videos.", color = BashColor.FAIL)
             return emptyReturn

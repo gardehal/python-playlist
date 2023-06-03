@@ -50,7 +50,7 @@ class Playlist():
         lenStreamString = ", n streamIds: " + str(len(self.streamIds)) if(includeListCount) else ""
         lenStreamStreamString = ", n sources: " + str(len(self.streamIds)) if(includeListCount) else ""
         
-        return "".join(map(str, ["name: ", self.name, 
+        return "".join(map(str, ["\"", self.name, "\"",
         lenStreamString, 
         # ", lastWatchedIndex: ", self.lastWatchedIndex, 
         ", play watched: ", self.playWatchedStreams, 

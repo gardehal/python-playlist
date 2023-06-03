@@ -54,7 +54,7 @@ class StreamSource:
         deletedString = ", deleted: " + str(self.deleted) if(includeDatetime) else ""
         addedString = ", added: " + str(self.added) if(includeDatetime) else ""
         
-        return "".join(map(str, ["name: ", self.name,
+        return "".join(map(str, ["\"", self.name, "\"",
         uriString,
         # ", isWeb: ", self.isWeb,
         # ", streamSourceTypeId: ", self.streamSourceTypeId,

@@ -252,7 +252,7 @@ class FetchService():
             printS("Google/YouTube wants to use cookies and trackers. This was not an expected outcome.", color = BashColor.WARNING)
             return emptyReturn
 
-        printS(f"Fetching videos from {streamSource.name}...")()
+        printS(f"Fetching videos from {streamSource.name}...")
         streams = None
         videosScript = document.find(lambda tag:tag.name=="script" and "ytInitialData" in tag.text).text
         

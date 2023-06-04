@@ -103,8 +103,6 @@ Program for queueing and playing videos from list or from sources like channels 
 
 ## TODO
 
-- playback option to replay stream
-- option to fetch when on the last stream in playlist with fetch enabled?
 - add names of things, like when deleting streams from playlist (better feedback for user) - and confirmation y/n
 - fix some of the index/int usage, should use consistent index/count in printing
 - pad indexes to 3-4 chars to prevent dumb indentation 
@@ -119,6 +117,5 @@ Program for queueing and playing videos from list or from sources like channels 
 - rename to python-playlist
 - reset doesn't work, not resetting sources
 - restore/add source, have to check on deleted
-- command for re-queue/re-add stream from playlist during playback (something like "rw", removes stream, add it to the back of playlist)
 - add length of stream in seconds to qs
 - add alwaysDownload to source? for channels who often delete/gets deleted/restricted/unlisted

@@ -66,7 +66,7 @@ class QueueStream:
         deletedString = ", deleted: " + str(self.deleted) if(includeDatetime) else ""
         addedString = ", added: " + str(self.added) if(includeDatetime) else ""
         
-        return "".join(map(str, ["\"",  maxLen(self.name, 40), "\"",
+        return "".join(map(str, ["\"",  maxLen(self.name, 50), "\"",
         uriString,
         # ", isWeb: ", self.isWeb, 
         streamSourceIdString,

@@ -401,7 +401,7 @@ class Main:
                 elif(arg in Main.commands.refactorCommands):
                     # Expected input: None
                     
-                    refactorLastFetchedIdResult = Main.legacyService.refactorLastFetchedId()
+                    refactorLastFetchedIdResult = Main.legacyService.refactorPlaytimeSecondsAlwaysDownloadFavorite()
                     if(len(refactorLastFetchedIdResult) > 0):
                         printS("Refactored ", len(refactorLastFetchedIdResult), " StreamSources. IDs:", color = BashColor.OKGREEN)
                         printS(refactorLastFetchedIdResult)

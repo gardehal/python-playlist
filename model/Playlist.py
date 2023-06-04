@@ -13,6 +13,7 @@ class Playlist():
                  allowDuplicates: bool = True,
                  streamSourceIds: List[str] = List[str],
                  description: str = None,
+                 favorite: bool = False,
                  deleted: datetime = None,
                  updated: datetime = getDateTime(),
                  added: datetime = getDateTime(),
@@ -24,6 +25,7 @@ class Playlist():
         self.allowDuplicates: bool = allowDuplicates
         self.streamSourceIds: List[str] = streamSourceIds
         self.description: str = description
+        self.favorite: bool = favorite
         self.deleted: str = deleted
         self.updated: datetime = updated
         self.added: datetime = added

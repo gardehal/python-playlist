@@ -12,6 +12,7 @@ class QueueStream:
                  streamSourceId: str = None, 
                  watched: datetime = None, 
                  backgroundContent: bool = False, 
+                 playtimeSeconds: int = None, 
                  deleted: datetime = None,
                  added: datetime = getDateTime(),
                  remoteId: str = None,
@@ -22,6 +23,7 @@ class QueueStream:
         self.streamSourceId: str = streamSourceId
         self.watched: datetime = watched
         self.backgroundContent: bool = backgroundContent
+        self.playtimeSeconds: int = playtimeSeconds
         self.deleted: datetime = deleted
         self.added: datetime = added
         self.remoteId: str = remoteId

@@ -128,4 +128,46 @@ class LegacyService():
                 printStack()
         
         return result
+    
+    def refactorPlaytimeSecondsAlwaysDownloadFavorite(self) -> List[str]:
+        """
+        Refactor all Playlist with new field: favorite, StreamSources with new field: alwaysDownload, QueueStreams with new field: playtimeSeconds.
+
+        Returns:
+            List[str]: IDs of entities refactored.
+        """
+
+        playlists = self.playlistService.getAll()
+        sources = self.streamSourceService.getAll()
+        streams = self.queueStreamService.getAll()
+        
+        result = []
+        for item in playlists:
+            try:
+                item.favorite = False
+                self.playlistService.update(item, True)
+                result.append(item.id)
+            except:
+                printStack()
+                quit()
+                
+        for item in sources:
+            try:
+                item.alwaysDownload = False
+                self.streamSourceService.update(item, True)
+                result.append(item.id)
+            except:
+                printStack()
+                quit()
+                
+        for item in streams:
+            try:
+                item.playtimeSeconds = None
+                self.queueStreamService.update(item, True)
+                result.append(item.id)
+            except:
+                printStack()
+                quit()
+        
+        return result
         

@@ -34,7 +34,7 @@ class Playlist():
     def summaryString(self, includeId: bool = True):
         idString = ", ID: " + self.id if(includeId) else ""
         
-        return "".join(map(str, ["Name: ", self.name, 
+        return "".join(map(str, ["\"", self.name, "\"", 
         idString, 
         ", Streams: ", len(self.streamIds),
         ", Sources: ", len(self.streamSourceIds)]))

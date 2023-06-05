@@ -642,3 +642,17 @@ class PlaylistService(BaseService[T]):
                 result += 1
                 
         return result
+     
+    def getAllSorted(self, includeSoftDeleted: bool = False) -> List[Playlist]:
+        """
+        Get all playlists sorted after favorite, then name.
+
+        Returns:
+            List[Playlist]: Playlists in storage, sorted.
+        """
+        
+        all = self.getAll(includeSoftDeleted)
+        all.sort(key = lambda e: (e.favorite), reverse = True)
+        # all.sort(key = lambda e: (e.favorite, e.name), reverse = True)
+                
+        return all

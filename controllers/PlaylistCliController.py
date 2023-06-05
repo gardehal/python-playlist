@@ -151,15 +151,20 @@ class PlaylistCliController():
         """
         
         result = []
-        all = self.playlistService.getAll(includeSoftDeleted)
+        all = self.playlistService.getAllSorted(includeSoftDeleted)
+        
         if(len(all) > 0):
             nPlaylists = len(all)
             nQueueStreams = len(self.queueStreamService.getAll(includeSoftDeleted))
             nStreamSources = len(self.streamSourceService.getAll(includeSoftDeleted))
             titles = [str(nPlaylists) + " Playlists, " + str(nQueueStreams) + " QueueStreams, " + str(nStreamSources) + " StreamSources."]
             
-            for (i, entry) in enumerate(all):
-                result.append(str(i) + " - " + entry.summaryString(False))
+            for(i, entry) in enumerate(all):
+                favorite = " "
+                if(entry.favorite):
+                    favorite = "*"
+                    
+                result.append(str(i) + " - " + favorite + entry.summaryString(False))
                 
             printLists([result], titles)
         else:

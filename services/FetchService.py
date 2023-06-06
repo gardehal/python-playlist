@@ -67,10 +67,6 @@ class FetchService():
         if(playlist == None):
             return 0
 
-        printD("??")
-        printD(playlist.id)
-        printD(playlist.streamSourceIds)
-        printD(playlist.name)
         newStreams = []
         for sourceId in playlist.streamSourceIds:
             source = self.streamSourceService.get(sourceId)
@@ -121,10 +117,11 @@ class FetchService():
                 printS("Could not update StreamSource \"", source.name, "\" (ID: ", source.id, "), streams could not be added: \n", fetchedStreams, color = BashColor.WARNING)
                 
             if(source.alwaysDownload):
-                printD("Downloading due to alwaysDownload flag on source...")
-                downloadPath = self.downloadService.download()
-                printS("Downloaded due to alwaysDownload flag on source, path: ", downloadPath, color = BashColor.OKGREEN, doPrint = (downloadPath != None))
-                printS("Downloaded due to alwaysDownload flag on source failed.", color = BashColor.FAIL, doPrint = (downloadPath == None))
+                printD("\tDownloading due to alwaysDownload flag on source...")
+                for fetchedStream in fetchedStreams:
+                    downloadPath = self.downloadService.download(fetchedStream.uri, source.name)
+                    printS("\tDownloaded due to alwaysDownload flag on source, path: ", downloadPath, color = BashColor.OKGREEN, doPrint = (downloadPath != None))
+                    printS("\tDownloaded due to alwaysDownload flag on source failed.", color = BashColor.FAIL, doPrint = (downloadPath == None))
 
         if(len(newStreams) > 0):
             return len(newStreams)

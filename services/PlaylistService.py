@@ -646,6 +646,9 @@ class PlaylistService(BaseService[T]):
     def getAllSorted(self, includeSoftDeleted: bool = False) -> List[Playlist]:
         """
         Get all playlists sorted after favorite, then name.
+        
+        Args:
+            includeSoftDeleted (bool): should include soft-deleted entities.
 
         Returns:
             List[Playlist]: Playlists in storage, sorted.
@@ -656,3 +659,18 @@ class PlaylistService(BaseService[T]):
         # all.sort(key = lambda e: (e.favorite, e.name), reverse = True)
                 
         return all
+    
+    def getAllIdsSorted(self, includeSoftDeleted: bool = False) -> List[str]:
+        """
+        Get all IDs of playlists sorted after getAllSorted().
+        
+        Args:
+            includeSoftDeleted (bool): should include soft-deleted entities.
+
+        Returns:
+            List[str]: IDs as List[str] in storage, sorted.
+        """
+        
+        all = self.getAllSorted(includeSoftDeleted)
+        
+        return [entity.id for entity in all]

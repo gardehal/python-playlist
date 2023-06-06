@@ -3,22 +3,22 @@ import re
 from typing import Dict, List
 
 import mechanize
-from enums.StreamSourceType import StreamSourceType, StreamSourceTypeUtil
 from grdUtil.BashColor import BashColor
 from grdUtil.DateTimeUtil import getDateTimeAsNumber
 from grdUtil.FileUtil import mkdir
 from grdUtil.InputUtil import sanitize
 from grdUtil.PrintUtil import printD, printS
+from pytube import YouTube
+
+from enums.StreamSourceType import StreamSourceType, StreamSourceTypeUtil
 from model.Playlist import Playlist
 from model.PlaylistDetailed import PlaylistDetailed
 from model.QueueStream import QueueStream
 from model.StreamSource import StreamSource
-from pytube import YouTube
-from Settings import Settings
-
 from services.PlaylistService import PlaylistService
 from services.QueueStreamService import QueueStreamService
 from services.StreamSourceService import StreamSourceService
+from Settings import Settings
 
 
 class SharedService():
@@ -139,7 +139,7 @@ class SharedService():
         data.queueStreams = [_ for _ in allQ if _.deleted != None]
         allS = self.streamSourceService.getAll(includeSoftDeleted = True)
         data.streamSources = [_ for _ in allS if _.deleted != None]
-        allP = self.playlistService.getAll(includeSoftDeleted = True)
+        allP = self.playlistService.getAllSorted(includeSoftDeleted = True)
         data.playlists = [_ for _ in allP if _.deleted != None]
         
         return data
@@ -177,7 +177,7 @@ class SharedService():
         """
         
         data = PlaylistDetailed()
-        playlists = self.playlistService.getAll(includeSoftDeleted)
+        playlists = self.playlistService.getAllSorted(includeSoftDeleted)
         qIds = self.queueStreamService.getAllIds(includeSoftDeleted)
         sIds = self.streamSourceService.getAllIds(includeSoftDeleted)
         
@@ -260,7 +260,7 @@ class SharedService():
         
         queueStreams = self.queueStreamService.getAll(includeSoftDeleted)
         streamSources = self.streamSourceService.getAll(includeSoftDeleted)
-        playlists = self.playlistService.getAll(includeSoftDeleted)
+        playlists = self.playlistService.getAllSorted(includeSoftDeleted)
         
         for entity in queueStreams:
             if(self.searchFields(searchTerm, entity.name, entity.uri) > 0):
@@ -307,7 +307,7 @@ class SharedService():
         
         queueStreams = self.queueStreamService.getAll(includeSoftDeleted = True)
         streamSources = self.streamSourceService.getAll(includeSoftDeleted = True)
-        playlists = self.playlistService.getAll(includeSoftDeleted = True)
+        playlists = self.playlistService.getAllSorted(includeSoftDeleted = True)
         
         for entity in queueStreams:
             if(entity.deleted != None):

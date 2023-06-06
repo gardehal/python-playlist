@@ -245,14 +245,18 @@ class PlaybackService():
                 self.playCli(playlist, [stream]) # A little weird with prints and continuing but it works
             
             elif(len(self.listPlaylistInputs) > 0 and inputArgs in self.listPlaylistInputs):
-                result = self.playlistService.getAll()
+                result = self.playlistService.getAllSorted()
                 if(len(result) > 0):
                     nPlaylists = len(result)
                     title = "\t" + str(nPlaylists) + " Playlist(s)."
                     
                     data = []
                     for (i, entry) in enumerate(result):
-                        data.append("\t" + str(i) + " - " + entry.summaryString())
+                        favorite = " "
+                        if(entry.favorite):
+                            favorite = "*"
+                            
+                        data.append("\t" + str(i) + " - " + favorite + entry.summaryString())
                         
                     printLists([data], [title])
                 else:
@@ -302,7 +306,7 @@ class PlaybackService():
             printS("Missing arguments, cross-adding stream requires IDs of Playlists to add to.", color = BashColor.WARNING)
             return result
         
-        ids = getIdsFromInput(idsIndices, self.playlistService.getAllIds(), self.playlistService.getAll(), debug = self.settings.debug)
+        ids = getIdsFromInput(idsIndices, self.playlistService.getAllIdsSorted(), self.playlistService.getAllSorted(), debug = self.settings.debug)
         if(len(ids) == 0):
             printS("Failed to add cross-add streams, missing playlistIds or indices.", color = BashColor.WARNING)
             return result

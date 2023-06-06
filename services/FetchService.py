@@ -23,6 +23,7 @@ from model.Playlist import Playlist
 from model.PlaylistDetailed import PlaylistDetailed
 from model.QueueStream import QueueStream
 from model.StreamSource import StreamSource
+from services.DownloadService import DownloadService
 from services.PlaylistService import PlaylistService
 from services.QueueStreamService import QueueStreamService
 from services.StreamSourceService import StreamSourceService
@@ -30,16 +31,18 @@ from Settings import Settings
 
 
 class FetchService():
-    settings: Settings = None
+    downloadService: DownloadService = None
     playlistService: PlaylistService = None
     queueStreamService: QueueStreamService = None
     streamSourceService: StreamSourceService = None
+    settings: Settings = None
 
     def __init__(self):
-        self.settings = Settings()
+        self.downloadService = DownloadService()
         self.playlistService = PlaylistService()
         self.queueStreamService = QueueStreamService()
         self.streamSourceService = StreamSourceService()
+        self.settings = Settings()
 
         mkdir(self.settings.localStoragePath)
 
@@ -64,6 +67,10 @@ class FetchService():
         if(playlist == None):
             return 0
 
+        printD("??")
+        printD(playlist.id)
+        printD(playlist.streamSourceIds)
+        printD(playlist.name)
         newStreams = []
         for sourceId in playlist.streamSourceIds:
             source = self.streamSourceService.get(sourceId)
@@ -112,6 +119,12 @@ class FetchService():
                     printS("\tAdding \"", stream.name, "\".")
             else:
                 printS("Could not update StreamSource \"", source.name, "\" (ID: ", source.id, "), streams could not be added: \n", fetchedStreams, color = BashColor.WARNING)
+                
+            if(source.alwaysDownload):
+                printD("Downloading due to alwaysDownload flag on source...")
+                downloadPath = self.downloadService.download()
+                printS("Downloaded due to alwaysDownload flag on source, path: ", downloadPath, color = BashColor.OKGREEN, doPrint = (downloadPath != None))
+                printS("Downloaded due to alwaysDownload flag on source failed.", color = BashColor.FAIL, doPrint = (downloadPath == None))
 
         if(len(newStreams) > 0):
             return len(newStreams)

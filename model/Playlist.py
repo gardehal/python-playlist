@@ -14,6 +14,7 @@ class Playlist():
                  streamSourceIds: List[str] = List[str],
                  description: str = None,
                  favorite: bool = False,
+                 sortOrder: int = None, # Ascending, includes negatives
                  deleted: datetime = None,
                  updated: datetime = getDateTime(),
                  added: datetime = getDateTime(),
@@ -26,6 +27,7 @@ class Playlist():
         self.streamSourceIds: List[str] = streamSourceIds
         self.description: str = description
         self.favorite: bool = favorite
+        self.sortOrder: int = sortOrder
         self.deleted: str = deleted
         self.updated: datetime = updated
         self.added: datetime = added

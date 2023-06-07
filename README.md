@@ -107,7 +107,6 @@ Program for queueing and playing videos from list or from sources like channels 
 - fix some of the index/int usage, should use consistent index/count in printing
 - pad indexes to 3-4 chars to prevent dumb indentation 
 - duplicate name check function? same videos (songs) from different sources can be added and not trigger duplication check
-- print lists etc. in alphabetical order, add prop for order and use that rather than fav
 
 - play local/directory streams
 - support for mp3s

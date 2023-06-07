@@ -655,7 +655,7 @@ class PlaylistService(BaseService[T]):
         """
         
         all = self.getAll(includeSoftDeleted)
-        all.sort(key = lambda e: (e.favorite * -1, e.name)) # -1 to reverse favorite property (bool = int)
+        all.sort(key = lambda e: (e.favorite * -1, e.sortOrder, e.name)) # -1 to reverse favorite property (bool = int)
 
         return all
     

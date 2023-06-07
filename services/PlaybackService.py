@@ -123,6 +123,7 @@ class PlaybackService():
         
         nWatched = 0
         streamsToSkip = 0
+        streamsIndex = playlist.streamIds.index(streams[0].id)
         for i, stream in enumerate(streams):
             if(streamsToSkip > 0):
                 streamsToSkip = streamsToSkip - 1
@@ -142,7 +143,10 @@ class PlaybackService():
                 printS("Non-web streams currently not supported, skipping video ", stream.name, color = BashColor.FAIL)
                 continue
 
-            printS(f"{i} - Now playing \"{stream.name}\"" + ("..." if(i < (len(streams) - 1)) else ". This is the last stream in this playback, press enter to finish."), color = BashColor.BOLD)
+            streamsIndex += 1 # TODO use instead of I in padI whenever other places also are updated and indesxes shifted with 1 in input
+            padI = str(i).rjust(4, " ")
+            playingContinued = "..." if(i <= (len(streams))) else ". This is the last stream in this playback, press enter to finish."
+            printS(padI, " - Now playing \"", stream.name, "\"" + playingContinued, color = BashColor.BOLD)
             inputHandling = self.handlePlaybackInput(playlist, stream)
             if(inputHandling == 0):
                 printS("An error occurred while parsing inputs.", color = BashColor.FAIL)
@@ -256,7 +260,8 @@ class PlaybackService():
                         if(entry.favorite):
                             favorite = "*"
                             
-                        data.append("\t" + str(i) + " - " + favorite + entry.summaryString())
+                        padI = str(i).rjust(4, " ")
+                        data.append(padI + " - " + favorite + entry.summaryString())
                         
                     printLists([data], [title])
                 else:

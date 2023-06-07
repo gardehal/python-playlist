@@ -136,7 +136,8 @@ class StreamSourceCliController():
         result = self.streamSourceService.getAll(includeSoftDeleted)
         if(len(result) > 0):
             for (i, entry) in enumerate(result):
-                printS(i, " - ", entry.summaryString())
+                padI = str(i).rjust(4, " ")
+                printS(padI, " - ", entry.summaryString())
         else:
             printS("No QueueStreams found.", color = BashColor.WARNING)
                         

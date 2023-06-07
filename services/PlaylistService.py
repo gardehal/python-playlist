@@ -486,7 +486,8 @@ class PlaylistService(BaseService[T]):
                     continue
                 
                 color = "WHITE" if i % 2 == 0 else "GREYBG"
-                printS("\t", str(i), " - ", source.detailsString(includeUri, includeId, includeDatetime, includeListCount), color = BashColor[color])
+                padI = str(i).rjust(4, " ")
+                printS(padI, " - ", source.detailsString(includeUri, includeId, includeDatetime, includeListCount), color = BashColor[color])
             
             print("\n")
             printS("\tQueueStreams", color = BashColor.BOLD)
@@ -509,7 +510,8 @@ class PlaylistService(BaseService[T]):
                         sourceString = ", from: \"" + maxLen(streamSource.name, 20) + "\""
                         
                 color = "WHITE" if i % 2 == 0 else "GREYBG"
-                printS("\t", str(i), " - ", stream.detailsString(includeUri, includeId, includeDatetime, includeListCount), sourceString, color = BashColor[color])
+                padI = str(i).rjust(4, " ")
+                printS(padI, " - ", stream.detailsString(includeUri, includeId, includeDatetime, includeListCount), sourceString, color = BashColor[color])
                 
             result += 1
                 
@@ -553,7 +555,8 @@ class PlaylistService(BaseService[T]):
                         sourceString = ", from: \"" + maxLen(streamSource.name, 20) + "\""
                         
                 color = "WHITE" if i % 2 == 0 else "GREYBG"
-                printS("\t", str(j), " - ", stream.shortString(), sourceString, color = BashColor[color])
+                padJ = str(j).rjust(4, " ")
+                printS(padJ, " - ", stream.shortString(), sourceString, color = BashColor[color])
                 
                 j += 1
                 
@@ -598,7 +601,8 @@ class PlaylistService(BaseService[T]):
                         sourceString = ", from: \"" + maxLen(streamSource.name, 20) + "\""
                         
                 color = "WHITE" if i % 2 == 0 else "GREYBG"
-                printS("\t", str(i), " - ", stream.watchedString(), sourceString, color = BashColor[color])
+                padI = str(i).rjust(4, " ")
+                printS(padI, " - ", stream.watchedString(), sourceString, color = BashColor[color])
                 
                 result += 1
                 
@@ -637,7 +641,8 @@ class PlaylistService(BaseService[T]):
                 # download here
                 
                 color = "WHITE" if i % 2 == 0 else "GREYBG"
-                printS("\t", str(i), " - Downloading \"", stream.name, "\".", color = BashColor[color])
+                padI = str(i).rjust(4, " ")
+                printS(padI, " - Downloading \"", stream.name, "\".", color = BashColor[color])
                 
                 result += 1
                 

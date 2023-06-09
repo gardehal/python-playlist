@@ -79,7 +79,7 @@ class StreamSourceCliController():
             return []
         
         playlist = self.playlistService.get(playlistId)
-        streamSourceIds = getIdsFromInput(streamSourceIds, playlist.streamSourceIds, self.playlistService.getSourcesByPlaylistId(playlist.id), debug = self.settings.debug)
+        streamSourceIds = getIdsFromInput(streamSourceIds, playlist.streamSourceIds, self.playlistService.getSourcesByPlaylistId(playlist.id), startAtZero = False, debug = self.settings.debug)
         if(len(streamSourceIds) == 0):
             printS("Failed to delete StreamSources, missing streamSourceIds or indices.", color = BashColor.FAIL)
             return []
@@ -109,7 +109,7 @@ class StreamSourceCliController():
             return []
         
         playlist = self.playlistService.get(playlistId)
-        streamSourceIds = getIdsFromInput(streamSourceIds, self.streamSourceService.getAllIds(includeSoftDeleted = True), self.playlistService.getSourcesByPlaylistId(playlist.id, includeSoftDeleted = True), debug = self.settings.debug)
+        streamSourceIds = getIdsFromInput(streamSourceIds, self.streamSourceService.getAllIds(includeSoftDeleted = True), self.playlistService.getSourcesByPlaylistId(playlist.id, includeSoftDeleted = True), startAtZero = False, debug = self.settings.debug)
         if(len(streamSourceIds) == 0):
             printS("Failed to restore StreamSources, missing streamSourceIds or indices.", color = BashColor.FAIL)
             return []
@@ -136,7 +136,7 @@ class StreamSourceCliController():
         result = self.streamSourceService.getAll(includeSoftDeleted)
         if(len(result) > 0):
             for (i, entry) in enumerate(result):
-                padI = str(i).rjust(4, " ")
+                padI = str(i + 1).rjust(4, " ")
                 printS(padI, " - ", entry.summaryString())
         else:
             printS("No QueueStreams found.", color = BashColor.WARNING)

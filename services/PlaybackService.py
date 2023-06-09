@@ -143,8 +143,8 @@ class PlaybackService():
                 printS("Non-web streams currently not supported, skipping video ", stream.name, color = BashColor.FAIL)
                 continue
 
-            streamsIndex += 1 # TODO use instead of I in padI whenever other places also are updated and indesxes shifted with 1 in input
-            padI = str(i).rjust(4, " ")
+            streamsIndex += 1
+            padI = str(streamsIndex).rjust(4, " ")
             playingContinued = "..." if(i <= (len(streams))) else ". This is the last stream in this playback, press enter to finish."
             printS(padI, " - Now playing \"", stream.name, "\"" + playingContinued, color = BashColor.BOLD)
             inputHandling = self.handlePlaybackInput(playlist, stream)
@@ -260,7 +260,7 @@ class PlaybackService():
                         if(entry.favorite):
                             favorite = "*"
                             
-                        padI = str(i).rjust(4, " ")
+                        padI = str(i + 1).rjust(4, " ")
                         data.append(padI + " - " + favorite + entry.summaryString())
                         
                     printLists([data], [title])
@@ -311,7 +311,7 @@ class PlaybackService():
             printS("Missing arguments, cross-adding stream requires IDs of Playlists to add to.", color = BashColor.WARNING)
             return result
         
-        ids = getIdsFromInput(idsIndices, self.playlistService.getAllIdsSorted(), self.playlistService.getAllSorted(), debug = self.settings.debug)
+        ids = getIdsFromInput(idsIndices, self.playlistService.getAllIdsSorted(), self.playlistService.getAllSorted(), startAtZero = False, debug = self.settings.debug)
         if(len(ids) == 0):
             printS("Failed to add cross-add streams, missing playlistIds or indices.", color = BashColor.WARNING)
             return result

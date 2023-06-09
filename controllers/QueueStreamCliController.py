@@ -104,7 +104,7 @@ class QueueStreamCliController():
             return []
         
         playlist = self.playlistService.get(playlistId)
-        queueStreamIds = getIdsFromInput(queueStreamIds, playlist.streamIds, self.playlistService.getStreamsByPlaylistId(playlistId), debug = self.settings.debug)
+        queueStreamIds = getIdsFromInput(queueStreamIds, playlist.streamIds, self.playlistService.getStreamsByPlaylistId(playlistId), startAtZero = False, debug = self.settings.debug)
         if(len(queueStreamIds) == 0):
             printS("Failed to delete QueueStreams, missing queueStreamIds or indices.", color = BashColor.FAIL)
             return []
@@ -134,7 +134,7 @@ class QueueStreamCliController():
             return []
         
         playlist = self.playlistService.get(playlistId)
-        queueStreamIds = getIdsFromInput(queueStreamIds, self.queueStreamService.getAllIds(includeSoftDeleted = True), self.playlistService.getStreamsByPlaylistId(playlist.id, includeSoftDeleted = True), setDefaultId = False, debug = self.settings.debug)
+        queueStreamIds = getIdsFromInput(queueStreamIds, self.queueStreamService.getAllIds(includeSoftDeleted = True), self.playlistService.getStreamsByPlaylistId(playlist.id, includeSoftDeleted = True), setDefaultId = False, startAtZero = False, debug = self.settings.debug)
         if(len(queueStreamIds) == 0):
             printS("Failed to restore QueueStreams, missing queueStreamIds or indices.", color = BashColor.FAIL)
             return []

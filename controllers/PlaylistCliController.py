@@ -164,7 +164,7 @@ class PlaylistCliController():
                 if(entry.favorite):
                     favorite = "*"
                     
-                padI = str(i).rjust(4, " ")
+                padI = str(i + 1).rjust(4, " ")
                 result.append(padI + " - " + favorite + entry.summaryString(False))
                 
             printLists([result], titles)

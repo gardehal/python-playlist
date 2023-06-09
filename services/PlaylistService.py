@@ -486,7 +486,7 @@ class PlaylistService(BaseService[T]):
                     continue
                 
                 color = "WHITE" if i % 2 == 0 else "GREYBG"
-                padI = str(i).rjust(4, " ")
+                padI = str(i + 1).rjust(4, " ")
                 printS(padI, " - ", source.detailsString(includeUri, includeId, includeDatetime, includeListCount), color = BashColor[color])
             
             print("\n")
@@ -510,7 +510,7 @@ class PlaylistService(BaseService[T]):
                         sourceString = ", from: \"" + maxLen(streamSource.name, 20) + "\""
                         
                 color = "WHITE" if i % 2 == 0 else "GREYBG"
-                padI = str(i).rjust(4, " ")
+                padI = str(i + 1).rjust(4, " ")
                 printS(padI, " - ", stream.detailsString(includeUri, includeId, includeDatetime, includeListCount), sourceString, color = BashColor[color])
                 
             result += 1
@@ -555,7 +555,7 @@ class PlaylistService(BaseService[T]):
                         sourceString = ", from: \"" + maxLen(streamSource.name, 20) + "\""
                         
                 color = "WHITE" if i % 2 == 0 else "GREYBG"
-                padJ = str(j).rjust(4, " ")
+                padJ = str(j + 1).rjust(4, " ")
                 printS(padJ, " - ", stream.shortString(), sourceString, color = BashColor[color])
                 
                 j += 1
@@ -601,7 +601,7 @@ class PlaylistService(BaseService[T]):
                         sourceString = ", from: \"" + maxLen(streamSource.name, 20) + "\""
                         
                 color = "WHITE" if i % 2 == 0 else "GREYBG"
-                padI = str(i).rjust(4, " ")
+                padI = str(i + 1).rjust(4, " ")
                 printS(padI, " - ", stream.watchedString(), sourceString, color = BashColor[color])
                 
                 result += 1
@@ -641,7 +641,7 @@ class PlaylistService(BaseService[T]):
                 # download here
                 
                 color = "WHITE" if i % 2 == 0 else "GREYBG"
-                padI = str(i).rjust(4, " ")
+                padI = str(i + 1).rjust(4, " ")
                 printS(padI, " - Downloading \"", stream.name, "\".", color = BashColor[color])
                 
                 result += 1

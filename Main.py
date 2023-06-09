@@ -244,11 +244,11 @@ class Main:
                     # Expected input: playlistId or index, startIndex, shuffle, repeat
                     inputArgs = extractArgs(argIndex, argV)
                     playlistIds = getIdsFromInput(inputArgs, Main.playlistService.getAllIdsSorted(), Main.playlistService.getAllSorted(), 1, startAtZero = False, debug = Main.settings.debug)
-                    startIndex = inputArgs[1] if(len(inputArgs) > 1) else 0
+                    startIndex = int(inputArgs[1]) - 1 if(len(inputArgs) > 1) else 0
                     shuffle = eval(inputArgs[2]) if(len(inputArgs) > 2) else False
                     repeat = eval(inputArgs[3]) if(len(inputArgs) > 3) else False
                     
-                    Main.playlistCliController.playPlaylists(getIfExists(playlistIds, 0), int(startIndex), shuffle, repeat)
+                    Main.playlistCliController.playPlaylists(getIfExists(playlistIds, 0), startIndex, shuffle, repeat)
 
                     argIndex += len(inputArgs) + 1
                     continue
@@ -258,8 +258,8 @@ class Main:
                     inputArgs = extractArgs(argIndex, argV)
                     playlistIds = getIdsFromInput(inputArgs, Main.playlistService.getAllIdsSorted(), Main.playlistService.getAllSorted(), 1, startAtZero = False, debug = Main.settings.debug)
                     directoryName = inputArgs[1] if(len(inputArgs) > 1) else None
-                    startIndex = int(inputArgs[2]) if(len(inputArgs) > 2) else None
-                    endIndex = int(inputArgs[3]) if(len(inputArgs) > 3) else None
+                    startIndex = int(inputArgs[2]) - 1 if(len(inputArgs) > 2) else None
+                    endIndex = int(inputArgs[3]) - 1 if(len(inputArgs) > 3) else None
                     streamNameRegex = inputArgs[4] if(len(inputArgs) > 4) else None
                     useIndex = eval(inputArgs[5]) if(len(inputArgs) > 5) else True
                     

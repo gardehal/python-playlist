@@ -232,11 +232,16 @@ class PlaybackService():
                 
                 nSkip = inputArgs.split(" ")[1]
                 if(len(nSkip) > 0 and isNumber(nSkip, intOnly = True)):
-                    printS("Skipping ", nSkip, " stream(s)...", color = BashColor.OKGREEN)
-                    return PlaybackInput(2, int(nSkip))
+                    nSkipInt = int(nSkip)
+                    if(nSkipInt <= 0):
+                        printS("Cannot not skip 0 or fewer streams.", color = BashColor.FAIL)
+                        continue
+                    
+                    printS("Skipping ", nSkipInt, " stream(s)...", color = BashColor.OKGREEN)
+                    return PlaybackInput(2, nSkipInt - 1)
                 else:
                     printS("Could not skip multiple streams, \"", nSkip, "\" is not a number.", color = BashColor.FAIL)
-                    return PlaybackInput(2, 0)
+                    continue
             
             elif(len(self.quitInputs) > 0 and inputArgs in self.quitInputs):
                 return PlaybackInput(3)
@@ -292,7 +297,7 @@ class PlaybackService():
             else:
                 printS("Argument(s) not recognized: \"", inputArgs, "\". Try \"help\" for help.", color = BashColor.WARNING)
             
-        return 0
+        return PlaybackInput(0)
 
     def addPlaybackStreamToPlaylist(self, queueStream: QueueStream, idsIndices: List[str]) -> List[Playlist]:
         """

@@ -50,7 +50,7 @@ class StreamSource:
     def detailsString(self, includeUri: bool = True, includeId: bool = True, includeDatetime: bool = True, includeListCount: bool = True):
         uriString = ", uri: " + self.uri if(includeUri) else ""
         idString = ", id: " + self.id if(includeId) else ""
-        lastFetchedIdsString = ", lastFetchedIds: " + self.lastFetchedIds if(includeId) else ""
+        lastFetchedIdsString = ", lastFetchedIds: " + str(self.lastFetchedIds) if(includeId) else ""
         lastFetchedString = ", lastFetched: " + str(self.lastFetched) if(includeDatetime) else ""
         lastSuccessfulFetchedString = ", lastSuccessfulFetched: " + str(self.lastSuccessfulFetched) if(includeDatetime) else ""
         deletedString = ", deleted: " + str(self.deleted) if(includeDatetime) else ""

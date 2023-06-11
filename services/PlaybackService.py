@@ -125,6 +125,8 @@ class PlaybackService():
         streamsToSkip = 0
         streamsIndex = playlist.streamIds.index(streams[0].id)
         for i, stream in enumerate(streams):
+            streamsIndex += 1
+            
             if(streamsToSkip > 0):
                 streamsToSkip = streamsToSkip - 1
                 printS("Skipping \"", stream.name, "\".", color = BashColor.OKGREEN)
@@ -143,7 +145,6 @@ class PlaybackService():
                 printS("Non-web streams currently not supported, skipping video ", stream.name, color = BashColor.FAIL)
                 continue
 
-            streamsIndex += 1
             padI = str(streamsIndex).rjust(4, " ")
             playingContinued = "..." if(i <= (len(streams))) else ". This is the last stream in this playback, press enter to finish."
             printS(padI, " - Now playing \"", stream.name, "\"" + playingContinued, color = BashColor.BOLD)

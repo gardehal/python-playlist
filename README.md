@@ -104,7 +104,6 @@ Program for queueing and playing videos from list or from sources like channels 
 ## TODO
 
 - add names of things, like when deleting streams from playlist (better feedback for user) - and confirmation y/n
-- fix some of the index/int usage, play/playback and watched streams not resulting in correct index when skipping watched
 - duplicate name check function? same videos (songs) from different sources can be added and not trigger duplication check
 
 - play local/directory streams

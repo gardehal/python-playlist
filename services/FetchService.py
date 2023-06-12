@@ -1,5 +1,4 @@
 import json
-import sys
 from datetime import datetime
 from typing import List
 from xml.dom.minidom import parseString
@@ -18,7 +17,6 @@ from jsonpath_ng import jsonpath, parse
 from pytube import Channel
 
 from enums.StreamSourceType import StreamSourceType
-from model.OdyseeStream import OdyseeStream
 from model.Playlist import Playlist
 from model.PlaylistDetailed import PlaylistDetailed
 from model.QueueStream import QueueStream
@@ -399,6 +397,86 @@ class FetchService():
                     
         newStreams.reverse()
             
+        return newStreams
+    
+    def fetchRumble(self, streamSource: StreamSource, batchSize: int = 10, takeAfter: datetime = None, takeBefore: datetime = None, takeNewOnly: bool = False) -> List[QueueStream]:
+        """
+        Fetch videos from Rumble.
+
+        Args:
+            batchSize (int): Number of videos to check at a time, unrelated to max videos that will be read. Defaults to 10.
+            takeAfter (datetime): Limit to take video after. Defaults to None.
+            takeBefore (datetime): Limit to take video before. Defaults to None.
+            takeNewOnly (bool): Only take streams marked as new. Disables takeAfter and takeBefore-checks. To use takeAfter and/or takeBefore, set this to False. Defaults to False.
+
+        Returns:
+            List[QueueStream]: List of QueueStream
+        """
+        
+        if(streamSource == None):
+            raise ArgumentException("fetchRumble - streamSource was None.")
+        
+        emptyReturn = []
+        requestUrl = streamSource.uri
+        br = mechanize.Browser()
+        document = None
+
+        try:
+            br.open(requestUrl)
+            html = br.response().read()
+            document = BeautifulSoup(html, 'html.parser')
+        except:
+            printS("Channel \"", streamSource.name, "\" (URL: ", streamSource.uri, ") could not be found or is not valid. Please remove it and add it back.", color = BashColor.FAIL)
+            return emptyReturn
+
+        # video-listing-entry -> video-item--a -> href + video-item--duration / video-item--info -> video-item--title
+        printS(f"Fetching videos from {streamSource.name}...")
+        entries = document.find_all("li", {"class": "video-listing-entry"})
+        if(len(entries) == 0):
+            printS(f"Could not find any videos for channel {streamSource.name}.", color = BashColor.WARNING)
+            return emptyReturn
+
+        if(len(entries) < 1):
+            printS(f"Channel {streamSource.name} has no videos.", color = BashColor.FAIL)
+            return emptyReturn
+
+        newStreams = []
+        lastStream = entries[0]
+        lastStreamId = lastStream.find("a", {"class": "video-item--a"})["href"]
+        if(takeNewOnly and lastStreamId in streamSource.lastFetchedIds):
+            title = lastStream.find("h3", {"class": "video-item--title"}).text
+            sanitizedTitle = sanitize(title)
+            printD("Last video fetched: \"", sanitizedTitle, "\", YouTube ID \"", lastStreamId, "\"", color = BashColor.WARNING, debug = self.settings.debug)
+            printD("Return due to takeNewOnly and takeAfter == None and lastStreamId in streamSource.lastFetchedIds", color = BashColor.WARNING, debug = self.settings.debug)
+            return emptyReturn
+                
+        for i, stream in enumerate(entries):
+            id = stream.find("a", {"class": "video-item--a"})["href"]
+            title = stream.find("h3", {"class": "video-item--title"}).text
+            sanitizedTitle = sanitize(title)
+            playtime = 0 # TODO
+            link = "https://rumble.com" + id
+            
+            if(takeNewOnly and id in streamSource.lastFetchedIds):
+                printD("Name \"", sanitizedTitle, "\", Rumble ID \"", id, "\"", color = BashColor.WARNING, debug = self.settings.debug)
+                printD("Break due to takeNewOnly and id in streamSource.lastFetchedIds", color = BashColor.WARNING, debug = self.settings.debug)
+                break
+            elif(i > batchSize):
+                printD("Beak due to i > batchSize", color = BashColor.WARNING, debug = self.settings.debug)
+                break
+
+            queueStream = QueueStream(name = sanitizedTitle, 
+                uri = link, 
+                isWeb = True,
+                streamSourceId = streamSource.id,
+                watched = None,
+                backgroundContent = streamSource.backgroundContent,
+                playtimeSeconds = playtime,
+                added = getDateTime(),
+                remoteId = id)
+            
+            newStreams.append(queueStream)
+
         return newStreams
     
     def resetPlaylistFetch(self, playlistIds: List[str]) -> int:

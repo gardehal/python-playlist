@@ -3,7 +3,9 @@ from typing import List
 import validators
 from grdUtil.BashColor import BashColor
 from grdUtil.InputUtil import getIdsFromInput
-from grdUtil.PrintUtil import printS
+from grdUtil.PrintUtil import printLists, printS
+from grdUtil.StaticUtil import StaticUtil
+
 from model.QueueStream import QueueStream
 from services.PlaylistService import PlaylistService
 from services.QueueStreamService import QueueStreamService
@@ -99,15 +101,30 @@ class QueueStreamCliController():
             List[QueueStream]: QueueStreams deleted.
         """
         
+        result = []
         if(playlistId == None):
             printS("Failed to delete QueueStreams, missing playlistId or index.", color = BashColor.FAIL)
-            return []
+            return result
         
         playlist = self.playlistService.get(playlistId)
         queueStreamIds = getIdsFromInput(queueStreamIds, playlist.streamIds, self.playlistService.getStreamsByPlaylistId(playlistId), startAtZero = False, debug = self.settings.debug)
         if(len(queueStreamIds) == 0):
             printS("Failed to delete QueueStreams, missing queueStreamIds or indices.", color = BashColor.FAIL)
-            return []
+            return result
+        
+        pTitle = f"Playlist"
+        pDataList = [(playlist.id + " - " + playlist.name)]
+        data = [self.queueStreamService.get(id) for id in queueStreamIds]
+        qTitle = f"QueueStream(s)"
+        qDataList = [(_.id + " - " + _.name) for _ in data]
+        
+        printLists([pDataList, qDataList], [pTitle, qTitle])
+        printS("\nDo you want to DELETE this data?", color = BashColor.WARNING)
+        inputArgs = input("(y/n): ")
+        
+        if(inputArgs not in StaticUtil.affirmative):
+            printS("Delete aborted by user.", color = BashColor.OKGREEN)
+            return result
         
         result = self.playlistService.deleteStreams(playlist.id, queueStreamIds)
         if(len(result) > 0):

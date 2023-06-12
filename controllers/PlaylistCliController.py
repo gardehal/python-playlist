@@ -1,5 +1,4 @@
 import re
-import sys
 from datetime import datetime
 from typing import List
 
@@ -7,6 +6,7 @@ from grdUtil.BashColor import BashColor
 from grdUtil.DateTimeUtil import getDateTime
 from grdUtil.InputUtil import isNumber
 from grdUtil.PrintUtil import printLists, printS
+from grdUtil.StaticUtil import StaticUtil
 
 from controllers.SharedCliController import SharedCliController
 from model.Playlist import Playlist
@@ -101,7 +101,19 @@ class PlaylistCliController():
         if(len(playlistIds) == 0):
             printS("Failed to delete Playlists, missing playlistIds or indices.", color = BashColor.FAIL)
             return result
-              
+        
+        data = [self.playlistService.get(id) for id in playlistIds]
+        pTitle = f"Playlist(s)"
+        pDataList = [(_.id + " - " + _.name) for _ in data]
+        
+        printLists([pDataList], [pTitle])
+        printS("\nDo you want to DELETE this data?", color = BashColor.WARNING)
+        inputArgs = input("(y/n): ")
+        
+        if(inputArgs not in StaticUtil.affirmative):
+            printS("Delete aborted by user.", color = BashColor.OKGREEN)
+            return result
+        
         for id in playlistIds:
             deleteResult = self.playlistService.delete(id)
             if(deleteResult != None):

@@ -3,7 +3,9 @@ from typing import List
 
 from grdUtil.BashColor import BashColor
 from grdUtil.InputUtil import getIdsFromInput
-from grdUtil.PrintUtil import printS
+from grdUtil.PrintUtil import printLists, printS
+from grdUtil.StaticUtil import StaticUtil
+
 from model.StreamSource import StreamSource
 from services.PlaylistService import PlaylistService
 from services.SharedService import SharedService
@@ -74,15 +76,30 @@ class StreamSourceCliController():
             List[StreamSource]: StreamSources deleted.
         """
         
+        result = []
         if(playlistId == None):
             printS("Failed to delete StreamSources, missing playlistId or index.", color = BashColor.FAIL)
-            return []
+            return result
         
         playlist = self.playlistService.get(playlistId)
         streamSourceIds = getIdsFromInput(streamSourceIds, playlist.streamSourceIds, self.playlistService.getSourcesByPlaylistId(playlist.id), startAtZero = False, debug = self.settings.debug)
         if(len(streamSourceIds) == 0):
             printS("Failed to delete StreamSources, missing streamSourceIds or indices.", color = BashColor.FAIL)
-            return []
+            return result
+        
+        pTitle = f"Playlist"
+        pDataList = [(playlist.id + " - " + playlist.name)]
+        data = [self.streamSourceService.get(id) for id in streamSourceIds]
+        qTitle = f"StreamSource(s)"
+        qDataList = [(_.id + " - " + _.name) for _ in data]
+        
+        printLists([pDataList, qDataList], [pTitle, qTitle])
+        printS("\nDo you want to DELETE this data?", color = BashColor.WARNING)
+        inputArgs = input("(y/n): ")
+        
+        if(inputArgs not in StaticUtil.affirmative):
+            printS("Delete aborted by user.", color = BashColor.OKGREEN)
+            return result
         
         result = self.playlistService.deleteStreamSources(playlist.id, streamSourceIds)
         if(len(result) > 0):

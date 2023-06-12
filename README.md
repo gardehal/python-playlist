@@ -1,4 +1,4 @@
-# Python Video Queue
+# Python Playlist
 
 Program for queueing and playing videos from list or from sources like channels on YouTube, Odysee, Rumble. Data stored locally in JSON files.
 
@@ -106,11 +106,9 @@ Program for queueing and playing videos from list or from sources like channels 
 - duplicate name check function? same videos (songs) from different sources can be added and not trigger duplication check
 
 - play local/directory streams
-- support for mp3s
 - implement file/folder, Rumble fetches
+- add length of stream in seconds to qs
 - implement background content properly, should not wait for input, just play when previous stream finished (assume no ads/breaks/pauses, need playtime in model..)
 - tests for core functions like fetch and play?
-- rename to python-playlist
 - reset doesn't work, not resetting sources
 - restore/add source, have to check on deleted
-- add length of stream in seconds to qs

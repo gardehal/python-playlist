@@ -431,7 +431,7 @@ class FetchService():
 
         # video-listing-entry -> video-item--a -> href + video-item--duration / video-item--info -> video-item--title
         printS(f"Fetching videos from {streamSource.name}...")
-        entries = document.find_all("li", {"class": "video-listing-entry"})
+        entries = document.select(".video-listing-entry")
         if(len(entries) == 0):
             printS(f"Could not find any videos for channel {streamSource.name}.", color = BashColor.WARNING)
             return emptyReturn
@@ -442,7 +442,7 @@ class FetchService():
 
         newStreams = []
         lastStream = entries[0]
-        lastStreamId = lastStream.find("a", {"class": "video-item--a"})["href"]
+        lastStreamId = lastStream.select_one(".video-item--a")["href"]
         if(takeNewOnly and lastStreamId in streamSource.lastFetchedIds):
             title = lastStream.find("h3", {"class": "video-item--title"}).text
             sanitizedTitle = sanitize(title)
@@ -451,10 +451,11 @@ class FetchService():
             return emptyReturn
                 
         for i, stream in enumerate(entries):
-            id = stream.find("a", {"class": "video-item--a"})["href"]
-            title = stream.find("h3", {"class": "video-item--title"}).text
+            id = stream.select_one(".video-item--a")["href"]
+            title = stream.select_one(".video-item--title").text
             sanitizedTitle = sanitize(title)
-            playtime = 0 # TODO
+            playtime = stream.select_one(".video-item--duration")["data-value"]
+            playtimeSeconds = self.timestampToSeconds(playtime)
             link = "https://rumble.com" + id
             
             if(takeNewOnly and id in streamSource.lastFetchedIds):
@@ -471,7 +472,7 @@ class FetchService():
                 streamSourceId = streamSource.id,
                 watched = None,
                 backgroundContent = streamSource.backgroundContent,
-                playtimeSeconds = playtime,
+                playtimeSeconds = playtimeSeconds,
                 added = getDateTime(),
                 remoteId = id)
             
@@ -567,3 +568,21 @@ class FetchService():
                 raise DatabaseException(f"doReset - failed to update StreamSource {entity.name} with id {entity.id}.")
         
         return self.playlistService.get(playlist.id, includeSoftDeleted)   
+
+    def timestampToSeconds(self, timestamp: str) -> int:
+        """
+        Get seconds from timestamps like 41 (ss), 2:30 (MM:ss), or 03:01:57 (hh:MM:ss). Longer strings or missing numbers returns None.
+
+        Args:
+            timestamp (str): Timestamp to convert.
+            
+        Returns:
+            int: Seconds.
+        """
+        
+        # https://stackoverflow.com/questions/6402812/how-to-convert-an-hmmss-time-string-to-seconds-in-python
+        result = 0
+        for part in timestamp.split(':'):
+            result = result * 60 + int(part, 10)
+            
+        return result

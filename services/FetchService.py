@@ -89,6 +89,8 @@ class FetchService():
                     fetchedStreams = self.fetchYoutubeHtml(source, batchSize, takeNewOnly)
                 elif(source.streamSourceTypeId == StreamSourceType.ODYSEE.value):
                     fetchedStreams = self.fetchOdysee(source, batchSize, _takeAfter, takeBefore, takeNewOnly)
+                elif(source.streamSourceTypeId == StreamSourceType.RUMBLE.value):
+                    fetchedStreams = self.fetchRumble(source, batchSize, _takeAfter, takeBefore, takeNewOnly)
                 else:
                     printS("\t Source \"", source.name, "\" could not be fetched as it is not implemented for this source.", color = BashColor.WARNING)
                     continue

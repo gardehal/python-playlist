@@ -5,7 +5,7 @@ from grdUtil.BashColor import BashColor
 from grdUtil.FileUtil import makeFiles
 from grdUtil.InputUtil import extractArgs, getIdsFromInput, getIfExists
 from grdUtil.PrintUtil import printLists, printS
-from pytube import Channel
+from model.StreamSource import StreamSource
 
 from Commands import Commands
 from controllers.PlaylistCliController import PlaylistCliController
@@ -60,11 +60,6 @@ class Main:
                 elif(arg in Main.commands.testCommands):
                     inputArgs = extractArgs(argIndex, argV)
                     printS("Test", color = BashColor.OKBLUE)
-                    
-                    
-                    x = [1, 2, 3, 4, 5, 6, 7]
-                    printS(x[None:None])
-                    c = int(None)
                     
                     quit()            
                     

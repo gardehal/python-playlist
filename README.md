@@ -103,8 +103,6 @@ Program for queueing and playing videos from list or from sources like channels 
 
 ## TODO
 
-- duplicate name check function? same videos (songs) from different sources can be added and not trigger duplication check
-
 - play local/directory streams
 - implement file/folder fetch
 - add length of stream in seconds to qs, add in all fetches, use for display?
@@ -112,4 +110,3 @@ Program for queueing and playing videos from list or from sources like channels 
 - tests for core functions like fetch and play?
 - reset doesn't work, not resetting sources
 - restore/add source, have to check on deleted
-- rename queuestream to stream, streamsource to source

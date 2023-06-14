@@ -452,6 +452,7 @@ class FetchService():
             printD("Return due to takeNewOnly and takeAfter == None and lastStreamId in streamSource.lastFetchedIds", color = BashColor.WARNING, debug = self.settings.debug)
             return emptyReturn
                 
+        entries.reverse()
         for i, stream in enumerate(entries):
             id = stream.select_one(".video-item--a")["href"]
             title = stream.select_one(".video-item--title").text

@@ -122,6 +122,10 @@ class PlaybackService():
         """
         
         nWatched = 0
+        if(len(streams) == 0):
+            printS("Stream queue is empty.", color = BashColor.OKGREEN)
+            return nWatched
+        
         streamsToSkip = 0
         streamsIndex = playlist.streamIds.index(streams[0].id)
         for i, stream in enumerate(streams):
@@ -146,7 +150,7 @@ class PlaybackService():
                 continue
 
             padI = str(streamsIndex).rjust(4, " ")
-            playingContinued = "..." if(i <= (len(streams))) else ". This is the last stream in this playback, press enter to finish."
+            playingContinued = "..." if(i < (len(streams) - 1)) else ". This is the last stream in this playback, press enter to finish."
             printS(padI, " - Now playing \"", stream.name, "\"" + playingContinued, color = BashColor.BOLD)
             inputHandling = self.handlePlaybackInput(playlist, stream)
             if(inputHandling == 0):

@@ -1,8 +1,8 @@
 import os
+import shutil
 
 from dotenv import load_dotenv
-from grdUtil.InputUtil import joinAsString
-from grdUtil.PrintUtil import asTable
+from grdUtil.PrintUtil import asTable, printS
 
 load_dotenv()
 
@@ -19,6 +19,12 @@ class Settings():
     fetchLimitSingleSource: int = None
     
     def __init__(self):
+        envFilePath = ".env"
+        envFilePathExample = ".env-example"
+        if(not os.path.exists(envFilePath) and os.path.exists(envFilePathExample)):
+            shutil.copy2(envFilePathExample, envFilePath)
+            printS("Created a setting file, ", envFilePath, ", you may want to update some of the settings for security purposes according to the installation guide in README.md.\n\n", color = BashColor.OKGREEN)
+
         self.debug = eval(os.environ.get("DEBUG"))
         self.localStoragePath = os.environ.get("LOCAL_STORAGE_PATH")
         self.logWatched = eval(os.environ.get("LOG_WATCHED"))

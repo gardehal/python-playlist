@@ -1,27 +1,4 @@
-import os
-import shutil
-
-from dotenv import load_dotenv
-from grdUtil.BashColor import BashColor
-from grdUtil.PrintUtil import printS
 from grdUtil.StaticUtil import StaticUtil
-
-ENV_FILE_PATH = ".env"
-ENV_FILE_PATH_EXAMPLE = ".env-example"
-if(not os.path.exists(ENV_FILE_PATH) and os.path.exists(ENV_FILE_PATH_EXAMPLE)):
-    shutil.copy2(ENV_FILE_PATH_EXAMPLE, ENV_FILE_PATH)
-    printS("Created a setting file, ", ENV_FILE_PATH, ", you may want to update some of the settings for security purposes according to the installation guide in README.md.\n\n", color = BashColor.OKGREEN)
-
-load_dotenv()
-DEBUG = eval(os.environ.get("DEBUG"))
-LOCAL_STORAGE_PATH = os.environ.get("LOCAL_STORAGE_PATH")
-LOG_WATCHED = eval(os.environ.get("LOG_WATCHED"))
-DOWNLOAD_WEB_STREAMS = eval(os.environ.get("DOWNLOAD_WEB_STREAMS"))
-REMOVE_WATCHED_ON_FETCH = eval(os.environ.get("REMOVE_WATCHED_ON_FETCH"))
-PLAYED_ALWAYS_WATCHED = eval(os.environ.get("PLAYED_ALWAYS_WATCHED"))
-WATCHED_LOG_FILEPATH = os.environ.get("WATCHED_LOG_FILEPATH")
-BROWSER_BIN = os.environ.get("BROWSER_BIN")
-FETCH_LIMIT_SINGLE_SOURCE = int(os.environ.get("FETCH_LIMIT_SINGLE_SOURCE"))
 
 class Commands():
     

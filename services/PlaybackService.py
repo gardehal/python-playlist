@@ -150,8 +150,8 @@ class PlaybackService():
                 continue
 
             padI = str(streamsIndex).rjust(4, " ")
-            playingContinued = "..." if(i < (len(streams) - 1)) else ". This is the last stream in this playback, press enter to finish."
-            printS(padI, " - Now playing \"", stream.name, "\"" + playingContinued, color = BashColor.BOLD)
+            printS(padI, " - Now playing \"", stream.name, "\"...", color = BashColor.BOLD)
+            printS("\tThis is the last stream in this playback, press enter to finish.", color = BashColor.WARNING, doPrint = ((i + 1) >= len(streams)))
             inputHandling = self.handlePlaybackInput(playlist, stream)
             if(inputHandling == 0):
                 printS("An error occurred while parsing inputs.", color = BashColor.FAIL)

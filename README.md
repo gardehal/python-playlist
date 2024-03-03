@@ -110,3 +110,4 @@ Program for queueing and playing videos from list or from sources like channels 
 - implement background content properly, should not wait for input, just play when previous stream finished (assume no ads/breaks/pauses, need playtime in model..)
 - reset doesn't work, not resetting sources
 - restore/add source, have to check on deleted
+- command to unwatch all, nulls all watched values in given playlist

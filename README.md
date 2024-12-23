@@ -103,6 +103,8 @@ Program for queueing and playing videos from list or from sources like channels 
 
 ## TODO
 
+- update pips
+  - install on new pc for testing, review install guide?
 - bug where sources that downloads videos throws exception
 - export lists (e.g. searches, watched/deleted streams etc.)
 - play stream by stream ID, eg. checking searched streams

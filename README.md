@@ -96,6 +96,10 @@ Program for queueing and playing videos from list or from sources like channels 
 
 ## Known issues
 
+- On install/first use:
+  - Some packages may not load, e.g. pytube, try: 
+    - $ pip uninstall package_name
+    - $ pip install package_name
 - Fetch loads indefinitely:
   - Check if any other streaming services are currently loading, close them and retry fetch. Unsure why it happens.
 - Fetch fails with error message - urllib.error.URLError: <urlopen error [WinError 10054] An existing connection was forcibly closed by the remote host>
@@ -104,7 +108,6 @@ Program for queueing and playing videos from list or from sources like channels 
 ## TODO
 
 - update pips
-  - install on new pc for testing, review install guide?
 - bug where sources that downloads videos throws exception
 - export lists (e.g. searches, watched/deleted streams etc.)
 - play stream by stream ID, eg. checking searched streams

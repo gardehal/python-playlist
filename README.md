@@ -97,13 +97,14 @@ Program for queueing and playing videos from list or from sources like channels 
 ## Known issues
 
 - On install/first use:
-  - Some packages may not load, e.g. pytube, try: 
+  - Some packages may not load imported classes, e.g. pytube, try: 
     - $ pip uninstall package_name
     - $ pip install package_name
 - Fetch loads indefinitely:
   - Check if any other streaming services are currently loading, close them and retry fetch. Unsure why it happens.
 - Fetch fails with error message - urllib.error.URLError: <urlopen error [WinError 10054] An existing connection was forcibly closed by the remote host>
   - Retry fetch later. Not sure why it happens.
+- Other issues, see: [grdUtil](https://github.com/grdall/python-packages)
 
 ## TODO
 

@@ -108,7 +108,6 @@ Program for queueing and playing videos from list or from sources like channels 
 
 ## TODO
 
-- update pips
 - bug where sources that downloads videos throws exception
 - export lists (e.g. searches, watched/deleted streams etc.)
 - play stream by stream ID, eg. checking searched streams
@@ -119,3 +118,4 @@ Program for queueing and playing videos from list or from sources like channels 
 - reset doesn't work, not resetting sources
 - restore/add source, have to check on deleted
 - command to unwatch all, nulls all watched values in given playlist
+- twitter/facebook/instagram as sources for videos?

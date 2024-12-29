@@ -8,6 +8,7 @@ import requests
 from bs4 import BeautifulSoup
 from grdException.ArgumentException import ArgumentException
 from grdException.DatabaseException import DatabaseException
+from grdException.NotImplementedException import NotImplementedException
 from grdUtil.BashColor import BashColor
 from grdUtil.DateTimeUtil import getDateTime, stringToDatetime
 from grdUtil.FileUtil import mkdir
@@ -142,6 +143,7 @@ class FetchService():
             Tuple[List[QueueStream], str]: A Tuple of List of QueueStream, and the last filename fetched.
         """
         
+        raise NotImplementedException("Fetch directory not implemented")
         if(streamSource == None):
             raise ArgumentException("fetchDirectory - streamSource was None")
 

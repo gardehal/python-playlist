@@ -263,6 +263,26 @@ class Main:
                     argIndex += len(inputArgs) + 1
                     continue
 
+                elif(arg in Main.commands.exportPlaylistCommands):
+                    # Expected input: playlistId or index
+                    inputArgs = extractArgs(argIndex, argV)
+                    playlistIds = getIdsFromInput(inputArgs, Main.playlistService.getAllIdsSorted(), Main.playlistService.getAllSorted(), 1, startAtZero = False, debug = Main.settings.debug)
+                    
+                    # Main.playlistCliController.exportPlaylist(getIfExists(playlistIds, 0))
+                    
+                    argIndex += len(inputArgs) + 1
+                    continue
+
+                elif(arg in Main.commands.unwatchAllPlaylistCommands):
+                    # Expected input: playlistId or index
+                    inputArgs = extractArgs(argIndex, argV)
+                    playlistIds = getIdsFromInput(inputArgs, Main.playlistService.getAllIdsSorted(), Main.playlistService.getAllSorted(), 1, startAtZero = False, debug = Main.settings.debug)
+                    
+                    # Main.playlistCliController.unwatchAllInPlaylist(getIfExists(playlistIds, 0))
+                    
+                    argIndex += len(inputArgs) + 1
+                    continue
+
                 # Streams
                 elif(arg in Main.commands.addStreamCommands):
                     # Expected input: playlistId or index, uri, name?

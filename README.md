@@ -108,6 +108,8 @@ Program for queueing and playing videos from list or from sources like channels 
 
 ## TODO
 
+- help print prints 'quit' on repeat due to lowercase? .distinct or similar on list?
+- move playlist data to github dir instead of on as default?
 - bug where sources that downloads videos throws exception
 - export lists (e.g. searches, watched/deleted streams etc.)
 - play stream by stream ID, eg. checking searched streams

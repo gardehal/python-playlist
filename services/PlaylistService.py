@@ -638,11 +638,51 @@ class PlaylistService(BaseService[T]):
                     printS("\tQueueStream not found (ID: \"", streamId, "\").", color = BashColor.FAIL)
                     continue
                 
-                # download here
+                # TODO download here
                 
                 color = "WHITE" if i % 2 == 0 else "GREYBG"
                 padI = str(i + 1).rjust(4, " ")
                 printS(padI, " - Downloading \"", stream.name, "\".", color = BashColor[color])
+                
+                result += 1
+                
+        return result
+    
+    def exportPlaylists(self, playlistIds: List[str], directory: str = None, includeSoftDeleted: bool = False) -> int:
+        """
+        Export playlist in a human readable format with links.
+        
+        Args:
+            playlistIds (list[str]): List of playlistIds to export for.
+            includeSoftDeleted (bool): should include soft-deleted entities.
+
+        Returns:
+            int: number of sources and streams exported.
+        """
+        
+        result = 0
+        for id in playlistIds:
+            exportFile = self.settings.localStoragePath + "/export/" + directory + "/" + id
+            playlist = self.get(id, includeSoftDeleted)
+            
+            printS("\QueueStreams for \"", playlist.name, "\"", color = BashColor.BOLD)
+            if(len(playlist.streamIds) == 0):
+                printS("\tNo streams added yet.")
+            
+            streams = playlist.streamIds
+            for i, streamId in enumerate(streams):
+                stream = self.queueStreamService.get(streamId, includeSoftDeleted)
+                
+                if(stream == None):
+                    printS("\tQueueStream not found (ID: \"", streamId, "\").", color = BashColor.FAIL)
+                    continue
+                
+                with open(exportFile, "t") as file:
+                    file.write(stream.detailsString())
+                
+                color = "WHITE" if i % 2 == 0 else "GREYBG"
+                padI = str(i + 1).rjust(4, " ")
+                printS(padI, " - Exporting \"", stream.name, "\".", color = BashColor[color])
                 
                 result += 1
                 
@@ -678,3 +718,4 @@ class PlaylistService(BaseService[T]):
         all = self.getAllSorted(includeSoftDeleted)
         
         return [entity.id for entity in all]
+    

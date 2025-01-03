@@ -399,3 +399,34 @@ class PlaylistCliController():
             printS("Nothing was downloaded for playlist \"", playlist.name, "\".", color = BashColor.FAIL)
     
         return result
+      
+    def exportPlaylist(self, playlistId: str, directory: str = None) -> List[str]:
+        """
+        Export Playlist info to file.
+
+        Args:
+            playlistId (str): ID of playlist to export.
+            directory (str): Directory (under self.settings.localStoragePath) to save downloaded content.
+
+        Returns:
+            List[str]: Absolute paths of streams exported.
+        """
+        
+        result = []
+        playlist = self.playlistService.get(playlistId)
+        if(playlist is None):
+            printS("\tNo playlist found for ID " + playlistId, color = BashColor.FAIL)
+            return result
+            
+        exportDirectory = directory if(directory != None) else playlist.name
+        try:
+            exportResult = self.playlistService.exportPlaylists(playlistId, exportDirectory)
+            result.append(exportResult)
+        except Exception as e:
+            printS("Failed to export playlist \"", playlist.name, "\": ", e, color = BashColor.FAIL)
+            
+        if(len(result) == 0):
+            printS("Nothing was exported for playlist \"", playlist.name, "\".", color = BashColor.FAIL)
+    
+        return result
+

@@ -264,11 +264,12 @@ class Main:
                     continue
 
                 elif(arg in Main.commands.exportPlaylistCommands):
-                    # Expected input: playlistId or index
+                    # Expected input: playlistId or index, directoryName?
                     inputArgs = extractArgs(argIndex, argV)
                     playlistIds = getIdsFromInput(inputArgs, Main.playlistService.getAllIdsSorted(), Main.playlistService.getAllSorted(), 1, startAtZero = False, debug = Main.settings.debug)
+                    directoryName = inputArgs[1] if(len(inputArgs) > 1) else None
                     
-                    # Main.playlistCliController.exportPlaylist(getIfExists(playlistIds, 0))
+                    Main.playlistCliController.exportPlaylist(getIfExists(playlistIds, 0), directoryName)
                     
                     argIndex += len(inputArgs) + 1
                     continue

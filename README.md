@@ -110,7 +110,6 @@ Program for queueing and playing videos from list or from sources like channels 
 
 - WATCHED_LOG_FILEPATH logfile should just be in log dir
 - bug where sources that downloads videos throws exception
-- export lists (e.g. searches, watched/deleted streams etc.)
 - play stream by stream ID, eg. checking searched streams
 - implement file/folder fetch
 - implement more video sources

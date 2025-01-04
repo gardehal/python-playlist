@@ -406,7 +406,7 @@ class PlaylistCliController():
 
         Args:
             playlistId (str): ID of playlist to export.
-            directory (str): Directory (under self.settings.localStoragePath) to save downloaded content.
+            directory (str): Directory (under self.settings.localStoragePath /export) to save exported list to.
 
         Returns:
             List[str]: Absolute paths of streams exported.
@@ -420,7 +420,7 @@ class PlaylistCliController():
             
         exportDirectory = directory if(directory != None) else playlist.name
         try:
-            exportResult = self.playlistService.exportPlaylists(playlistId, exportDirectory)
+            exportResult = self.playlistService.exportPlaylists(playlist, exportDirectory)
             result.append(exportResult)
         except Exception as e:
             printS("Failed to export playlist \"", playlist.name, "\": ", e, color = BashColor.FAIL)
@@ -429,4 +429,3 @@ class PlaylistCliController():
             printS("Nothing was exported for playlist \"", playlist.name, "\".", color = BashColor.FAIL)
     
         return result
-

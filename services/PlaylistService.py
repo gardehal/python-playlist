@@ -8,13 +8,14 @@ from grdException.DatabaseException import DatabaseException
 from grdException.NotFoundException import NotFoundException
 from grdService.BaseService import BaseService
 from grdUtil.BashColor import BashColor
-from grdUtil.DateTimeUtil import getDateTime
+from grdUtil.DateTimeUtil import getDateTime, getDateTimeAsNumber
 from grdUtil.InputUtil import sanitize
 from grdUtil.LocalJsonRepository import LocalJsonRepository
 from grdUtil.LogLevel import LogLevel
 from grdUtil.LogUtil import LogUtil
 from grdUtil.PrintUtil import printD, printS
 from grdUtil.StrUtil import maxLen
+from grdUtil.FileUtil import makeFiles
 
 from model.Playlist import Playlist
 from model.QueueStream import QueueStream
@@ -648,12 +649,12 @@ class PlaylistService(BaseService[T]):
                 
         return result
     
-    def exportPlaylists(self, playlistIds: List[str], directory: str = None, includeSoftDeleted: bool = False) -> int:
+    def exportPlaylists(self, playlist: Playlist, directory: str = None, includeSoftDeleted: bool = False) -> int:
         """
         Export playlist in a human readable format with links.
         
         Args:
-            playlistIds (list[str]): List of playlistIds to export for.
+            playlist (Playlist): Playlist to export.
             includeSoftDeleted (bool): should include soft-deleted entities.
 
         Returns:
@@ -661,30 +662,53 @@ class PlaylistService(BaseService[T]):
         """
         
         result = 0
-        for id in playlistIds:
-            exportFile = self.settings.localStoragePath + "/export/" + directory + "/" + id
-            playlist = self.get(id, includeSoftDeleted)
+        exportFile = self.settings.localStoragePath + "/export/" + directory + "/" + str(getDateTimeAsNumber()) + ".txt"
+        makeFiles(exportFile)
+        
+        printS("\StreamsSources for \"", playlist.name, "\"", color = BashColor.BOLD)
+        if(len(playlist.streamSourceIds) == 0):
+            printS("\tNo sources added yet.")
+        
+        sources = playlist.streamSourceIds
+        for i, sourceId in enumerate(sources):
+            source = self.streamSourceService.get(sourceId, includeSoftDeleted)
             
-            printS("\QueueStreams for \"", playlist.name, "\"", color = BashColor.BOLD)
-            if(len(playlist.streamIds) == 0):
-                printS("\tNo streams added yet.")
+            if(source == None):
+                printS("\tStreamSource not found (ID: \"", sourceId, "\").", color = BashColor.FAIL)
+                continue
             
-            streams = playlist.streamIds
-            for i, streamId in enumerate(streams):
-                stream = self.queueStreamService.get(streamId, includeSoftDeleted)
+            with open(exportFile, "a") as file:
+                file.write(source.detailsString() + "\n")
+            
+            color = "WHITE" if i % 2 == 0 else "GREYBG"
+            padI = str(i + 1).rjust(4, " ")
+            printS(padI, " - Exporting \"", source.name, "\".", color = BashColor[color])
+            
+            result += 1
+        
+        with open(exportFile, "a") as file:
+            file.write("\n\n")
                 
-                if(stream == None):
-                    printS("\tQueueStream not found (ID: \"", streamId, "\").", color = BashColor.FAIL)
-                    continue
-                
-                with open(exportFile, "t") as file:
-                    file.write(stream.detailsString())
-                
-                color = "WHITE" if i % 2 == 0 else "GREYBG"
-                padI = str(i + 1).rjust(4, " ")
-                printS(padI, " - Exporting \"", stream.name, "\".", color = BashColor[color])
-                
-                result += 1
+        printS("\QueueStreams for \"", playlist.name, "\"", color = BashColor.BOLD)
+        if(len(playlist.streamIds) == 0):
+            printS("\tNo streams added yet.")
+        
+        streams = playlist.streamIds
+        for i, streamId in enumerate(streams):
+            stream = self.queueStreamService.get(streamId, includeSoftDeleted)
+            
+            if(stream == None):
+                printS("\tQueueStream not found (ID: \"", streamId, "\").", color = BashColor.FAIL)
+                continue
+            
+            with open(exportFile, "a") as file:
+                file.write(stream.detailsString() + "\n")
+            
+            color = "WHITE" if i % 2 == 0 else "GREYBG"
+            padI = str(i + 1).rjust(4, " ")
+            printS(padI, " - Exporting \"", stream.name, "\".", color = BashColor[color])
+            
+            result += 1
                 
         return result
      

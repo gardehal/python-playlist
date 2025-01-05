@@ -665,7 +665,7 @@ class PlaylistService(BaseService[T]):
         exportFile = self.settings.localStoragePath + "/export/" + directory + "/" + str(getDateTimeAsNumber()) + ".txt"
         makeFiles(exportFile)
         
-        printS("\StreamsSources for \"", playlist.name, "\"", color = BashColor.BOLD)
+        printS("\tStreamsSources for \"", playlist.name, "\"", color = BashColor.BOLD)
         if(len(playlist.streamSourceIds) == 0):
             printS("\tNo sources added yet.")
         
@@ -689,7 +689,7 @@ class PlaylistService(BaseService[T]):
         with open(exportFile, "a") as file:
             file.write("\n\n")
                 
-        printS("\QueueStreams for \"", playlist.name, "\"", color = BashColor.BOLD)
+        printS("\tQueueStreams for \"", playlist.name, "\"", color = BashColor.BOLD)
         if(len(playlist.streamIds) == 0):
             printS("\tNo streams added yet.")
         
@@ -703,6 +703,43 @@ class PlaylistService(BaseService[T]):
             
             with open(exportFile, "a") as file:
                 file.write(stream.detailsString() + "\n")
+            
+            color = "WHITE" if i % 2 == 0 else "GREYBG"
+            padI = str(i + 1).rjust(4, " ")
+            printS(padI, " - Exporting \"", stream.name, "\".", color = BashColor[color])
+            
+            result += 1
+                
+        return result
+    
+    def unwatchPlaylist(self, playlist: Playlist) -> int:
+        """
+        Unwatch all streams in Playlist.
+        
+        Args:
+            playlist (Playlist): Playlist to unwatch.
+
+        Returns:
+            int: number of streams unwatched.
+        """
+        
+        result = 0
+                
+        printS("\tUnwatching QueueStreams for \"", playlist.name, "\"", color = BashColor.BOLD)
+        if(len(playlist.streamIds) == 0):
+            printS("\tNo streams added yet.")
+            return 0
+        
+        streams = playlist.streamIds
+        for i, streamId in enumerate(streams):
+            stream = self.queueStreamService.get(streamId)
+            
+            if(stream == None):
+                printS("\tQueueStream not found (ID: \"", streamId, "\").", color = BashColor.FAIL)
+                continue
+                
+            stream.watched = None
+            self.queueStreamService.update(stream)
             
             color = "WHITE" if i % 2 == 0 else "GREYBG"
             padI = str(i + 1).rjust(4, " ")

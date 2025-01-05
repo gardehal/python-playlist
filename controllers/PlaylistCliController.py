@@ -429,3 +429,26 @@ class PlaylistCliController():
             printS("Nothing was exported for playlist \"", playlist.name, "\".", color = BashColor.FAIL)
     
         return result
+      
+    def unwatchAll(self, playlistId: str) -> int:
+        """
+        Unwatch all streams in Playlist.
+
+        Args:
+            playlistId (str): ID of playlist.
+
+        Returns:
+            int: number of streams unwatched.
+        """
+        
+        playlist = self.playlistService.get(playlistId)
+        if(playlist is None):
+            printS("\tNo playlist found for ID " + playlistId, color = BashColor.FAIL)
+            return 0
+            
+        try:
+            return self.playlistService.unwatchPlaylist(playlist)
+        except Exception as e:
+            printS("Failed to unwatch streams in  playlist \"", playlist.name, "\": ", e, color = BashColor.FAIL)
+        
+        return 0

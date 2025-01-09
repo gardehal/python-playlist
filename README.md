@@ -108,8 +108,43 @@ Program for queueing and playing videos from list or from sources like channels 
 
 ## TODO
 
-- WATCHED_LOG_FILEPATH logfile should just be in log dir
 - bug where sources that downloads videos throws exception
+  - Error:
+        Fetching videos from Source - YouTube...
+        DEBUG: fetchYoutubeHtml - Name "Title2", YouTube ID "ID2"
+        DEBUG: fetchYoutubeHtml - Break due to takeNewOnly and id in streamSource.lastFetchedIds
+                Adding "Title1".
+        DEBUG: fetch -  Downloading due to alwaysDownload flag on source...
+        Downloading video from https://www.youtube.com/watch?v=ID2
+        Traceback (most recent call last):
+          File "C:\Users\user\AppData\Local\Programs\Python\Python311\Lib\site-packages\pytube\__main__.py", line 341, in title
+            self._title = self.vid_info['videoDetails']['title']
+                          ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+        KeyError: 'videoDetails'
+
+        During handling of the above exception, another exception occurred:
+
+        Traceback (most recent call last):
+          File "C:\users\user\documents\github\python-playlists\main.py", line 439, in <module>
+            Main.main()
+          File "C:\users\user\documents\github\python-playlists\main.py", line 193, in main
+            Main.playlistCliController.fetchPlaylists(playlistIds, Main.settings.fetchLimitSingleSource, takeAfter, takeBefore, takeNewOnly)
+          File "C:\users\user\documents\github\python-playlists\controllers\PlaylistCliController.py", line 277, in fetchPlaylists
+            result += self.fetchService.fetch(id, batchSize, _takeAfter, _takeBefore, takeNewOnly)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+          File "C:\users\user\documents\github\python-playlists\services\FetchService.py", line 123, in fetch
+            downloadPath = self.downloadService.download(fetchedStream.uri, source.name)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+          File "C:\users\user\documents\github\python-playlists\services\DownloadService.py", line 48, in download
+            return self.downloadYoutube(url, directory, fileExtension, nameRegex, prefix)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+          File "C:\users\user\documents\github\python-playlists\services\DownloadService.py", line 112, in downloadYoutube
+            videoPath = self.getVideoPath(directory, youtube.title, fileExtension, nameRegex, prefix)
+                                                    ^^^^^^^^^^^^^
+          File "C:\Users\user\AppData\Local\Programs\Python\Python311\Lib\site-packages\pytube\__main__.py", line 346, in title
+            raise exceptions.PytubeError(
+        pytube.exceptions.PytubeError: Exception while accessing title of https://youtube.com/watch?v=ID2. Please file a bug report at https://github.com/pytube/pytube
+ 
 - play stream by stream ID, eg. checking searched streams
 - implement file/folder fetch
 - implement more video sources

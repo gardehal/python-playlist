@@ -109,7 +109,7 @@ class DownloadService():
         
         youtube = YouTube(url)
         printS("Downloading video from ", url)
-        videoPath = self.getVideoPath(directory, youtube.title, fileExtension, nameRegex, prefix)
+        videoPath = self.getVideoPath(directory, youtube.title(), fileExtension, nameRegex, prefix)
         path = "/".join(videoPath.split("/")[0:-1])
         name = videoPath.split("/")[-1]
         try:

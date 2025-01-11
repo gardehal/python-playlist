@@ -272,6 +272,7 @@ class FetchService():
         videoRenderer = parse("contents..videoRenderer")
         videoId = parse("contents..videoRenderer.videoId")
         title = parse("contents..title.runs[0].text")
+        # length = parse("ytp-time-duration")
         try:
             videosScriptJson = videosScript.split("ytInitialData = ")[1].split(";")[0]
             videosJson = json.loads(videosScriptJson)
@@ -307,6 +308,7 @@ class FetchService():
                 break
 
             queueStream = QueueStream(name = sanitizedTitle, 
+                # playtimeSeconds = length,
                 uri = link, 
                 isWeb = True,
                 streamSourceId = streamSource.id,

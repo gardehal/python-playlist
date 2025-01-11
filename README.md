@@ -147,7 +147,6 @@ Program for queueing and playing videos from list or from sources like channels 
  
 - play stream by stream ID, eg. checking searched streams
 - implement file/folder fetch
-- implement more video sources
 - add length of stream in seconds to qs, add in all fetches, use for display? - in seconds or timestamp like hh:MM:ss ?
 - implement background content properly, should not wait for input, just play when previous stream finished (assume no ads/breaks/pauses, need playtime in model..)
 - reset doesn't work, not resetting sources

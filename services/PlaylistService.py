@@ -16,6 +16,7 @@ from grdUtil.LogUtil import LogUtil
 from grdUtil.PrintUtil import printD, printS
 from grdUtil.StrUtil import maxLen
 from grdUtil.FileUtil import makeFiles
+from datetime import timedelta
 
 from model.Playlist import Playlist
 from model.QueueStream import QueueStream
@@ -508,11 +509,13 @@ class PlaylistService(BaseService[T]):
                     if(streamSource == None):
                         sourceString = ", from: [missing]" 
                     else:
-                        sourceString = ", from: \"" + maxLen(streamSource.name, 20) + "\""
+                        sourceString = ", from: \"" + maxLen(streamSource.name, 15) + "\""
+                       
+                timeMinutesString = " - " + str(timedelta(seconds=stream.playtimeSeconds)) + " " if(stream.playtimeSeconds is not None) else ""
                         
                 color = "WHITE" if i % 2 == 0 else "GREYBG"
                 padI = str(i + 1).rjust(4, " ")
-                printS(padI, " - ", stream.detailsString(includeUri, includeId, includeDatetime, includeListCount), sourceString, color = BashColor[color])
+                printS(padI, " - ", stream.detailsString(includeUri, includeId, includeDatetime, includeListCount), timeMinutesString, sourceString, color = BashColor[color])
                 
             result += 1
                 

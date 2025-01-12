@@ -430,7 +430,7 @@ class PlaylistCliController():
     
         return result
       
-    def unwatchAll(self, playlistId: str) -> int:
+    def unwatchAllInPlaylist(self, playlistId: str) -> int:
         """
         Unwatch all streams in Playlist.
 

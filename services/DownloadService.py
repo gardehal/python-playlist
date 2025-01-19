@@ -107,18 +107,19 @@ class DownloadService():
             str: Absolute path of file.
         """
         
-        youtube = YouTube(url)
-        printS("Downloading video from ", url)
-        videoPath = self.getVideoPath(directory, youtube.title(), fileExtension, nameRegex, prefix)
-        path = "/".join(videoPath.split("/")[0:-1])
-        name = videoPath.split("/")[-1]
         try:
+            youtube = YouTube(url)
+            printS("Downloading video from ", url)
+            videoPath = self.getVideoPath(directory, youtube.title(), fileExtension, nameRegex, prefix)
+            path = "/".join(videoPath.split("/")[0:-1])
+            name = videoPath.split("/")[-1]
+            
             youtube.streams.filter(progressive = True, file_extension = fileExtension).order_by("resolution").desc().first().download(path, name)
+            
+            return videoPath
         except Exception as e:
             printS("Failed download video: ", e, color = BashColor.FAIL)
             return None
-                
-        return videoPath
 
     def downloadOdysee(self, url: str, directory: str = "odysee", fileExtension: str = "mp4", nameRegex: Pattern[str] = None, prefix: str = None) -> str:
         """

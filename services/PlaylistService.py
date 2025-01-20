@@ -728,7 +728,7 @@ class PlaylistService(BaseService[T]):
         
         result = 0
                 
-        printS("\tUnwatching QueueStreams for \"", playlist.name, "\"", color = BashColor.BOLD)
+        printS("Unwatching QueueStreams for \"", playlist.name, "\"...")
         if(len(playlist.streamIds) == 0):
             printS("\tNo streams added yet.")
             return 0
@@ -741,15 +741,14 @@ class PlaylistService(BaseService[T]):
                 printS("\tQueueStream not found (ID: \"", streamId, "\").", color = BashColor.FAIL)
                 continue
                 
+            if(stream.watched != None):
+                result += 1
+                
             stream.watched = None
             self.queueStreamService.update(stream)
-            
-            color = "WHITE" if i % 2 == 0 else "GREYBG"
-            padI = str(i + 1).rjust(4, " ")
-            printS(padI, " - Exporting \"", stream.name, "\".", color = BashColor[color])
-            
-            result += 1
                 
+        printS("Updated ", result, " stream(s).", color = BashColor.GREEN)
+        
         return result
      
     def getAllSorted(self, includeSoftDeleted: bool = False) -> List[Playlist]:

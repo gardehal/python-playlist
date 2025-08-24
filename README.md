@@ -108,6 +108,7 @@ Program for queueing and playing videos from list or from sources like channels 
 
 ## TODO
 
+- an option to play playlist from last added, e.g. if 12 new videos were added, start playlist at maxlen -12, may need to check watched to prevent "skipped watched.." print
 - help print needs some improvement, even if its just grey bg every second line
 - play stream by stream ID, eg. checking searched streams
 - implement file/folder fetch

@@ -118,3 +118,10 @@ Program for queueing and playing videos from list or from sources like channels 
 - restore/add source, have to check on deleted
 - command to unwatch all, nulls all watched values in given playlist
 - twitter/facebook/instagram as sources for videos?
+- simple graphics interface, preferably in browser 
+  - list of videos with thumbnails
+  - list of sources with pfp
+  - add new source
+  - add new video
+  - add new playlist?
+- using guids as ids works but if manually sorting through files its hard to find the correct source without gui. change it to channel name + source + some short random string to a max length of 20-ish chars?

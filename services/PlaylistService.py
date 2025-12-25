@@ -1,7 +1,7 @@
 import os
 from typing import List
 
-import pytube
+from pytubefix import Playlist, YouTube
 import validators
 from grdException.ArgumentException import ArgumentException
 from grdException.DatabaseException import DatabaseException
@@ -422,7 +422,7 @@ class PlaylistService(BaseService[T]):
         if(not validators.url(url)):
             raise ArgumentException(f"addYouTubePlaylist - URL \"", url, "\" was not an accepted, absolute URL.")
         
-        ytPlaylist = pytube.Playlist(url)
+        ytPlaylist = Playlist(url)
         try:
             # For some reasons the property call just fails for invalid playlist, instead of being None. Except = fail.
             ytPlaylist.title == None
@@ -436,7 +436,7 @@ class PlaylistService(BaseService[T]):
         
         streamsToAdd = []
         for videoUrl in ytPlaylist.video_urls:
-            video = pytube.YouTube(videoUrl)
+            video = YouTube(videoUrl)
             stream = QueueStream(name = sanitize(video.title), uri = video.watch_url)
             streamsToAdd.append(stream)
         

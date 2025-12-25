@@ -14,8 +14,8 @@ from grdUtil.DateTimeUtil import getDateTime, stringToDatetime
 from grdUtil.FileUtil import mkdir
 from grdUtil.InputUtil import sanitize
 from grdUtil.PrintUtil import printD, printS
-from jsonpath_ng import jsonpath, parse
-from pytube import Channel
+from jsonpath_ng import parse
+from pytubefix import Channel
 
 from enums.StreamSourceType import StreamSourceType
 from model.Playlist import Playlist

@@ -1,20 +1,16 @@
-import os
 import re
 from typing import Dict, List
 
 import mechanize
 from grdUtil.BashColor import BashColor
-from grdUtil.DateTimeUtil import getDateTimeAsNumber
-from grdUtil.FileUtil import mkdir
 from grdUtil.InputUtil import sanitize
 from grdUtil.PrintUtil import printD, printS
-from pytube import YouTube
+from pytubefix import YouTube
 
 from enums.StreamSourceType import StreamSourceType, StreamSourceTypeUtil
 from model.Playlist import Playlist
 from model.PlaylistDetailed import PlaylistDetailed
 from model.QueueStream import QueueStream
-from model.StreamSource import StreamSource
 from services.PlaylistService import PlaylistService
 from services.QueueStreamService import QueueStreamService
 from services.StreamSourceService import StreamSourceService

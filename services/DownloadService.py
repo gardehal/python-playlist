@@ -1,7 +1,6 @@
 import json
 import os
 import re
-import sys
 import urllib.request
 from re import Pattern
 
@@ -14,8 +13,8 @@ from grdUtil.DateTimeUtil import getDateTimeAsNumber
 from grdUtil.FileUtil import mkdir
 from grdUtil.InputUtil import BashColor, sanitize
 from grdUtil.PrintUtil import printD, printS
-from jsonpath_ng import jsonpath, parse
-from pytube import YouTube
+from jsonpath_ng import parse
+from pytubefix import YouTube
 
 from Settings import Settings
 

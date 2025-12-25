@@ -4,12 +4,12 @@ import subprocess
 import uuid
 from copy import copy
 from typing import List
+from psutil import Popen
 
 from grdUtil.BashColor import BashColor
 from grdUtil.DateTimeUtil import getDateTime
 from grdUtil.InputUtil import getIdsFromInput, isNumber, sanitize
 from grdUtil.PrintUtil import printD, printLists, printS, printStack
-from psutil import Popen
 
 from Commands import Commands
 from enums.StreamSourceType import StreamSourceType, StreamSourceTypeUtil

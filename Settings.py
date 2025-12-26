@@ -15,7 +15,7 @@ class Settings():
     playedAlwaysWatched: bool = None
     watchedLogFilepath: str = None
     logDirPath: str = None
-    browserBin: str = None
+    browserName: str = None
     fetchLimitSingleSource: int = None
     
     def __init__(self):
@@ -33,7 +33,7 @@ class Settings():
         self.playedAlwaysWatched = eval(os.environ.get("PLAYED_ALWAYS_WATCHED"))
         self.watchedLogFilepath = os.environ.get("WATCHED_LOG_FILEPATH")
         self.logDirPath = os.environ.get("LOG_DIR_PATH")
-        self.browserBin = os.environ.get("BROWSER_BIN")
+        self.browserName = os.environ.get("BROWSE_NAME")
         self.fetchLimitSingleSource =  int(os.environ.get("FETCH_LIMIT_SINGLE_SOURCE"))
     
     def getAllSettingsAsString(self) -> str:
@@ -52,7 +52,7 @@ class Settings():
                "\n", "PLAYED_ALWAYS_WATCHED: ", self.playedAlwaysWatched,
                "\n", "WATCHED_LOG_FILEPATH: ", self.watchedLogFilepath,
                "\n", "LOG_DIR_PATH: ", self.logDirPath,
-               "\n", "BROWSER_BIN: ", self.browserBin,
+               "\n", "BROWSE_NAME: ", self.browserName,
                "\n", "FETCH_LIMIT_SINGLE_SOURCE: ", self.fetchLimitSingleSource)
         
     def getAllSettingsAsTable(self) -> str:
@@ -71,7 +71,7 @@ class Settings():
             "PLAYED_ALWAYS_WATCHED", 
             "WATCHED_LOG_FILEPATH", 
             "LOG_DIR_PATH", 
-            "BROWSER_BIN", 
+            "BROWSE_NAME", 
             "FETCH_LIMIT_SINGLE_SOURCE"]
         settings = [self.debug,
             self.localStoragePath,
@@ -81,7 +81,7 @@ class Settings():
             self.playedAlwaysWatched,
             self.watchedLogFilepath,
             self.logDirPath,
-            self.browserBin,
+            self.browserName,
             self.fetchLimitSingleSource]
         settingsStrings = [str(s) for s in settings]
         

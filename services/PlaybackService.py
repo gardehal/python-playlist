@@ -196,11 +196,13 @@ class PlaybackService():
         Returns:
             Popen: PID if new process created. (?)
         """
-        
-        return subprocess.Popen(f"call start {url}", stdout=subprocess.PIPE, shell=True) # PID set by this is not PID of browser, just subprocess which opens browser
-        
-        # https://stackoverflow.com/questions/7989922/opening-a-process-with-popen-and-getting-the-pid
-        # return subprocess.Popen([self.settings.browserBin, f"{stream.uri}"], stdout=subprocess.PIPE, shell=False) # PID set by this SHOULD be browser, but is not
+
+        if(self.settings.browserName):
+            startCommand = f"call start {self.settings.browserName} /new-tab {url}"
+        else:
+            startCommand = f"call start {url}"
+
+        return subprocess.Popen(startCommand, stdout=subprocess.PIPE, shell=True)
 
     def handlePlaybackInput(self, playlist: Playlist, stream: QueueStream) -> PlaybackInput:
         """

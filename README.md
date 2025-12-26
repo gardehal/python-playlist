@@ -21,6 +21,7 @@ Program for queueing and playing videos from list or from sources like channels 
     - Change the values to your liking:
       - Values which are booleans must be Python parsable, "True", "False", "1", "0" etc.
       - Paths should be absolute, otherwise they will only work from that relative folder.
+      - BROWSER_NAME is just a short hand name for your browser, compatible with the start Windows CLI command, "chrome", "firefox", "msedge", "vivaldi" etc.
 
 ## Help
 

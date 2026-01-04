@@ -81,13 +81,12 @@ class FetchService():
             _takeAfter = takeAfter if(not takeNewOnly) else source.lastSuccessfulFetched
             
             if(source.isWeb):
-                # if(source.streamSourceTypeId == StreamSourceType.YOUTUBE.value):
-                #     fetchedStreams = self.fetchYoutube(source, batchSize, _takeAfter, takeBefore, takeNewOnly)
                 if(source.streamSourceTypeId == StreamSourceType.YOUTUBE.value):
+                    fetchedStreams = self.fetchYoutube(source, batchSize, _takeAfter, takeBefore, takeNewOnly)
+                    
                     if(_takeAfter != None or takeBefore != None):
                         printS("Arguments takeAfter and takeBefore are not supported by fetchYoutubeHtml, they will be ignored.", color = BashColor.WARNING)
-
-                    fetchedStreams = self.fetchYoutubeHtml(source, batchSize, takeNewOnly)
+                    # fetchedStreams = self.fetchYoutubeHtml(source, batchSize, takeNewOnly)
                 elif(source.streamSourceTypeId == StreamSourceType.ODYSEE.value):
                     fetchedStreams = self.fetchOdysee(source, batchSize, _takeAfter, takeBefore, takeNewOnly)
                 elif(source.streamSourceTypeId == StreamSourceType.RUMBLE.value):
@@ -168,7 +167,7 @@ class FetchService():
             raise ArgumentException("fetchYoutube - streamSource was None.")
 
         emptyReturn = []
-        channel = Channel(streamSource.uri)
+        channel = Channel(streamSource.uri, "WEB")
 
         if(channel == None or channel.channel_name == None):
             printS(f"Channel {streamSource.name} (URL: {streamSource.uri}) could not be found or is not valid. Please remove it and add it back.", color = BashColor.FAIL)
@@ -181,7 +180,7 @@ class FetchService():
 
         newStreams = []
         newQueueStreams = []
-        streams = List(channel.videos)
+        streams = list(channel.videos)
         lastStreamId = streams[0].video_id
         if(takeNewOnly and takeAfter == None and lastStreamId in streamSource.lastFetchedIds):
             printD("Last video fetched: \"", sanitize(streams[0].title), "\", YouTube ID \"", lastStreamId, "\"", color = BashColor.WARNING, debug = self.settings.debug)

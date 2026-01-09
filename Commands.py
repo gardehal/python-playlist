@@ -1,8 +1,23 @@
 from grdUtil.StaticUtil import StaticUtil
+from Argumentor import *
+
+from enums.CommandHitValues import CommandHitValues
 
 class Commands():
     
     def __init__(self):
+        # General
+        helpCommand = Command("Help", ["help", "h", "man"], CommandHitValues.HELP,
+            description= "Print this documentation.")
+        testCommand = Command("Test", ["test", "t"], CommandHitValues.TEST,
+            description= "A method of calling experimental code (when you want to test if something works).")
+        editCommand = Command("Edit", ["edit", "e"], CommandHitValues.EDIT,
+            description= "")
+        searchCommand = Command("Search", ["search", "s"], CommandHitValues.SEARCH,
+            description= "")
+        listSettingsCommand = Command("ListSettings", ["settings", "secrets"], CommandHitValues.LIST_SETTINGS,
+            description= "Lists settings currently used by program. These settings can also be found in the file named \".env\" with examples in the file \".env-example\".")
+        
         # General
         self.helpCommands = ["help", "h"]
         self.testCommands = ["test", "t"]

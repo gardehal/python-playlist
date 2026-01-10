@@ -4,20 +4,42 @@ from Argumentor import *
 from enums.CommandHitValues import CommandHitValues
 
 class Commands():
+    searchQueryArgumentName = "SearchQuery"
+    playlistIdArgumentName = "PlaylistId"
     
-    def __init__(self):
-        # General
-        helpCommand = Command("Help", ["help", "h", "man"], CommandHitValues.HELP,
-            description= "Print this documentation.")
-        testCommand = Command("Test", ["test", "t"], CommandHitValues.TEST,
-            description= "A method of calling experimental code (when you want to test if something works).")
-        editCommand = Command("Edit", ["edit", "e"], CommandHitValues.EDIT,
-            description= "")
-        searchCommand = Command("Search", ["search", "s"], CommandHitValues.SEARCH,
-            description= "")
+    includeSoftDeletedFlagName = "IncludeSoftDeleted"
+    simplifiedPrintFlagName = "SimplifiedPrint"
+    
+    def getArgumentor(self):
+        searchQueryArgument = Argument(self.searchQueryArgumentName, ["search", "s"], str, 
+            # validateFunc= self.notNull,
+            description= "Query to search playlists for.")
+        playlistIdArgument = Argument(self.playlistIdArgumentName, ["playlistid", "playlistindex", "pi"], str, 
+            # validateFunc= self.notNull,
+            description= "ID or index of Playlist.")
+        
+        includeSoftDeletedFlag = Flag(self.includeSoftDeletedFlagName, ["softdeleted", "sd"],
+            value= True, defaultValue= False,
+            description= "Include soft deleted items.")
+        simplifiedPrintFlag = Flag(self.simplifiedPrintFlagName, ["simplified", "s"],
+            value= True, defaultValue= False,
+            description= "Simplified, less verbose print.")
+        
+        
+        # Meta
         listSettingsCommand = Command("ListSettings", ["settings", "secrets"], CommandHitValues.LIST_SETTINGS,
             description= "Lists settings currently used by program. These settings can also be found in the file named \".env\" with examples in the file \".env-example\".")
+        listSoftDeletedCommand = Command("ListSoftDeleted", ["listdeleted", "lsd", "ld"], CommandHitValues.LIST_SOFT_DELETED,
+            flags= [simplifiedPrintFlag],
+            description= "Lists all soft deleted entities. Option for simplified, less verbose list.")
+        refactorCommand = Command("Refactor", ["refactor"], CommandHitValues.REFACTOR_OLD,
+            description= "Refactor old code/data (JSON-file storage only).")
+                              
+        metaCommands = [listSettingsCommand, listSoftDeletedCommand, refactorCommand]
         
+        return Argumentor(generalCommands + metaCommands) 
+    
+    def __init__(self):
         # General
         self.helpCommands = ["help", "h"]
         self.testCommands = ["test", "t"]

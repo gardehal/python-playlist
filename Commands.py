@@ -25,6 +25,20 @@ class Commands():
             value= True, defaultValue= False,
             description= "Simplified, less verbose print.")
         
+        # General
+        helpCommand = Command("Help", ["help", "h", "man"], CommandHitValues.HELP,
+            description= "Print this documentation.")
+        testCommand = Command("Test", ["test", "t"], CommandHitValues.TEST,
+            description= "A method of calling experimental code (when you want to test if something works).")
+        editCommand = Command("Edit", ["edit", "e"], CommandHitValues.EDIT,
+            arguments= [playlistIdArgument],
+            description= "Opens the file with Playlist.")
+        searchCommand = Command("Search", ["search", "s"], CommandHitValues.SEARCH,
+            arguments= [searchQueryArgument],
+            flags= [includeSoftDeletedFlag],
+            description= "Search all Playlists, QueueStreams, and StreamQueues, uri and names where available. Supports Regex.")
+        
+        generalCommands = [helpCommand, testCommand, editCommand, searchCommand]
         
         # Meta
         listSettingsCommand = Command("ListSettings", ["settings", "secrets"], CommandHitValues.LIST_SETTINGS,

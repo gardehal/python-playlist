@@ -40,6 +40,40 @@ class Commands():
         
         generalCommands = [helpCommand, testCommand, editCommand, searchCommand]
         
+        # Playlist
+        # TODO args
+        addPlaylistCommand = Command("AddPlaylist", ["addplaylist", "apl", "ap"], CommandHitValues.ADD_PLAYLIST,
+            description= "Add a Playlist from parameters given.")
+        addPlaylistFromYouTubeCommand = Command("AddPlaylistFromYouTube", ["fromyoutube", "fyt", "fy"], CommandHitValues.ADD_PLAYLIST_FROM_YOUTUBE,
+            description= "Add a Playlist and populate it with QueueStreams from given YouTube playlist URL.")
+        deletePlaylistCommand = Command("DeletePlaylist", ["deleteplaylist", "dpl"], CommandHitValues.DELETE_PLAYLIST,
+            description= "Delete Playlists given.")
+        restorePlaylistCommand = Command("RestorePlaylist", ["restoreplaylist", "rpl", "rp"], CommandHitValues.RESTORE_PLAYLIST,
+            description= "Restore soft deleted Playlist from database.")
+        listPlaylistCommands = Command("ListPlaylist", ["listplaylist", "lpl", "lp"], CommandHitValues.LIST_PLAYLISTS,
+            description= "List Playlists with indices that can be used instead of IDs in other commands.")
+        detailsPlaylistCommand = Command("DetailsPlaylist", ["detailsplaylist", "dp"], CommandHitValues.DETAILS_PLAYLIST,
+            description= "Prints details about given playlist, with option for including fields of StreamSources and QueueStreams (like datetimes or IDs).")
+        fetchPlaylistSourcesCommand = Command("FetchPlaylistSources", ["fetch", "f", "update", "u"], CommandHitValues.FETCH_PLAYLIST,
+            description= "Fetch new streams from StreamSources in Playlists indicated, e.g. if a Playlist has a YouTube channel as a source, and the channel uploads a new video, this video will be added to the Playlist.")
+        prunePlaylistCommand = Command("PrunePlaylist", ["prune"], CommandHitValues.PRUNE_PLAYLIST,
+            description= "Prune Playlists indicated, deleting watched QueueStreams.")
+        purgePlaylistCommand = Command("PurgePlaylist", ["purgeplaylists", "pp"], CommandHitValues.PURGE_PLAYLIST,
+            description= "Purge all Playlists, removing IDs with no corresponding relation and deleting StreamSources and QueueStreams with no linked IDs in Playlists.")
+        purgeCommand = Command("Purge", ["purge"], CommandHitValues.PURGE,
+            description= "Purge all soft deleted entities.")
+        resetPlaylistFetchCommand = Command("ResetPlaylistFetch", ["reset"], CommandHitValues.RESET_PLAYLIST,
+            description= "Resets fetch status of StreamSources in a Playlist and deletes QueueStreams from Playlist.")
+        downloadPlaylistCommand = Command("DownloadPlaylist", ["downloadplaylist", "dwpl"], CommandHitValues.DOWNLOAD_PLAYLIST,
+            description= "Download streams from web sources for given playlist, with optional directory name (under localStoragePath in settings), start-end index, regex for naming streams (e.g. all streams are named \"Podcast guys: Actual Title\", use regex \": (.*)\", including \"s), and option to add index (+1) on stream names so they naturally sort in order.")
+        exportPlaylistCommand = Command("ExportPlaylist", ["export"], CommandHitValues.EXPORT_PLAYLIST,
+            description= "Export all sources and streams in a list to a text files.")
+        # unwatchAllPlaylistCommand = Command("UnwatchAllPlaylist", ["unwatchall"], CommandHitValues.UNWATCH_ALL_PLAYLIST,
+        #     description= "Mark all streams in a playlist as unwatched.")
+        
+        playlistCommands = [addPlaylistCommand, addPlaylistFromYouTubeCommand, deletePlaylistCommand, restorePlaylistCommand, listPlaylistCommands, detailsPlaylistCommand, fetchPlaylistSourcesCommand, prunePlaylistCommand, purgePlaylistCommand, purgeCommand, resetPlaylistFetchCommand, downloadPlaylistCommand, exportPlaylistCommand]
+        
+        
         # Meta
         listSettingsCommand = Command("ListSettings", ["settings", "secrets"], CommandHitValues.LIST_SETTINGS,
             description= "Lists settings currently used by program. These settings can also be found in the file named \".env\" with examples in the file \".env-example\".")
@@ -51,7 +85,7 @@ class Commands():
                               
         metaCommands = [listSettingsCommand, listSoftDeletedCommand, refactorCommand]
         
-        return Argumentor(generalCommands + metaCommands) 
+        return Argumentor(generalCommands + playlistCommands + metaCommands) 
     
     def __init__(self):
         # General

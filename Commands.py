@@ -6,9 +6,13 @@ from enums.CommandHitValues import CommandHitValues
 class Commands():
     searchQueryArgumentName = "SearchQuery"
     playlistIdArgumentName = "PlaylistId"
+    entityNameArgumentName = "EntityName"
     
     includeSoftDeletedFlagName = "IncludeSoftDeleted"
     simplifiedPrintFlagName = "SimplifiedPrint"
+    allowDuplicatesFlagName = "AllowDuplicates"
+    playWatchedStreamsFlagName = "PlayWatchedStreams"
+    streamSourceIdsArgumentName = "StreamSourceIds"
     
     def getArgumentor(self):
         searchQueryArgument = Argument(self.searchQueryArgumentName, ["search", "s"], str, 
@@ -17,6 +21,11 @@ class Commands():
         playlistIdArgument = Argument(self.playlistIdArgumentName, ["playlistid", "playlistindex", "pi"], str, 
             # validateFunc= self.notNull,
             description= "ID or index of Playlist.")
+        entityNameArgument = Argument(self.entityNameArgumentName, ["name", "n"],
+            description= "Name of new entity.")
+        streamSourceIdsArgument = Argument(self.streamSourceIdsArgumentName, ["streamsourceids", "ssi", "ids"],
+            optional= True,
+            description= "A list of StreamSources to be added.")
         
         includeSoftDeletedFlag = Flag(self.includeSoftDeletedFlagName, ["softdeleted", "sd"],
             value= True, defaultValue= False,
@@ -24,6 +33,12 @@ class Commands():
         simplifiedPrintFlag = Flag(self.simplifiedPrintFlagName, ["simplified", "s"],
             value= True, defaultValue= False,
             description= "Simplified, less verbose print.")
+        allowDuplicatesFlag = Flag(self.allowDuplicatesFlagName, ["allowduplicates", "ad"],
+            value= True, defaultValue= False,
+            description= "Should Playlist allow duplicate QueueStreams (only if the uri is the same).")
+        playWatchedStreamsFlag = Flag(self.playWatchedStreamsFlagName, ["playwatched", "pw"],
+            value= True, defaultValue= False,
+            description= "Should playback should play watched QueueStreams.")
         
         # General
         helpCommand = Command("Help", ["help", "h", "man"], CommandHitValues.HELP,
@@ -43,6 +58,8 @@ class Commands():
         # Playlist
         # TODO args
         addPlaylistCommand = Command("AddPlaylist", ["addplaylist", "apl", "ap"], CommandHitValues.ADD_PLAYLIST,
+            arguments= [entityNameArgument, streamSourceIdsArgument],
+            flags= [playWatchedStreamsFlag, allowDuplicatesFlag, ],
             description= "Add a Playlist from parameters given.")
         addPlaylistFromYouTubeCommand = Command("AddPlaylistFromYouTube", ["fromyoutube", "fyt", "fy"], CommandHitValues.ADD_PLAYLIST_FROM_YOUTUBE,
             description= "Add a Playlist and populate it with QueueStreams from given YouTube playlist URL.")

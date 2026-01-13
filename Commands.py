@@ -5,31 +5,55 @@ from enums.CommandHitValues import CommandHitValues
 
 class Commands():
     searchQueryArgumentName = "SearchQuery"
-    playlistIdArgumentName = "PlaylistId"
+    playlistIdsArgumentName = "PlaylistIds"
     entityNameArgumentName = "EntityName"
+    streamSourceIdsArgumentName = "StreamSourceIds"
+    uriArgumentName = "StreamSourceIds"
+    takeAfterArgumentName = "TakeAfter"
+    startIndexArgumentName = ""
+    endIndexArgumentName = ""
+    streamNameRegexArgumentName = ""
+    directoryNameArgumentName = ""
     
     includeSoftDeletedFlagName = "IncludeSoftDeleted"
+    permanentlyDeleteFlagName = "PermanentlyDelete"
     simplifiedPrintFlagName = "SimplifiedPrint"
     allowDuplicatesFlagName = "AllowDuplicates"
     playWatchedStreamsFlagName = "PlayWatchedStreams"
-    streamSourceIdsArgumentName = "StreamSourceIds"
+    includeUriFlagName = "IncludeUri"
+    includeIdFlagName = "IncludeId"
+    includeDateTimeFlagName = "IncludeDateTime"
+    includeListCountFlagName = "IncludeListCount"
+    includeSourceFlagName = "IncludeSource"
+    takeNewOnlyFlagName = "TakeNewOnly"
+    useIndexFlagName = "UseIndex"
+    shuffleFlagName = "Shuffle"
+    repeatFlagName = "Repeat"
     
     def getArgumentor(self):
+        # TODO validators and casting
+        
         searchQueryArgument = Argument(self.searchQueryArgumentName, ["search", "s"], str, 
             # validateFunc= self.notNull,
             description= "Query to search playlists for.")
-        playlistIdArgument = Argument(self.playlistIdArgumentName, ["playlistid", "playlistindex", "pi"], str, 
+        playlistIdsArgument = Argument(self.playlistIdsArgumentName, ["playlistid", "playlistindex", "pi"], str, 
             # validateFunc= self.notNull,
-            description= "ID or index of Playlist.")
+            # castFunc= split to list[str],
+            description= "IDs or index of Playlist, can be multiple.")
         entityNameArgument = Argument(self.entityNameArgumentName, ["name", "n"],
             description= "Name of new entity.")
         streamSourceIdsArgument = Argument(self.streamSourceIdsArgumentName, ["streamsourceids", "ssi", "ids"],
             optional= True,
             description= "A list of StreamSources to be added.")
+        uriArgument = Argument(self.uriArgumentName, ["uri", "url"],
+            description= "URI or URL of source.")
         
         includeSoftDeletedFlag = Flag(self.includeSoftDeletedFlagName, ["softdeleted", "sd"],
             value= True, defaultValue= False,
             description= "Include soft deleted items.")
+        permanentlyDeleteFlag = Flag(self.permanentlyDeleteFlagName, ["permanentlydelete"],
+            value= True, defaultValue= False,
+            description= "permanently delete items.")
         simplifiedPrintFlag = Flag(self.simplifiedPrintFlagName, ["simplified", "s"],
             value= True, defaultValue= False,
             description= "Simplified, less verbose print.")
@@ -39,6 +63,21 @@ class Commands():
         playWatchedStreamsFlag = Flag(self.playWatchedStreamsFlagName, ["playwatched", "pw"],
             value= True, defaultValue= False,
             description= "Should playback should play watched QueueStreams.")
+        includeUriFlag = Flag(self.includeUriFlagName, ["includeuri", "iu"],
+            value= True, defaultValue= False,
+            description= "Include URI/URL in print.")
+        includeIdFlag = Flag(self.includeIdFlagName, ["includeid", "ii"],
+            value= True, defaultValue= False,
+            description= "Include ID(s) in print.")
+        includeDateTimeFlag = Flag(self.includeDateTimeFlagName, ["includedatetime", "includedate", "id"],
+            value= True, defaultValue= False,
+            description= "Include DateTime in print.")
+        includeListCountFlag = Flag(self.includeListCountFlagName, ["includeclistcount", "includecount", "ilc", "ic"],
+            value= True, defaultValue= False,
+            description= "Include list count in print.")
+        includeSourceFlag = Flag(self.includeSourceFlagName, ["includesource", "is"],
+            value= True, defaultValue= False,
+            description= "Include source(s) in print.")
         
         # General
         helpCommand = Command("Help", ["help", "h", "man"], CommandHitValues.HELP,
@@ -46,7 +85,7 @@ class Commands():
         testCommand = Command("Test", ["test", "t"], CommandHitValues.TEST,
             description= "A method of calling experimental code (when you want to test if something works).")
         editCommand = Command("Edit", ["edit", "e"], CommandHitValues.EDIT,
-            arguments= [playlistIdArgument],
+            arguments= [playlistIdsArgument],
             description= "Opens the file with Playlist.")
         searchCommand = Command("Search", ["search", "s"], CommandHitValues.SEARCH,
             arguments= [searchQueryArgument],
@@ -57,19 +96,44 @@ class Commands():
         
         # Playlist
         # TODO args
+        
+        # result += "\n" + str(self.addPlaylistCommands) + " [name: str] [? playWatchedStreams: bool] [? allowDuplicates: bool] [? streamSourceIds: list]: Add a Playlist with name: name, playWatchedStreams: if playback should play watched QueueStreams, allowDuplicates: should Playlist allow duplicate QueueStreams (only if the uri is the same), streamSourceIds: a list of StreamSources."
+        # result += "\n" + str(self.addPlaylistFromYouTubeCommands) + " [youTubePlaylistUrl: str] [? name: str] [? playWatchedStreams: bool] [? allowDuplicates: bool]: Add a Playlist and populate it with QueueStreams from given YouTube playlist youTubePlaylistUrl, with name: name, playWatchedStreams: if playback should play watched streams, allowDuplicates: should Playlist allow duplicate QueueStreams (only if the uri is the same)."
+        # result += "\n" + str(self.deletePlaylistCommands) + " [playlistIds or indices: list]: deletes Playlists indicated."
+        # result += "\n" + str(self.restoreSourceCommands) + " [playlistIds or index: str]: restore soft deleted Playlist from database."
+        # result += "\n" + str(self.listPlaylistCommands) + " [? includeSoftDeleted: bool]: List Playlists with indices that can be used instead of IDs in other commands."
+        # result += "\n" + str(self.detailsPlaylistCommands) + " [playlistIds or indices: list] [? includeUri: bool] [? includeId: bool] [? includeDaterTime: bool] [? includeListCount: bool] [? includeSource: bool]: Prints details about given playlist, with option for including fields of StreamSources and QueueStreams (like datetimes or IDs)."
+        
+        # result += "\n" + str(self.fetchPlaylistSourcesCommands) + " [playlistIds or indices: list] [? takeAfter: datetime] [? takeBefore: datetime] [? takeNewOnly: bool]: Fetch new streams from StreamSources in Playlists indicated, e.g. if a Playlist has a YouTube channel as a source, and the channel uploads a new video, this video will be added to the Playlist. Optional arguments takeAfter: only fetch QueueStreams after this date, takeBefore: only fetch QueueStreams before this date. Dates formatted like \"2022-01-30\" (YYYY-MM-DD)."
+        # result += "\n" + str(self.prunePlaylistCommands) + " [playlistIds or indices: list] [? includeSoftDeleted: bool] [? permanentlyDelete: bool]: Prune Playlists indicated, deleting watched QueueStreams."
+        # result += "\n" + str(self.purgePlaylistCommands) + ": Purge all Playlists, removing IDs with no corresponding relation and deleting StreamSources and QueueStreams with no linked IDs in Playlists."
+        # result += "\n" + str(self.purgeCommands) + ": Purge all soft deleted entities."
+        # result += "\n" + str(self.resetPlaylistFetchCommands) + " [playlistIds or indices: list]: Resets fetch status of StreamSources in a Playlist and deletes QueueStreams from Playlist."
+        # result += "\n" + str(self.playCommands) + " [playlistId or index: str] [? startIndex: int] [? shuffle: bool] [? repeat: bool]: Start playing stream from a Playlist, order and automation (like skipping already watched QueueStreams) depending on the input and Playlist."
+        # result += "\n" + str(self.downloadPlaylistCommands) + " [playlistId or index: str] [? directoryName: str] [? startIndex: int] [? endIndex: int] [? streamNameRegex: str] [? useIndex: bool]: Download streams from web sources for given playlist, with optional directory name (under localStoragePath in settings), start-end index, regex for naming streams (e.g. all streams are named \"Podcast guys: Actual Title\", use regex \": (.*)\", including \"s), and option to add index (+1) on stream names so they naturally sort in order."
+        # result += "\n" + str(self.exportPlaylistCommands) + " [playlistId or index: str] [? directoryName: str]: Export all sources and streams in a list to a text files."
+        # result += "\n" + str(self.unwatchAllPlaylistCommands) + " [playlistId or index: str]: Mark all streams in a playlist as unwatched."
+        
+        
         addPlaylistCommand = Command("AddPlaylist", ["addplaylist", "apl", "ap"], CommandHitValues.ADD_PLAYLIST,
             arguments= [entityNameArgument, streamSourceIdsArgument],
-            flags= [playWatchedStreamsFlag, allowDuplicatesFlag, ],
+            flags= [playWatchedStreamsFlag, allowDuplicatesFlag],
             description= "Add a Playlist from parameters given.")
         addPlaylistFromYouTubeCommand = Command("AddPlaylistFromYouTube", ["fromyoutube", "fyt", "fy"], CommandHitValues.ADD_PLAYLIST_FROM_YOUTUBE,
+            arguments= [uriArgument, entityNameArgument],
+            flags= [playWatchedStreamsFlag, allowDuplicatesFlag],
             description= "Add a Playlist and populate it with QueueStreams from given YouTube playlist URL.")
         deletePlaylistCommand = Command("DeletePlaylist", ["deleteplaylist", "dpl"], CommandHitValues.DELETE_PLAYLIST,
+            arguments= [playlistIdsArgument],
             description= "Delete Playlists given.")
         restorePlaylistCommand = Command("RestorePlaylist", ["restoreplaylist", "rpl", "rp"], CommandHitValues.RESTORE_PLAYLIST,
+            arguments= [playlistIdsArgument],
             description= "Restore soft deleted Playlist from database.")
         listPlaylistCommands = Command("ListPlaylist", ["listplaylist", "lpl", "lp"], CommandHitValues.LIST_PLAYLISTS,
+            flags= [includeSoftDeletedFlag],
             description= "List Playlists with indices that can be used instead of IDs in other commands.")
         detailsPlaylistCommand = Command("DetailsPlaylist", ["detailsplaylist", "dp"], CommandHitValues.DETAILS_PLAYLIST,
+            flags= [includeUriFlag, includeIdFlag, includeDateTimeFlag, includeListCountFlag, includeSourceFlag],
             description= "Prints details about given playlist, with option for including fields of StreamSources and QueueStreams (like datetimes or IDs).")
         fetchPlaylistSourcesCommand = Command("FetchPlaylistSources", ["fetch", "f", "update", "u"], CommandHitValues.FETCH_PLAYLIST,
             description= "Fetch new streams from StreamSources in Playlists indicated, e.g. if a Playlist has a YouTube channel as a source, and the channel uploads a new video, this video will be added to the Playlist.")
@@ -86,6 +150,7 @@ class Commands():
         exportPlaylistCommand = Command("ExportPlaylist", ["export"], CommandHitValues.EXPORT_PLAYLIST,
             description= "Export all sources and streams in a list to a text files.")
         # unwatchAllPlaylistCommand = Command("UnwatchAllPlaylist", ["unwatchall"], CommandHitValues.UNWATCH_ALL_PLAYLIST,
+        #     arguments= [playlistIdsArgument],
         #     description= "Mark all streams in a playlist as unwatched.")
         
         playlistCommands = [addPlaylistCommand, addPlaylistFromYouTubeCommand, deletePlaylistCommand, restorePlaylistCommand, listPlaylistCommands, detailsPlaylistCommand, fetchPlaylistSourcesCommand, prunePlaylistCommand, purgePlaylistCommand, purgeCommand, resetPlaylistFetchCommand, downloadPlaylistCommand, exportPlaylistCommand]
@@ -102,7 +167,7 @@ class Commands():
                               
         metaCommands = [listSettingsCommand, listSoftDeletedCommand, refactorCommand]
         
-        return Argumentor(generalCommands + playlistCommands + metaCommands) 
+        return Argumentor(generalCommands + playlistCommands + playbackCommands + streamCommands + sourceCommands + metaCommands) 
     
     def __init__(self):
         # General

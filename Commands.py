@@ -201,6 +201,16 @@ class Commands():
         # result += "\n" + str(self.addMultipleStreamsCommands) + " [playlistId or index: str] [uris: str]: Add multiple streams to a Playlist from ID or index, from uris (set automatically)."
         # result += "\n" + str(self.deleteStreamCommands) + " [playlistId or index: str] [streamIds or indices: list]: Delete QueueStreams from Playlist."
         # result += "\n" + str(self.restoreStreamCommands) + " [playlistId or index: str] [streamIds or indices: str]: Restore soft deleted QueueStreams from database."
+        addStreamCommand = Command("AddStream", ["add", "a"], CommandHitValues.ADD_STREAM,
+            description= "Add a Stream from parameters given.")
+        addMultipleStreamsCommand = Command("AddMultipleStreams", ["addmultiple", "am"], CommandHitValues.ADD_MULTIPLE_STREAMS,
+            description= "Add multiple streams to a Playlist from ID or index, from uris (set automatically).")
+        deleteStreamCommand = Command("DeleteStream", ["delete", "d"], CommandHitValues.DELETE_STREAM,
+            description= "Delete QueueStreams from Playlist.")
+        restoreStreamCommand = Command("RestoreStream", ["restore", "r"], CommandHitValues.RESTORE_STREAM,
+            description= "Restore soft deleted QueueStreams from database.")
+        
+        streamCommands = [addStreamCommand, addMultipleStreamsCommand, deleteStreamCommand, restoreStreamCommand]
         
         # Sources
         # TODO args
@@ -209,6 +219,16 @@ class Commands():
         # result += "\n" + str(self.restoreSourceCommands) + " [playlistId or index: str] [sourceIds or indices: str]: Restore soft deleted StreamSources from database."
         # result += "\n" + str(self.listSourcesCommands) + " [? includeSoftDeleted: bool]: Lists StreamSources with indices that can be used instead of IDs in other commands."
         # result += "\n" + str(self.openSourceCommands) + "[sourceIds or indices: str]: open StreamSources in web if it is a web source, or directory if not."
+        addSourcesCommand = Command("AddSources", ["addsource", "as"], CommandHitValues.ADD_SOURCE,
+            description= "Add a StreamSources from parameters given.")
+        deleteSourceCommand = Command("DeleteSource", ["deletesource", "ds"], CommandHitValues.DELETE_SOURCES,
+            description= "Delete StreamSources from database.")
+        restoreSourceCommand = Command("RestoreSource", ["restoresource", "rs"], CommandHitValues.RESTORE_SOURCE,
+            description= "Restore soft deleted StreamSources from database.")
+        listSourcesCommand = Command("ListSources", ["listsource", "ls"], CommandHitValues.LIST_SOURCES,
+            description= "Lists StreamSources with indices that can be used instead of IDs in other commands.")
+        openSourceCommand = Command("OpenSource", ["opensource", "os"], CommandHitValues.OPEN_SOURCE,
+            description= "Open StreamSources in web if it is a web source, or directory if not.")
         
         sourceCommands = [addSourcesCommand, deleteSourceCommand, restoreSourceCommand, listSourcesCommand, openSourceCommand]
         

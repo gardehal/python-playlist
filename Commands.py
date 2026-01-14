@@ -10,10 +10,11 @@ class Commands():
     streamSourceIdsArgumentName = "StreamSourceIds"
     uriArgumentName = "StreamSourceIds"
     takeAfterArgumentName = "TakeAfter"
-    startIndexArgumentName = ""
-    endIndexArgumentName = ""
-    streamNameRegexArgumentName = ""
-    directoryNameArgumentName = ""
+    takeBeforeArgumentName = "TakeBefore"
+    startIndexArgumentName = "StartIndex"
+    endIndexArgumentName = "EndIndex"
+    streamNameRegexArgumentName = "StreamNameRegex"
+    directoryNameArgumentName = "DirectoryName"
     
     includeSoftDeletedFlagName = "IncludeSoftDeleted"
     permanentlyDeleteFlagName = "PermanentlyDelete"
@@ -26,7 +27,7 @@ class Commands():
     includeListCountFlagName = "IncludeListCount"
     includeSourceFlagName = "IncludeSource"
     takeNewOnlyFlagName = "TakeNewOnly"
-    useIndexFlagName = "UseIndex"
+    useIndexFlagName = "UseOutputNameIndex"
     shuffleFlagName = "Shuffle"
     repeatFlagName = "Repeat"
     
@@ -36,17 +37,47 @@ class Commands():
         searchQueryArgument = Argument(self.searchQueryArgumentName, ["search", "s"], str, 
             # validateFunc= self.notNull,
             description= "Query to search playlists for.")
+        # TODO doesnt have to be playlist, can just be ID/index, but commands should specify what type of entities
         playlistIdsArgument = Argument(self.playlistIdsArgumentName, ["playlistid", "playlistindex", "pi"], str, 
+            # Old args had this as optional and would default to first playlist
             # validateFunc= self.notNull,
             # castFunc= split to list[str],
-            description= "IDs or index of Playlist, can be multiple.")
-        entityNameArgument = Argument(self.entityNameArgumentName, ["name", "n"],
+            description= "IDs or index (i + number) of Playlist, can be multiple.")
+        entityNameArgument = Argument(self.entityNameArgumentName, ["name", "n"], str,
             description= "Name of new entity.")
-        streamSourceIdsArgument = Argument(self.streamSourceIdsArgumentName, ["streamsourceids", "ssi", "ids"],
+        optionalEntityNameArgument = Argument(self.entityNameArgumentName, ["name", "n"], str,
+            optional= True,
+            description= "Name of new entity.")
+        streamSourceIdsArgument = Argument(self.streamSourceIdsArgumentName, ["streamsourceids", "ssi", "ids"], list[str],
             optional= True,
             description= "A list of StreamSources to be added.")
-        uriArgument = Argument(self.uriArgumentName, ["uri", "url"],
+        uriArgument = Argument(self.uriArgumentName, ["uri", "url"], str,
+            # validateFunc= self.validUrl,
             description= "URI or URL of source.")
+        takeAfterArgument = Argument(self.takeAfterArgumentName, ["takeafter", "after", "ta"], str, # DATETIME
+            optional= True,
+            # validateFunc= self.validDatetime,
+            description= "Only fetch QueueStreams after this date.")
+        takeBeforeArgument = Argument(self.takeBeforeArgumentName, ["takebefore", "before", "tb"], str, # DATETIME
+            optional= True,
+            # validateFunc= self.validDatetime,
+            description= "Only fetch QueueStreams before this date.")
+        startIndexArgument = Argument(self.startIndexArgumentName, ["startindex", "start", "si"], int,
+            optional= True,
+            # validateFunc= self.validIndex,
+            description= "Start index to use.")
+        endIndexArgument = Argument(self.endIndexArgumentName, ["endindex", "end", "ei"], int,
+            optional= True,
+            # validateFunc= self.validIndex,
+            description= "End index to use.")
+        streamNameRegexArgument = Argument(self.streamNameRegexArgumentName, ["streamnameregex", "regex", "re"], str,
+            optional= True,
+            # validateFunc= self.validRegex,
+            description= "Regex for naming streams (e.g. all streams are named \"Podcast guys: Actual Title\", use regex \": (.*)\", including \"s).")
+        directoryNameArgument = Argument(self.directoryNameArgumentName, ["directory", "dir", "d", "folder", "f", "exportto"], str,
+            optional= True,
+            # validateFunc= os.isdir(),
+            description= "Path (absolute or relative) to directory to export to.")
         
         includeSoftDeletedFlag = Flag(self.includeSoftDeletedFlagName, ["softdeleted", "sd"],
             value= True, defaultValue= False,
@@ -78,6 +109,18 @@ class Commands():
         includeSourceFlag = Flag(self.includeSourceFlagName, ["includesource", "is"],
             value= True, defaultValue= False,
             description= "Include source(s) in print.")
+        takeNewOnlyFlag = Flag(self.takeNewOnlyFlagName, ["takenewonly", "new", "tno"],
+            value= True, defaultValue= False,
+            description= "Take new streams only, comparing from last fetch.")
+        useIndexFlag = Flag(self.useIndexFlagName, ["useindex", "index", "ui"],
+            value= True, defaultValue= False,
+            description= "Add index (+1) on stream names so they naturally sort in order.")
+        shuffleFlag = Flag(self.shuffleFlagName, ["shuffle", "s"],
+            value= True, defaultValue= False,
+            description= "Shuffle playlist.")
+        repeatFlag = Flag(self.repeatFlagName, ["repeat", "r"],
+            value= True, defaultValue= False,
+            description= "Repeat already played streams.")
         
         # General
         helpCommand = Command("Help", ["help", "h", "man"], CommandHitValues.HELP,
@@ -95,32 +138,12 @@ class Commands():
         generalCommands = [helpCommand, testCommand, editCommand, searchCommand]
         
         # Playlist
-        # TODO args
-        
-        # result += "\n" + str(self.addPlaylistCommands) + " [name: str] [? playWatchedStreams: bool] [? allowDuplicates: bool] [? streamSourceIds: list]: Add a Playlist with name: name, playWatchedStreams: if playback should play watched QueueStreams, allowDuplicates: should Playlist allow duplicate QueueStreams (only if the uri is the same), streamSourceIds: a list of StreamSources."
-        # result += "\n" + str(self.addPlaylistFromYouTubeCommands) + " [youTubePlaylistUrl: str] [? name: str] [? playWatchedStreams: bool] [? allowDuplicates: bool]: Add a Playlist and populate it with QueueStreams from given YouTube playlist youTubePlaylistUrl, with name: name, playWatchedStreams: if playback should play watched streams, allowDuplicates: should Playlist allow duplicate QueueStreams (only if the uri is the same)."
-        # result += "\n" + str(self.deletePlaylistCommands) + " [playlistIds or indices: list]: deletes Playlists indicated."
-        # result += "\n" + str(self.restoreSourceCommands) + " [playlistIds or index: str]: restore soft deleted Playlist from database."
-        # result += "\n" + str(self.listPlaylistCommands) + " [? includeSoftDeleted: bool]: List Playlists with indices that can be used instead of IDs in other commands."
-        # result += "\n" + str(self.detailsPlaylistCommands) + " [playlistIds or indices: list] [? includeUri: bool] [? includeId: bool] [? includeDaterTime: bool] [? includeListCount: bool] [? includeSource: bool]: Prints details about given playlist, with option for including fields of StreamSources and QueueStreams (like datetimes or IDs)."
-        
-        # result += "\n" + str(self.fetchPlaylistSourcesCommands) + " [playlistIds or indices: list] [? takeAfter: datetime] [? takeBefore: datetime] [? takeNewOnly: bool]: Fetch new streams from StreamSources in Playlists indicated, e.g. if a Playlist has a YouTube channel as a source, and the channel uploads a new video, this video will be added to the Playlist. Optional arguments takeAfter: only fetch QueueStreams after this date, takeBefore: only fetch QueueStreams before this date. Dates formatted like \"2022-01-30\" (YYYY-MM-DD)."
-        # result += "\n" + str(self.prunePlaylistCommands) + " [playlistIds or indices: list] [? includeSoftDeleted: bool] [? permanentlyDelete: bool]: Prune Playlists indicated, deleting watched QueueStreams."
-        # result += "\n" + str(self.purgePlaylistCommands) + ": Purge all Playlists, removing IDs with no corresponding relation and deleting StreamSources and QueueStreams with no linked IDs in Playlists."
-        # result += "\n" + str(self.purgeCommands) + ": Purge all soft deleted entities."
-        # result += "\n" + str(self.resetPlaylistFetchCommands) + " [playlistIds or indices: list]: Resets fetch status of StreamSources in a Playlist and deletes QueueStreams from Playlist."
-        # result += "\n" + str(self.playCommands) + " [playlistId or index: str] [? startIndex: int] [? shuffle: bool] [? repeat: bool]: Start playing stream from a Playlist, order and automation (like skipping already watched QueueStreams) depending on the input and Playlist."
-        # result += "\n" + str(self.downloadPlaylistCommands) + " [playlistId or index: str] [? directoryName: str] [? startIndex: int] [? endIndex: int] [? streamNameRegex: str] [? useIndex: bool]: Download streams from web sources for given playlist, with optional directory name (under localStoragePath in settings), start-end index, regex for naming streams (e.g. all streams are named \"Podcast guys: Actual Title\", use regex \": (.*)\", including \"s), and option to add index (+1) on stream names so they naturally sort in order."
-        # result += "\n" + str(self.exportPlaylistCommands) + " [playlistId or index: str] [? directoryName: str]: Export all sources and streams in a list to a text files."
-        # result += "\n" + str(self.unwatchAllPlaylistCommands) + " [playlistId or index: str]: Mark all streams in a playlist as unwatched."
-        
-        
         addPlaylistCommand = Command("AddPlaylist", ["addplaylist", "apl", "ap"], CommandHitValues.ADD_PLAYLIST,
             arguments= [entityNameArgument, streamSourceIdsArgument],
             flags= [playWatchedStreamsFlag, allowDuplicatesFlag],
             description= "Add a Playlist from parameters given.")
         addPlaylistFromYouTubeCommand = Command("AddPlaylistFromYouTube", ["fromyoutube", "fyt", "fy"], CommandHitValues.ADD_PLAYLIST_FROM_YOUTUBE,
-            arguments= [uriArgument, entityNameArgument],
+            arguments= [uriArgument, optionalEntityNameArgument],
             flags= [playWatchedStreamsFlag, allowDuplicatesFlag],
             description= "Add a Playlist and populate it with QueueStreams from given YouTube playlist URL.")
         deletePlaylistCommand = Command("DeletePlaylist", ["deleteplaylist", "dpl"], CommandHitValues.DELETE_PLAYLIST,
@@ -133,21 +156,30 @@ class Commands():
             flags= [includeSoftDeletedFlag],
             description= "List Playlists with indices that can be used instead of IDs in other commands.")
         detailsPlaylistCommand = Command("DetailsPlaylist", ["detailsplaylist", "dp"], CommandHitValues.DETAILS_PLAYLIST,
+            arguments= [playlistIdsArgument],
             flags= [includeUriFlag, includeIdFlag, includeDateTimeFlag, includeListCountFlag, includeSourceFlag],
             description= "Prints details about given playlist, with option for including fields of StreamSources and QueueStreams (like datetimes or IDs).")
         fetchPlaylistSourcesCommand = Command("FetchPlaylistSources", ["fetch", "f", "update", "u"], CommandHitValues.FETCH_PLAYLIST,
+            arguments= [playlistIdsArgument, takeAfterArgument, takeBeforeArgument],
+            flags= [takeNewOnlyFlag],
             description= "Fetch new streams from StreamSources in Playlists indicated, e.g. if a Playlist has a YouTube channel as a source, and the channel uploads a new video, this video will be added to the Playlist.")
         prunePlaylistCommand = Command("PrunePlaylist", ["prune"], CommandHitValues.PRUNE_PLAYLIST,
+            arguments= [playlistIdsArgument],
+            flags= [includeSoftDeletedFlag, permanentlyDeleteFlag],
             description= "Prune Playlists indicated, deleting watched QueueStreams.")
         purgePlaylistCommand = Command("PurgePlaylist", ["purgeplaylists", "pp"], CommandHitValues.PURGE_PLAYLIST,
             description= "Purge all Playlists, removing IDs with no corresponding relation and deleting StreamSources and QueueStreams with no linked IDs in Playlists.")
         purgeCommand = Command("Purge", ["purge"], CommandHitValues.PURGE,
-            description= "Purge all soft deleted entities.")
+            description= "Purge ALL soft deleted entities.")
         resetPlaylistFetchCommand = Command("ResetPlaylistFetch", ["reset"], CommandHitValues.RESET_PLAYLIST,
+            arguments= [playlistIdsArgument],
             description= "Resets fetch status of StreamSources in a Playlist and deletes QueueStreams from Playlist.")
         downloadPlaylistCommand = Command("DownloadPlaylist", ["downloadplaylist", "dwpl"], CommandHitValues.DOWNLOAD_PLAYLIST,
+            arguments= [playlistIdsArgument, directoryNameArgument, startIndexArgument, endIndexArgument, streamNameRegexArgument],
+            flags= [useIndexFlag],
             description= "Download streams from web sources for given playlist, with optional directory name (under localStoragePath in settings), start-end index, regex for naming streams (e.g. all streams are named \"Podcast guys: Actual Title\", use regex \": (.*)\", including \"s), and option to add index (+1) on stream names so they naturally sort in order.")
         exportPlaylistCommand = Command("ExportPlaylist", ["export"], CommandHitValues.EXPORT_PLAYLIST,
+            arguments= [playlistIdsArgument, directoryNameArgument],
             description= "Export all sources and streams in a list to a text files.")
         # unwatchAllPlaylistCommand = Command("UnwatchAllPlaylist", ["unwatchall"], CommandHitValues.UNWATCH_ALL_PLAYLIST,
         #     arguments= [playlistIdsArgument],
@@ -155,6 +187,30 @@ class Commands():
         
         playlistCommands = [addPlaylistCommand, addPlaylistFromYouTubeCommand, deletePlaylistCommand, restorePlaylistCommand, listPlaylistCommands, detailsPlaylistCommand, fetchPlaylistSourcesCommand, prunePlaylistCommand, purgePlaylistCommand, purgeCommand, resetPlaylistFetchCommand, downloadPlaylistCommand, exportPlaylistCommand]
         
+        # Playback
+        playCommand = Command("Play", ["p"], CommandHitValues.PLAY,
+            arguments= [playlistIdsArgument, startIndexArgument],
+            flags= [shuffleFlag, repeatFlag],
+            description= "Start playing stream from a Playlist, order and automation (like skipping already watched QueueStreams) depending on the input and Playlist.")
+        
+        playbackCommands = [playCommand]
+        
+        # Stream
+        # TODO args
+        # result += "\n" + str(self.addStreamCommands) + " [playlistId or index: str] [uri: str] [? name: str]: Add a stream to a Playlist from ID or index, from uri: URL, and name: name (set automatically if not given)."
+        # result += "\n" + str(self.addMultipleStreamsCommands) + " [playlistId or index: str] [uris: str]: Add multiple streams to a Playlist from ID or index, from uris (set automatically)."
+        # result += "\n" + str(self.deleteStreamCommands) + " [playlistId or index: str] [streamIds or indices: list]: Delete QueueStreams from Playlist."
+        # result += "\n" + str(self.restoreStreamCommands) + " [playlistId or index: str] [streamIds or indices: str]: Restore soft deleted QueueStreams from database."
+        
+        # Sources
+        # TODO args
+        # result += "\n" + str(self.addSourcesCommands) + " [playlistId or index: str] [uri: string] [? enableFetch: bool] [? backgroundContent: bool] [? name: str]: Add a StreamSources from uri: URL, enableFetch: if the Playlist should fetch new QueueStream from this StreamSource, backgroundContent; if the QueueStream from this source are things you would play in the background, and name: name (set automatically if not given)."
+        # result += "\n" + str(self.deleteSourceCommands) + " [playlistId or index: str] [sourceIds or indices: str]: Delete StreamSources from database."
+        # result += "\n" + str(self.restoreSourceCommands) + " [playlistId or index: str] [sourceIds or indices: str]: Restore soft deleted StreamSources from database."
+        # result += "\n" + str(self.listSourcesCommands) + " [? includeSoftDeleted: bool]: Lists StreamSources with indices that can be used instead of IDs in other commands."
+        # result += "\n" + str(self.openSourceCommands) + "[sourceIds or indices: str]: open StreamSources in web if it is a web source, or directory if not."
+        
+        sourceCommands = [addSourcesCommand, deleteSourceCommand, restoreSourceCommand, listSourcesCommand, openSourceCommand]
         
         # Meta
         listSettingsCommand = Command("ListSettings", ["settings", "secrets"], CommandHitValues.LIST_SETTINGS,

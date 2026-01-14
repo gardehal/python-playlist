@@ -30,9 +30,12 @@ class Commands():
     useIndexFlagName = "UseOutputNameIndex"
     shuffleFlagName = "Shuffle"
     repeatFlagName = "Repeat"
+    enableFetchFlagName = "EnableFetch"
+    backgroundContentFlagName = "BackgroundContent"
     
     def getArgumentor(self):
         # TODO validators and casting
+        # TODO checks ome of the comments
         
         searchQueryArgument = Argument(self.searchQueryArgumentName, ["search", "s"], str, 
             # validateFunc= self.notNull,
@@ -121,6 +124,12 @@ class Commands():
         repeatFlag = Flag(self.repeatFlagName, ["repeat", "r"],
             value= True, defaultValue= False,
             description= "Repeat already played streams.")
+        enableFetchFlag = Flag(self.enableFetchFlagName, ["enablefetch", "fetch", "f"],
+            value= True, defaultValue= False,
+            description= "Enable fetching new QueueStream from this StreamSource.")
+        backgroundContentFlag = Flag(self.backgroundContentFlagName, ["backgroundcontent", "bgc", "bc"],
+            value= True, defaultValue= False,
+            description= "QueueStreams from this source is content you would play in the background (music, podcasts etc.).")
         
         # General
         helpCommand = Command("Help", ["help", "h", "man"], CommandHitValues.HELP,
@@ -196,19 +205,18 @@ class Commands():
         playbackCommands = [playCommand]
         
         # Stream
-        # TODO args
-        # result += "\n" + str(self.addStreamCommands) + " [playlistId or index: str] [uri: str] [? name: str]: Add a stream to a Playlist from ID or index, from uri: URL, and name: name (set automatically if not given)."
-        # result += "\n" + str(self.addMultipleStreamsCommands) + " [playlistId or index: str] [uris: str]: Add multiple streams to a Playlist from ID or index, from uris (set automatically)."
-        # result += "\n" + str(self.deleteStreamCommands) + " [playlistId or index: str] [streamIds or indices: list]: Delete QueueStreams from Playlist."
-        # result += "\n" + str(self.restoreStreamCommands) + " [playlistId or index: str] [streamIds or indices: str]: Restore soft deleted QueueStreams from database."
         addStreamCommand = Command("AddStream", ["add", "a"], CommandHitValues.ADD_STREAM,
-            description= "Add a Stream from parameters given.")
+            arguments= [playlistIdsArgument, uriArgument, optionalEntityNameArgument],
+            description= "Add a Stream from URI using parameters given.")
         addMultipleStreamsCommand = Command("AddMultipleStreams", ["addmultiple", "am"], CommandHitValues.ADD_MULTIPLE_STREAMS,
-            description= "Add multiple streams to a Playlist from ID or index, from uris (set automatically).")
+            arguments= [playlistIdsArgument, uriArgument], # TODO should be list of multiple
+            description= "Add multiple streams to a Playlist from ID or index, from URIs (name set automatically).")
         deleteStreamCommand = Command("DeleteStream", ["delete", "d"], CommandHitValues.DELETE_STREAM,
-            description= "Delete QueueStreams from Playlist.")
+            arguments= [playlistIdsArgument, streamSourceIdsArgument],
+            description= "Delete QueueStreams from Playlist.") # TODO should specify if playlistIDs AND streamIDs are necessary, or if one or the other can be used
         restoreStreamCommand = Command("RestoreStream", ["restore", "r"], CommandHitValues.RESTORE_STREAM,
-            description= "Restore soft deleted QueueStreams from database.")
+            arguments= [playlistIdsArgument, streamSourceIdsArgument],
+            description= "Restore soft deleted QueueStreams from database.") # TODO should specify if playlistIDs AND streamIDs are necessary, or if one or the other can be used
         
         streamCommands = [addStreamCommand, addMultipleStreamsCommand, deleteStreamCommand, restoreStreamCommand]
         
@@ -225,10 +233,10 @@ class Commands():
             description= "Delete StreamSources from database.")
         restoreSourceCommand = Command("RestoreSource", ["restoresource", "rs"], CommandHitValues.RESTORE_SOURCE,
             description= "Restore soft deleted StreamSources from database.")
-        listSourcesCommand = Command("ListSources", ["listsource", "ls"], CommandHitValues.LIST_SOURCES,
-            description= "Lists StreamSources with indices that can be used instead of IDs in other commands.")
-        openSourceCommand = Command("OpenSource", ["opensource", "os"], CommandHitValues.OPEN_SOURCE,
-            description= "Open StreamSources in web if it is a web source, or directory if not.")
+        deleteSourceCommand = Command("DeleteSource", ["deletesource", "ds"], CommandHitValues.DELETE_SOURCES,
+            description= "Delete StreamSources from database.")
+        restoreSourceCommand = Command("RestoreSource", ["restoresource", "rs"], CommandHitValues.RESTORE_SOURCE,
+            description= "Restore soft deleted StreamSources from database.")
         
         sourceCommands = [addSourcesCommand, deleteSourceCommand, restoreSourceCommand, listSourcesCommand, openSourceCommand]
         

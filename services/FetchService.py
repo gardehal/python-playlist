@@ -80,22 +80,25 @@ class FetchService():
             fetchedStreams = []
             _takeAfter = takeAfter if(not takeNewOnly) else source.lastSuccessfulFetched
             
-            if(source.isWeb):
-                if(source.streamSourceTypeId == StreamSourceType.YOUTUBE.value):
-                    fetchedStreams = self.fetchYoutube(source, batchSize, _takeAfter, takeBefore, takeNewOnly)
-                    
-                    if(_takeAfter != None or takeBefore != None):
-                        printS("Arguments takeAfter and takeBefore are not supported by fetchYoutubeHtml, they will be ignored.", color = BashColor.WARNING)
-                    # fetchedStreams = self.fetchYoutubeHtml(source, batchSize, takeNewOnly)
-                elif(source.streamSourceTypeId == StreamSourceType.ODYSEE.value):
-                    fetchedStreams = self.fetchOdysee(source, batchSize, _takeAfter, takeBefore, takeNewOnly)
-                elif(source.streamSourceTypeId == StreamSourceType.RUMBLE.value):
-                    fetchedStreams = self.fetchRumble(source, batchSize, _takeAfter, takeBefore, takeNewOnly)
+            try:
+                if(source.isWeb):
+                    if(source.streamSourceTypeId == StreamSourceType.YOUTUBE.value):
+                        fetchedStreams = self.fetchYoutube(source, batchSize, _takeAfter, takeBefore, takeNewOnly)
+                        
+                        if(_takeAfter != None or takeBefore != None):
+                            printS("Arguments takeAfter and takeBefore are not supported by fetchYoutubeHtml, they will be ignored.", color = BashColor.WARNING)
+                        # fetchedStreams = self.fetchYoutubeHtml(source, batchSize, takeNewOnly)
+                    elif(source.streamSourceTypeId == StreamSourceType.ODYSEE.value):
+                        fetchedStreams = self.fetchOdysee(source, batchSize, _takeAfter, takeBefore, takeNewOnly)
+                    elif(source.streamSourceTypeId == StreamSourceType.RUMBLE.value):
+                        fetchedStreams = self.fetchRumble(source, batchSize, _takeAfter, takeBefore, takeNewOnly)
+                    else:
+                        printS("\t Source \"", source.name, "\" could not be fetched as it is not implemented for this source.", color = BashColor.WARNING)
+                        continue
                 else:
-                    printS("\t Source \"", source.name, "\" could not be fetched as it is not implemented for this source.", color = BashColor.WARNING)
-                    continue
-            else:
-                fetchedStreams = self.fetchDirectory(source, batchSize, _takeAfter, takeBefore, takeNewOnly)
+                    fetchedStreams = self.fetchDirectory(source, batchSize, _takeAfter, takeBefore, takeNewOnly)
+            except Exception as e:
+                printS("Fetching from " + source.name + " failed: " + e, color = BashColor.ERROR)
 
             if(len(fetchedStreams) > 0):
                 source.lastSuccessfulFetched = getDateTime()

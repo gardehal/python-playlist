@@ -1,5 +1,9 @@
-from grdUtil.StaticUtil import StaticUtil
+import os
+from datetime import datetime
+from urllib.parse import urlparse
+
 from Argumentor import *
+from grdUtil.StaticUtil import StaticUtil
 
 from enums.CommandHitValues import CommandHitValues
 
@@ -221,22 +225,22 @@ class Commands():
         streamCommands = [addStreamCommand, addMultipleStreamsCommand, deleteStreamCommand, restoreStreamCommand]
         
         # Sources
-        # TODO args
-        # result += "\n" + str(self.addSourcesCommands) + " [playlistId or index: str] [uri: string] [? enableFetch: bool] [? backgroundContent: bool] [? name: str]: Add a StreamSources from uri: URL, enableFetch: if the Playlist should fetch new QueueStream from this StreamSource, backgroundContent; if the QueueStream from this source are things you would play in the background, and name: name (set automatically if not given)."
-        # result += "\n" + str(self.deleteSourceCommands) + " [playlistId or index: str] [sourceIds or indices: str]: Delete StreamSources from database."
-        # result += "\n" + str(self.restoreSourceCommands) + " [playlistId or index: str] [sourceIds or indices: str]: Restore soft deleted StreamSources from database."
-        # result += "\n" + str(self.listSourcesCommands) + " [? includeSoftDeleted: bool]: Lists StreamSources with indices that can be used instead of IDs in other commands."
-        # result += "\n" + str(self.openSourceCommands) + "[sourceIds or indices: str]: open StreamSources in web if it is a web source, or directory if not."
         addSourcesCommand = Command("AddSources", ["addsource", "as"], CommandHitValues.ADD_SOURCE,
+            arguments= [playlistIdsArgument, uriArgument, optionalEntityNameArgument],
+            flags= [enableFetchFlag, backgroundContentFlag],
             description= "Add a StreamSources from parameters given.")
         deleteSourceCommand = Command("DeleteSource", ["deletesource", "ds"], CommandHitValues.DELETE_SOURCES,
-            description= "Delete StreamSources from database.")
+            arguments= [playlistIdsArgument, streamSourceIdsArgument],
+            description= "Delete StreamSources from database.") # TODO should specify if playlistIDs AND streamIDs are necessary, or if one or the other can be used
         restoreSourceCommand = Command("RestoreSource", ["restoresource", "rs"], CommandHitValues.RESTORE_SOURCE,
-            description= "Restore soft deleted StreamSources from database.")
-        deleteSourceCommand = Command("DeleteSource", ["deletesource", "ds"], CommandHitValues.DELETE_SOURCES,
-            description= "Delete StreamSources from database.")
-        restoreSourceCommand = Command("RestoreSource", ["restoresource", "rs"], CommandHitValues.RESTORE_SOURCE,
-            description= "Restore soft deleted StreamSources from database.")
+            arguments= [playlistIdsArgument, streamSourceIdsArgument],
+            description= "Restore soft deleted StreamSources from database.") # TODO should specify if playlistIDs AND streamIDs are necessary, or if one or the other can be used
+        listSourcesCommand = Command("ListSources", ["listsource", "ls"], CommandHitValues.LIST_SOURCES,
+            flags= [includeSoftDeletedFlag],
+            description= "Lists StreamSources with indices that can be used instead of IDs in other commands.")
+        openSourceCommand = Command("OpenSource", ["opensource", "os"], CommandHitValues.OPEN_SOURCE,
+            arguments= [playlistIdsArgument],
+            description= "Open StreamSources in web if it is a web source, or directory if not.")
         
         sourceCommands = [addSourcesCommand, deleteSourceCommand, restoreSourceCommand, listSourcesCommand, openSourceCommand]
         

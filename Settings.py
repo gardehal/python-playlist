@@ -17,6 +17,8 @@ class Settings():
     logDirPath: str = None
     browserName: str = None
     fetchLimitSingleSource: int = None
+    inputDatetimeFormat: str = None
+    defaultPlaylistId: str = None
     
     def __init__(self):
         envFilePath = ".env"
@@ -35,6 +37,8 @@ class Settings():
         self.logDirPath = os.environ.get("LOG_DIR_PATH")
         self.browserName = os.environ.get("BROWSE_NAME")
         self.fetchLimitSingleSource =  int(os.environ.get("FETCH_LIMIT_SINGLE_SOURCE"))
+        self.inputDatetimeFormat =  os.environ.get("INPUT_DATETIME_FORMAT")
+        self.defaultPlaylistId =  os.environ.get("DEFAULT_PLAYLIST_ID")
     
     def getAllSettingsAsString(self) -> str:
         """
@@ -53,7 +57,9 @@ class Settings():
                "\n", "WATCHED_LOG_FILEPATH: ", self.watchedLogFilepath,
                "\n", "LOG_DIR_PATH: ", self.logDirPath,
                "\n", "BROWSE_NAME: ", self.browserName,
-               "\n", "FETCH_LIMIT_SINGLE_SOURCE: ", self.fetchLimitSingleSource)
+               "\n", "FETCH_LIMIT_SINGLE_SOURCE: ", self.fetchLimitSingleSource,
+               "\n", "INPUT_DATETIME_FORMAT: ", self.inputDatetimeFormat,
+               "\n", "DEFAULT_PLAYLIST_ID: ", self.defaultPlaylistId)
         
     def getAllSettingsAsTable(self) -> str:
         """
@@ -72,7 +78,9 @@ class Settings():
             "WATCHED_LOG_FILEPATH", 
             "LOG_DIR_PATH", 
             "BROWSE_NAME", 
-            "FETCH_LIMIT_SINGLE_SOURCE"]
+            "FETCH_LIMIT_SINGLE_SOURCE", 
+            "INPUT_DATETIME_FORMAT", 
+            "DEFAULT_PLAYLIST_ID"]
         settings = [self.debug,
             self.localStoragePath,
             self.logWatched,
@@ -82,7 +90,9 @@ class Settings():
             self.watchedLogFilepath,
             self.logDirPath,
             self.browserName,
-            self.fetchLimitSingleSource]
+            self.fetchLimitSingleSource,
+            self.inputDatetimeFormat,
+            self.defaultPlaylistId]
         settingsStrings = [str(s) for s in settings]
         
         overlyComplicatedSettingsListList = []

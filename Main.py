@@ -6,6 +6,7 @@ from grdUtil.FileUtil import makeFiles
 from grdUtil.InputUtil import extractArgs, getIdsFromInput, getIfExists
 from grdUtil.PrintUtil import printLists, printS
 from Argumentor import *
+from datetime import datetime
 
 from Commands import Commands
 from controllers.PlaylistCliController import PlaylistCliController
@@ -19,7 +20,6 @@ from services.PlaylistService import PlaylistService
 from services.SharedService import SharedService
 from services.StreamSourceService import StreamSourceService
 from Settings import Settings
-
 
 class Main:
     commands: Commands = Commands()
@@ -61,8 +61,11 @@ class Main:
                     inputArgs = extractArgs(argIndex, argV)
                     printS("Test", color = BashColor.OKBLUE)
                     
+                    
+                    ass = datetime.strptime("2020-1-02T20:20:20", "%Y-%m-%dT%H:%M:%S")
+                    print(ass.weekday())
                     argumentor = Main.commands.getArgumentor()
-                    # print(argumentor.getFormattedDescription())
+                    print(argumentor.getFormattedDescription())
                     
                     quit()            
                     

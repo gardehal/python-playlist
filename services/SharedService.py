@@ -18,16 +18,10 @@ from Settings import Settings
 
 
 class SharedService():
-    settings: Settings = None
-    playlistService: PlaylistService = None
-    queueStreamService: QueueStreamService = None
-    streamSourceService: StreamSourceService = None
-
-    def __init__(self):
-        self.settings = Settings()
-        self.playlistService = PlaylistService()
-        self.queueStreamService = QueueStreamService()
-        self.streamSourceService = StreamSourceService()
+    settings = Settings()
+    playlistService = PlaylistService()
+    queueStreamService = QueueStreamService()
+    streamSourceService = StreamSourceService()
 
     def getPageTitle(self, url: str) -> str:
         """

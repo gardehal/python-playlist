@@ -23,26 +23,25 @@ from Settings import Settings
 
 
 class PlaybackService():
-    commands: Commands = None
-    settings: Settings = None
+    commands = Commands()
+    settings = Settings()
+    playlistService = PlaylistService()
+    queueStreamService = QueueStreamService()
+    streamSourceService = StreamSourceService()
     storagePath: str = None
-    playlistService: PlaylistService = None
-    queueStreamService: QueueStreamService = None
-    streamSourceService: StreamSourceService = None
     quitInputs: List[str] = None
     quitWatchedInputs: List[str] = None
     skipInputs: List[str] = None
+    repeatInputs: List[str] = None
+    listPlaylistInputs: List[str] = None
     addToInputs: List[str] = None
     circumventRestricted: List[str] = None
     printDetailsInputs: List[str] = None
+    nextInputs: List[str] = None
+    printHelpInputs: List[str] = None
 
     def __init__(self):
-        self.commands = Commands()
-        self.settings = Settings()
         self.storagePath = self.settings.localStoragePath
-        self.playlistService = PlaylistService()
-        self.queueStreamService = QueueStreamService()
-        self.streamSourceService = StreamSourceService()
         self.quitInputs = self.commands.quitArguments
         self.quitWatchedInputs = self.commands.quitWatchedArguments
         self.skipInputs = self.commands.skipArguments

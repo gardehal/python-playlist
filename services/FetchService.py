@@ -30,19 +30,13 @@ from Settings import Settings
 
 
 class FetchService():
-    downloadService: DownloadService = None
-    playlistService: PlaylistService = None
-    queueStreamService: QueueStreamService = None
-    streamSourceService: StreamSourceService = None
-    settings: Settings = None
+    downloadService = DownloadService()
+    playlistService = PlaylistService()
+    queueStreamService = QueueStreamService()
+    streamSourceService = StreamSourceService()
+    settings = Settings()
 
     def __init__(self):
-        self.downloadService = DownloadService()
-        self.playlistService = PlaylistService()
-        self.queueStreamService = QueueStreamService()
-        self.streamSourceService = StreamSourceService()
-        self.settings = Settings()
-
         mkdir(self.settings.localStoragePath)
 
     def fetch(self, playlistId: str, batchSize: int = 10, takeAfter: datetime = None, takeBefore: datetime = None, takeNewOnly: bool = False) -> int:

@@ -28,16 +28,12 @@ from Settings import Settings
 T = Playlist
 
 class PlaylistService(BaseService[T]):
-    settings: Settings = None
-    playlistRepository: LocalJsonRepository = None
-    queueStreamService: QueueStreamService = None
-    streamSourceService: StreamSourceService = None
+    settings = Settings()
+    queueStreamService = QueueStreamService()
+    streamSourceService = StreamSourceService()
     log: LogUtil = None
 
     def __init__(self):
-        self.settings = Settings()
-        self.queueStreamService = QueueStreamService()
-        self.streamSourceService = StreamSourceService()
         self.log = LogUtil(self.settings.logDirPath, self.settings.debug, LogLevel.VERBOSE)
         
         BaseService.__init__(self, T, self.settings.debug, os.path.join(self.settings.localStoragePath, "Playlist"))
@@ -584,7 +580,7 @@ class PlaylistService(BaseService[T]):
         for id in playlistIds:
             playlist = self.get(id, includeSoftDeleted)
             
-            printS("\QueueStreams", color = BashColor.BOLD)
+            printS("\tQueueStreams", color = BashColor.BOLD)
             if(len(playlist.streamIds) == 0):
                 printS("\tNo streams added yet.")
             
@@ -630,7 +626,7 @@ class PlaylistService(BaseService[T]):
         for id in playlistIds:
             playlist = self.get(id, includeSoftDeleted)
             
-            printS("\QueueStreams for \"", playlist.name, "\"", color = BashColor.BOLD)
+            printS("\tQueueStreams for \"", playlist.name, "\"", color = BashColor.BOLD)
             if(len(playlist.streamIds) == 0):
                 printS("\tNo streams added yet.")
             

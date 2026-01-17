@@ -8,10 +8,9 @@ from Settings import Settings
 T = QueueStream
 
 class QueueStreamService(BaseService[T]):
-    settings: Settings = None
+    settings = Settings()
 
     def __init__(self):
-        self.settings = Settings()
         BaseService.__init__(self, T, self.settings.debug, os.path.join(self.settings.localStoragePath, "QueueStream"))
 
     def add(self, queueStream: T) -> T:

@@ -9,10 +9,9 @@ from Settings import Settings
 T = StreamSource
 
 class StreamSourceService(BaseService[T]):
-    settings: Settings = None
+    settings = Settings()
 
     def __init__(self):
-        self.settings = Settings()
         BaseService.__init__(self, T, self.settings.debug, os.path.join(self.settings.localStoragePath, "StreamSource"))
 
     def add(self, streamSource: T) -> T:

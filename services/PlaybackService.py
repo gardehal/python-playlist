@@ -201,7 +201,12 @@ class PlaybackService():
         else:
             startCommand = f"call start {url}"
 
-        return subprocess.Popen(startCommand, stdout=subprocess.PIPE, shell=True)
+        try:
+            process = subprocess.Popen(startCommand, stdout=subprocess.PIPE, shell=True)
+            return process
+        except Exception as e:
+            printS(url, " could not be opened: ", str(e), color=BashColor.ERROR)
+            return None
 
     def handlePlaybackInput(self, playlist: Playlist, stream: QueueStream) -> PlaybackInput:
         """

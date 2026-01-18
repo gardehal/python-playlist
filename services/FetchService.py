@@ -92,7 +92,8 @@ class FetchService():
                 else:
                     fetchedStreams = self.fetchDirectory(source, batchSize, _takeAfter, takeBefore, takeNewOnly)
             except Exception as e:
-                printS("Fetching from " + source.name + " failed: " + e, color = BashColor.ERROR)
+                printS("Fetching from ", source.name, " failed: ", str(e), color = BashColor.ERROR)
+                continue
 
             if(len(fetchedStreams) > 0):
                 source.lastSuccessfulFetched = getDateTime()

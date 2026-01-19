@@ -7,7 +7,7 @@ from grdUtil.StaticUtil import StaticUtil
 
 from enums.CommandHitValues import CommandHitValues
 
-class Commands():
+class Commands():    
     searchQueryArgumentName = "SearchQuery"
     playlistIdsArgumentName = "PlaylistIds"
     entityNameArgumentName = "EntityName"
@@ -38,52 +38,47 @@ class Commands():
     backgroundContentFlagName = "BackgroundContent"
     
     def getArgumentor(self):
-        # TODO validators and casting
-        # TODO checks ome of the comments
-        
         searchQueryArgument = Argument(self.searchQueryArgumentName, ["search", "s"], str, 
-            # validateFunc= self.notNull,
+            validateFunc= validateNotNull,
             description= "Query to search playlists for.")
-        # TODO doesnt have to be playlist, can just be ID/index, but commands should specify what type of entities
         playlistIdsArgument = Argument(self.playlistIdsArgumentName, ["playlistid", "playlistindex", "pi"], str, 
-            # Old args had this as optional and would default to first playlist
-            # validateFunc= self.notNull,
-            # castFunc= split to list[str],
+            # Old args had this as optional and would default to first playlist, replace with setting of desired default, used when not None or empty in method?
+            # playlistIds = getIdsFromInput(inputArgs, allExistingIds, idsIndexed, limit, startAtZero = False, debug = Main.settings.debug)
+            castFunc= castStringToList,
             description= "IDs or index (i + number) of Playlist, can be multiple.")
+        streamSourceIdsArgument = Argument(self.streamSourceIdsArgumentName, ["streamsourceids", "ssi", "ids"], list[str],
+            optional= True,
+            castFunc= castStringToList,
+            description= "A list of StreamSources to be added.")
         entityNameArgument = Argument(self.entityNameArgumentName, ["name", "n"], str,
+            validateFunc= validateNotNull,
             description= "Name of new entity.")
         optionalEntityNameArgument = Argument(self.entityNameArgumentName, ["name", "n"], str,
             optional= True,
             description= "Name of new entity.")
-        streamSourceIdsArgument = Argument(self.streamSourceIdsArgumentName, ["streamsourceids", "ssi", "ids"], list[str],
-            optional= True,
-            description= "A list of StreamSources to be added.")
         uriArgument = Argument(self.uriArgumentName, ["uri", "url"], str,
-            # validateFunc= self.validUrl,
+            validateFunc= validateUri,
             description= "URI or URL of source.")
-        takeAfterArgument = Argument(self.takeAfterArgumentName, ["takeafter", "after", "ta"], str, # DATETIME
+        takeAfterArgument = Argument(self.takeAfterArgumentName, ["takeafter", "after", "ta"], datetime,
             optional= True,
-            # validateFunc= self.validDatetime,
+            castFunc= castDatetime,
             description= "Only fetch QueueStreams after this date.")
-        takeBeforeArgument = Argument(self.takeBeforeArgumentName, ["takebefore", "before", "tb"], str, # DATETIME
+        takeBeforeArgument = Argument(self.takeBeforeArgumentName, ["takebefore", "before", "tb"], datetime,
             optional= True,
-            # validateFunc= self.validDatetime,
+            castFunc= castDatetime,
             description= "Only fetch QueueStreams before this date.")
         startIndexArgument = Argument(self.startIndexArgumentName, ["startindex", "start", "si"], int,
             optional= True,
-            # validateFunc= self.validIndex,
             description= "Start index to use.")
         endIndexArgument = Argument(self.endIndexArgumentName, ["endindex", "end", "ei"], int,
             optional= True,
-            # validateFunc= self.validIndex,
             description= "End index to use.")
         streamNameRegexArgument = Argument(self.streamNameRegexArgumentName, ["streamnameregex", "regex", "re"], str,
             optional= True,
-            # validateFunc= self.validRegex,
             description= "Regex for naming streams (e.g. all streams are named \"Podcast guys: Actual Title\", use regex \": (.*)\", including \"s).")
         directoryNameArgument = Argument(self.directoryNameArgumentName, ["directory", "dir", "d", "folder", "f", "exportto"], str,
             optional= True,
-            # validateFunc= os.isdir(),
+            validateFunc= validateDirectory,
             description= "Path (absolute or relative) to directory to export to.")
         
         includeSoftDeletedFlag = Flag(self.includeSoftDeletedFlagName, ["softdeleted", "sd"],
@@ -451,4 +446,29 @@ class Commands():
         result += "\n" + str(self.refactorCommands) + ": Refactor old code/data (JSON-file storage only)."
 
         return result
+    
+def castStringToList(value: str, separator: str = ",") -> list[str]:
+    return value.split(separator)
+
+def castDatetime(value: str) -> datetime:
+    return datetime.strptime(value, os.environ.get("INPUT_DATETIME_FORMAT"))
+
+def validateNotNull(value: str) -> bool:
+    return True if value else False
+
+def validateList(value: list[str]) -> bool:
+    return value.count > 0
+
+def validateDirectory(value: str) -> bool:
+    return os.path.isdir(value)
+        
+def validateUri(value: str) -> bool:
+    if(validateDirectory(value)):
+        return True
+
+    try:
+        result = urlparse(value)
+        return all([result.scheme, result.netloc])
+    except ValueError:
+        return False
     

@@ -20,25 +20,15 @@ from Settings import Settings
 
 
 class PlaylistCliController():
-    downloadService: DownloadService() = None
-    fetchService: FetchService() = None
-    playbackService: PlaybackService = None
-    playlistService: PlaylistService = None
-    queueStreamService: QueueStreamService = None
-    streamSourceService: StreamSourceService = None
-    sharedCliController: SharedCliController = None
-    settings: Settings = None
-
-    def __init__(self):
-        self.downloadService = DownloadService()
-        self.fetchService = FetchService()
-        self.playbackService = PlaybackService()
-        self.playlistService = PlaylistService()
-        self.queueStreamService = QueueStreamService()
-        self.streamSourceService = StreamSourceService()
-        self.sharedCliController = SharedCliController()
-        self.settings = Settings()
-        
+    downloadService = DownloadService()
+    fetchService = FetchService()
+    playbackService = PlaybackService()
+    playlistService = PlaylistService()
+    queueStreamService = QueueStreamService()
+    streamSourceService = StreamSourceService()
+    sharedCliController = SharedCliController()
+    settings = Settings()
+    
     def addPlaylist(self, name: str, playWatchedStreams: bool, allowDuplicates: bool, streamSourceIds: List[str]) -> Playlist:
         """
         Add a playlist to storage.
@@ -322,6 +312,12 @@ class PlaylistCliController():
         
         result = False
         if(playlistId == None):
+            # defaultPlaylistId = self.settings.defaultPlaylistId
+            # if(defaultPlaylistId):
+            #     playlistId = defaultPlaylistId
+            # else:
+            #     printS("Failed to play playlist, missing playlistIds or indices.", color = BashColor.FAIL)
+            #     return result
             printS("Failed to play playlist, missing playlistIds or indices.", color = BashColor.FAIL)
             return result
         

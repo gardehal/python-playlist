@@ -42,8 +42,9 @@ class Commands():
             validateFunc= validateNotNull,
             description= "Query to search playlists for.")
         playlistIdsArgument = Argument(self.playlistIdsArgumentName, ["playlistid", "playlistindex", "pi"], str, 
-            # Old args had this as optional and would default to first playlist, replace with setting of desired default, used when not None or empty in method?
-            # playlistIds = getIdsFromInput(inputArgs, allExistingIds, idsIndexed, limit, startAtZero = False, debug = Main.settings.debug)
+            optional= True,
+            defaultValue= [os.environ.get("DEFAULT_PLAYLIST_ID")],
+            useDefaultValue= os.environ.get("DEFAULT_PLAYLIST_ID"),
             castFunc= castStringToList,
             description= "IDs or index (i + number) of Playlist, can be multiple.")
         streamSourceIdsArgument = Argument(self.streamSourceIdsArgumentName, ["streamsourceids", "ssi", "ids"], list[str],

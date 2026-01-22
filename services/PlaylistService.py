@@ -462,6 +462,9 @@ class PlaylistService(BaseService[T]):
         result = 0
         for id in playlistIds:
             playlist = self.get(id, includeSoftDeleted)
+            if(playlist == None):
+                printS("\tPlaylist not found (ID: \"", id, "\").", color = BashColor.FAIL)
+                continue
             
             playlistDetailsString = playlist.detailsString(includeUri, includeId, includeDatetime, includeListCount = False)
             if(includeListCount):

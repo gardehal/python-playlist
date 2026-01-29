@@ -82,53 +82,37 @@ class Commands():
             validateFunc= validateDirectory,
             description= "Path (absolute or relative) to directory to export to.")
         
-        includeSoftDeletedFlag = Flag(self.includeSoftDeletedFlagName, ["softdeleted", "sd"],
-            value= True, defaultValue= False,
+        includeSoftDeletedFlag = BoolFlag(self.includeSoftDeletedFlagName, ["softdeleted", "sd"],
             description= "Include soft deleted items.")
-        permanentlyDeleteFlag = Flag(self.permanentlyDeleteFlagName, ["permanentlydelete"],
-            value= True, defaultValue= False,
+        permanentlyDeleteFlag = BoolFlag(self.permanentlyDeleteFlagName, ["permanentlydelete"],
             description= "permanently delete items.")
-        simplifiedPrintFlag = Flag(self.simplifiedPrintFlagName, ["simplified", "s"],
-            value= True, defaultValue= False,
+        simplifiedPrintFlag = BoolFlag(self.simplifiedPrintFlagName, ["simplified", "s"],
             description= "Simplified, less verbose print.")
-        allowDuplicatesFlag = Flag(self.allowDuplicatesFlagName, ["allowduplicates", "ad"],
-            value= True, defaultValue= False,
+        allowDuplicatesFlag = BoolFlag(self.allowDuplicatesFlagName, ["allowduplicates", "ad"],
             description= "Should Playlist allow duplicate QueueStreams (only if the uri is the same).")
-        playWatchedStreamsFlag = Flag(self.playWatchedStreamsFlagName, ["playwatched", "pw"],
-            value= True, defaultValue= False,
+        playWatchedStreamsFlag = BoolFlag(self.playWatchedStreamsFlagName, ["playwatched", "pw"],
             description= "Should playback should play watched QueueStreams.")
-        includeUriFlag = Flag(self.includeUriFlagName, ["includeuri", "iu"],
-            value= True, defaultValue= False,
+        includeUriFlag = BoolFlag(self.includeUriFlagName, ["includeuri", "iu"],
             description= "Include URI/URL in print.")
-        includeIdFlag = Flag(self.includeIdFlagName, ["includeid", "ii"],
-            value= True, defaultValue= False,
+        includeIdFlag = BoolFlag(self.includeIdFlagName, ["includeid", "ii"],
             description= "Include ID(s) in print.")
-        includeDateTimeFlag = Flag(self.includeDateTimeFlagName, ["includedatetime", "includedate", "id"],
-            value= True, defaultValue= False,
+        includeDateTimeFlag = BoolFlag(self.includeDateTimeFlagName, ["includedatetime", "includedate", "id"],
             description= "Include DateTime in print.")
-        includeListCountFlag = Flag(self.includeListCountFlagName, ["includeclistcount", "includecount", "ilc", "ic"],
-            value= True, defaultValue= False,
+        includeListCountFlag = BoolFlag(self.includeListCountFlagName, ["includeclistcount", "includecount", "ilc", "ic"],
             description= "Include list count in print.")
-        includeSourceFlag = Flag(self.includeSourceFlagName, ["includesource", "is"],
-            value= True, defaultValue= False,
+        includeSourceFlag = BoolFlag(self.includeSourceFlagName, ["includesource", "is"],
             description= "Include source(s) in print.")
-        takeNewOnlyFlag = Flag(self.takeNewOnlyFlagName, ["takenewonly", "new", "tno"],
-            value= True, defaultValue= False,
+        takeNewOnlyFlag = BoolFlag(self.takeNewOnlyFlagName, ["takenewonly", "new", "tno"],
             description= "Take new streams only, comparing from last fetch.")
-        useIndexFlag = Flag(self.useIndexFlagName, ["useindex", "index", "ui"],
-            value= True, defaultValue= False,
+        useIndexFlag = BoolFlag(self.useIndexFlagName, ["useindex", "index", "ui"],
             description= "Add index (+1) on stream names so they naturally sort in order.")
-        shuffleFlag = Flag(self.shuffleFlagName, ["shuffle", "s"],
-            value= True, defaultValue= False,
+        shuffleFlag = BoolFlag(self.shuffleFlagName, ["shuffle", "s"],
             description= "Shuffle playlist.")
-        repeatFlag = Flag(self.repeatFlagName, ["repeat", "r"],
-            value= True, defaultValue= False,
+        repeatFlag = BoolFlag(self.repeatFlagName, ["repeat", "r"],
             description= "Repeat already played streams.")
-        enableFetchFlag = Flag(self.enableFetchFlagName, ["enablefetch", "fetch", "f"],
-            value= True, defaultValue= False,
+        enableFetchFlag = BoolFlag(self.enableFetchFlagName, ["enablefetch", "fetch", "f"],
             description= "Enable fetching new QueueStream from this StreamSource.")
-        backgroundContentFlag = Flag(self.backgroundContentFlagName, ["backgroundcontent", "bgc", "bc"],
-            value= True, defaultValue= False,
+        backgroundContentFlag = BoolFlag(self.backgroundContentFlagName, ["backgroundcontent", "bgc", "bc"],
             description= "QueueStreams from this source is content you would play in the background (music, podcasts etc.).")
         
         # General

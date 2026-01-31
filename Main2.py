@@ -151,54 +151,34 @@ class Main:
                     
                     Main.playlistCliController.resetPlaylists(playlistIds)
 
-        #         elif(arg in Main.commands.playCommands):
-        #             # Expected input: playlistId or index, startIndex, shuffle, repeat
-        #             inputArgs = extractArgs(argIndex, argV)
-        #             playlistIds = getIdsFromInput(inputArgs, Main.playlistService.getAllIdsSorted(), Main.playlistService.getAllSorted(), 1, startAtZero = False, debug = Main.settings.debug)
-        #             startIndex = int(inputArgs[1]) - 1 if(len(inputArgs) > 1) else 0
-        #             shuffle = eval(inputArgs[2]) if(len(inputArgs) > 2) else False
-        #             repeat = eval(inputArgs[3]) if(len(inputArgs) > 3) else False
+                elif(result.commandHitValue == CommandHitValues.PLAY):
+                    playlistIds = result.arguments[Main.commands.playlistIdsArgumentName]
+                    startIndex = result.arguments[Main.commands.startIndexArgumentName]
+                    shuffle = result.arguments[Main.commands.shuffleFlagName]
+                    repeat = result.arguments[Main.commands.repeatArguments]
                     
-        #             Main.playlistCliController.playPlaylists(getIfExists(playlistIds, 0), startIndex, shuffle, repeat)
+                    Main.playlistCliController.playPlaylists(playlistIds[0], startIndex, shuffle, repeat)
 
-        #             argIndex += len(inputArgs) + 1
-        #             continue
+                elif(result.commandHitValue == CommandHitValues.DOWNLOAD_PLAYLIST):
+                    playlistIds = result.arguments[Main.commands.playlistIdsArgumentName]
+                    directoryName = result.arguments[Main.commands.directoryNameArgumentName]
+                    startIndex = result.arguments[Main.commands.startIndexArgumentName]
+                    endIndex = result.arguments[Main.commands.endIndexArgumentName]
+                    streamNameRegex = result.arguments[Main.commands.streamNameRegexArgumentName]
+                    useIndex = result.arguments[Main.commands.useIndexFlagName]
+                    
+                    Main.playlistCliController.downloadPlaylist(playlistIds[0], directoryName, startIndex, endIndex, streamNameRegex, useIndex)
+                    
+                elif(result.commandHitValue == CommandHitValues.EXPORT_PLAYLIST):
+                    playlistIds = result.arguments[Main.commands.playlistIdsArgumentName]
+                    directoryName = result.arguments[Main.commands.directoryNameArgumentName]
+                    
+                    Main.playlistCliController.exportPlaylist(playlistIds[0], directoryName)
 
-        #         elif(arg in Main.commands.downloadPlaylistCommands):
-        #             # Expected input: playlistId or index, directoryName?, startIndex?, endIndex?, streamNameRegex?, useIndex?
-        #             inputArgs = extractArgs(argIndex, argV)
-        #             playlistIds = getIdsFromInput(inputArgs, Main.playlistService.getAllIdsSorted(), Main.playlistService.getAllSorted(), 1, startAtZero = False, debug = Main.settings.debug)
-        #             directoryName = inputArgs[1] if(len(inputArgs) > 1) else None
-        #             startIndex = int(inputArgs[2]) - 1 if(len(inputArgs) > 2) else None
-        #             endIndex = int(inputArgs[3]) - 1 if(len(inputArgs) > 3) else None
-        #             streamNameRegex = inputArgs[4] if(len(inputArgs) > 4) else None
-        #             useIndex = eval(inputArgs[5]) if(len(inputArgs) > 5) else True
+                elif(result.commandHitValue == CommandHitValues.UNWATCH_ALL_PLAYLIST):
+                    playlistIds = result.arguments[Main.commands.playlistIdsArgumentName]
                     
-        #             Main.playlistCliController.downloadPlaylist(getIfExists(playlistIds, 0), directoryName, startIndex, endIndex, streamNameRegex, useIndex)
-                    
-        #             argIndex += len(inputArgs) + 1
-        #             continue
-
-        #         elif(arg in Main.commands.exportPlaylistCommands):
-        #             # Expected input: playlistId or index, directoryName?
-        #             inputArgs = extractArgs(argIndex, argV)
-        #             playlistIds = getIdsFromInput(inputArgs, Main.playlistService.getAllIdsSorted(), Main.playlistService.getAllSorted(), 1, startAtZero = False, debug = Main.settings.debug)
-        #             directoryName = inputArgs[1] if(len(inputArgs) > 1) else None
-                    
-        #             Main.playlistCliController.exportPlaylist(getIfExists(playlistIds, 0), directoryName)
-                    
-        #             argIndex += len(inputArgs) + 1
-        #             continue
-
-        #         elif(arg in Main.commands.unwatchAllPlaylistCommands):
-        #             # Expected input: playlistId or index
-        #             inputArgs = extractArgs(argIndex, argV)
-        #             playlistIds = getIdsFromInput(inputArgs, Main.playlistService.getAllIdsSorted(), Main.playlistService.getAllSorted(), 1, startAtZero = False, debug = Main.settings.debug)
-                    
-        #             Main.playlistCliController.unwatchAllInPlaylist(getIfExists(playlistIds, 0))
-                    
-        #             argIndex += len(inputArgs) + 1
-        #             continue
+                    Main.playlistCliController.unwatchAllInPlaylist(playlistIds[0])
 
         #         # Streams
         #         elif(arg in Main.commands.addStreamCommands):

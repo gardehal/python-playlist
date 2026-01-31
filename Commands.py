@@ -164,7 +164,7 @@ class Commands():
             description= "Purge all Playlists, removing IDs with no corresponding relation and deleting StreamSources and QueueStreams with no linked IDs in Playlists.")
         purgeCommand = Command("Purge", ["purge"], CommandHitValues.PURGE,
             description= "Purge ALL soft deleted entities.")
-        resetPlaylistFetchCommand = Command("ResetPlaylistFetch", ["reset"], CommandHitValues.RESET_PLAYLIST,
+        resetPlaylistFetchCommand = Command("ResetPlaylistFetch", ["reset"], CommandHitValues.RESET_PLAYLIST_FETCH,
             arguments= [playlistIdsArgument],
             description= "Resets fetch status of StreamSources in a Playlist and deletes QueueStreams from Playlist.")
         downloadPlaylistCommand = Command("DownloadPlaylist", ["downloadplaylist", "dwpl"], CommandHitValues.DOWNLOAD_PLAYLIST,

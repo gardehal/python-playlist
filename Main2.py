@@ -133,45 +133,23 @@ class Main:
                     
                     Main.playlistCliController.fetchPlaylists(playlistIds, Main.settings.fetchLimitSingleSource, takeAfter, takeBefore, takeNewOnly)
                     
-        #         elif(arg in Main.commands.prunePlaylistCommands):
-        #             # Expected input: playlistIds or indices, includeSoftDeleted, permanentlyDelete, "accept changes" input within method
-        #             inputArgs = extractArgs(argIndex, argV)
-        #             playlistIds = getIdsFromInput(inputArgs, Main.playlistService.getAllIdsSorted(), Main.playlistService.getAllSorted(), returnOnNonIds = True, startAtZero = False, debug = Main.settings.debug)
-        #             lenPlaylistIds = len(playlistIds)
-        #             includeSoftDeleted = eval(getIfExists(inputArgs, lenPlaylistIds, "False"))
-        #             permanentlyDelete = eval(getIfExists(inputArgs, lenPlaylistIds + 1, "False"))
+                elif(result.commandHitValue == CommandHitValues.PRUNE_PLAYLIST):
+                    playlistIds = result.arguments[Main.commands.playlistIdsArgumentName]
+                    permanentlyDelete = result.arguments[Main.commands.permanentlyDeleteFlag]
                     
-        #             for id in playlistIds:
-        #                 Main.sharedCliController.prune(id, includeSoftDeleted, permanentlyDelete)
-
-        #             argIndex += len(inputArgs) + 1
-        #             continue
+                    for id in playlistIds:
+                        Main.sharedCliController.prune(id, includeSoftDeleted, permanentlyDelete)
                 
-        #         elif(arg in Main.commands.purgePlaylistCommands):
-        #             # Expected input: "accept changes" input within method
+                elif(result.commandHitValue == CommandHitValues.PURGE_PLAYLIST):
+                    Main.sharedCliController.purgePlaylists(True, True)
+
+                elif(result.commandHitValue == CommandHitValues.PURGE):
+                    Main.sharedCliController.purge()
+
+                elif(result.commandHitValue == CommandHitValues.RESET_PLAYLIST_FETCH):
+                    playlistIds = result.arguments[Main.commands.playlistIdsArgumentName]
                     
-        #             Main.sharedCliController.purgePlaylists(True, True)
-
-        #             argIndex += 1
-        #             continue
-                
-        #         elif(arg in Main.commands.purgeCommands):
-        #             # Expected input: "accept changes" input within method
-
-        #             Main.sharedCliController.purge()
-
-        #             argIndex += 1
-        #             continue
-                
-        #         elif(arg in Main.commands.resetPlaylistFetchCommands):
-        #             # Expected input: playlistIds or indices
-        #             inputArgs = extractArgs(argIndex, argV)
-        #             playlistIds = getIdsFromInput(inputArgs, Main.playlistService.getAllIdsSorted(), Main.playlistService.getAllSorted(), startAtZero = False, debug = Main.settings.debug)
-                    
-        #             Main.playlistCliController.resetPlaylists(playlistIds)
-
-        #             argIndex += len(inputArgs) + 1
-        #             continue
+                    Main.playlistCliController.resetPlaylists(playlistIds)
 
         #         elif(arg in Main.commands.playCommands):
         #             # Expected input: playlistId or index, startIndex, shuffle, repeat

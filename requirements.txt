@@ -1,4 +1,4 @@
-argumentor==0.0.3
+argumentor==0.0.4
 beautifulsoup4==4.12.3
 grdUtil==1.9.2
 jsonpath_ng==1.7.0

@@ -41,10 +41,10 @@ class Commands():
         searchQueryArgument = Argument(self.searchQueryArgumentName, ["search", "s"], str, 
             validateFunc= validateNotNull,
             description= "Query to search playlists for.")
-        playlistIdsArgument = Argument(self.playlistIdsArgumentName, ["playlistid", "playlistindex", "pi"], str, 
+        playlistIdsArgument = Argument(self.playlistIdsArgumentName, ["playlistid", "playlistindex", "pi"], list[str], 
             optional= True,
             defaultValue= [os.environ.get("DEFAULT_PLAYLIST_ID")],
-            useDefaultValue= os.environ.get("DEFAULT_PLAYLIST_ID"),
+            useDefaultValue= len(os.environ.get("DEFAULT_PLAYLIST_ID")) > 0,
             castFunc= castStringToList,
             description= "IDs or index (i + number) of Playlist, can be multiple.")
         streamSourceIdsArgument = Argument(self.streamSourceIdsArgumentName, ["streamsourceids", "ssi", "ids"], list[str],

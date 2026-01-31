@@ -118,14 +118,6 @@ class Main:
                     includeListCount = result.arguments[Main.commands.includeListCountFlagName]
                     includeSource = result.arguments[Main.commands.includeSourceFlagName]
                     
-                    print(result.toString())
-                    print(playlistIds)
-                    print(includeUri)
-                    print(includeId)
-                    print(includeDatetime)
-                    print(includeListCount)
-                    print(includeSource)
-                    
                     Main.playlistCliController.printPlaylistsDetailed(playlistIds, includeUri, includeId, includeDatetime, includeListCount, includeSource)
                     
                 # elif(result.commandHitValue == CommandHitValues.ListWatchedCommands):

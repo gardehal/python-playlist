@@ -180,52 +180,31 @@ class Main:
                     
                     Main.playlistCliController.unwatchAllInPlaylist(playlistIds[0])
 
-        #         # Streams
-        #         elif(arg in Main.commands.addStreamCommands):
-        #             # Expected input: playlistId or index, uri, name?
-        #             inputArgs = extractArgs(argIndex, argV)
-        #             playlistIds = getIdsFromInput(inputArgs, Main.playlistService.getAllIdsSorted(), Main.playlistService.getAllSorted(), 1, startAtZero = False, setDefaultId = False, debug = Main.settings.debug)
-        #             uri = inputArgs[1] if len(inputArgs) > 1 else None
-        #             name = inputArgs[2] if len(inputArgs) > 2 else None
+                # Streams
+                elif(result.commandHitValue == CommandHitValues.ADD_STREAM):
+                    playlistIds = result.arguments[Main.commands.playlistIdsArgumentName]
+                    uris = result.arguments[Main.commands.uriArgumentName]
+                    name = result.arguments[Main.commands.entityNameArgumentName]
                     
-        #             Main.queueStreamCliController.addQueueStream(getIfExists(playlistIds, 0), uri, name)
+                    Main.queueStreamCliController.addQueueStream(playlistIds[0], uris[0], name)
 
-        #             argIndex += len(inputArgs) + 1
-        #             continue
-
-        #         # Streams
-        #         elif(arg in Main.commands.addMultipleStreamsCommands):
-        #             # Expected input: playlistId or index, uris
-        #             inputArgs = extractArgs(argIndex, argV)
-        #             playlistIds = getIdsFromInput(inputArgs, Main.playlistService.getAllIdsSorted(), Main.playlistService.getAllSorted(), 1, setDefaultId = False, startAtZero = False, debug = Main.settings.debug)
-        #             uris = inputArgs[1:] if len(inputArgs) > 1 else None
+                elif(result.commandHitValue == CommandHitValues.ADD_MULTIPLE_STREAMS):
+                    playlistIds = result.arguments[Main.commands.playlistIdsArgumentName]
+                    uris = result.arguments[Main.commands.uriArgumentName]
                     
-        #             Main.queueStreamCliController.addQueueStreams(getIfExists(playlistIds, 0), uris)
+                    Main.queueStreamCliController.addQueueStream(playlistIds[0], uris)
 
-        #             argIndex += len(inputArgs) + 1
-        #             continue
-
-        #         elif(arg in Main.commands.deleteStreamCommands):
-        #             # Expected input: playlistId or index, queueStreamIds or indices
-        #             inputArgs = extractArgs(argIndex, argV)
-        #             playlistIds = getIdsFromInput(inputArgs, Main.playlistService.getAllIdsSorted(), Main.playlistService.getAllSorted(), 1, setDefaultId = False, startAtZero = False, debug = Main.settings.debug)
-        #             queueStreamIds = inputArgs[1:] if len(inputArgs) > 1 else []
+                elif(result.commandHitValue == CommandHitValues.DELETE_STREAM):
+                    playlistIds = result.arguments[Main.commands.playlistIdsArgumentName]
+                    queueStreamIds = result.arguments[Main.commands.queueStreamIdsArgument]
                     
-        #             Main.queueStreamCliController.deleteQueueStreams(getIfExists(playlistIds, 0), queueStreamIds)
-
-        #             argIndex += len(inputArgs) + 1
-        #             continue
+                    Main.queueStreamCliController.deleteQueueStreams(playlistIds[0], queueStreamIds)
                 
-        #         elif(arg in Main.commands.restoreStreamCommands):
-        #             # Expected input: playlistId or index, queueStreamIds or indices
-        #             inputArgs = extractArgs(argIndex, argV)
-        #             playlistIds = getIdsFromInput(inputArgs, Main.playlistService.getAllIdsSorted(True), Main.playlistService.getAllSorted(True), 1, setDefaultId = False, startAtZero = False, debug = Main.settings.debug)
-        #             queueStreamIds = inputArgs[1:] if len(inputArgs) > 1 else []
+                elif(result.commandHitValue == CommandHitValues.RESTORE_STREAM):
+                    playlistIds = result.arguments[Main.commands.playlistIdsArgumentName]
+                    queueStreamIds = result.arguments[Main.commands.queueStreamIdsArgument]
                                         
-        #             Main.queueStreamCliController.restoreQueueStreams(getIfExists(playlistIds, 0), queueStreamIds)
-
-        #             argIndex += len(inputArgs) + 1
-        #             continue
+                    Main.queueStreamCliController.restoreQueueStreams(playlistIds[0], queueStreamIds)
 
         #         # Sources
         #         elif(arg in Main.commands.addSourcesCommands):

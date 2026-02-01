@@ -12,6 +12,7 @@ class Commands():
     playlistIdsArgumentName = "PlaylistIds"
     entityNameArgumentName = "EntityName"
     streamSourceIdsArgumentName = "StreamSourceIds"
+    queueStreamIdsArgumentName = "QueueStreamIds"
     uriArgumentName = "StreamSourceIds"
     takeAfterArgumentName = "TakeAfter"
     takeBeforeArgumentName = "TakeBefore"
@@ -51,6 +52,10 @@ class Commands():
             optional= True,
             castFunc= castStringToList,
             description= "A list of StreamSources to be added.")
+        queueStreamIdsArgument = Argument(self.queueStreamIdsArgumentName, ["queuestreamids", "qsi", "ids"], list[str],
+            optional= True,
+            castFunc= castStringToList,
+            description= "A list of QueueStreams to be added.")
         entityNameArgument = Argument(self.entityNameArgumentName, ["name", "n"], str,
             validateFunc= validateNotNull,
             description= "Name of new entity.")
@@ -196,10 +201,10 @@ class Commands():
             arguments= [playlistIdsArgument, uriArgument], # TODO should be list of multiple
             description= "Add multiple streams to a Playlist from ID or index, from URIs (name set automatically).")
         deleteStreamCommand = Command("DeleteStream", ["delete", "d"], CommandHitValues.DELETE_STREAM,
-            arguments= [playlistIdsArgument, streamSourceIdsArgument],
+            arguments= [playlistIdsArgument, queueStreamIdsArgument],
             description= "Delete QueueStreams from Playlist.") # TODO should specify if playlistIDs AND streamIDs are necessary, or if one or the other can be used
         restoreStreamCommand = Command("RestoreStream", ["restore", "r"], CommandHitValues.RESTORE_STREAM,
-            arguments= [playlistIdsArgument, streamSourceIdsArgument],
+            arguments= [playlistIdsArgument, queueStreamIdsArgument],
             description= "Restore soft deleted QueueStreams from database.") # TODO should specify if playlistIDs AND streamIDs are necessary, or if one or the other can be used
         
         streamCommands = [addStreamCommand, addMultipleStreamsCommand, deleteStreamCommand, restoreStreamCommand]

@@ -50,10 +50,12 @@ class Commands():
             description= "IDs or index (i + number) of Playlist, can be multiple.")
         streamSourceIdsArgument = Argument(self.streamSourceIdsArgumentName, ["streamsourceids", "ssi", "ids"], list[str],
             optional= True,
+            defaultValue= [], useDefaultValue= True,
             castFunc= castStringToList,
             description= "A list of StreamSources to be added.")
         queueStreamIdsArgument = Argument(self.queueStreamIdsArgumentName, ["queuestreamids", "qsi", "ids"], list[str],
             optional= True,
+            defaultValue= [], useDefaultValue= True,
             castFunc= castStringToList,
             description= "A list of QueueStreams to be added.")
         entityNameArgument = Argument(self.entityNameArgumentName, ["name", "n"], str,
@@ -62,7 +64,9 @@ class Commands():
         optionalEntityNameArgument = Argument(self.entityNameArgumentName, ["name", "n"], str,
             optional= True,
             description= "Name of new entity.")
-        uriArgument = Argument(self.uriArgumentName, ["uri", "url"], str,
+        uriArgument = Argument(self.uriArgumentName, ["uris", "urls", "u"], list[str],
+            optional= True,
+            defaultValue= [], useDefaultValue= True,
             validateFunc= validateUri,
             description= "URI or URL of source.")
         takeAfterArgument = Argument(self.takeAfterArgumentName, ["takeafter", "after", "ta"], datetime,
@@ -214,7 +218,7 @@ class Commands():
             arguments= [playlistIdsArgument, uriArgument, optionalEntityNameArgument],
             flags= [enableFetchFlag, backgroundContentFlag],
             description= "Add a StreamSources from parameters given.")
-        deleteSourceCommand = Command("DeleteSource", ["deletesource", "ds"], CommandHitValues.DELETE_SOURCES,
+        deleteSourceCommand = Command("DeleteSource", ["deletesource", "ds"], CommandHitValues.DELETE_SOURCE,
             arguments= [playlistIdsArgument, streamSourceIdsArgument],
             description= "Delete StreamSources from database.") # TODO should specify if playlistIDs AND streamIDs are necessary, or if one or the other can be used
         restoreSourceCommand = Command("RestoreSource", ["restoresource", "rs"], CommandHitValues.RESTORE_SOURCE,

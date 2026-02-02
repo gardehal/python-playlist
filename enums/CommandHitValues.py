@@ -31,7 +31,7 @@ class CommandHitValues(Enum):
     RESTORE_STREAM = 25
     
     ADD_SOURCE = 26
-    DELETE_SOURCES = 27
+    DELETE_SOURCE = 27
     RESTORE_SOURCE = 28
     LIST_SOURCES = 29
     OPEN_SOURCE = 30

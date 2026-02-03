@@ -39,6 +39,12 @@ class Main:
         
         argumentor = Main.commands.getArgumentor()
         results = argumentor.validate(sys.argv)
+
+        if(len(results) == 0):
+            print("No valid command was found, please consult the manual for available commands. See the syntax description below:")
+            print(argumentor.getSyntaxDescription())
+            return
+            
         try:
             for result in results:
                 # print(result.toString()) # For debugging
@@ -151,14 +157,6 @@ class Main:
                     
                     Main.playlistCliController.resetPlaylists(playlistIds)
 
-                elif(result.commandHitValue == CommandHitValues.PLAY):
-                    playlistIds = result.arguments[Main.commands.playlistIdsArgumentName]
-                    startIndex = result.arguments[Main.commands.startIndexArgumentName]
-                    shuffle = result.arguments[Main.commands.shuffleFlagName]
-                    repeat = result.arguments[Main.commands.repeatArguments]
-                    
-                    Main.playlistCliController.playPlaylists(playlistIds[0], startIndex, shuffle, repeat)
-
                 elif(result.commandHitValue == CommandHitValues.DOWNLOAD_PLAYLIST):
                     playlistIds = result.arguments[Main.commands.playlistIdsArgumentName]
                     directoryName = result.arguments[Main.commands.directoryNameArgumentName]
@@ -179,6 +177,15 @@ class Main:
                     playlistIds = result.arguments[Main.commands.playlistIdsArgumentName]
                     
                     Main.playlistCliController.unwatchAllInPlaylist(playlistIds[0])
+
+                # Playback
+                elif(result.commandHitValue == CommandHitValues.PLAY):
+                    playlistIds = result.arguments[Main.commands.playlistIdsArgumentName]
+                    startIndex = result.arguments[Main.commands.startIndexArgumentName]
+                    shuffle = result.arguments[Main.commands.shuffleFlagName]
+                    repeat = result.arguments[Main.commands.repeatArguments]
+                    
+                    Main.playlistCliController.playPlaylists(playlistIds[0], startIndex, shuffle, repeat)
 
                 # Streams
                 elif(result.commandHitValue == CommandHitValues.ADD_STREAM):
@@ -239,47 +246,30 @@ class Main:
                     
                     Main.streamSourceCliController.openStreamSource(streamSourceIds)
 
-        
-        
-        #         # Meta
-        #         elif(arg in Main.commands.listSettingsCommands):
-        #             # Expected input: none
-                    
-        #             result = Main.settings.getAllSettingsAsTable()
-        #             print(result)
+                # Meta
+                elif(result.commandHitValue == CommandHitValues.LIST_SETTINGS):
+                    result = Main.settings.getAllSettingsAsTable()
+                    print(result)
 
-        #             argIndex += 1
-        #             continue
-                
-        #         elif(arg in Main.commands.listSoftDeletedCommands):
-        #             # Expected input: simplified
-        #             inputArgs = extractArgs(argIndex, argV)
-        #             simplified = eval(inputArgs[0]) if(len(inputArgs) > 0) else False
+                elif(result.commandHitValue == CommandHitValues.LIST_SOFT_DELETED):
+                    simplified = result.arguments[Main.commands.simplifiedPrintFlagName]
                     
-        #             result = Main.sharedService.getAllSoftDeleted()
-        #             if(simplified):
-        #                 resultList = [[e.summaryString() for e in l] for l in [*result.values()]]
-        #             else: 
-        #                 resultList = [[e.detailsString() for e in l] for l in [*result.values()]]
+                    result = Main.sharedService.getAllSoftDeleted()
+                    if(simplified):
+                        resultList = [[e.summaryString() for e in l] for l in [*result.values()]]
+                    else: 
+                        resultList = [[e.detailsString() for e in l] for l in [*result.values()]]
                         
-        #             printLists(resultList, [*result.keys()])
+                    printLists(resultList, [*result.keys()])
 
-        #             argIndex += len(inputArgs) + 1
-        #             continue
-                
-        #         elif(arg in Main.commands.refactorCommands):
-        #             # Expected input: None
-                    
-        #             refactorLastFetchedIdResult = Main.legacyService.refactorPlaytimeSecondsAlwaysDownloadFavorite()
-        #             if(len(refactorLastFetchedIdResult) > 0):
-        #                 printS("Refactored ", len(refactorLastFetchedIdResult), " StreamSources. IDs:", color = BashColor.OKGREEN)
-        #                 printS(refactorLastFetchedIdResult)
-        #             else:
-        #                 printS("No refactors needed for refactorLastFetchedId.", color = BashColor.OKGREEN)
+                elif(result.commandHitValue == CommandHitValues.REFACTOR_OLD):
+                    refactorLastFetchedIdResult = Main.legacyService.refactorPlaytimeSecondsAlwaysDownloadFavorite()
+                    if(len(refactorLastFetchedIdResult) > 0):
+                        printS("Refactored ", len(refactorLastFetchedIdResult), " StreamSources. IDs:", color = BashColor.OKGREEN)
+                        printS(refactorLastFetchedIdResult)
+                    else:
+                        printS("No refactors needed for refactorLastFetchedId.", color = BashColor.OKGREEN)
 
-        #             argIndex += 1
-        #             continue
-                    
         except KeyboardInterrupt:
             printS("Program was aborted by user.", color = BashColor.OKGREEN)
 

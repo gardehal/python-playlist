@@ -63,6 +63,7 @@ class Commands():
             description= "Name of new entity.")
         optionalEntityNameArgument = Argument(self.entityNameArgumentName, ["name", "n"], str,
             optional= True,
+            defaultValue= None, useDefaultValue= True,
             description= "Name of new entity.")
         uriArgument = Argument(self.uriArgumentName, ["uris", "urls", "u"], list[str],
             optional= True,
@@ -71,23 +72,29 @@ class Commands():
             description= "URI or URL of source.")
         takeAfterArgument = Argument(self.takeAfterArgumentName, ["takeafter", "after", "ta"], datetime,
             optional= True,
+            defaultValue= None, useDefaultValue= True,
             castFunc= castDatetime,
             description= "Only fetch QueueStreams after this date.")
         takeBeforeArgument = Argument(self.takeBeforeArgumentName, ["takebefore", "before", "tb"], datetime,
             optional= True,
+            defaultValue= None, useDefaultValue= True,
             castFunc= castDatetime,
             description= "Only fetch QueueStreams before this date.")
         startIndexArgument = Argument(self.startIndexArgumentName, ["startindex", "start", "si"], int,
             optional= True,
+            defaultValue= 0, useDefaultValue= True,
             description= "Start index to use.")
         endIndexArgument = Argument(self.endIndexArgumentName, ["endindex", "end", "ei"], int,
             optional= True,
+            defaultValue= None, useDefaultValue= True,
             description= "End index to use.")
         streamNameRegexArgument = Argument(self.streamNameRegexArgumentName, ["streamnameregex", "regex", "re"], str,
             optional= True,
+            defaultValue= None, useDefaultValue= True,
             description= "Regex for naming streams (e.g. all streams are named \"Podcast guys: Actual Title\", use regex \": (.*)\", including \"s).")
         directoryNameArgument = Argument(self.directoryNameArgumentName, ["directory", "dir", "d", "folder", "f", "exportto"], str,
             optional= True,
+            defaultValue= None, useDefaultValue= True,
             validateFunc= validateDirectory,
             description= "Path (absolute or relative) to directory to export to.")
         

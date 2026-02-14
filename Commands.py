@@ -47,7 +47,7 @@ class Commands():
             defaultValue= [os.environ.get("DEFAULT_PLAYLIST_ID")],
             useDefaultValue= len(os.environ.get("DEFAULT_PLAYLIST_ID")) > 0,
             castFunc= castStringToList,
-            description= "IDs or index (i + number) of Playlist, can be multiple.")
+            description= "IDs or index (i + number) of Playlist, can be multiple separated by comma. If None or empty, default to settings.DEFAULT_PLAYLIST_ID.")
         streamSourceIdsArgument = Argument(self.streamSourceIdsArgumentName, ["streamsourceids", "ssi", "ids"], list[str],
             optional= True,
             defaultValue= [], useDefaultValue= True,
@@ -69,7 +69,7 @@ class Commands():
             optional= True,
             defaultValue= [], useDefaultValue= True,
             validateFunc= validateUri,
-            description= "URI or URL of source.")
+            description= "List of URIs or URLs.")
         takeAfterArgument = Argument(self.takeAfterArgumentName, ["takeafter", "after", "ta"], datetime,
             optional= True,
             defaultValue= None, useDefaultValue= True,
@@ -209,14 +209,14 @@ class Commands():
             arguments= [playlistIdsArgument, uriArgument, optionalEntityNameArgument],
             description= "Add a Stream from URI using parameters given.")
         addMultipleStreamsCommand = Command("AddMultipleStreams", ["addmultiple", "am"], CommandHitValues.ADD_MULTIPLE_STREAMS,
-            arguments= [playlistIdsArgument, uriArgument], # TODO should be list of multiple
+            arguments= [playlistIdsArgument, uriArgument],
             description= "Add multiple streams to a Playlist from ID or index, from URIs (name set automatically).")
         deleteStreamCommand = Command("DeleteStream", ["delete", "d"], CommandHitValues.DELETE_STREAM,
             arguments= [playlistIdsArgument, queueStreamIdsArgument],
-            description= "Delete QueueStreams from Playlist.") # TODO should specify if playlistIDs AND streamIDs are necessary, or if one or the other can be used
+            description= "Delete QueueStreams from Playlist.")
         restoreStreamCommand = Command("RestoreStream", ["restore", "r"], CommandHitValues.RESTORE_STREAM,
             arguments= [playlistIdsArgument, queueStreamIdsArgument],
-            description= "Restore soft deleted QueueStreams from database.") # TODO should specify if playlistIDs AND streamIDs are necessary, or if one or the other can be used
+            description= "Restore soft deleted QueueStreams from database.")
         
         streamCommands = [addStreamCommand, addMultipleStreamsCommand, deleteStreamCommand, restoreStreamCommand]
         
@@ -227,10 +227,10 @@ class Commands():
             description= "Add a StreamSources from parameters given.")
         deleteSourceCommand = Command("DeleteSource", ["deletesource", "ds"], CommandHitValues.DELETE_SOURCE,
             arguments= [playlistIdsArgument, streamSourceIdsArgument],
-            description= "Delete StreamSources from database.") # TODO should specify if playlistIDs AND streamIDs are necessary, or if one or the other can be used
+            description= "Delete StreamSources from database.")
         restoreSourceCommand = Command("RestoreSource", ["restoresource", "rs"], CommandHitValues.RESTORE_SOURCE,
             arguments= [playlistIdsArgument, streamSourceIdsArgument],
-            description= "Restore soft deleted StreamSources from database.") # TODO should specify if playlistIDs AND streamIDs are necessary, or if one or the other can be used
+            description= "Restore soft deleted StreamSources from database.")
         listSourcesCommand = Command("ListSources", ["listsource", "ls"], CommandHitValues.LIST_SOURCES,
             flags= [includeSoftDeletedFlag],
             description= "Lists StreamSources with indices that can be used instead of IDs in other commands.")

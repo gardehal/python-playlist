@@ -402,7 +402,7 @@ class PlaylistService(BaseService[T]):
 
     def addYouTubePlaylist(self, playlist: Playlist, url: str) -> T:
         """
-        Create a Playlist, using a YouTube playlist as the starting point. Videos will be added as streams in the playlist TODO? and source will be the playlist.
+        Create a Playlist, using a YouTube playlist as the starting point. Videos will be added as streams in the playlist and source will be the playlist.
 
         Args:
             playlist (Playlist): Playlist to save to.

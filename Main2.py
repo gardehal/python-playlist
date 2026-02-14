@@ -221,7 +221,6 @@ class Main:
                     backgroundContent = result.arguments[Main.commands.backgroundContentFlagName]
                     name = result.arguments[Main.commands.entityNameArgumentName]
                     
-                    ## TODO uris should be None of empty, or rewrite function to consider empty as none, but take first if any?
                     Main.streamSourceCliController.addStreamSource(playlistIds[0], uris[0], enableFetch, backgroundContent, name)
 
                 elif(result.commandHitValue == CommandHitValues.DELETE_SOURCE):

@@ -31,7 +31,7 @@ class Commands():
     includeDateTimeFlagName = "IncludeDateTime"
     includeListCountFlagName = "IncludeListCount"
     includeSourceFlagName = "IncludeSource"
-    takeNewOnlyFlagName = "TakeNewOnly"
+    takeAllFlagName = "TakeAll"
     useIndexFlagName = "UseOutputNameIndex"
     shuffleFlagName = "Shuffle"
     repeatFlagName = "Repeat"
@@ -118,8 +118,9 @@ class Commands():
             description= "Include list count in print.")
         includeSourceFlag = BoolFlag(self.includeSourceFlagName, ["includesource", "is"],
             description= "Include source(s) in print.")
-        takeNewOnlyFlag = BoolFlag(self.takeNewOnlyFlagName, ["takenewonly", "new", "tno"],
-            description= "Take new streams only, comparing from last fetch.")
+        takeAllFlag = Flag(self.takeAllFlagName, ["takeall", "all", "ta"],
+            value= False, defaultValue= True, 
+            description= "Take all streams, comparing from last fetch.")
         useIndexFlag = BoolFlag(self.useIndexFlagName, ["useindex", "index", "ui"],
             description= "Add index (+1) on stream names so they naturally sort in order.")
         shuffleFlag = BoolFlag(self.shuffleFlagName, ["shuffle", "s"],
@@ -170,7 +171,7 @@ class Commands():
             description= "Prints details about given playlist, with option for including fields of StreamSources and QueueStreams (like datetimes or IDs).")
         fetchPlaylistSourcesCommand = Command("FetchPlaylistSources", ["fetch", "f", "update", "u"], CommandHitValues.FETCH_PLAYLIST,
             arguments= [playlistIdsArgument, takeAfterArgument, takeBeforeArgument],
-            flags= [takeNewOnlyFlag],
+            flags= [takeAllFlag],
             description= "Fetch new streams from StreamSources in Playlists indicated, e.g. if a Playlist has a YouTube channel as a source, and the channel uploads a new video, this video will be added to the Playlist.")
         prunePlaylistCommand = Command("PrunePlaylist", ["prune"], CommandHitValues.PRUNE_PLAYLIST,
             arguments= [playlistIdsArgument],

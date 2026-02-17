@@ -83,6 +83,7 @@ class Commands():
         startIndexArgument = Argument(self.startIndexArgumentName, ["startindex", "start", "si"], int,
             optional= True,
             defaultValue= 0, useDefaultValue= True,
+            castFunc= castIndex,
             description= "Start index to use.")
         endIndexArgument = Argument(self.endIndexArgumentName, ["endindex", "end", "ei"], int,
             optional= True,
@@ -91,6 +92,7 @@ class Commands():
         streamNameRegexArgument = Argument(self.streamNameRegexArgumentName, ["streamnameregex", "regex", "re"], str,
             optional= True,
             defaultValue= None, useDefaultValue= True,
+            castFunc= castIndex,
             description= "Regex for naming streams (e.g. all streams are named \"Podcast guys: Actual Title\", use regex \": (.*)\", including \"s).")
         directoryNameArgument = Argument(self.directoryNameArgumentName, ["directory", "dir", "d", "folder", "f", "exportto"], str,
             optional= True,
@@ -454,6 +456,10 @@ def castStringToList(value: str, separator: str = ",") -> list[str]:
 
 def castDatetime(value: str) -> datetime:
     return datetime.strptime(value, os.environ.get("INPUT_DATETIME_FORMAT"))
+
+def castIndex(value: str) -> int:
+    intValue = int(value)
+    return 0 if intValue <= 0 else intValue - 1
 
 def validateNotNull(value: str) -> bool:
     return True if value else False

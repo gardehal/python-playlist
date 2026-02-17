@@ -328,7 +328,10 @@ class PlaylistCliController():
         result = self.playbackService.play(playlistId, startIndex, shuffle, repeat)
         if(not result):
             playlist = self.playlistService.get(playlistId)
-            printS("Failed to play playlist \"", playlist.name, "\".", color = BashColor.FAIL)
+            if(playlist):
+                printS("Failed to play playlist \"", playlist.name, "\".", color = BashColor.FAIL)
+            else:
+                printS("Playlist with ID ", playlistId, " not found.", color = BashColor.FAIL)
     
         return result
       

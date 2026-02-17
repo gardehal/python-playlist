@@ -3,10 +3,9 @@ import sys
 
 from grdUtil.BashColor import BashColor
 from grdUtil.FileUtil import makeFiles
-from grdUtil.InputUtil import extractArgs, getIdsFromInput, getIfExists
 from grdUtil.PrintUtil import printLists, printS
 from Argumentor import *
-from datetime import datetime
+from enums.CommandHitValues import CommandHitValues
 
 from Commands import Commands
 from controllers.PlaylistCliController import PlaylistCliController
@@ -36,378 +35,223 @@ class Main:
     streamSourceCliController: StreamSourceCliController = StreamSourceCliController()
 
     def main():
-        argC = len(sys.argv)
-        argV = sys.argv
-        argIndex = 1
-
-        if(argC < 2):
-            help = Main.commands.getHelpString()
-            printS(help)
-
         makeFiles(Main.settings.watchedLogFilepath)
+        
+        argumentor = Main.commands.getArgumentor()
+        results = argumentor.validate(sys.argv)
 
+        if(len(results) == 0):
+            print("No valid command was found, please consult the manual for available commands. See the syntax description below:")
+            print(argumentor.getSyntaxDescription())
+            return
+            
         try:
-            while argIndex < argC:
-                arg = sys.argv[argIndex].lower()
-
-                if(arg in Main.commands.helpCommands):
-                    help = Main.commands.getHelpString()
-                    printS(help)
-                    
-                    argIndex += 1
+            for result in results:
+                # print(result.toString()) # For debugging
+                if(not result.isValid):
+                    print(f"Input for {result.commandName} was not valid:")
+                    print(result.getFormattedMessages())
                     continue
 
-                elif(arg in Main.commands.testCommands):
-                    inputArgs = extractArgs(argIndex, argV)
-                    printS("Test", color = BashColor.OKBLUE)
-                    
-                    
-                    ass = datetime.strptime("2020-1-02T20:20:20", "%Y-%m-%dT%H:%M:%S")
-                    print(ass.weekday())
-                    argumentor = Main.commands.getArgumentor()
-                    print(argumentor.getFormattedDescription())
-                    
-                    quit()            
-                    
-                elif(arg in Main.commands.editCommands):
-                    # Expected input: playlistId or index
-                    inputArgs = extractArgs(argIndex, argV)
-                    
-                    ids = getIdsFromInput(inputArgs, Main.playlistService.getAllIdsSorted(), Main.playlistService.getAllSorted(), startAtZero = False, debug = Main.settings.debug)
-                    if(len(ids) == 0):
-                        printS("Failed to edit, missing playlistId or index.", color = BashColor.FAIL)
-                        argIndex += len(inputArgs) + 1
-                        continue
+                if(result.messages):
+                    print(f"Command {result.commandName} was accepted with modifications:")
+                    print(result.getFormattedMessages())
 
-                    filepath = os.path.join(Main.settings.localStoragePath, "Playlist", ids[0] + ".json")
+                if(result.commandHitValue == CommandHitValues.HELP):
+                    print(argumentor.getFormattedDescription())
+
+                elif(result.commandHitValue == CommandHitValues.TEST):
+                    printS("Test", color = BashColor.OKBLUE)
+                    # Test code here
+                    quit()
+                    
+                elif(result.commandHitValue == CommandHitValues.EDIT):
+                    playlistIds = result.arguments[Main.commands.playlistIdsArgumentName]
+
+                    filepath = os.path.join(Main.settings.localStoragePath, "Playlist", playlistIds[0] + ".json")
                     filepath = str(filepath).replace("\\", "/")
                     os.startfile(filepath)
-                        
-                    argIndex += len(inputArgs) + 1
-                    continue
+                    
+                elif(result.commandHitValue == CommandHitValues.SEARCH):
+                    searchTerm = result.arguments[Main.commands.searchQueryArgumentName]
+                    includeSoftDeleted = result.arguments[Main.commands.includeSoftDeletedFlagName]
 
-                elif(arg in Main.commands.searchCommands):
-                    # Expected input: searchTerm, includeSoftDeleted?
-                    inputArgs = extractArgs(argIndex, argV)
-                    searchTerm = inputArgs[0] if(len(inputArgs) > 0) else ""
-                    includeSoftDeleted = eval(inputArgs[1]) if(len(inputArgs) > 1) else False
-
-                    result = Main.sharedService.search(searchTerm, includeSoftDeleted)
+                    searchResult = Main.sharedService.search(searchTerm, includeSoftDeleted)
                     
                     resultList = []
-                    resultList.append([" - ".join([e.id, e.name]) for e in result.playlists])
-                    resultList.append([" - ".join([e.id, e.name]) for e in result.streamSources])
-                    resultList.append([" - ".join([e.id, e.name]) for e in result.queueStreams])
+                    resultList.append([" - ".join([e.id, e.name]) for e in searchResult.playlists])
+                    resultList.append([" - ".join([e.id, e.name]) for e in searchResult.streamSources])
+                    resultList.append([" - ".join([e.id, e.name]) for e in searchResult.queueStreams])
                     printLists(resultList, ["playlists", "streamSources", "queueStreams"])
                     
-                    argIndex += len(inputArgs) + 1
-                    continue
-                
                 # Playlist
-                elif(arg in Main.commands.addPlaylistCommands):
-                    # Expected input: name, playWatchedStreams?, allowDuplicates?, streamSourceIds/indices?
-                    inputArgs = extractArgs(argIndex, argV)
-                    name = inputArgs[0] if(len(inputArgs) > 0) else "New Playlist"
-                    playWatchedStreams = eval(inputArgs[1]) if(len(inputArgs) > 1) else True
-                    allowDuplicates = eval(inputArgs[2]) if(len(inputArgs) > 2) else False
-                    streamSourceIds = getIdsFromInput(inputArgs[3:], Main.playlistService.getAllIdsSorted(), Main.playlistService.getAllSorted(), startAtZero = False, debug = Main.settings.debug) if(len(inputArgs) > 3) else []
-
+                elif(result.commandHitValue == CommandHitValues.ADD_PLAYLIST):
+                    name = result.arguments[Main.commands.entityNameArgumentName]
+                    playWatchedStreams = result.arguments[Main.commands.playWatchedStreamsFlagName]
+                    allowDuplicates = result.arguments[Main.commands.allowDuplicatesFlagName]
+                    streamSourceIds = result.arguments[Main.commands.streamSourceIdsArgumentName]
+                    
                     Main.playlistCliController.addPlaylist(name, playWatchedStreams, allowDuplicates, streamSourceIds)
                     
-                    argIndex += len(inputArgs) + 1
-                    continue
-                
-                elif(arg in Main.commands.addPlaylistFromYouTubeCommands):
-                    # Expected input: youTubePlaylistUrl, name?, playWatchedStreams?, allowDuplicates?
-                    inputArgs = extractArgs(argIndex, argV)
-                    url = inputArgs[0] if(len(inputArgs) > 0) else None
-                    name = inputArgs[1] if(len(inputArgs) > 1) else None
-                    playWatchedStreams = eval(inputArgs[2]) if(len(inputArgs) > 2) else True
-                    allowDuplicates = eval(inputArgs[3]) if(len(inputArgs) > 3) else False
-
+                elif(result.commandHitValue == CommandHitValues.ADD_PLAYLIST_FROM_YOUTUBE):
+                    url = result.arguments[Main.commands.uriArgumentName]
+                    name = result.arguments[Main.commands.entityNameArgumentName]
+                    playWatchedStreams = result.arguments[Main.commands.playWatchedStreamsFlagName]
+                    allowDuplicates = result.arguments[Main.commands.allowDuplicatesFlagName]
+                    
                     Main.playlistCliController.addYouTubePlaylist(url, name, playWatchedStreams, allowDuplicates)
                     
-                    argIndex += len(inputArgs) + 1
-                    continue
-
-                elif(arg in Main.commands.deletePlaylistCommands):
-                    # Expected input: playlistIds or indices
-                    inputArgs = extractArgs(argIndex, argV)
-                    playlistIds = getIdsFromInput(inputArgs, Main.playlistService.getAllIdsSorted(), Main.playlistService.getAllSorted(), startAtZero = False, debug = Main.settings.debug)
+                elif(result.commandHitValue == CommandHitValues.DELETE_PLAYLIST):
+                    playlistIds = result.arguments[Main.commands.playlistIdsArgumentName]
                     
                     Main.playlistCliController.deletePlaylists(playlistIds)
-
-                    argIndex += len(inputArgs) + 1
-                    continue
-                
-                elif(arg in Main.commands.restorePlaylistCommands):
-                    # Expected input: playlistIds or indices
-                    inputArgs = extractArgs(argIndex, argV)
-                    playlistIds = getIdsFromInput(inputArgs, Main.playlistService.getAllIdsSorted(True), Main.playlistService.getAllSorted(True), startAtZero = False, debug = Main.settings.debug)
+                    
+                elif(result.commandHitValue == CommandHitValues.RESTORE_PLAYLIST):
+                    playlistIds = result.arguments[Main.commands.playlistIdsArgumentName]
                     
                     Main.playlistCliController.restorePlaylists(playlistIds)
                     
-                    argIndex += len(inputArgs) + 1
-                    continue
-
-                elif(arg in Main.commands.listPlaylistCommands):
-                    # Expected input: includeSoftDeleted?
-                    inputArgs = extractArgs(argIndex, argV)
-                    includeSoftDeleted = eval(inputArgs[0]) if(len(inputArgs) > 0) else False
-                        
+                elif(result.commandHitValue == CommandHitValues.LIST_PLAYLISTS):
+                    includeSoftDeleted = result.arguments[Main.commands.includeSoftDeletedFlagName]
+                    
                     Main.playlistCliController.printPlaylists(includeSoftDeleted)
-
-                    argIndex += len(inputArgs) + 1
-                    continue
-                
-                elif(arg in Main.commands.detailsPlaylistCommands):
-                    # Expected input: playlistIds or indices, includeUri, includeId, includeDatetime, includeListCount, includeSource
-                    inputArgs = extractArgs(argIndex, argV)
-                    playlistIds = getIdsFromInput(inputArgs, Main.playlistService.getAllIdsSorted(), Main.playlistService.getAllSorted(), returnOnNonIds = True, startAtZero = False, debug = Main.settings.debug)
-                    lenPlaylistIds = len(playlistIds)
-                    includeUri = eval(inputArgs[lenPlaylistIds]) if(len(inputArgs) > lenPlaylistIds) else False
-                    includeId = eval(inputArgs[lenPlaylistIds + 1]) if(len(inputArgs) > lenPlaylistIds + 1) else False
-                    includeDatetime = eval(inputArgs[lenPlaylistIds + 2]) if(len(inputArgs) > lenPlaylistIds + 2) else False
-                    includeListCount = eval(inputArgs[lenPlaylistIds + 3]) if(len(inputArgs) > lenPlaylistIds + 3) else True
-                    includeSource = eval(inputArgs[lenPlaylistIds + 4]) if(len(inputArgs) > lenPlaylistIds + 4) else True
+                    
+                elif(result.commandHitValue == CommandHitValues.DETAILS_PLAYLIST):
+                    playlistIds = result.arguments[Main.commands.playlistIdsArgumentName]
+                    includeUri = result.arguments[Main.commands.includeUriFlagName]
+                    includeId = result.arguments[Main.commands.includeIdFlagName]
+                    includeDatetime = result.arguments[Main.commands.includeDateTimeFlagName]
+                    includeListCount = result.arguments[Main.commands.includeListCountFlagName]
+                    includeSource = result.arguments[Main.commands.includeSourceFlagName]
                     
                     Main.playlistCliController.printPlaylistsDetailed(playlistIds, includeUri, includeId, includeDatetime, includeListCount, includeSource)
-                            
-                    argIndex += len(inputArgs) + 1
-                    continue
-                
-                elif(arg in Main.commands.ListWatchedCommands):
-                    # Expected input: playlistIds or indices, includeUri, includeId, includeDatetime, includeListCount, includeSource
-                    inputArgs = extractArgs(argIndex, argV)
-                    playlistIds = getIdsFromInput(inputArgs, Main.playlistService.getAllIdsSorted(), Main.playlistService.getAllSorted(), returnOnNonIds = True, startAtZero = False, debug = Main.settings.debug)
-                    lenPlaylistIds = len(playlistIds)
                     
-                    Main.playlistCliController.printWatchedStreams(playlistIds)
-                            
-                    argIndex += len(inputArgs) + 1
-                    continue
-
-                elif(arg in Main.commands.fetchPlaylistSourcesCommands):
-                    # Expected input: playlistIds or indices, fromDateTime?, toDatetime?, takeNewOnly?
-                    inputArgs = extractArgs(argIndex, argV)
-                    playlistIds = getIdsFromInput(inputArgs, Main.playlistService.getAllIdsSorted(), Main.playlistService.getAllSorted(), returnOnNonIds = True, startAtZero = False, debug = Main.settings.debug)
-                    lenPlaylistIds = len(playlistIds)
-                    takeAfter = inputArgs[lenPlaylistIds] if(len(inputArgs) > lenPlaylistIds) else None
-                    takeBefore = inputArgs[lenPlaylistIds + 1] if(len(inputArgs) > lenPlaylistIds + 1) else None
-                    takeNewOnly = eval(inputArgs[lenPlaylistIds + 2]) if(len(inputArgs) > lenPlaylistIds + 2) else True
+                # elif(result.commandHitValue == CommandHitValues.ListWatchedCommands):
+                #     playlistIds = result.arguments[Main.commands.playlistIdsArgumentName]
+                    
+                #     Main.playlistCliController.printWatchedStreams(playlistIds)
+                    
+                elif(result.commandHitValue == CommandHitValues.FETCH_PLAYLIST):
+                    playlistIds = result.arguments[Main.commands.playlistIdsArgumentName]
+                    takeAfter = result.arguments[Main.commands.takeAfterArgumentName]
+                    takeBefore = result.arguments[Main.commands.takeBeforeArgumentName]
+                    takeNewOnly = result.arguments[Main.commands.takeAllFlagName]
                     
                     Main.playlistCliController.fetchPlaylists(playlistIds, Main.settings.fetchLimitSingleSource, takeAfter, takeBefore, takeNewOnly)
-
-                    argIndex += len(inputArgs) + 1
-                    continue
-
-                elif(arg in Main.commands.prunePlaylistCommands):
-                    # Expected input: playlistIds or indices, includeSoftDeleted, permanentlyDelete, "accept changes" input within method
-                    inputArgs = extractArgs(argIndex, argV)
-                    playlistIds = getIdsFromInput(inputArgs, Main.playlistService.getAllIdsSorted(), Main.playlistService.getAllSorted(), returnOnNonIds = True, startAtZero = False, debug = Main.settings.debug)
-                    lenPlaylistIds = len(playlistIds)
-                    includeSoftDeleted = eval(getIfExists(inputArgs, lenPlaylistIds, "False"))
-                    permanentlyDelete = eval(getIfExists(inputArgs, lenPlaylistIds + 1, "False"))
+                    
+                elif(result.commandHitValue == CommandHitValues.PRUNE_PLAYLIST):
+                    playlistIds = result.arguments[Main.commands.playlistIdsArgumentName]
+                    permanentlyDelete = result.arguments[Main.commands.permanentlyDeleteFlag]
                     
                     for id in playlistIds:
                         Main.sharedCliController.prune(id, includeSoftDeleted, permanentlyDelete)
-
-                    argIndex += len(inputArgs) + 1
-                    continue
                 
-                elif(arg in Main.commands.purgePlaylistCommands):
-                    # Expected input: "accept changes" input within method
-                    
+                elif(result.commandHitValue == CommandHitValues.PURGE_PLAYLIST):
                     Main.sharedCliController.purgePlaylists(True, True)
 
-                    argIndex += 1
-                    continue
-                
-                elif(arg in Main.commands.purgeCommands):
-                    # Expected input: "accept changes" input within method
-
+                elif(result.commandHitValue == CommandHitValues.PURGE):
                     Main.sharedCliController.purge()
 
-                    argIndex += 1
-                    continue
-                
-                elif(arg in Main.commands.resetPlaylistFetchCommands):
-                    # Expected input: playlistIds or indices
-                    inputArgs = extractArgs(argIndex, argV)
-                    playlistIds = getIdsFromInput(inputArgs, Main.playlistService.getAllIdsSorted(), Main.playlistService.getAllSorted(), startAtZero = False, debug = Main.settings.debug)
+                elif(result.commandHitValue == CommandHitValues.RESET_PLAYLIST_FETCH):
+                    playlistIds = result.arguments[Main.commands.playlistIdsArgumentName]
                     
                     Main.playlistCliController.resetPlaylists(playlistIds)
 
-                    argIndex += len(inputArgs) + 1
-                    continue
+                elif(result.commandHitValue == CommandHitValues.DOWNLOAD_PLAYLIST):
+                    playlistIds = result.arguments[Main.commands.playlistIdsArgumentName]
+                    directoryName = result.arguments[Main.commands.directoryNameArgumentName]
+                    startIndex = result.arguments[Main.commands.startIndexArgumentName]
+                    endIndex = result.arguments[Main.commands.endIndexArgumentName]
+                    streamNameRegex = result.arguments[Main.commands.streamNameRegexArgumentName]
+                    useIndex = result.arguments[Main.commands.useIndexFlagName]
+                    
+                    Main.playlistCliController.downloadPlaylist(playlistIds[0], directoryName, startIndex, endIndex, streamNameRegex, useIndex)
+                    
+                elif(result.commandHitValue == CommandHitValues.EXPORT_PLAYLIST):
+                    playlistIds = result.arguments[Main.commands.playlistIdsArgumentName]
+                    directoryName = result.arguments[Main.commands.directoryNameArgumentName]
+                    
+                    Main.playlistCliController.exportPlaylist(playlistIds[0], directoryName)
 
-                elif(arg in Main.commands.playCommands):
-                    # Expected input: playlistId or index, startIndex, shuffle, repeat
-                    inputArgs = extractArgs(argIndex, argV)
-                    playlistIds = getIdsFromInput(inputArgs, Main.playlistService.getAllIdsSorted(), Main.playlistService.getAllSorted(), 1, startAtZero = False, debug = Main.settings.debug)
-                    startIndex = int(inputArgs[1]) - 1 if(len(inputArgs) > 1) else 0
-                    shuffle = eval(inputArgs[2]) if(len(inputArgs) > 2) else False
-                    repeat = eval(inputArgs[3]) if(len(inputArgs) > 3) else False
+                elif(result.commandHitValue == CommandHitValues.UNWATCH_ALL_PLAYLIST):
+                    playlistIds = result.arguments[Main.commands.playlistIdsArgumentName]
                     
-                    Main.playlistCliController.playPlaylists(getIfExists(playlistIds, 0), startIndex, shuffle, repeat)
+                    Main.playlistCliController.unwatchAllInPlaylist(playlistIds[0])
 
-                    argIndex += len(inputArgs) + 1
-                    continue
-
-                elif(arg in Main.commands.downloadPlaylistCommands):
-                    # Expected input: playlistId or index, directoryName?, startIndex?, endIndex?, streamNameRegex?, useIndex?
-                    inputArgs = extractArgs(argIndex, argV)
-                    playlistIds = getIdsFromInput(inputArgs, Main.playlistService.getAllIdsSorted(), Main.playlistService.getAllSorted(), 1, startAtZero = False, debug = Main.settings.debug)
-                    directoryName = inputArgs[1] if(len(inputArgs) > 1) else None
-                    startIndex = int(inputArgs[2]) - 1 if(len(inputArgs) > 2) else None
-                    endIndex = int(inputArgs[3]) - 1 if(len(inputArgs) > 3) else None
-                    streamNameRegex = inputArgs[4] if(len(inputArgs) > 4) else None
-                    useIndex = eval(inputArgs[5]) if(len(inputArgs) > 5) else True
+                # Playback
+                elif(result.commandHitValue == CommandHitValues.PLAY):
+                    playlistIds = result.arguments[Main.commands.playlistIdsArgumentName]
+                    startIndex = result.arguments[Main.commands.startIndexArgumentName]
+                    shuffle = result.arguments[Main.commands.shuffleFlagName]
+                    repeat = result.arguments[Main.commands.repeatFlagName]
                     
-                    Main.playlistCliController.downloadPlaylist(getIfExists(playlistIds, 0), directoryName, startIndex, endIndex, streamNameRegex, useIndex)
-                    
-                    argIndex += len(inputArgs) + 1
-                    continue
-
-                elif(arg in Main.commands.exportPlaylistCommands):
-                    # Expected input: playlistId or index, directoryName?
-                    inputArgs = extractArgs(argIndex, argV)
-                    playlistIds = getIdsFromInput(inputArgs, Main.playlistService.getAllIdsSorted(), Main.playlistService.getAllSorted(), 1, startAtZero = False, debug = Main.settings.debug)
-                    directoryName = inputArgs[1] if(len(inputArgs) > 1) else None
-                    
-                    Main.playlistCliController.exportPlaylist(getIfExists(playlistIds, 0), directoryName)
-                    
-                    argIndex += len(inputArgs) + 1
-                    continue
-
-                elif(arg in Main.commands.unwatchAllPlaylistCommands):
-                    # Expected input: playlistId or index
-                    inputArgs = extractArgs(argIndex, argV)
-                    playlistIds = getIdsFromInput(inputArgs, Main.playlistService.getAllIdsSorted(), Main.playlistService.getAllSorted(), 1, startAtZero = False, debug = Main.settings.debug)
-                    
-                    Main.playlistCliController.unwatchAllInPlaylist(getIfExists(playlistIds, 0))
-                    
-                    argIndex += len(inputArgs) + 1
-                    continue
+                    Main.playlistCliController.playPlaylists(playlistIds[0], startIndex, shuffle, repeat)
 
                 # Streams
-                elif(arg in Main.commands.addStreamCommands):
-                    # Expected input: playlistId or index, uri, name?
-                    inputArgs = extractArgs(argIndex, argV)
-                    playlistIds = getIdsFromInput(inputArgs, Main.playlistService.getAllIdsSorted(), Main.playlistService.getAllSorted(), 1, startAtZero = False, setDefaultId = False, debug = Main.settings.debug)
-                    uri = inputArgs[1] if len(inputArgs) > 1 else None
-                    name = inputArgs[2] if len(inputArgs) > 2 else None
+                elif(result.commandHitValue == CommandHitValues.ADD_STREAM):
+                    playlistIds = result.arguments[Main.commands.playlistIdsArgumentName]
+                    uris = result.arguments[Main.commands.uriArgumentName]
+                    name = result.arguments[Main.commands.entityNameArgumentName]
                     
-                    Main.queueStreamCliController.addQueueStream(getIfExists(playlistIds, 0), uri, name)
+                    Main.queueStreamCliController.addQueueStream(playlistIds[0], uris[0], name)
 
-                    argIndex += len(inputArgs) + 1
-                    continue
-
-                # Streams
-                elif(arg in Main.commands.addMultipleStreamsCommands):
-                    # Expected input: playlistId or index, uris
-                    inputArgs = extractArgs(argIndex, argV)
-                    playlistIds = getIdsFromInput(inputArgs, Main.playlistService.getAllIdsSorted(), Main.playlistService.getAllSorted(), 1, setDefaultId = False, startAtZero = False, debug = Main.settings.debug)
-                    uris = inputArgs[1:] if len(inputArgs) > 1 else None
+                elif(result.commandHitValue == CommandHitValues.ADD_MULTIPLE_STREAMS):
+                    playlistIds = result.arguments[Main.commands.playlistIdsArgumentName]
+                    uris = result.arguments[Main.commands.uriArgumentName]
                     
-                    Main.queueStreamCliController.addQueueStreams(getIfExists(playlistIds, 0), uris)
+                    Main.queueStreamCliController.addQueueStream(playlistIds[0], uris)
 
-                    argIndex += len(inputArgs) + 1
-                    continue
-
-                elif(arg in Main.commands.deleteStreamCommands):
-                    # Expected input: playlistId or index, queueStreamIds or indices
-                    inputArgs = extractArgs(argIndex, argV)
-                    playlistIds = getIdsFromInput(inputArgs, Main.playlistService.getAllIdsSorted(), Main.playlistService.getAllSorted(), 1, setDefaultId = False, startAtZero = False, debug = Main.settings.debug)
-                    queueStreamIds = inputArgs[1:] if len(inputArgs) > 1 else []
+                elif(result.commandHitValue == CommandHitValues.DELETE_STREAM):
+                    playlistIds = result.arguments[Main.commands.playlistIdsArgumentName]
+                    queueStreamIds = result.arguments[Main.commands.queueStreamIdsArgument]
                     
-                    Main.queueStreamCliController.deleteQueueStreams(getIfExists(playlistIds, 0), queueStreamIds)
-
-                    argIndex += len(inputArgs) + 1
-                    continue
+                    Main.queueStreamCliController.deleteQueueStreams(playlistIds[0], queueStreamIds)
                 
-                elif(arg in Main.commands.restoreStreamCommands):
-                    # Expected input: playlistId or index, queueStreamIds or indices
-                    inputArgs = extractArgs(argIndex, argV)
-                    playlistIds = getIdsFromInput(inputArgs, Main.playlistService.getAllIdsSorted(True), Main.playlistService.getAllSorted(True), 1, setDefaultId = False, startAtZero = False, debug = Main.settings.debug)
-                    queueStreamIds = inputArgs[1:] if len(inputArgs) > 1 else []
+                elif(result.commandHitValue == CommandHitValues.RESTORE_STREAM):
+                    playlistIds = result.arguments[Main.commands.playlistIdsArgumentName]
+                    queueStreamIds = result.arguments[Main.commands.queueStreamIdsArgument]
                                         
-                    Main.queueStreamCliController.restoreQueueStreams(getIfExists(playlistIds, 0), queueStreamIds)
-
-                    argIndex += len(inputArgs) + 1
-                    continue
+                    Main.queueStreamCliController.restoreQueueStreams(playlistIds[0], queueStreamIds)
 
                 # Sources
-                elif(arg in Main.commands.addSourcesCommands):
-                    # Expected input: playlistId or index, uri, enableFetch?, backgroundContent?, name?
-                    inputArgs = extractArgs(argIndex, argV)
-                    playlistIds = getIdsFromInput(inputArgs, Main.playlistService.getAllIdsSorted(), Main.playlistService.getAllSorted(), 1, startAtZero = False, debug = Main.settings.debug)
-                    uri = inputArgs[1] if len(inputArgs) > 1 else None
-                    enableFetch = eval(inputArgs[2]) if len(inputArgs) > 2 else True
-                    bgContent = eval(inputArgs[3]) if len(inputArgs) > 3 else False
-                    name = inputArgs[4] if len(inputArgs) > 4 else None
+                elif(result.commandHitValue == CommandHitValues.ADD_SOURCE):
+                    playlistIds = result.arguments[Main.commands.playlistIdsArgumentName]
+                    uris = result.arguments[Main.commands.uriArgumentName]
+                    enableFetch = result.arguments[Main.commands.enableFetchFlagName]
+                    backgroundContent = result.arguments[Main.commands.backgroundContentFlagName]
+                    name = result.arguments[Main.commands.entityNameArgumentName]
                     
-                    Main.streamSourceCliController.addStreamSource(getIfExists(playlistIds, 0), uri, enableFetch, bgContent, name)
+                    Main.streamSourceCliController.addStreamSource(playlistIds[0], uris[0], enableFetch, backgroundContent, name)
 
-                    argIndex += len(inputArgs) + 1
-                    continue
+                elif(result.commandHitValue == CommandHitValues.DELETE_SOURCE):
+                    playlistIds = result.arguments[Main.commands.playlistIdsArgumentName]
+                    streamSourceIds = result.arguments[Main.commands.streamSourceIdsArgumentName]
 
-                elif(arg in Main.commands.deleteSourceCommands):
-                    # Expected input: playlistId or index, streamSourceIds or indices
-                    inputArgs = extractArgs(argIndex, argV)
-                    playlistIds = getIdsFromInput(inputArgs, Main.playlistService.getAllIdsSorted(), Main.playlistService.getAllSorted(), 1, startAtZero = False, debug = Main.settings.debug)
-                    streamSourceIds = inputArgs[1:] if len(inputArgs) > 1 else []
-
-                    Main.streamSourceCliController.deleteStreamSources(getIfExists(playlistIds, 0), streamSourceIds)
+                    Main.streamSourceCliController.deleteStreamSources(playlistIds[0], streamSourceIds)
                     
-                    argIndex += len(inputArgs) + 1
-                    continue
-                
-                elif(arg in Main.commands.restoreSourceCommands):
-                    # Expected input: playlistId or index, streamSourceIds or indices
-                    inputArgs = extractArgs(argIndex, argV)
-                    playlistIds = getIdsFromInput(inputArgs, Main.playlistService.getAllIdsSorted(True), Main.playlistService.getAllSorted(True), 1, startAtZero = False, debug = Main.settings.debug)
-                    streamSourceIds = inputArgs[1:] if len(inputArgs) > 1 else []
+                elif(result.commandHitValue == CommandHitValues.RESTORE_SOURCE):
+                    playlistIds = result.arguments[Main.commands.playlistIdsArgumentName]
+                    streamSourceIds = result.arguments[Main.commands.streamSourceIdsArgumentName]
                     
-                    Main.streamSourceCliController.restoreStreamSources(getIfExists(playlistIds, 0), streamSourceIds)
+                    Main.streamSourceCliController.restoreStreamSources(playlistIds[0], streamSourceIds)
 
-                    argIndex += len(inputArgs) + 1
-                    continue
-
-                elif(arg in Main.commands.listSourcesCommands):
-                    # Expected input: includeSoftDeleted
-                    inputArgs = extractArgs(argIndex, argV)
-                    includeSoftDeleted = eval(inputArgs[0]) if(len(inputArgs) > 0) else False
+                elif(result.commandHitValue == CommandHitValues.LIST_SOURCES):
+                    includeSoftDeleted = result.arguments[Main.commands.includeSoftDeletedFlagName]
                     
                     Main.streamSourceCliController.listStreamSources(includeSoftDeleted)
-
-                    argIndex += len(inputArgs) + 1
-                    continue
                 
-                elif(arg in Main.commands.openSourceCommands):
-                    # Expected input: streamSourceIds or indices
-                    inputArgs = extractArgs(argIndex, argV)
-                    streamSourceIds = getIdsFromInput(inputArgs, Main.streamSourceService.getAllIds(), Main.streamSourceService.getAll(), startAtZero = False, debug = Main.settings.debug)
+                elif(result.commandHitValue == CommandHitValues.OPEN_SOURCE):
+                    streamSourceIds = result.arguments[Main.commands.streamSourceIdsArgumentName]
                     
                     Main.streamSourceCliController.openStreamSource(streamSourceIds)
 
-                    argIndex += len(inputArgs) + 1
-                    continue
-
                 # Meta
-                elif(arg in Main.commands.listSettingsCommands):
-                    # Expected input: none
-                    
+                elif(result.commandHitValue == CommandHitValues.LIST_SETTINGS):
                     result = Main.settings.getAllSettingsAsTable()
                     print(result)
 
-                    argIndex += 1
-                    continue
-                
-                elif(arg in Main.commands.listSoftDeletedCommands):
-                    # Expected input: simplified
-                    inputArgs = extractArgs(argIndex, argV)
-                    simplified = eval(inputArgs[0]) if(len(inputArgs) > 0) else False
+                elif(result.commandHitValue == CommandHitValues.LIST_SOFT_DELETED):
+                    simplified = result.arguments[Main.commands.simplifiedPrintFlagName]
                     
                     result = Main.sharedService.getAllSoftDeleted()
                     if(simplified):
@@ -417,12 +261,7 @@ class Main:
                         
                     printLists(resultList, [*result.keys()])
 
-                    argIndex += len(inputArgs) + 1
-                    continue
-                
-                elif(arg in Main.commands.refactorCommands):
-                    # Expected input: None
-                    
+                elif(result.commandHitValue == CommandHitValues.REFACTOR_OLD):
                     refactorLastFetchedIdResult = Main.legacyService.refactorPlaytimeSecondsAlwaysDownloadFavorite()
                     if(len(refactorLastFetchedIdResult) > 0):
                         printS("Refactored ", len(refactorLastFetchedIdResult), " StreamSources. IDs:", color = BashColor.OKGREEN)
@@ -430,14 +269,6 @@ class Main:
                     else:
                         printS("No refactors needed for refactorLastFetchedId.", color = BashColor.OKGREEN)
 
-                    argIndex += 1
-                    continue
-
-                # Invalid
-                else:
-                    printS("Argument not recognized: \"", arg, "\", please see documentation or run with \"help\" for help.", color = BashColor.WARNING)
-                    argIndex += 1
-                    
         except KeyboardInterrupt:
             printS("Program was aborted by user.", color = BashColor.OKGREEN)
 

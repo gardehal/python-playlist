@@ -514,7 +514,8 @@ class PlaylistService(BaseService[T]):
                         
                 color = "WHITE" if i % 2 == 0 else "GREYBG"
                 padI = str(i + 1).rjust(4, " ")
-                printS(padI, " - ", stream.detailsString(includeUri, includeId, includeDatetime, includeListCount), timeMinutesString, sourceString, color = BashColor[color])
+                watched = "* " if stream.watched else ""
+                printS(padI, " - ", watched, stream.detailsString(includeUri, includeId, includeDatetime, includeListCount), timeMinutesString, sourceString, color = BashColor[color])
                 
             result += 1
                 

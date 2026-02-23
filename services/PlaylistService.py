@@ -37,7 +37,7 @@ class PlaylistService(BaseService[T]):
         self.log = LogUtil(self.settings.logDirPath, self.settings.debug, LogLevel.VERBOSE)
         
         BaseService.__init__(self, T, self.settings.debug, os.path.join(self.settings.localStoragePath, "Playlist"))
-
+        
     def addStreams(self, playlistId: str, streams: List[QueueStream]) -> List[QueueStream]:
         """
         Add QueueStreams to Playlist.

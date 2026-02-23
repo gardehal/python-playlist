@@ -1,25 +1,9 @@
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Python Playlist</title>
-    <link href="{{ url_for('static', filename='styles/style.css') }}" rel="stylesheet" />
-</head>
-
-<body>
+{% extends "layout.html" %}
+{% block title %}Python Playlist{% endblock %}
+{% block content %}
     <h1>Python Playlist</h1>
     <form action="/weather">
         <input type="text" name="commands" id="commands" placeholder="Enter Commands" />
         <button type="submit">Submit</button>
     </form>
-
-    <ul>
-        <li><a href="{{ url_for("playlistIndex") }}">Playlists</a></li>
-        <li><a href="{{ url_for("sourcesIndex") }}">StreamSources</a></li>
-        <li><a href="{{ url_for("streamIndex") }}">QueueStreams</a></li>
-    </ul>
-</body>
-
-</html>
+{% endblock %}

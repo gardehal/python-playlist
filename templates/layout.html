@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        {% block head %}
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link href="{{ url_for("static", filename="css/style.css") }}" rel="stylesheet" />
+        <title>{% block title %}{% endblock %}</title>
+        {% endblock %}
+    </head>
+
+    <body>
+        <div id="topbar">
+            <h2>Python Playlist</h2>
+
+            <div id="topnav">
+                <ul>
+                    <li><a href="{{ url_for("index") }}">Home</a></li>
+                    <li><a href="{{ url_for("playlistsIndex") }}">Playlists</a></li>
+                    <li><a href="{{ url_for("streamSourcesIndex") }}">StreamSources</a></li>
+                    <li><a href="{{ url_for("queueStreamsIndex") }}">QueueStreams</a></li>
+                    <li><a href="{{ url_for("help") }}">Help and documentation</a></li>
+                    <li><a href="{{ url_for("quitApp") }}">Quit</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div id="content">
+            {% block content %}
+            {% endblock %}
+        </div>
+
+        <div id="footer">
+        {% block footer %}
+            
+        {% endblock %}
+        </div>
+    </body>
+</html>

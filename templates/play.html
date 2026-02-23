@@ -1,0 +1,18 @@
+{% extends "layout.html" %}
+{% block title %}Play {{ playlist.name }}{% endblock %}
+{% block content %}
+    << Back URI --Skip-> Next (mark as watched) >>
+    embedded video 100%% width
+    playback commands like add to other playlist (below)
+    next/upcomming streams?
+    
+    self.quitArguments = StaticUtil.quit ?
+    self.quitWatchedArguments = ["quitwatched", "qw", "wq"]
+    self.skipArguments = ["skip", "s", "[C"] # [C = right arrow
+    self.listPlaylistArguments = ["listplaylists", "lp"]
+    self.addCurrentToPlaylistArguments = ["addto", "at"]
+    self.circumventRestricted = ["circumventrestricted", "circumvent", "restricted", "cr"]
+    self.printPlaybackDetailsArguments = ["detailsprint", "details", "print", "dp"]
+    self.nextArguments = ["next", "n"]
+    self.printPlaybackHelpArguments = ["help", "h"]
+{% endblock %}

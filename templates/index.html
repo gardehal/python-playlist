@@ -15,7 +15,11 @@
         <button type="submit">Submit</button>
     </form>
 
-    playlists...
+    <ul>
+        <li><a href="{{ url_for("playlistIndex") }}">Playlists</a></li>
+        <li><a href="{{ url_for("sourcesIndex") }}">StreamSources</a></li>
+        <li><a href="{{ url_for("streamIndex") }}">QueueStreams</a></li>
+    </ul>
 </body>
 
 </html>

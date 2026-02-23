@@ -4,18 +4,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Python Playlist</title>
+    <title>Playlists</title>
     <link href="{{ url_for('static', filename='styles/style.css') }}" rel="stylesheet" />
 </head>
 
 <body>
-    <h1>Python Playlist</h1>
-    <form action="/weather">
-        <input type="text" name="commands" id="commands" placeholder="Enter Commands" />
-        <button type="submit">Submit</button>
-    </form>
-
-    playlists...
+    <h1>Playlists</h1>
+    <ul>
+        {% for playlist in playlists: %}
+            <li><a href="{{ playlist.id }}">{{ playlist.name }}</a></li>
+        {% endfor %}
+    </ul>
 </body>
 
 </html>

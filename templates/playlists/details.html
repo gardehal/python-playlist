@@ -1,16 +1,21 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends "layout.html" %}
+{% block title %}Playlists{% endblock %}
+{% block content %}
+    <h1>{{ playlist.name }}</h1>
+    options like ADD_PLAYLIST_FROM_YOUTUB, DELETE_PLAYLIST, RESTORE_PLAYLIST, LIST_PLAYLISTS, DETAILS_PLAYLIST, FETCH_PLAYLIST, PRUNE_PLAYLIST, PURGE_PLAYLIST, PURGE, RESET_PLAYLIST_FETCH, DOWNLOAD_PLAYLIST, EXPORT_PLAYLIST, UNWATCH_ALL_PLAYLIST, 
+    play from index: input
+    
+    <h1>QueueStreams in {{ playlist.name }}</h1>
+    <ul>
+        {% for queueStream in queueStreams: %}
+            <li><a href="{{ url_for("queueStreamsDetails", id=queueStream.id) }}">{{ queueStream.name }}</a> - <a href="{{ url_for("play", playlistId= playlist.id, index= 0) }}">Play from here</a> - Watched: {{ queueStream.watched }}</li>
+        {% endfor %}
+    </ul>
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>name</title>
-    <link href="{{ url_for('static', filename='styles/style.css') }}" rel="stylesheet" />
-</head>
-
-<body>
-    <h1>name</h1>
-    details..
-</body>
-
-</html>
+    <h1>StreamSources in {{ playlist.name }}</h1>
+    <ul>
+        {% for streamSource in streamSources: %}
+            <li><a href="{{ url_for("streamSourcesDetails", id=streamSource.id) }}">{{ streamSource.name }}</a> - <a href="{{ streamSource.uri }}" target="_blank">Open URI</a> - Fetch: {{streamSource.enableFetch}} </li>
+        {% endfor %}
+    </ul>
+{% endblock %}

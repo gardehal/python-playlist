@@ -12,7 +12,6 @@
     <body>
         <div id="topbar">
             <h2>Python Playlist</h2>
-
             <div id="topnav">
                 <ul>
                     <li><a href="{{ url_for("index") }}">Home</a></li>
@@ -26,13 +25,12 @@
         </div>
 
         <div id="content">
-            {% block content %}
-            {% endblock %}
+        {% block content %}
+        {% endblock %}
         </div>
 
         <div id="footer">
         {% block footer %}
-            
         {% endblock %}
         </div>
     </body>

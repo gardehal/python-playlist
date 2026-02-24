@@ -1,16 +1,10 @@
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stream Sources</title>
-    <link href="{{ url_for('static', filename='styles/style.css') }}" rel="stylesheet" />
-</head>
-
-<body>
-    <h1>Stream Sources</h1>
-    list..
-</body>
-
-</html>
+{% extends "layout.html" %}
+{% block title %}StreamSources{% endblock %}
+{% block content %}
+    <h1>StreamSources</h1>
+    <ul>
+        {% for streamSource in streamSources: %}
+            <li><a href="{{ url_for("streamSourcesDetails", id=streamSource.id) }}">{{ streamSource.name }}</a></li>
+        {% endfor %}
+    </ul>
+{% endblock %}

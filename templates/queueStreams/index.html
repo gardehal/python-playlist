@@ -1,0 +1,10 @@
+{% extends "layout.html" %}
+{% block title %}QueueStreams{% endblock %}
+{% block content %}
+    <h1>QueueStreams</h1>
+    <ul>
+        {% for queueStream in queueStreams: %}
+            <li><a href="{{ url_for("queueStreamsDetails", id=queueStream.id) }}">{{ queueStream.name }}</a></li>
+        {% endfor %}
+    </ul>
+{% endblock %}

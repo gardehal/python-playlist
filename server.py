@@ -59,16 +59,18 @@ def streamSourcesDetails(id: str):
     streamSource = streamSourceService.get(id)
     return render_template("streamSources/details.html", streamSource= streamSource)
 
-@app.route("/play/<playlistId>/<int:index>/<watched>")
-def play(playlistId: str, index: int, watched: str = "0"):
+@app.route("/play/<playlistId>/<int:index>/<watchedId>")
+def play(playlistId: str, index: int, watchedId):
     playlist = playlistService.get(playlistId)
     queueStream = queueStreamService.get(playlist.streamIds[index])
     
-    # TODO better way to pass watched, optional params, also pass video ID if watched, else null, then get and update video watched, not new
-    if(eval(watched) and not queueStream.watched): 
-        # queueStream.watched = True
-        # queueStreamService.update()
-        print("DEBUG: queuestream " + queueStream.name + " watched from UI")
+    # TODO better way to pass watched, optional params
+    if(watchedId and not queueStream.watched): 
+        watchedQueueStream = queueStreamService.get(watchedId)
+        if(watchedQueueStream):
+            watchedQueueStream.watched = True
+            # queueStreamService.update(watchedQueueStream)
+            print("DEBUG: QueueStream " + watchedQueueStream.name + " watched from UI")
         
     # TODO move embedded mapping to service
     embeddedUrl: str = None

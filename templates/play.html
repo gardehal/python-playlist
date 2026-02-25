@@ -5,7 +5,7 @@
         <a href="{{ url_for("playlistsDetails", id=playlist.id) }}">
             <button><-Playlist--</button>
         </a>
-        <a href="{{ url_for("play", playlistId=playlist.id, index=index-1, watchedId= None) }}">
+        <a href="{{ url_for("play", playlistId=playlist.id, index=index-1, watchedId= "None") }}">
             <button><< Back</button>
         </a>
         <a href="{{ queueStream.uri }}" target="_blank">
@@ -14,7 +14,7 @@
         <a href="{{ url_for("play", playlistId=playlist.id, index=index+1, watchedId= queueStream.id) }}">
             <button>Watched >></button>
         </a>
-        <a href="{{ url_for("play", playlistId=playlist.id, index=index+1, watchedId= None) }}">
+        <a href="{{ url_for("play", playlistId=playlist.id, index=index+1, watchedId= "None") }}">
             <button>--Skip->></button>
         </a>
     </div>
@@ -33,7 +33,7 @@
     {% endif %}
     next/upcomming streams, play from this (same as command skip x)
     
-    <a href="{{ url_for("play", playlistId=playlist.id, index=index+1, watched= 1) }}">
+    <a href="{{ url_for("play", playlistId=playlist.id, index=index+1, watchedId= "None") }}">
         <button>Circumvent restricted</button>
     </a>
     Add to other playlist: form

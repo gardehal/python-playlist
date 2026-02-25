@@ -65,7 +65,7 @@ def play(playlistId: str, index: int, watchedId):
     queueStream = queueStreamService.get(playlist.streamIds[index])
     
     # TODO better way to pass watched, optional params
-    if(watchedId and not queueStream.watched): 
+    if(watchedId is not "None"): 
         watchedQueueStream = queueStreamService.get(watchedId)
         if(watchedQueueStream):
             watchedQueueStream.watched = True

@@ -31,7 +31,7 @@
     <h1>QueueStreams in {{ playlist.name }}</h1>
     <ul>
         {% for queueStream in queueStreams: %}
-            <li><a href="{{ url_for("queueStreamsDetails", id=queueStream.id) }}">{{ queueStream.name }}</a> - <a href="{{ url_for("play", playlistId= playlist.id, index= 0, watched= 0) }}">Play from here</a> - Watched: {{ queueStream.watched }}</li>
+            <li><a href="{{ url_for("queueStreamsDetails", id=queueStream.id) }}">{{ queueStream.name }}</a> - <a href="{{ url_for("play", playlistId= playlist.id, index= 0, watchedId= "None") }}">Play from here</a> - Watched: {{ queueStream.watched }}</li>
         {% endfor %}
     </ul>
 

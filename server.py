@@ -3,6 +3,7 @@ from services.PlaylistService import PlaylistService
 from services.QueueStreamService import QueueStreamService
 from services.StreamSourceService import StreamSourceService
 from Settings import Settings
+from enums.StreamSourceType import StreamSourceType
 
 app = Flask(__name__)
 
@@ -63,12 +64,26 @@ def play(playlistId: str, index: int, watched: str = "0"):
     playlist = playlistService.get(playlistId)
     queueStream = queueStreamService.get(playlist.streamIds[index])
     
-    if(eval(watched) and not queueStream.watched): # TODO better way to pass watched, optional params
+    # TODO better way to pass watched, optional params, also pass video ID if watched, else null, then get and update video watched, not new
+    if(eval(watched) and not queueStream.watched): 
         # queueStream.watched = True
         # queueStreamService.update()
         print("DEBUG: queuestream " + queueStream.name + " watched from UI")
         
-    return render_template("play.html", playlist= playlist, queueStream= queueStream, index= index)
+    # TODO move embedded mapping to service
+    embeddedUrl: str = None
+    if (queueStream.streamSourceId):
+        streamSource = streamSourceService.get(queueStream.streamSourceId)
+        if(not streamSource):
+            print(f"DEBUG: No streamSource found for queueStream {queueStream.id} {queueStream.name}")
+        else:
+            if(streamSource.streamSourceTypeId == StreamSourceType.YOUTUBE):
+                embeddedUrl = f"https://www.youtube.com/embed/{queueStream.remoteId}?autoplay=1&amp;mute=0&amp;wmode=transparent"
+            elif(streamSource.streamSourceTypeId == StreamSourceType.ODYSEE):
+                videoIdSplit = queueStream.uri.split("https://odysee.com/")
+                embeddedUrl = f"https://odysee.com/$/embed/{videoIdSplit[1]}"
+        
+    return render_template("play.html", playlist= playlist, queueStream= queueStream, index= index, embeddedUrl= embeddedUrl)
 
 if __name__ == "__main__":
     app.run(host= "0.0.0.0", port= 8888)

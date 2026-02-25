@@ -2,13 +2,36 @@
 {% block title %}Playlists{% endblock %}
 {% block content %}
     <h1>{{ playlist.name }}</h1>
-    options like ADD_PLAYLIST_FROM_YOUTUB, DELETE_PLAYLIST, RESTORE_PLAYLIST, LIST_PLAYLISTS, DETAILS_PLAYLIST, FETCH_PLAYLIST, PRUNE_PLAYLIST, PURGE_PLAYLIST, PURGE, RESET_PLAYLIST_FETCH, DOWNLOAD_PLAYLIST, EXPORT_PLAYLIST, UNWATCH_ALL_PLAYLIST, 
+    add new StreamSource: form
+    add new StreamSource: form
+    add new queuestream: form 
     play from index: input
+    
+    <p>Description: {{ playlist.description }}</p>
+    <p>Sort order: {{ playlist.sortOrder }}</p>
+    <p>Favorite: {{ playlist.favorite }}</p>
+    <p>AllowDuplicates: {{ playlist.allowDuplicates }}</p>
+    <p>QueueStream count: {TODO{ len(playlist.streamIds) }}</p>
+    <p>StreamSource count: {TODO{ len(playlist.streamSourceIds) }}</p>
+    <p>LastWatchedIndex: {{ playlist.lastWatchedIndex }}</p>
+    <p>Added: {{ playlist.added }}</p>
+    <button type="submit">Delete</button>
+    <button type="submit">Fetch</button>
+    <button type="submit">Prune</button>
+    <button type="submit">Purge</button>
+    <button type="submit">Reset Fetch</button>
+    <button type="submit">Download</button>
+    <button type="submit">Export</button>
+    <button type="submit">Unwatch all</button>
+    {% if playlist.deleted %}
+        <p>Soft deleted: {{ qplaylistm.deleted }}</p>
+        <button type="submit">Restore from soft delete</button>
+    {% endif %}
     
     <h1>QueueStreams in {{ playlist.name }}</h1>
     <ul>
         {% for queueStream in queueStreams: %}
-            <li><a href="{{ url_for("queueStreamsDetails", id=queueStream.id) }}">{{ queueStream.name }}</a> - <a href="{{ url_for("play", playlistId= playlist.id, index= 0) }}">Play from here</a> - Watched: {{ queueStream.watched }}</li>
+            <li><a href="{{ url_for("queueStreamsDetails", id=queueStream.id) }}">{{ queueStream.name }}</a> - <a href="{{ url_for("play", playlistId= playlist.id, index= 0, watched= 0) }}">Play from here</a> - Watched: {{ queueStream.watched }}</li>
         {% endfor %}
     </ul>
 

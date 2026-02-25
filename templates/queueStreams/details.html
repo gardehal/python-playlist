@@ -2,5 +2,14 @@
 {% block title %}QueueStream {{ queueStream.name }}{% endblock %}
 {% block content %}
     <h1>{{ queueStream.name }}</h1>
-    details.., command options like DELETE_STREAM, RESTORE_STREAM
+    <a href="{{ queueStream.uri }}" target="_blank">Open URI</a>
+    {% if queueStream.streamSourceId %}
+        <p><a href="{{ url_for("streamSourcesDetails", id=queueStream.streamSourceId) }}">StreamSource</a></p>
+    {% endif %}
+    <p>Added: {{ queueStream.added }}</p>
+    <button type="submit">Delete</button>
+    {% if queueStream.deleted %}
+        <p>Soft deleted: {{ queueStream.deleted }}</p>
+        <button type="submit">Restore from soft delete</button>
+    {% endif %}
 {% endblock %}

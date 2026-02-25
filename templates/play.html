@@ -1,18 +1,27 @@
 {% extends "layout.html" %}
-{% block title %}Play {{ playlist.name }}{% endblock %}
+{% block title %}{{ queueStream.name }} - {{ playlist.name }}{% endblock %}
 {% block content %}
-    << Back URI --Skip-> Next (mark as watched) >>
-    embedded video 100%% width
+    <div class="row">
+        <a href="{{ url_for("play", playlistId=playlist.id, index=index-1, watched= 0) }}">
+            <button><< Back</button>
+        </a>
+        <a href="queueStream.uri" target="_blank">
+            <button>Open URI</button>
+        </a>
+        <a href="{{ url_for("play", playlistId=playlist.id, index=index+1, watched= 0) }}">
+            <button>--Skip->></button>
+        </a>
+        <a href="{{ url_for("play", playlistId=playlist.id, index=index+1, watched= 1) }}">
+            <button>Watched >></button>
+        </a>
+    </div>
+
+    TODO remove names, replace with embedded:
+    {{ queueStream.name }} - {{ playlist.name }}
+    embedded video 100% width
     playback commands like add to other playlist (below)
-    next/upcomming streams?
+    next/upcomming streams? (next command)
     
-    self.quitArguments = StaticUtil.quit ?
-    self.quitWatchedArguments = ["quitwatched", "qw", "wq"]
-    self.skipArguments = ["skip", "s", "[C"] # [C = right arrow
-    self.listPlaylistArguments = ["listplaylists", "lp"]
-    self.addCurrentToPlaylistArguments = ["addto", "at"]
-    self.circumventRestricted = ["circumventrestricted", "circumvent", "restricted", "cr"]
-    self.printPlaybackDetailsArguments = ["detailsprint", "details", "print", "dp"]
-    self.nextArguments = ["next", "n"]
-    self.printPlaybackHelpArguments = ["help", "h"]
+    <button type="submit">Circumvent restricted<button>
+    Add to other playlist: form
 {% endblock %}

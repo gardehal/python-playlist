@@ -21,3 +21,14 @@ input, button {
     padding: 1rem;
     border-radius: 10px;
 }
+
+.row {
+    width: 100%;
+}
+.row ul {
+    list-style-type: none;
+}
+.row ul li {
+    float: left;
+    padding: 1em;
+}

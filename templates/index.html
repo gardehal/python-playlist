@@ -2,8 +2,15 @@
 {% block title %}Python Playlist{% endblock %}
 {% block content %}
     <h1>Python Playlist</h1>
-    <form action="/weather">
+
+    metadata like last fetched streams(s), last fetch time, last fetched for playlist, number of playlists/qs/ss, ...
+    <p><a href="{{ url_for("playlistsDetails", id=defaultPlaylistId) }}">Default playlist: {{ defaultPlaylistId }}</a></p>
+    add new Playlist: form 
+    add new Playlist from YouTube Playlist: form 
+    <button type="submit">Purge</button>
+
+    <form action="/commands">
         <input type="text" name="commands" id="commands" placeholder="Enter Commands" />
-        <button type="submit">Submit</button>
+        <button type="submit">Enter</button>
     </form>
 {% endblock %}

@@ -2,5 +2,13 @@
 {% block title %}StreamSource {{ streamSource.name }}{% endblock %}
 {% block content %}
     <h1>{{ streamSource.name }}</h1>
-    details.., command options like DELETE_SOURCE, RESTORE_SOURCE, LIST_SOURCES, OPEN_SOURCE
+    <a href="{{ streamSource.uri }}" target="_blank">Open URI</a>
+    <p>EnableFetch: {{ streamSource.enableFetch }}</p>
+    <p>LastFetched: {{ streamSource.lastFetched }}</p>
+    <p>Added: {{ streamSource.added }}</p>
+    <button type="submit">Delete</button>
+    {% if streamSource.deleted %}
+        <p>Soft deleted: {{ streamSource.deleted }}</p>
+        <button type="submit">Restore from soft delete</button>
+    {% endif %}
 {% endblock %}

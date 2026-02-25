@@ -2,9 +2,11 @@ from flask import Flask, render_template
 from services.PlaylistService import PlaylistService
 from services.QueueStreamService import QueueStreamService
 from services.StreamSourceService import StreamSourceService
+from Settings import Settings
 
 app = Flask(__name__)
 
+settings: Settings = Settings()
 playlistService: PlaylistService = PlaylistService()
 queueStreamService: QueueStreamService = QueueStreamService()
 streamSourceService: StreamSourceService = StreamSourceService()
@@ -12,7 +14,7 @@ streamSourceService: StreamSourceService = StreamSourceService()
 @app.route("/")
 @app.route("/index")
 def index():
-    return render_template("index.html")
+    return render_template("index.html", defaultPlaylistId= settings.defaultPlaylistId)
 
 @app.route("/help")
 @app.route("/docs")
@@ -56,10 +58,17 @@ def streamSourcesDetails(id: str):
     streamSource = streamSourceService.get(id)
     return render_template("streamSources/details.html", streamSource= streamSource)
 
-@app.route("/play/<playlistId>/<index>")
-def play(playlistId: str, index: int):
-    # TODO
-    return render_template("index.html")
+@app.route("/play/<playlistId>/<int:index>/<watched>")
+def play(playlistId: str, index: int, watched: str = "0"):
+    playlist = playlistService.get(playlistId)
+    queueStream = queueStreamService.get(playlist.streamIds[index])
+    
+    if(eval(watched) and not queueStream.watched): # TODO better way to pass watched, optional params
+        # queueStream.watched = True
+        # queueStreamService.update()
+        print("DEBUG: queuestream " + queueStream.name + " watched from UI")
+        
+    return render_template("play.html", playlist= playlist, queueStream= queueStream, index= index)
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8888)
+    app.run(host= "0.0.0.0", port= 8888)

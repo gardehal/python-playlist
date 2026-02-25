@@ -141,7 +141,8 @@ class Main:
                     
                 elif(result.commandHitValue == CommandHitValues.PRUNE_PLAYLIST):
                     playlistIds = result.arguments[Main.commands.playlistIdsArgumentName]
-                    permanentlyDelete = result.arguments[Main.commands.permanentlyDeleteFlag]
+                    includeSoftDeleted = result.arguments[Main.commands.includeSoftDeletedFlagName]
+                    permanentlyDelete = result.arguments[Main.commands.permanentlyDeleteFlagName]
                     
                     for id in playlistIds:
                         Main.sharedCliController.prune(id, includeSoftDeleted, permanentlyDelete)

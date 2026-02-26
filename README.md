@@ -118,10 +118,30 @@ Program for queueing and playing videos from list or from sources like channels 
 - reset doesn't work, not resetting sources
 - restore/add source, have to check on deleted
 - twitter/facebook/instagram as sources for videos?
+- using guids as ids works but if manually sorting through files its hard to find the correct source without gui. change it to source + channel name, e.g. "youtube_SmarterEveryDay"
 - simple graphics interface, preferably in browser 
-  - list of videos with thumbnails
-  - list of sources with pfp
+  - ideal case is when video ends, the next one auto plays (if next is background content, also mark as watched?)
+  - tab title icon 
   - add new source
   - add new video
   - add new playlist?
-- using guids as ids works but if manually sorting through files its hard to find the correct source without gui. change it to source + channel name, e.g. "youtube_SmarterEveryDay"
+  - web editing for pl, qs, ss
+  - implement all buttons
+  - implement all forms
+  - embedded player doesn't remember settings (speed, audio levels) unlike real player in source, use/add cookies and pass to embedded?
+  - new fields:
+    - thumbnail for queuestream
+    - pfp for stream source
+    - thumbnail for playlist (default blank + some way to add custom user one)
+    - streamsource name in queuestream if any
+  - new entity, metadata:
+    - # of qs
+    - # of ss
+    - # of pl
+    - # of soft deleted entities
+    - last fetch time
+    - last fetch number of new fetches
+    - last fetched for playlist
+    - total storage used by this project
+    - uptime of web server
+    - other useful data/snacks

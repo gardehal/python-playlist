@@ -10,6 +10,7 @@ class QueueStream:
                  uri: str = None, 
                  isWeb: bool = False, 
                  streamSourceId: str = None, 
+                 streamSourceName: str = None, 
                  watched: datetime = None, 
                  backgroundContent: bool = False, 
                  playtimeSeconds: int = None, 
@@ -21,6 +22,7 @@ class QueueStream:
         self.uri: str = uri
         self.isWeb: bool = isWeb
         self.streamSourceId: str = streamSourceId
+        self.streamSourceName: str = streamSourceName
         self.watched: datetime = watched
         self.backgroundContent: bool = backgroundContent
         self.playtimeSeconds: int = playtimeSeconds
@@ -34,6 +36,7 @@ class QueueStream:
         self.uri: str = "uri"
         self.isWeb: bool = False
         self.streamSourceId: str = "streamSourceId"
+        self.streamSourceName: str = "streamSourceName"
         self.watched: datetime = getDateTime()
         self.backgroundContent: bool = False
         self.deleted: datetime = datetime.now()
@@ -72,6 +75,7 @@ class QueueStream:
         uriString,
         # ", isWeb: ", self.isWeb, 
         streamSourceIdString,
+        ", ", self.streamSourceName, " ",
         watchedString, 
         # ", backgroundContent: ", self.backgroundContent, 
         deletedString,

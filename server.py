@@ -1,9 +1,11 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request
+
+from Settings import Settings
+
 from services.PlaylistService import PlaylistService
 from services.QueueStreamService import QueueStreamService
 from services.StreamSourceService import StreamSourceService
-from Settings import Settings
-from enums.StreamSourceType import StreamSourceType
+from services.PlaybackService import PlaybackService
 
 app = Flask(__name__)
 
@@ -11,6 +13,7 @@ settings: Settings = Settings()
 playlistService: PlaylistService = PlaylistService()
 queueStreamService: QueueStreamService = QueueStreamService()
 streamSourceService: StreamSourceService = StreamSourceService()
+playbackService: PlaybackService = PlaybackService()
 
 @app.route("/")
 @app.route("/index")
@@ -59,33 +62,31 @@ def streamSourcesDetails(id: str):
     streamSource = streamSourceService.get(id)
     return render_template("streamSources/details.html", streamSource= streamSource)
 
-@app.route("/play/<playlistId>/<int:index>/<watchedId>")
-def play(playlistId: str, index: int, watchedId):
+@app.route("/play/<playlistId>")
+def play(playlistId: str):
+    index = int(request.args.get("index", 0))
+    watchedId = request.args.get("watchedId", None)
+ 
     playlist = playlistService.get(playlistId)
+    if(index < 0 or index > len(playlist.streamIds)):
+        return render_template("play.html", playlist= playlist) # TODO some other error page
+ 
     queueStream = queueStreamService.get(playlist.streamIds[index])
     
-    # TODO better way to pass watched, optional params
-    if(watchedId is not "None"): 
+    if(watchedId): 
         watchedQueueStream = queueStreamService.get(watchedId)
         if(watchedQueueStream):
             watchedQueueStream.watched = True
-            # queueStreamService.update(watchedQueueStream)
+            queueStreamService.update(watchedQueueStream)
             print("DEBUG: QueueStream " + watchedQueueStream.name + " watched from UI")
         
-    # TODO move embedded mapping to service
     embeddedUrl: str = None
     if (queueStream.streamSourceId):
-        streamSource = streamSourceService.get(queueStream.streamSourceId)
-        if(not streamSource):
-            print(f"DEBUG: No streamSource found for queueStream {queueStream.id} {queueStream.name}")
-        else:
-            if(streamSource.streamSourceTypeId == StreamSourceType.YOUTUBE):
-                embeddedUrl = f"https://www.youtube.com/embed/{queueStream.remoteId}?autoplay=1&amp;mute=0&amp;wmode=transparent"
-            elif(streamSource.streamSourceTypeId == StreamSourceType.ODYSEE):
-                videoIdSplit = queueStream.uri.split("https://odysee.com/")
-                embeddedUrl = f"https://odysee.com/$/embed/{videoIdSplit[1]}"
+        embeddedUrl = playbackService.mapUrlToEmbeddedUrl(queueStream)
         
-    return render_template("play.html", playlist= playlist, queueStream= queueStream, index= index, embeddedUrl= embeddedUrl)
+    circumventUrl = playbackService.getRestrictCircumventedUrl(queueStream)
+        
+    return render_template("play.html", playlist= playlist, queueStream= queueStream, index= index, embeddedUrl= embeddedUrl, circumventUrl= circumventUrl)
 
 if __name__ == "__main__":
     app.run(host= "0.0.0.0", port= 8888)

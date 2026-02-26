@@ -342,6 +342,25 @@ class PlaybackService():
         
         return result
 
+    def getRestrictCircumventedUrl(self, queueStream: QueueStream) -> bool:
+        """
+        Get URL that can circumvent restricted content on for example YouTube.
+
+        Args:
+            queueStream (QueueStream): QueueStream to circumvent.
+
+        Returns:
+            str | None: Circumvented URL.
+        """
+        
+        streamSourceType = StreamSourceTypeUtil.strToStreamSourceType(queueStream.uri)
+        match streamSourceType.value:
+            case StreamSourceType.YOUTUBE:
+                id = self.getYouTubeId(queueStream.uri)
+                return f"https://www.nsfwyoutube.com/watch?v={id}"
+            case _:
+                return None
+
     def openRestricted(self, queueStream: QueueStream) -> bool:
         """
         Circumvent the restrictions on videos, for example age restriction on YouTube, which blocks watching if the watcher is not logged in.
@@ -354,10 +373,9 @@ class PlaybackService():
         """
         
         streamSourceType = StreamSourceTypeUtil.strToStreamSourceType(queueStream.uri)
-        if(streamSourceType.value == StreamSourceType.YOUTUBE.value):
-            id = self.getYouTubeId(queueStream.uri)
-            url = f"https://www.nsfwyoutube.com/watch?v={id}"
-            self.openQueueStreamBrowser(url)
+        circumventedUrl = self.getRestrictCircumventedUrl(queueStream)
+        if(circumventedUrl):
+            self.openQueueStreamBrowser(circumventedUrl)
             return True
         else:
             sourceType = streamSourceType.name.capitalize()
@@ -370,7 +388,7 @@ class PlaybackService():
         Get YouTube ID from URL.
 
         Args:
-            url (str): URL with ID to get,
+            url (str): URL with ID to get.
 
         Returns:
             str | None: ID if URL is valid format.
@@ -382,4 +400,29 @@ class PlaybackService():
             return re.search(r"\/watch\?v=(\w+)", url).group(1)
         else:
             return None
+
+    def mapUrlToEmbeddedUrl(self, queueStream: QueueStream) -> str:
+        """
+        Map URI of a source to an embedded URI playable from an HTML element.
+
+        Args:
+            queueStream (QueueStream): QueueStream with URL to map.
+
+        Returns:
+            str | None: URL for embedded player, else None.
+        """
         
+        streamSource = self.streamSourceService.get(queueStream.streamSourceId)
+        if(not streamSource):
+            print(f"DEBUG: No streamSource found for queueStream {queueStream.id} {queueStream.name}")
+            return None
+            
+        match streamSource.streamSourceTypeId:
+            case StreamSourceType.YOUTUBE:
+                return f"https://www.youtube.com/embed/{queueStream.remoteId}"
+            case StreamSourceType.ODYSEE:
+                videoIdSplit = queueStream.uri.split("https://odysee.com/")
+                return f"https://odysee.com/$/embed/{videoIdSplit[1]}"
+            case _:
+                return None
+            

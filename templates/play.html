@@ -1,11 +1,11 @@
 {% extends "layout.html" %}
-{% block title %}{{ queueStream.name }} - {{ playlist.name }}{% endblock %}
+{% block title %}{{ queueStream.name }} - {{ queueStream.streamSourceName }} - {{ playlist.name }}{% endblock %}
 {% block content %}
     <div class="row">
         <a href="{{ url_for("playlistsDetails", id=playlist.id) }}">
             <button><-Playlist--</button>
         </a>
-        <a href="{{ url_for("play", playlistId=playlist.id, index=index-1, watchedId= "None") }}">
+        <a href="{{ url_for("play", playlistId=playlist.id, index=index-1) }}">
             <button><< Back</button>
         </a>
         <a href="{{ queueStream.uri }}" target="_blank">
@@ -14,12 +14,25 @@
         <a href="{{ url_for("play", playlistId=playlist.id, index=index+1, watchedId= queueStream.id) }}">
             <button>Watched >></button>
         </a>
-        <a href="{{ url_for("play", playlistId=playlist.id, index=index+1, watchedId= "None") }}">
+        <a href="{{ url_for("play", playlistId=playlist.id, index=index+1) }}">
             <button>--Skip->></button>
         </a>
     </div>
+    <div class="row">
+        {% if circumventUrl %}
+            <a href="{{ circumventUrl }}" target="_blank">
+                <button>Circumvent restricted</button>
+            </a>
+        {% endif %}
+        
+        <form action="/addToPlaylist">
+            <label for="playlistId">Add to Playlist</label>
+            <input type="text" name="playlistId" id="playlistId" placeholder="ID" />
+            <button type="submit">Add</button>
+        </form>
+    </div>
 
-    <p>DEBUG: {{ queueStream.name }} - {{ playlist.name }}</p>
+    <p>{{ queueStream.name }} - {{ queueStream.streamSourceName }} - {{ playlist.name }}</p>
 
     {% if embeddedUrl %}
         <iframe src="{{ embeddedUrl }}" title="{{ queueStream.name }} video player" 
@@ -28,13 +41,12 @@
             allowfullscreen>
         </iframe>
     {% else %}
-        <h2>This video could not be embedded, <a href="{{ queueStream.uri }}" target="_blank">watch here</a> 
+        <h2>
+            This video could not be embedded, <a href="{{ queueStream.uri }}" target="_blank">watch here</a> 
         </h2>
     {% endif %}
-    next/upcomming streams, play from this (same as command skip x)
     
-    <a href="{{ url_for("play", playlistId=playlist.id, index=index+1, watchedId= "None") }}">
-        <button>Circumvent restricted</button>
-    </a>
-    Add to other playlist: form
+    <div class="row">
+        next/upcomming stream mini-cards (name, source name, index?, thumbnail), play from this (same as command skip x)
+    </div>
 {% endblock %}

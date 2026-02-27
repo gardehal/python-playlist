@@ -3,10 +3,10 @@
 {% block content %}
     <h1>Python Playlist</h1>
 
-    metadata like last fetched streams(s), last fetch time, last fetched for playlist, number of playlists/qs/ss, ...
+    TODO: metadata like last fetched streams(s), last fetch time, last fetched for playlist, number of playlists/qs/ss, ...
     <p><a href="{{ url_for("playlistsDetails", id=defaultPlaylistId) }}">Default playlist: {{ defaultPlaylistId }}</a></p>
-    add new Playlist: form 
-    add new Playlist from YouTube Playlist: form 
+    <button type="submit">New Playlist</button>
+    <button type="submit">New Playlist from YT Playlist</button>
     <button type="submit">Purge</button>
 
     <form action="/commands">

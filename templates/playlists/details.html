@@ -2,10 +2,14 @@
 {% block title %}Playlists{% endblock %}
 {% block content %}
     <h1>{{ playlist.name }}</h1>
-    add new StreamSource: form
-    add new StreamSource: form
-    add new queuestream: form 
-    play from index: input
+    <button type="submit">New StreamSource</button>
+    <button type="submit">New QueueStream</button>
+    
+    <form action="/play/{{ playlist.id }}">
+        <label for="index">Play from index</label>
+        <input type="number" name="index" id="index" placeholder="Index" />
+        <button type="submit">Play</button>
+    </form>
     
     <p>Description: {{ playlist.description }}</p>
     <p>Sort order: {{ playlist.sortOrder }}</p>
@@ -24,14 +28,14 @@
     <button type="submit">Export</button>
     <button type="submit">Unwatch all</button>
     {% if playlist.deleted %}
-        <p>Soft deleted: {{ qplaylistm.deleted }}</p>
+        <p>Soft deleted: {{ playlist.deleted }}</p>
         <button type="submit">Restore from soft delete</button>
     {% endif %}
     
     <h1>QueueStreams in {{ playlist.name }}</h1>
     <ul>
         {% for queueStream in queueStreams: %}
-            <li><a href="{{ url_for("queueStreamsDetails", id=queueStream.id) }}">{{ queueStream.name }}</a> - <a href="{{ url_for("play", playlistId= playlist.id, index= 0, watchedId= "None") }}">Play from here</a> - Watched: {{ queueStream.watched }}</li>
+            <li><a href="{{ url_for("queueStreamsDetails", id=queueStream.id) }}">{{ queueStream.name }}</a> - <a href="{{ url_for("play", playlistId= playlist.id, index= 0) }}">Play from here</a> - Watched: {{ queueStream.watched }}</li>
         {% endfor %}
     </ul>
 

@@ -119,7 +119,8 @@ Program for queueing and playing videos from list or from sources like channels 
 - restore/add source, have to check on deleted
 - twitter/facebook/instagram as sources for videos?
 - using guids as ids works but if manually sorting through files its hard to find the correct source without gui. change it to source + channel name, e.g. "youtube_SmarterEveryDay"
-- simple graphics interface, preferably in browser 
+- simple graphics interface, preferably in browser
+  - embedded yt stops after 50-70 seconds....
   - ideal case is when video ends, the next one auto plays (if next is background content, also mark as watched?)
   - tab title icon 
   - add new source
@@ -133,7 +134,6 @@ Program for queueing and playing videos from list or from sources like channels 
     - thumbnail for queuestream
     - pfp for stream source
     - thumbnail for playlist (default blank + some way to add custom user one)
-    - streamsource name in queuestream if any
   - new entity, metadata:
     - # of qs
     - # of ss

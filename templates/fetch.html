@@ -1,0 +1,38 @@
+{% extends "layout.html" %}
+{% block title %}Fetch {{ playlist.name }}{% endblock %}
+{% block content %}
+    <h1>Fetch {{ playlist.name }}</h1>
+
+    <a href="{{ url_for("playlistsDetails", id=playlist.id) }}">
+        <button>Playlist</button>
+    </a>
+
+    {% if newQueueStreams|length < 0 %}
+        No new QueueStreams
+    {% else %}
+        <table>
+            <tr>
+                <th>Details</th>
+                <th>Source</th>
+                <th>Play from here</th>
+                <th>Watched?</th>
+            </tr>
+            {% for queueStream in newQueueStreams: %}
+                <tr>
+                    <td><a href="{{ url_for("queueStreamsDetails", id=queueStream.id) }}">{{ queueStream.name }}</a></td>
+                    {% if queueStream.streamSourceId %}
+                        <td><a href="{{ url_for("streamSourcesDetails", id=queueStream.streamSourceId) }}">{{ queueStream.streamSourceName }}</a></td>
+                    {% else %}
+                        <td></td>
+                    {% endif %}
+                    <td><a href="{{ url_for("play", playlistId= playlist.id, index= i) }}">Play from here</a></td>
+                    {% if queueStream.watched %}
+                        <td>Yes</td>
+                    {% else %}
+                        <td></td>
+                    {% endif %}
+                </tr>
+            {% endfor %}
+        </table>
+    {% endif %}
+{% endblock %}

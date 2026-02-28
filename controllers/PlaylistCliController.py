@@ -264,7 +264,7 @@ class PlaylistCliController():
                 self.sharedCliController.prune(id)
                 print("") # Space before fetching
             
-            result += self.fetchService.fetch(id, batchSize, _takeAfter, _takeBefore, takeNewOnly)
+            result += len(self.fetchService.fetch(id, batchSize, _takeAfter, _takeBefore, takeNewOnly))
             playlist = self.playlistService.get(id)
             completed = getDateTime()
             duration = completed - started

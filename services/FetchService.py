@@ -39,7 +39,7 @@ class FetchService():
     def __init__(self):
         mkdir(self.settings.localStoragePath)
 
-    def fetch(self, playlistId: str, batchSize: int = 10, takeAfter: datetime = None, takeBefore: datetime = None, takeNewOnly: bool = False) -> int:
+    def fetch(self, playlistId: str, batchSize: int = 10, takeAfter: datetime = None, takeBefore: datetime = None, takeNewOnly: bool = False) -> List[QueueStream]:
         """
         Fetch new videos from watched sources, adding them in chronological order.
 
@@ -50,7 +50,7 @@ class FetchService():
             takeNewOnly (bool): Only take streams marked as new. Disables takeAfter and takeBefore-checks. To use takeAfter and/or takeBefore, set this to False. Defaults to False.
 
         Returns:
-            int: Number of videos added.
+            List[QueueStream]: Videos added.
         """
         
         if(batchSize < 1):
@@ -122,9 +122,9 @@ class FetchService():
                     printS("\tDownloaded due to alwaysDownload flag on source failed.", color = BashColor.FAIL, doPrint = (downloadPath == None))
 
         if(len(newStreams) > 0):
-            return len(newStreams)
+            return newStreams
         else:
-            return 0
+            return []
 
     def fetchDirectory(self, streamSource: StreamSource, batchSize: int = 10, takeAfter: datetime = None, takeBefore: datetime = None, takeNewOnly: bool = False) -> List[QueueStream]:
         """

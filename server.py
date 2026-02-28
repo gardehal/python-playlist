@@ -46,7 +46,7 @@ def playlistsDetails(id: str):
     playlist = playlistService.get(id)
     queueStreams = playlistService.getStreamsByPlaylistId(id)
     streamSources = playlistService.getSourcesByPlaylistId(id)
-    return render_template("playlists/details.html", playlist= playlist, queueStreams= queueStreams, streamSources= streamSources)
+    return render_template("playlists/details.html", playlist= playlist, enumerateQueueStreams= enumerate(queueStreams), streamSources= streamSources)
 
 @app.route("/queueStreams")
 def queueStreamsIndex():
@@ -74,9 +74,6 @@ def play(playlistId: str):
     watchedId = request.args.get("watchedId", None)
  
     playlist = playlistService.get(playlistId)
-    if(index < 0 or index >= len(playlist.streamIds)):
-        return error(f"Index was out of range of playlist {playlist.name}, max index: {len(playlist.streamIds) - 1}")
- 
     queueStream = queueStreamService.get(playlist.streamIds[index])
     
     if(watchedId): 
@@ -86,6 +83,9 @@ def play(playlistId: str):
             queueStreamService.update(watchedQueueStream)
             print("DEBUG: QueueStream " + watchedQueueStream.name + " watched from UI")
         
+    if(index < 0 or index >= len(playlist.streamIds)):
+        return error(f"Index was out of range of playlist {playlist.name}, max index: {len(playlist.streamIds) - 1}")
+    
     embeddedUrl: str = None
     if (queueStream.streamSourceId):
         embeddedUrl = playbackService.mapUrlToEmbeddedUrl(queueStream)
@@ -93,6 +93,15 @@ def play(playlistId: str):
     circumventUrl = playbackService.getRestrictCircumventedUrl(queueStream)
         
     return render_template("play.html", playlist= playlist, queueStream= queueStream, index= index, embeddedUrl= embeddedUrl, circumventUrl= circumventUrl)
+
+@app.route("/fetch/<playlistId>")
+def fetchPlaylist(playlistId):
+    playlist = playlistService.get(playlistId)
+    
+    # TODO while fetching, show some spinner + prints in fetching.html or something
+    newQueueStreams = fetchService.fetch(playlist.id, settings.fetchLimitSingleSource, takeNewOnly= True)
+    
+    return render_template("fetch.html", playlist= playlist, newQueueStreams= newQueueStreams)
 
 if __name__ == "__main__":
     app.run(host= "0.0.0.0", port= 8888)

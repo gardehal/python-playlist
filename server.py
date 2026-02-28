@@ -6,6 +6,7 @@ from services.PlaylistService import PlaylistService
 from services.QueueStreamService import QueueStreamService
 from services.StreamSourceService import StreamSourceService
 from services.PlaybackService import PlaybackService
+from services.FetchService import FetchService
 
 app = Flask(__name__)
 
@@ -14,6 +15,7 @@ playlistService: PlaylistService = PlaylistService()
 queueStreamService: QueueStreamService = QueueStreamService()
 streamSourceService: StreamSourceService = StreamSourceService()
 playbackService: PlaybackService = PlaybackService()
+fetchService: FetchService = FetchService()
 
 @app.route("/")
 @app.route("/index")
@@ -29,6 +31,10 @@ def help():
 def quitApp():
     quit() # ?
     return
+
+@app.route("/error")
+def error(errorMessage: str):
+    return render_template("error.html", errorMessage= errorMessage)
 
 @app.route("/playlists")
 def playlistsIndex():
@@ -68,8 +74,8 @@ def play(playlistId: str):
     watchedId = request.args.get("watchedId", None)
  
     playlist = playlistService.get(playlistId)
-    if(index < 0 or index > len(playlist.streamIds)):
-        return render_template("play.html", playlist= playlist) # TODO some other error page
+    if(index < 0 or index >= len(playlist.streamIds)):
+        return error(f"Index was out of range of playlist {playlist.name}, max index: {len(playlist.streamIds) - 1}")
  
     queueStream = queueStreamService.get(playlist.streamIds[index])
     

@@ -1,15 +1,7 @@
 {% extends "layout.html" %}
-{% block title %}Playlists{% endblock %}
+{% block title %}{{ playlist.name }}{% endblock %}
 {% block content %}
     <h1>{{ playlist.name }}</h1>
-    <button type="submit">New StreamSource</button>
-    <button type="submit">New QueueStream</button>
-    
-    <form action="/play/{{ playlist.id }}">
-        <label for="index">Play from index</label>
-        <input type="number" name="index" id="index" placeholder="Index" />
-        <button type="submit">Play</button>
-    </form>
     
     <p>Description: {{ playlist.description }}</p>
     <p>Sort order: {{ playlist.sortOrder }}</p>
@@ -19,30 +11,96 @@
     <p>StreamSource count: {TODO{ len(playlist.streamSourceIds) }}</p>
     <p>LastWatchedIndex: {{ playlist.lastWatchedIndex }}</p>
     <p>Added: {{ playlist.added }}</p>
-    <button type="submit">Delete</button>
-    <button type="submit">Fetch</button>
-    <button type="submit">Prune</button>
-    <button type="submit">Purge</button>
-    <button type="submit">Reset Fetch</button>
-    <button type="submit">Download</button>
-    <button type="submit">Export</button>
-    <button type="submit">Unwatch all</button>
-    {% if playlist.deleted %}
-        <p>Soft deleted: {{ playlist.deleted }}</p>
-        <button type="submit">Restore from soft delete</button>
-    {% endif %}
+
+    <div class="row">
+        <form action="/play/{{ playlist.id }}">
+            <label for="index">Play from index</label>
+            <input type="number" name="index" id="index" placeholder="Index" />
+            <button type="submit">Play</button>
+        </form>
+    </div>
+    <div class="row">
+        <a href="{{ url_for("fetchPlaylist", playlistId=playlist.id) }}">
+            <button>Fetch (new only)</button>
+        </a>
+        <a href="{{ url_for("fetchPlaylist", playlistId=playlist.id) }}">
+            <button>Prune</button>
+        </a>
+        <button type="submit">Purge</button>
+        <button type="submit">Reset Fetch</button>
+        <button type="submit">Download</button>
+        <button type="submit">Export</button>
+        <button type="submit">Unwatch all</button>
+        <button type="submit">Delete</button>
+        {% if playlist.deleted %}
+            <p>Soft deleted: {{ playlist.deleted }}</p>
+            <button type="submit">Restore from soft delete</button>
+        {% endif %}
+    </div>
+    <div class="row">
+        <button type="submit">New StreamSource</button>
+        <button type="submit">New QueueStream</button>
+    </div>
     
     <h1>QueueStreams in {{ playlist.name }}</h1>
-    <ul>
-        {% for queueStream in queueStreams: %}
-            <li><a href="{{ url_for("queueStreamsDetails", id=queueStream.id) }}">{{ queueStream.name }}</a> - <a href="{{ url_for("play", playlistId= playlist.id, index= 0) }}">Play from here</a> - Watched: {{ queueStream.watched }}</li>
-        {% endfor %}
-    </ul>
+    <hr>
+    {% if not enumerateQueueStreams %}
+        No QueueStreams
+    {% else %}
+        <table>
+            <tr>
+                <th>Index</th>
+                <th>Details</th>
+                <th>Source</th>
+                <th>Play from here</th>
+                <th>Watched?</th>
+            </tr>
+            {% for i, queueStream in enumerateQueueStreams: %}
+                <tr>
+                    <td>{{ i }}</td>
+                    <td><a href="{{ url_for("queueStreamsDetails", id=queueStream.id) }}">{{ queueStream.name }}</a></td>
+                    {% if queueStream.streamSourceId %}
+                        <td><a href="{{ url_for("streamSourcesDetails", id=queueStream.streamSourceId) }}">{{ queueStream.streamSourceName }}</a></td>
+                    {% else %}
+                        <td></td>
+                    {% endif %}
+                    <td><a href="{{ url_for("play", playlistId= playlist.id, index= i) }}">Play from here</a></td>
+                    {% if queueStream.watched %}
+                        <td>Yes</td>
+                    {% else %}
+                        <td></td>
+                    {% endif %}
+                </tr>
+            {% endfor %}
+        </table>
+    {% endif %}
 
     <h1>StreamSources in {{ playlist.name }}</h1>
-    <ul>
-        {% for streamSource in streamSources: %}
-            <li><a href="{{ url_for("streamSourcesDetails", id=streamSource.id) }}">{{ streamSource.name }}</a> - <a href="{{ streamSource.uri }}" target="_blank">Open URI</a> - Fetch: {{streamSource.enableFetch}} </li>
-        {% endfor %}
-    </ul>
+    <hr>
+    {% if streamSources|length == 0 %}
+        No StreamSources
+    {% else %}
+        <table>
+            <tr>
+                <th>Details</th>
+                <th>URI</th>
+                <th>Fetching?</th>
+            </tr>
+            {% for streamSource in streamSources: %}
+                <tr>
+                    <td><a href="{{ url_for("streamSourcesDetails", id=streamSource.id) }}">{{ streamSource.name }}</a></td>
+                    {% if streamSource.uri %}
+                        <td><a href="{{ streamSource.uri }}" target="_blank">Open</a></td>
+                    {% else %}
+                        <td></td>
+                    {% endif %}
+                    {% if streamSource.enableFetch %}
+                        <td>Yes</td>
+                    {% else %}
+                        <td></td>
+                    {% endif %}
+                </tr>
+            {% endfor %}
+        </table>
+    {% endif %}
 {% endblock %}

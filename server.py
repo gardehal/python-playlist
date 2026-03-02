@@ -2,9 +2,11 @@ from flask import Flask, render_template, request
 from flask_wtf import CSRFProtect
 from flask_bootstrap import Bootstrap5
 
+from grdUtil.DateTimeUtil import getDateTime
+
 from forms.PlaylistForm import *
 
-from Settings import Settings
+from Settings import *
 from services.PlaylistService import *
 from services.QueueStreamService import *
 from services.StreamSourceService import *
@@ -44,6 +46,9 @@ def quitApp():
 @app.route("/error")
 def error():
     errorMessage = request.args.get("errorMessage", "An unspecified error has occurred! Please check the logs for details.")
+    return renderError(errorMessage)
+
+def renderError(errorMessage: str):
     return render_template("error.html", errorMessage= errorMessage)
 
 @app.route("/playlists")
@@ -53,33 +58,32 @@ def playlistsIndex():
 
 @app.route("/playlists/<id>")
 def playlistsDetails(id: str):
-    playlist = playlistService.get(id)
+    playlist = playlistService.get(id, True)
     queueStreams = playlistService.getStreamsByPlaylistId(id)
     streamSources = playlistService.getSourcesByPlaylistId(id)
     return render_template("playlists/details.html", playlist= playlist, enumerateQueueStreams= enumerate(queueStreams), streamSources= streamSources)
 
 @app.route("/playlists/create", methods=["GET", "POST"])
 def playlistsCreate():
-    form = PlaylistForm()
     errorMessage = None
+    form = PlaylistForm()
     
-    if(form.validate_on_submit()):
-        playlist = Playlist(
-            name = form.name.data,
-            playWatchedStreams = form.playWatchedStreams.data,
-            allowDuplicates = form.allowDuplicates.data,
-            description = form.description.data,
-            favorite = form.favorite.data,
-            sortOrder = form.sortOrder.data,
-            lastWatchedIndex = 0,
-            streamSourceIds = [],
-            streamIds = [],
-        )
-        
-        playlistService.add(playlist)
-        return playlistsDetails(playlist.id)
-    # else:
-    #     errorMessage = "Fields were not valid"
+    if request.method == "POST":
+        if(form.validate_on_submit()):
+            playlist = Playlist(
+                name = form.name.data,
+                playWatchedStreams = form.playWatchedStreams.data,
+                allowDuplicates = form.allowDuplicates.data,
+                description = form.description.data,
+                favorite = form.favorite.data,
+                sortOrder = form.sortOrder.data,
+                lastWatchedIndex = 0,
+                streamSourceIds = [],
+                streamIds = [],
+            )
+            
+            playlistService.add(playlist)
+            return playlistsDetails(playlist.id)
     
     return render_template("form.html", title= "Create new Playlist", form= form, errorMessage= errorMessage)
 
@@ -87,15 +91,15 @@ def playlistsCreate():
 def playlistsDelete(id: str):
     playlist = playlistService.get(id)
     if(playlist):
-        # TODO alert: f"Delete {playlist.name}"?
+        # TODO alert + accept: f"Delete {playlist.name}?"
         
         deleteResult = playlistService.delete(id)
         if(deleteResult):
             return playlistsIndex()
         else:
-            return error(f"Playlist with {id} could not be deleted.")
+            return renderError(f"Playlist with {id} could not be deleted.")
     else:
-        return error(f"Playlist with {id} does not exist.")
+        return renderError(f"Playlist {id} was not found.")
 
 @app.route("/queueStreams")
 def queueStreamsIndex():
@@ -104,7 +108,7 @@ def queueStreamsIndex():
 
 @app.route("/queueStreams/<id>")
 def queueStreamsDetails(id: str):
-    queueStream = queueStreamService.get(id)
+    queueStream = queueStreamService.get(id, True)
     return render_template("queueStreams/details.html", queueStream= queueStream)
 
 @app.route("/streamSources")
@@ -114,34 +118,46 @@ def streamSourcesIndex():
 
 @app.route("/streamSources/<id>")
 def streamSourcesDetails(id: str):
-    streamSource = streamSourceService.get(id)
+    streamSource = streamSourceService.get(id, True)
     return render_template("streamSources/details.html", streamSource= streamSource)
 
 @app.route("/play/<playlistId>")
 def play(playlistId: str):
     index = int(request.args.get("index", 0))
     watchedId = request.args.get("watchedId", None)
- 
-    playlist = playlistService.get(playlistId)
-    queueStream = queueStreamService.get(playlist.streamIds[index])
     
     if(watchedId): 
         watchedQueueStream = queueStreamService.get(watchedId)
         if(watchedQueueStream):
-            watchedQueueStream.watched = True
+            watchedQueueStream.watched = getDateTime()
             queueStreamService.update(watchedQueueStream)
             print("DEBUG: QueueStream " + watchedQueueStream.name + " watched from UI")
         
+    playlist = playlistService.get(playlistId)
+    if(not playlist):
+        return renderError(f"Playlist {playlistId} was not found.")
     if(index < 0 or index >= len(playlist.streamIds)):
-        return error(f"Index was out of range of playlist {playlist.name}, max index: {len(playlist.streamIds) - 1}")
+        return renderError(f"Index was out of range of playlist {playlist.name}, max index: {len(playlist.streamIds) - 1}")
+    
+    queueStreamId = playlist.streamIds[index]
+    queueStream = queueStreamService.get(queueStreamId)
+    if(not queueStream):
+        return renderError(f"QueueStream {queueStreamId} was not found.")
     
     embeddedUrl: str = None
     if (queueStream.streamSourceId):
         embeddedUrl = playbackService.mapUrlToEmbeddedUrl(queueStream)
         
     circumventUrl = playbackService.getRestrictCircumventedUrl(queueStream)
+    
+    # TODO fix index when clicking these, dict index + qs?, fix formating, text overlay over image, fix size too
+    nextQueueStreams = []
+    for nextQueueStreamId in playlist.streamIds[index+1:][:4]: # Next 4, if any
+        nextQueueStream = queueStreamService.get(nextQueueStreamId)
+        if(nextQueueStream):
+            nextQueueStreams.append(nextQueueStream)
         
-    return render_template("play.html", playlist= playlist, queueStream= queueStream, index= index, embeddedUrl= embeddedUrl, circumventUrl= circumventUrl)
+    return render_template("play.html", playlist= playlist, queueStream= queueStream, index= index, embeddedUrl= embeddedUrl, circumventUrl= circumventUrl, nextQueueStreams= nextQueueStreams)
 
 @app.route("/fetch/<playlistId>")
 def fetchPlaylist(playlistId):

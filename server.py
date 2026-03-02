@@ -1,21 +1,30 @@
 from flask import Flask, render_template, request
+from flask_wtf import CSRFProtect
+from flask_bootstrap import Bootstrap5
+
+from forms.PlaylistForm import *
 
 from Settings import Settings
-
-from services.PlaylistService import PlaylistService
-from services.QueueStreamService import QueueStreamService
-from services.StreamSourceService import StreamSourceService
-from services.PlaybackService import PlaybackService
-from services.FetchService import FetchService
+from services.PlaylistService import *
+from services.QueueStreamService import *
+from services.StreamSourceService import *
+from services.PlaybackService import *
+from services.FetchService import *
+from services.SharedService import *
 
 app = Flask(__name__)
+csrf = CSRFProtect(app)
+# TODO, add to settings
+app.secret_key = "foo"
+bootstrap = Bootstrap5(app)
 
-settings: Settings = Settings()
-playlistService: PlaylistService = PlaylistService()
-queueStreamService: QueueStreamService = QueueStreamService()
-streamSourceService: StreamSourceService = StreamSourceService()
-playbackService: PlaybackService = PlaybackService()
-fetchService: FetchService = FetchService()
+settings = Settings()
+playlistService = PlaylistService()
+queueStreamService = QueueStreamService()
+streamSourceService = StreamSourceService()
+playbackService = PlaybackService()
+fetchService = FetchService()
+sharedService = SharedService()
 
 @app.route("/")
 @app.route("/index")
@@ -29,16 +38,17 @@ def help():
 
 @app.route("/quit")
 def quitApp():
-    quit() # ?
-    return
+    quit() # not working? should end server/program locally
+    return index()
 
 @app.route("/error")
-def error(errorMessage: str):
+def error():
+    errorMessage = request.args.get("errorMessage", "An unspecified error has occurred! Please check the logs for details.")
     return render_template("error.html", errorMessage= errorMessage)
 
 @app.route("/playlists")
 def playlistsIndex():
-    playlists = playlistService.getAll()
+    playlists = playlistService.getAllSorted()
     return render_template("playlists/index.html", playlists= playlists)
 
 @app.route("/playlists/<id>")
@@ -47,6 +57,45 @@ def playlistsDetails(id: str):
     queueStreams = playlistService.getStreamsByPlaylistId(id)
     streamSources = playlistService.getSourcesByPlaylistId(id)
     return render_template("playlists/details.html", playlist= playlist, enumerateQueueStreams= enumerate(queueStreams), streamSources= streamSources)
+
+@app.route("/playlists/create", methods=["GET", "POST"])
+def playlistsCreate():
+    form = PlaylistForm()
+    errorMessage = None
+    
+    if(form.validate_on_submit()):
+        playlist = Playlist(
+            name = form.name.data,
+            playWatchedStreams = form.playWatchedStreams.data,
+            allowDuplicates = form.allowDuplicates.data,
+            description = form.description.data,
+            favorite = form.favorite.data,
+            sortOrder = form.sortOrder.data,
+            lastWatchedIndex = 0,
+            streamSourceIds = [],
+            streamIds = [],
+        )
+        
+        playlistService.add(playlist)
+        return playlistsDetails(playlist.id)
+    # else:
+    #     errorMessage = "Fields were not valid"
+    
+    return render_template("form.html", title= "Create new Playlist", form= form, errorMessage= errorMessage)
+
+@app.route("/playlists/delete/<id>")
+def playlistsDelete(id: str):
+    playlist = playlistService.get(id)
+    if(playlist):
+        # TODO alert: f"Delete {playlist.name}"?
+        
+        deleteResult = playlistService.delete(id)
+        if(deleteResult):
+            return playlistsIndex()
+        else:
+            return error(f"Playlist with {id} could not be deleted.")
+    else:
+        return error(f"Playlist with {id} does not exist.")
 
 @app.route("/queueStreams")
 def queueStreamsIndex():
@@ -102,6 +151,18 @@ def fetchPlaylist(playlistId):
     newQueueStreams = fetchService.fetch(playlist.id, settings.fetchLimitSingleSource, takeNewOnly= True)
     
     return render_template("fetch.html", playlist= playlist, newQueueStreams= newQueueStreams)
+
+@app.route("/prune/<playlistId>")
+def prunePlaylist(playlistId):
+    playlist = playlistService.get(playlistId)
+    
+    data = sharedService.preparePrune(playlistId)
+    pruneResult = sharedService.doPrune(data)
+    if(pruneResult):
+        # TODO get flask-modals or something and add toast with result
+        print(f"Pruned {len(data.queueStreams)} QueueStreams in Playlist {playlist.name}")
+    
+    return playlistsDetails(playlistId)
 
 if __name__ == "__main__":
     app.run(host= "0.0.0.0", port= 8888)

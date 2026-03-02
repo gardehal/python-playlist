@@ -1,0 +1,29 @@
+{% extends "layout.html" %}
+{% block title %}Soft deleted entities{% endblock %}
+{% block content %}
+    <h1>Soft deleted entities</h1>
+
+    <h2>Playlists</h2>
+    <hr>
+    <ul>
+        {% for playlist in playlists: %}
+            <li><a href="{{ url_for("playlistsDetails", id=playlist.id) }}">{{ playlist.name }}</a></li>
+        {% endfor %}
+    </ul>
+    
+    <h2>QueueStreams</h2>
+    <hr>
+    <ul>
+        {% for queueStream in queueStreams: %}
+            <li><a href="{{ url_for("queueStreamsDetails", id=queueStream.id) }}">{{ queueStream.name }} - {{ queueStream.streamSourceName }}</a></li>
+        {% endfor %}
+    </ul>
+
+    <h2>StreamSources</h2>
+    <hr>
+    <ul>
+        {% for streamSource in streamSources: %}
+            <li><a href="{{ url_for("streamSourcesDetails", id=streamSource.id) }}">{{ streamSource.name }}</a></li>
+        {% endfor %}
+    </ul>
+{% endblock %}

@@ -216,5 +216,13 @@ def prunePlaylist(playlistId):
     
     return playlistsDetails(playlistId)
 
+@app.route("/softDeleted")
+def softDeletedIndex():
+    playlists = [e for e in playlistService.getAll(True) if e.deleted]
+    queueStreams = [e for e in queueStreamService.getAll(True) if e.deleted]
+    streamSources = [e for e in streamSourceService.getAll(True) if e.deleted]
+    
+    return render_template("softDeleted.html", playlists= playlists, queueStreams= queueStreams, streamSources= streamSources)
+
 if __name__ == "__main__":
     app.run(host= "0.0.0.0", port= 8888)

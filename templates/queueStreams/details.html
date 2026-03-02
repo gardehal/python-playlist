@@ -3,20 +3,25 @@
 {% block content %}
     <h1>{{ queueStream.name }}</h1>
     
-    <a href="{{ queueStream.uri }}" target="_blank">Open URI</a>
-    {% if queueStream.streamSourceId %}
-        <p><a href="{{ url_for("streamSourcesDetails", id=queueStream.streamSourceId) }}">StreamSource</a></p>
-    {% endif %}
     <p>Added: {{ queueStream.added }}</p>
 
     <div class="row">
-        <a href="{{ url_for("error", errorMessage=NotImplemented) }}">
+        <a href="{{ queueStream.uri }}" target="_blank">
+            <button>Open URI</button>
+        </a>
+        {% if queueStream.streamSourceId %}
+            <a href="{{ url_for("streamSourcesDetails", id=queueStream.streamSourceId) }}">
+                <button>StreamSource</button>
+            </a>
+        {% endif %}
+        <a href="{{ url_for("error", errorMessage="Not Implemented") }}">
             <button>Edit</button>
         </a>
-        <a href="{{ url_for("error", errorMessage=NotImplemented) }}">
+        <a href="{{ url_for("error", errorMessage="Not Implemented") }}">
             <button>Delete</button>
         </a>
     </div>
+
     {% if queueStream.deleted %}
         <div class="row">
             <p>Soft deleted: {{ queueStream.deleted }}</p>

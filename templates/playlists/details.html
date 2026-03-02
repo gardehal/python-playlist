@@ -25,22 +25,22 @@
         <a href="{{ url_for("prunePlaylist", playlistId=playlist.id) }}">
             <button>Prune</button>
         </a>
-        <a href="{{ url_for("error", errorMessage=NotImplemented) }}">
+        <a href="{{ url_for("error", errorMessage="Not Implemented") }}">
             <button>Purge</button>
         </a>
-        <a href="{{ url_for("error", errorMessage=NotImplemented) }}">
+        <a href="{{ url_for("error", errorMessage="Not Implemented") }}">
             <button>Purge Fetch</button>
         </a>
-        <a href="{{ url_for("error", errorMessage=NotImplemented) }}">
+        <a href="{{ url_for("error", errorMessage="Not Implemented") }}">
             <button>Download</button>
         </a>
-        <a href="{{ url_for("error", errorMessage=NotImplemented) }}">
+        <a href="{{ url_for("error", errorMessage="Not Implemented") }}">
             <button>Export</button>
         </a>
-        <a href="{{ url_for("error", errorMessage=NotImplemented) }}">
+        <a href="{{ url_for("error", errorMessage="Not Implemented") }}">
             <button>Unwatch all</button>
         </a>
-        <a href="{{ url_for("error", errorMessage=NotImplemented) }}">
+        <a href="{{ url_for("playlistsEdit", id=playlist.id) }}">
             <button>Edit</button>
         </a>
         <a href="{{ url_for("playlistsDelete", id=playlist.id) }}">
@@ -48,20 +48,20 @@
         </a>
     </div>
     
-    <div class="row">
-        {% if playlist.deleted %}
+    {% if playlist.deleted %}
+        <div class="row">
             <p>Soft deleted: {{ playlist.deleted }}</p>
-            <a href="{{ url_for("error", errorMessage=NotImplemented) }}">
+            <a href="{{ url_for("error", errorMessage="Not Implemented") }}">
                 <button>Restore from soft delete</button>
             </a>
-        {% endif %}
-    </div>
+        </div>
+    {% endif %}
 
     <div class="row">
-        <a href="{{ url_for("error", errorMessage=NotImplemented) }}">
+        <a href="{{ url_for("error", errorMessage="Not Implemented") }}">
             <button>New StreamSource</button>
         </a>
-        <a href="{{ url_for("error", errorMessage=NotImplemented) }}">
+        <a href="{{ url_for("error", errorMessage="Not Implemented") }}">
             <button>New QueueStream</button>
         </a>
     </div>

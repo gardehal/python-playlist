@@ -3,19 +3,22 @@
 {% block content %}
     <h1>{{ streamSource.name }}</h1>
     
-    <a href="{{ streamSource.uri }}" target="_blank">Open URI</a>
     <p>EnableFetch: {{ streamSource.enableFetch }}</p>
     <p>LastFetched: {{ streamSource.lastFetched }}</p>
     <p>Added: {{ streamSource.added }}</p>
     
     <div class="row">
-        <a href="{{ url_for("error", errorMessage=NotImplemented) }}">
+        <a href="{{ streamSource.uri }}" target="_blank">
+            <button>Open URI</button>
+        </a>
+        <a href="{{ url_for("error", errorMessage="Not Implemented") }}">
             <button>Edit</button>
         </a>
-        <a href="{{ url_for("error", errorMessage=NotImplemented) }}">
+        <a href="{{ url_for("error", errorMessage="Not Implemented") }}">
             <button>Delete</button>
         </a>
     </div>
+    
     {% if streamSource.deleted %}
         <div class="row">
             <p>Soft deleted: {{ streamSource.deleted }}</p>

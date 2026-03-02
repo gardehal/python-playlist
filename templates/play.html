@@ -24,6 +24,11 @@
                 <button>Circumvent restricted</button>
             </a>
         {% endif %}
+        {% if queueStream.watched %}
+            <a href="{{ url_for("error", errorMessage="Not Implemented") }}">
+                <button>Unwatch</button>
+            </a>
+        {% endif %}
         
         <form action="/addToPlaylist">
             <label for="playlistId">Add to Playlist</label>
@@ -46,7 +51,17 @@
         </h2>
     {% endif %}
     
+    <hr>
     <div class="row">
-        next/upcomming stream mini-cards (name, source name, index?, thumbnail), play from this (same as command skip x)
+        <h4>Next QueueStreams</h4>
+        {% for queueStream in nextQueueStreams: %}
+            <a href="{{ url_for("play", playlistId=playlist.id, index=index+1) }}">
+                <div class="center" width="2em">
+                    <img src="/static/default.png">
+                    <p>{{ queueStream.name }}</p>
+                    <p>{{ queueStream.streamSourceName }}</p>
+                </div>
+            </a>
+        {% endfor %}
     </div>
 {% endblock %}

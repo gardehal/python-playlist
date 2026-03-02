@@ -32,3 +32,9 @@ input, button {
     float: left;
     padding: 1em;
 }
+
+.center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}

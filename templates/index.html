@@ -5,9 +5,16 @@
 
     TODO: metadata like last fetched streams(s), last fetch time, last fetched for playlist, number of playlists/qs/ss, ...
     <p><a href="{{ url_for("playlistsDetails", id=defaultPlaylistId) }}">Default playlist: {{ defaultPlaylistId }}</a></p>
-    <button type="submit">New Playlist</button>
-    <button type="submit">New Playlist from YT Playlist</button>
-    <button type="submit">Purge</button>
+
+    <a href="{{ url_for("playlistsCreate") }}">
+        <button>New Playlist</button>
+    </a>
+    <a href="{{ url_for("error", errorMessage=NotImplemented) }}">
+        <button>New Playlist from YT Playlist</button>
+    </a>
+    <a href="{{ url_for("error", errorMessage=NotImplemented) }}">
+        <button>Purge</button>
+    </a>
 
     <form action="/commands">
         <input type="text" name="commands" id="commands" placeholder="Enter Commands" />

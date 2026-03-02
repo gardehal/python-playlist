@@ -2,14 +2,25 @@
 {% block title %}QueueStream {{ queueStream.name }}{% endblock %}
 {% block content %}
     <h1>{{ queueStream.name }}</h1>
+    
     <a href="{{ queueStream.uri }}" target="_blank">Open URI</a>
     {% if queueStream.streamSourceId %}
         <p><a href="{{ url_for("streamSourcesDetails", id=queueStream.streamSourceId) }}">StreamSource</a></p>
     {% endif %}
     <p>Added: {{ queueStream.added }}</p>
-    <button type="submit">Delete</button>
+
+    <div class="row">
+        <a href="{{ url_for("error", errorMessage=NotImplemented) }}">
+            <button>Edit</button>
+        </a>
+        <a href="{{ url_for("error", errorMessage=NotImplemented) }}">
+            <button>Delete</button>
+        </a>
+    </div>
     {% if queueStream.deleted %}
-        <p>Soft deleted: {{ queueStream.deleted }}</p>
-        <button type="submit">Restore from soft delete</button>
+        <div class="row">
+            <p>Soft deleted: {{ queueStream.deleted }}</p>
+            <button type="submit">Restore from soft delete</button>
+        </div>
     {% endif %}
 {% endblock %}

@@ -1,0 +1,12 @@
+{% from "bootstrap5/form.html" import render_form %}
+{% extends "layout.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+    <h1>{{ title }}</h1>
+    
+    {{ render_form(form) }}
+    
+    {% if errorMessage %}
+        <p class="pt-5"><strong>{{ errorMessage }}</strong></p>
+    {% endif %}
+{% endblock %}

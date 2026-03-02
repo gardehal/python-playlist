@@ -395,11 +395,15 @@ class PlaybackService():
         """
         
         if("youtu.be/" in url):
-            return re.search(r"youtu\.be\/(\w+)", url).group(1)
+            result = re.search(r"youtu\.be\/(\w+)", url)
+            if(result):
+                return result.group(1)
         elif("youtube.com/watch?v=" in url):
-            return re.search(r"\/watch\?v=(\w+)", url).group(1)
-        else:
-            return None
+            result = re.search(r"\/watch\?v=(\w+)", url)
+            if(result):
+                return result.group(1)
+        
+        return None
 
     def mapUrlToEmbeddedUrl(self, queueStream: QueueStream) -> str:
         """

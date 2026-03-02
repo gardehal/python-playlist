@@ -107,7 +107,8 @@ class SharedService():
                 self.queueStreamService.delete(stream.id)
                 
             for playlist in data.playlists:
-                playlist.streamIds.remove(stream.id)
+                if(stream.id in playlist.streamIds):
+                    playlist.streamIds.remove(stream.id)
                 result = self.playlistService.update(playlist)
                 if(not result):
                     printD("failed to update Playlist \"", playlist.name, "\".", color = BashColor.WARNING, debug = self.settings.debug)

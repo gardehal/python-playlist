@@ -87,6 +87,42 @@ def playlistsCreate():
     
     return render_template("form.html", title= "Create new Playlist", form= form, errorMessage= errorMessage)
 
+@app.route("/playlists/edit/<id>", methods=["GET", "POST"])
+def playlistsEdit(id: str):
+    errorMessage = None
+    form = PlaylistForm()
+    
+    playlist = playlistService.get(id)
+    if(not playlist):
+        return renderError(f"No Playlist found for id {id}")
+    else:
+        if request.method == "GET":
+            form.name.data = playlist.name
+            form.playWatchedStreams.data = playlist.playWatchedStreams
+            form.allowDuplicates.data = playlist.allowDuplicates
+            form.description.data = playlist.description
+            form.favorite.data = playlist.favorite
+            form.sortOrder.data = playlist.sortOrder
+        elif request.method == "POST":
+            if(form.validate_on_submit()):
+                playlist.name = form.name.data
+                playlist.playWatchedStreams = form.playWatchedStreams.data
+                playlist.allowDuplicates = form.allowDuplicates.data
+                playlist.description = form.description.data
+                playlist.favorite = form.favorite.data
+                playlist.sortOrder = form.sortOrder.data
+                
+                updateResult = playlistService.update(playlist)
+                
+                if(updateResult):
+                    return playlistsDetails(playlist.id)
+                else:
+                    errorMessage = f"Could not update Playlist id {id}"
+            else:
+                errorMessage = "Invalid form values"
+    
+    return render_template("form.html", title= f"Edit {playlist.name}", form= form, errorMessage= errorMessage)
+
 @app.route("/playlists/delete/<id>")
 def playlistsDelete(id: str):
     playlist = playlistService.get(id)

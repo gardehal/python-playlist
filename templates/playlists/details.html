@@ -7,8 +7,8 @@
     <p>Sort order: {{ playlist.sortOrder }}</p>
     <p>Favorite: {{ playlist.favorite }}</p>
     <p>AllowDuplicates: {{ playlist.allowDuplicates }}</p>
-    <p>QueueStream count: {TODO{ len(playlist.streamIds) }}</p>
-    <p>StreamSource count: {TODO{ len(playlist.streamSourceIds) }}</p>
+    <p>QueueStream count: {{ playlist.streamIds|length }}</p>
+    <p>StreamSource count: {{ playlist.streamSourceIds|length }}</p>
     <p>LastWatchedIndex: {{ playlist.lastWatchedIndex }}</p>
     <p>Added: {{ playlist.added }}</p>
 
@@ -24,9 +24,6 @@
         </a>
         <a href="{{ url_for("prunePlaylist", playlistId=playlist.id) }}">
             <button>Prune</button>
-        </a>
-        <a href="{{ url_for("error", errorMessage="Not Implemented") }}">
-            <button>Purge</button>
         </a>
         <a href="{{ url_for("error", errorMessage="Not Implemented") }}">
             <button>Purge Fetch</button>
@@ -58,7 +55,7 @@
     {% endif %}
 
     <div class="row">
-        <a href="{{ url_for("error", errorMessage="Not Implemented") }}">
+        <a href="{{ url_for("streamSourcesCreate", playlistId=playlist.id) }}">
             <button>New StreamSource</button>
         </a>
         <a href="{{ url_for("error", errorMessage="Not Implemented") }}">

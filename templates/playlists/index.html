@@ -2,6 +2,16 @@
 {% block title %}Playlists{% endblock %}
 {% block content %}
     <h1>Playlists</h1>
+    
+    <div class="row">
+        <a href="{{ url_for("playlistsCreate") }}">
+            <button>New Playlist</button>
+        </a>
+        <a href="{{ url_for("error", errorMessage="Not Implemented") }}">
+            <button>New Playlist from YT Playlist</button>
+        </a>
+    </div>
+
     <ul>
         {% for playlist in playlists: %}
             <li><a href="{{ url_for("playlistsDetails", id=playlist.id) }}">{{ playlist.name }}</a></li>

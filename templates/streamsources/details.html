@@ -8,10 +8,12 @@
     <p>Added: {{ streamSource.added }}</p>
     
     <div class="row">
-        <a href="{{ streamSource.uri }}" target="_blank">
-            <button>Open URI</button>
-        </a>
-        <a href="{{ url_for("error", errorMessage="Not Implemented") }}">
+        {% if streamSource.isWeb %}
+            <a href="{{ streamSource.uri }}" target="_blank">
+                <button>Open URI</button>
+            </a>
+        {% endif %}
+        <a href="{{ url_for("streamSourcesEdit", id=streamSource.id) }}">
             <button>Edit</button>
         </a>
         <a href="{{ url_for("error", errorMessage="Not Implemented") }}">

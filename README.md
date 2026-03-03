@@ -119,13 +119,14 @@ Program for queueing and playing videos from list or from sources like channels 
 - restore/add source, have to check on deleted
 - twitter/facebook/instagram as sources for videos?
 - using guids as ids works but if manually sorting through files its hard to find the correct source without gui. change it to source + channel name, e.g. "youtube_SmarterEveryDay"
+- possible bug where if something is watched, the added to another playlists, when pruning first playlist, qs is deleted
 - simple graphics interface, preferably in browser
+  - update requirements.txt with new flask stuff
+  - some streams can be embedded if added through source, but not manually: ['https://www.youtube.com/watch?v=j5fbFcW3FK0']
   - embedded yt stops after 50-70 seconds....
   - ideal case is when video ends, the next one auto plays (if next is background content, also mark as watched?)
-  - tab title icon 
   - add new source
   - add new video
-  - add new playlist?
   - web editing for pl, qs, ss
   - implement all buttons
   - implement all forms

@@ -5,6 +5,7 @@ from flask_bootstrap import Bootstrap5
 from grdUtil.DateTimeUtil import getDateTime
 
 from forms.PlaylistForm import *
+from forms.StreamSourceForm import *
 
 from Settings import *
 from services.PlaylistService import *
@@ -157,17 +158,97 @@ def streamSourcesDetails(id: str):
     streamSource = streamSourceService.get(id, True)
     return render_template("streamSources/details.html", streamSource= streamSource)
 
+@app.route("/streamSources/create/<playlistId>", methods=["GET", "POST"])
+def streamSourcesCreate(playlistId: str):
+    errorMessage = None
+    form = StreamSourceForm()
+    
+    playlist = playlistService.get(playlistId)
+    if(not playlist):
+        return renderError(f"Playlist {playlistId} was not found.")
+    
+    if request.method == "POST":
+        if(form.validate_on_submit()):
+            streamSource = StreamSource(
+                name = form.name.data,
+                uri = form.uri.data,
+                isWeb = form.isWeb.data,
+                enableFetch = form.enableFetch.data,
+                backgroundContent = form.backgroundContent.data,
+                alwaysDownload = form.alwaysDownload.data,
+                streamSourceTypeId = 0,
+                lastSuccessfulFetched = None,
+                lastFetchedIds = [],
+                lastFetched = None
+            )
+            
+            createResult = streamSourceService.add(streamSource)
+            if(createResult):
+                playlist.streamSourceIds.append(createResult.id)
+                playlistService.update(playlist)
+            
+                return playlistsDetails(playlistId)
+    
+    return render_template("form.html", title= "Create new StreamSource", form= form, errorMessage= errorMessage)
+
+@app.route("/streamSources/edit/<id>", methods=["GET", "POST"])
+def streamSourcesEdit(id: str):
+    errorMessage = None
+    form = StreamSourceForm()
+    
+    streamSource = streamSourceService.get(id)
+    if(not streamSource):
+        return renderError(f"StreamSource {id} was not found.")
+    else:
+        if request.method == "GET":
+            form.name.data = streamSource.name
+            form.uri.data = streamSource.uri
+            form.streamSourceTypeId.data = streamSource.streamSourceTypeId
+            form.isWeb.data = streamSource.isWeb
+            form.enableFetch.data = streamSource.enableFetch
+            form.backgroundContent.data = streamSource.backgroundContent
+            form.alwaysDownload.data = streamSource.alwaysDownload
+        elif request.method == "POST":
+            if(form.validate_on_submit()):
+                streamSource.name = form.name.data
+                streamSource.uri = form.uri.data
+                streamSource.streamSourceTypeId = form.streamSourceTypeId.data
+                streamSource.isWeb = form.isWeb.data
+                streamSource.enableFetch = form.enableFetch.data
+                streamSource.backgroundContent = form.backgroundContent.data
+                streamSource.alwaysDownload = form.alwaysDownload.data
+                
+                updateResult = streamSourceService.update(streamSource)
+                
+                if(updateResult):
+                    return streamSourcesDetails(streamSource.id)
+                else:
+                    errorMessage = f"Could not update StreamSource {id}"
+            else:
+                errorMessage = "Invalid form values"
+    
+    return render_template("form.html", title= f"Edit {streamSource.name}", form= form, errorMessage= errorMessage)
+
 @app.route("/play/<playlistId>")
 def play(playlistId: str):
     index = int(request.args.get("index", 0))
     watchedId = request.args.get("watchedId", None)
+    unwatchId = request.args.get("unwatchId", None)
     
+    # Move somewhere else, serverhelper.py or something
     if(watchedId): 
         watchedQueueStream = queueStreamService.get(watchedId)
         if(watchedQueueStream):
             watchedQueueStream.watched = getDateTime()
             queueStreamService.update(watchedQueueStream)
             print("DEBUG: QueueStream " + watchedQueueStream.name + " watched from UI")
+            
+    if(unwatchId): 
+        unwatchedQueueStream = queueStreamService.get(unwatchId)
+        if(unwatchedQueueStream):
+            unwatchedQueueStream.watched = None
+            queueStreamService.update(unwatchedQueueStream)
+            print("DEBUG: QueueStream " + unwatchedQueueStream.name + " unwatch from UI")
         
     playlist = playlistService.get(playlistId)
     if(not playlist):
@@ -181,10 +262,17 @@ def play(playlistId: str):
         return renderError(f"QueueStream {queueStreamId} was not found.")
     
     embeddedUrl: str = None
-    if (queueStream.streamSourceId):
-        embeddedUrl = playbackService.mapUrlToEmbeddedUrl(queueStream)
-        
-    circumventUrl = playbackService.getRestrictCircumventedUrl(queueStream)
+    circumventUrl: str = None
+    fileUri: str = None
+    if(queueStream.isWeb):
+        if (queueStream.streamSourceId):
+            embeddedUrl = playbackService.mapUrlToEmbeddedUrl(queueStream)
+            
+        circumventUrl = playbackService.getRestrictCircumventedUrl(queueStream)
+    else:
+        # Abs paths dont work, copy file over?
+        # fast api symlink wont work without replacing entire flask
+        fileUri = playbackService.mapUrlToEmbeddedUrl(queueStream)
     
     # TODO fix index when clicking these, dict index + qs?, fix formating, text overlay over image, fix size too
     nextQueueStreams = []
@@ -193,7 +281,9 @@ def play(playlistId: str):
         if(nextQueueStream):
             nextQueueStreams.append(nextQueueStream)
         
-    return render_template("play.html", playlist= playlist, queueStream= queueStream, index= index, embeddedUrl= embeddedUrl, circumventUrl= circumventUrl, nextQueueStreams= nextQueueStreams)
+    return render_template("play.html", playlist= playlist, queueStream= queueStream, index= index, 
+                           embeddedUrl= embeddedUrl, circumventUrl= circumventUrl, fileUri= fileUri, 
+                           nextQueueStreams= nextQueueStreams)
 
 @app.route("/fetch/<playlistId>")
 def fetchPlaylist(playlistId):

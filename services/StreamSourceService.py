@@ -26,7 +26,8 @@ class StreamSourceService(BaseService[T]):
         """
 
         entity = streamSource
-        entity.isWeb = validators.url(entity.uri)
+        if(entity.isWeb):
+            entity.isWeb = validators.url(entity.uri)
         entity.streamSourceTypeId = StreamSourceTypeUtil.strToStreamSourceType(entity.uri).value
         
         return BaseService.add(self, entity)

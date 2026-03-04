@@ -25,7 +25,8 @@ class QueueStreamService(BaseService[T]):
         """
 
         entity = queueStream
-        entity.isWeb = validators.url(entity.uri)
+        if(entity.isWeb):
+            entity.isWeb = validators.url(entity.uri)
         
         return BaseService.add(self, entity)
         

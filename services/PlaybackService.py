@@ -353,6 +353,9 @@ class PlaybackService():
             str | None: Circumvented URL.
         """
         
+        if(not queueStream.isWeb):
+            return None
+        
         streamSourceType = StreamSourceTypeUtil.strToStreamSourceType(queueStream.uri)
         match streamSourceType.value:
             case StreamSourceType.YOUTUBE:

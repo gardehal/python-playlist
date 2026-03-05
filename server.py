@@ -5,6 +5,7 @@ from flask_bootstrap import Bootstrap5
 from grdUtil.DateTimeUtil import getDateTime
 
 from forms.PlaylistForm import *
+from forms.QueueStreamForm import *
 from forms.StreamSourceForm import *
 
 from Settings import *
@@ -148,6 +149,80 @@ def queueStreamsDetails(id: str):
     queueStream = queueStreamService.get(id, True)
     return render_template("queueStreams/details.html", queueStream= queueStream)
 
+@app.route("/queueStreams/create/<playlistId>", methods=["GET", "POST"])
+def queueStreamsCreate(playlistId: str):
+    playlist = playlistService.get(playlistId)
+    if(not playlist):
+        return renderError(f"Playlist {playlistId} was not found.")
+    
+    errorMessage = None
+    form = QueueStreamForm()
+    
+    if request.method == "POST":
+        if(form.validate_on_submit()):
+            queueStream = QueueStream(
+                name = form.name.data,
+                uri = form.uri.data,
+                isWeb = form.isWeb.data,
+                streamSourceId = form.streamSourceId.data,
+                streamSourceName = form.streamSourceName.data,
+                watched = form.watched.data,
+                backgroundContent = form.backgroundContent.data,
+                playtimeSeconds = form.playtimeSeconds.data,
+                remoteId = form.remoteId.data
+            )
+            
+            createResult = queueStreamService.add(queueStream)
+            if(createResult):
+                playlist.streamIds.append(createResult.id)
+                playlistService.update(playlist)
+            
+            return playlistsDetails(playlistId)
+    
+    return render_template("form.html", title= "Create new QueueStream", form= form, errorMessage= errorMessage)
+
+@app.route("/queueStreams/edit/<id>", methods=["GET", "POST"])
+def queueStreamsEdit(id: str):
+    errorMessage = None
+    form = QueueStreamForm()
+    
+    queueStream = queueStreamService.get(id)
+    if(not queueStream):
+        return renderError(f"No QueueStream found for {id}")
+    else:
+        if request.method == "GET":
+            form.name.data = queueStream.name
+            form.uri.data = queueStream.uri
+            form.isWeb.data = queueStream.isWeb
+            form.streamSourceId.data = queueStream.streamSourceId
+            form.streamSourceName.data = queueStream.streamSourceName
+            form.watched.data = queueStream.watched
+            form.backgroundContent.data = queueStream.backgroundContent
+            form.playtimeSeconds.data = queueStream.playtimeSeconds
+            form.remoteId.data = queueStream.remoteId
+        elif request.method == "POST":
+            if(form.validate_on_submit()):
+                queueStream.name = form.name.data
+                queueStream.uri = form.uri.data
+                queueStream.isWeb = form.isWeb.data
+                queueStream.streamSourceId = form.streamSourceId.data
+                queueStream.streamSourceName = form.streamSourceName.data
+                queueStream.watched = form.watched.data
+                queueStream.backgroundContent = form.backgroundContent.data
+                queueStream.playtimeSeconds = form.playtimeSeconds.data
+                queueStream.remoteId = form.remoteId.data
+                
+                updateResult = queueStreamService.update(queueStream)
+                
+                if(updateResult):
+                    return queueStreamsDetails(queueStream.id)
+                else:
+                    errorMessage = f"Could not update QueueStream {id}"
+            else:
+                errorMessage = "Invalid form values"
+    
+    return render_template("form.html", title= f"Edit {queueStream.name}", form= form, errorMessage= errorMessage)
+
 @app.route("/streamSources")
 def streamSourcesIndex():
     streamSources = streamSourceService.getAll()
@@ -160,12 +235,12 @@ def streamSourcesDetails(id: str):
 
 @app.route("/streamSources/create/<playlistId>", methods=["GET", "POST"])
 def streamSourcesCreate(playlistId: str):
-    errorMessage = None
-    form = StreamSourceForm()
-    
     playlist = playlistService.get(playlistId)
     if(not playlist):
         return renderError(f"Playlist {playlistId} was not found.")
+    
+    errorMessage = None
+    form = StreamSourceForm()
     
     if request.method == "POST":
         if(form.validate_on_submit()):

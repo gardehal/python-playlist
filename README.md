@@ -122,31 +122,18 @@ Program for queueing and playing videos from list or from sources like channels 
 - using guids as ids works but if manually sorting through files its hard to find the correct source without gui. change it to source + channel name, e.g. "youtube_SmarterEveryDay"
 - possible bug where if something is watched, the added to another playlists, when pruning first playlist, qs is deleted
 - simple graphics interface, preferably in browser
-  - on fetch, option to remove/delete qs from result page
-  - play.html must respect qs.watched and pl.playwatched
+  - on fetch, option to remove/delete qs from result of fetch page
   - when returning from a create page, the content is updated but the url in browser is sill create, refreshing the page causes the form to be posted again and create a duplicate. must fix
   - update requirements.txt with new flask stuff
   - some streams can be embedded if added through source, but not manually: ['https://www.youtube.com/watch?v=j5fbFcW3FK0']
-  - embedded yt stops after 50-70 seconds....
-  - ideal case is when video ends, the next one auto plays (if next is background content, also mark as watched?)
   - implement all buttons
   - embedded player doesn't remember settings (speed, audio levels) unlike real player in source, use/add cookies and pass to embedded?
-  - editing playlist, get option to remove steams and sources
-  - admin stuff:
-    - quit button not working
-    - more links around, can be useful to open streamsource or queuestream details from play for example, for editing or changing url if some problem? maybe more a dev/admin thing?
+  - editing playlist, get option to remove steams and sources, reorder, same with other list elements in streamsource
+  - more links around, can be useful to open streamsource or queuestream details from play for example, for editing or changing url if some problem? maybe more a dev/admin thing?
   - new fields:
     - thumbnail for queuestream
     - pfp for stream source
     - thumbnail for playlist (default blank + some way to add custom user one)
   - new entity, metadata:
-    - # of qs
-    - # of ss
-    - # of pl
-    - # of soft deleted entities
-    - last fetch time
-    - last fetch number of new fetches
-    - last fetched for playlist
-    - total storage used by this project
-    - uptime of web server
-    - other useful data/snacks
+    - service
+    - implement where most create/deletes are done, fetches, startups

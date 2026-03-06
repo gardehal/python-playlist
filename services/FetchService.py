@@ -2,6 +2,7 @@ import json
 from datetime import datetime
 from typing import List
 from xml.dom.minidom import parseString
+from pathlib import Path
 
 import mechanize
 import requests
@@ -140,12 +141,26 @@ class FetchService():
             Tuple[List[QueueStream], str]: A Tuple of List of QueueStream, and the last filename fetched.
         """
         
-        raise NotImplementedException("Fetch directory not implemented")
         if(streamSource == None):
             raise ArgumentException("fetchDirectory - streamSource was None")
+        
+        newQueueStreams = []
+        allFiles = [p for p in Path(streamSource.uri).rglob("*") if p.is_file()]
+        for file in allFiles:
+            sanitizedTitle = sanitize(file.name)
+            queueStream = QueueStream(name = sanitizedTitle, 
+                uri = file.absolute(), 
+                isWeb = False,
+                streamSourceId = streamSource.id,
+                streamSourceName = streamSource.name,
+                watched = None,
+                backgroundContent = streamSource.backgroundContent,
+                added = getDateTime(),
+                remoteId = None) # TODO find and filter out when fetching
+            
+            newQueueStreams.append(queueStream)
 
-        emptyReturn = []
-        return emptyReturn
+        return newQueueStreams
 
     def fetchYoutube(self, streamSource: StreamSource, batchSize: int = 10, takeAfter: datetime = None, takeBefore: datetime = None, takeNewOnly: bool = False) -> List[QueueStream]:
         """

@@ -1,5 +1,5 @@
 {% extends "layout.html" %}
-{% block title %}{{ queueStream.name }} - {{ queueStream.streamSourceName }} - {{ playlist.name }}{% endblock %}
+{% block title %}{{ queueStream.name }}{% endblock %}
 {% block content %}
     <div class="row">
         <a href="{{ url_for("playlistsDetails", id=playlist.id) }}">
@@ -19,36 +19,39 @@
         </a>
     </div>
     <div class="row">
+        <a href="{{ url_for("error", errorMessage="Not Implemented") }}">
+            <button>Add to other playlist</button>
+        </a>
         {% if circumventUrl %}
             <a href="{{ circumventUrl }}" target="_blank">
                 <button>Circumvent restricted</button>
             </a>
         {% endif %}
         {% if queueStream.watched %}
-            <a href="{{ url_for("error", errorMessage="Not Implemented") }}">
-                <button>Unwatch</button>
-            </a>
+        <a href="{{ url_for("play", playlistId=playlist.id, index=index, unwatchId= queueStream.id) }}">
+            <button>Unwatch</button>
+        </a>
         {% endif %}
-        
-        <form action="/addToPlaylist">
-            <label for="playlistId">Add to Playlist</label>
-            <input type="text" name="playlistId" id="playlistId" placeholder="ID" />
-            <button type="submit">Add</button>
-        </form>
     </div>
 
-    <p>{{ queueStream.name }} - {{ queueStream.streamSourceName }} - {{ playlist.name }}</p>
+    <p>{{ playlist.name }} - {{ queueStream.streamSourceName }}: {{ queueStream.name }}</p>
 
-    {% if embeddedUrl %}
-        <iframe src="{{ embeddedUrl }}" title="{{ queueStream.name }} video player" 
-            style="width:100%; aspect-ratio:16/9;" 
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-            allowfullscreen>
-        </iframe>
+    {% if queueStream.isWeb %}
+        {% if embeddedUrl %}
+            <iframe src="{{ embeddedUrl }}" title="{{ queueStream.name }} video player" 
+                style="width:100%; aspect-ratio:16/9;" 
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                allowfullscreen>
+            </iframe>
+        {% else %}
+            <h2>
+                This video could not be embedded, <a href="{{ queueStream.uri }}" target="_blank">watch here</a> 
+            </h2>
+        {% endif %}
     {% else %}
-        <h2>
-            This video could not be embedded, <a href="{{ queueStream.uri }}" target="_blank">watch here</a> 
-        </h2>
+        <video controls style="width:100%; aspect-ratio:16/9;">
+            <source src="{{ fileUri }}" type="video/mp4">
+        </video>
     {% endif %}
     
     <hr>

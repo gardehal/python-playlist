@@ -109,6 +109,7 @@ Program for queueing and playing videos from list or from sources like channels 
 
 ## TODO
 
+- rename queuestream -> stream, streamsource -> source, except stream and source are likely reserved keywords
 - with argumentor, can still use i0 (castFunc)? if not, rewrite docs and remove functions that expect/use this
 - an option to play playlist from last added, e.g. if 12 new videos were added, start playlist at maxlen -12, may need to check watched to prevent "skipped watched.." print
 - play stream by stream ID, eg. checking searched streams
@@ -121,16 +122,19 @@ Program for queueing and playing videos from list or from sources like channels 
 - using guids as ids works but if manually sorting through files its hard to find the correct source without gui. change it to source + channel name, e.g. "youtube_SmarterEveryDay"
 - possible bug where if something is watched, the added to another playlists, when pruning first playlist, qs is deleted
 - simple graphics interface, preferably in browser
+  - on fetch, option to remove/delete qs from result page
+  - play.html must respect qs.watched and pl.playwatched
+  - when returning from a create page, the content is updated but the url in browser is sill create, refreshing the page causes the form to be posted again and create a duplicate. must fix
   - update requirements.txt with new flask stuff
   - some streams can be embedded if added through source, but not manually: ['https://www.youtube.com/watch?v=j5fbFcW3FK0']
   - embedded yt stops after 50-70 seconds....
   - ideal case is when video ends, the next one auto plays (if next is background content, also mark as watched?)
-  - add new source
-  - add new video
-  - web editing for pl, qs, ss
   - implement all buttons
-  - implement all forms
   - embedded player doesn't remember settings (speed, audio levels) unlike real player in source, use/add cookies and pass to embedded?
+  - editing playlist, get option to remove steams and sources
+  - admin stuff:
+    - quit button not working
+    - more links around, can be useful to open streamsource or queuestream details from play for example, for editing or changing url if some problem? maybe more a dev/admin thing?
   - new fields:
     - thumbnail for queuestream
     - pfp for stream source

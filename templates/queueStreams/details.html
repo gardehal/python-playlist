@@ -14,7 +14,7 @@
                 <button>StreamSource</button>
             </a>
         {% endif %}
-        <a href="{{ url_for("error", errorMessage="Not Implemented") }}">
+        <a href="{{ url_for("queueStreamsEdit", id=queueStream.id) }}">
             <button>Edit</button>
         </a>
         <a href="{{ url_for("error", errorMessage="Not Implemented") }}">

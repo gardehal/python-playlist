@@ -58,7 +58,7 @@
         <a href="{{ url_for("streamSourcesCreate", playlistId=playlist.id) }}">
             <button>New StreamSource</button>
         </a>
-        <a href="{{ url_for("error", errorMessage="Not Implemented") }}">
+        <a href="{{ url_for("queueStreamsCreate", playlistId=playlist.id) }}">
             <button>New QueueStream</button>
         </a>
     </div>

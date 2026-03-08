@@ -1,40 +1,60 @@
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-body {
-    padding: 2rem;
-    background-color: #333;
-    color: whitesmoke;
-    min-height: 100vh;
+#displayContent 
+{
+    top: 0;
     display: flex;
     flex-direction: column;
+    display: flex;
+    min-height: 100vh;
     align-items: center;
-    gap: 2rem;
-    font-size: 2rem;
+    color: whitesmoke;
+    background-color: #333;
 }
 
-input, button {
-    font-size: 2rem;
-    padding: 1rem;
-    border-radius: 10px;
+#displayContent > div
+{
+    width: 70%;
 }
 
-.row {
-    width: 100%;
+.center 
+{
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
-.row ul {
+
+.row 
+{
+    flex-direction: none;
+}
+.row ul 
+{
     list-style-type: none;
 }
-.row ul li {
+.row ul li 
+{
     float: left;
     padding: 1em;
 }
 
-.center {
-  display: flex;
-  justify-content: center;
-  align-items: center;
+.btn
+{
+    border-width: 4px !important;
+    border-style: solid !important;
+    border-color: white !important;
+}
+
+a
+{
+    width: fit-content !important;
+}
+
+.videoContainer
+{
+    width: 100%;
+}
+
+.videoPlayer
+{
+    width: 100%; 
+    aspect-ratio: 16/9; 
 }

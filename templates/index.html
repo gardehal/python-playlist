@@ -6,17 +6,9 @@
     TODO: metadata like last fetched streams(s), last fetch time, last fetched for playlist, number of playlists/qs/ss, ...
 
     <div class="row">
-        <a href="{{ url_for("playlistsDetails", id=defaultPlaylistId) }}">
-            <button>Default playlist: {{ defaultPlaylistId }}</button>
-        </a>
-        <a href="{{ url_for("error", errorMessage="Not Implemented") }}">
-            <button>Purge all</button>
-        </a>
-    </div>
-
-    <div class="row adminActions">
-        <a href="{{ url_for("softDeletedIndex") }}">
-            <button>Soft Deleted Entities</button>
-        </a>
+        <a class="btn" href="{{ url_for("playlistsDetails", id=defaultPlaylistId) }}">Default playlist: {{ defaultPlaylistId }}</a>
+        <a class="btn" href="{{ url_for("error", errorMessage="Not Implemented") }}">Purge all</a>
+        <a class="btn" href="{{ url_for("softDeletedIndex") }}">Soft Deleted Entities</a>
+        <a class="btn" href="{{ url_for("error", errorMessage="Not Implemented") }}">Test</a>
     </div>
 {% endblock %}

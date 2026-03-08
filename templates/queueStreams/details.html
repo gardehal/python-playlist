@@ -6,26 +6,18 @@
     <p>Added: {{ queueStream.added }}</p>
 
     <div class="row">
-        <a href="{{ queueStream.uri }}" target="_blank">
-            <button>Open URI</button>
-        </a>
+        <a class="btn" href="{{ queueStream.uri }}" target="_blank">Open URI</a>
         {% if queueStream.streamSourceId %}
-            <a href="{{ url_for("streamSourcesDetails", id=queueStream.streamSourceId) }}">
-                <button>StreamSource</button>
-            </a>
+            <a class="btn" href="{{ url_for("streamSourcesDetails", id=queueStream.streamSourceId) }}">StreamSource</a>
         {% endif %}
-        <a href="{{ url_for("queueStreamsEdit", id=queueStream.id) }}">
-            <button>Edit</button>
-        </a>
-        <a href="{{ url_for("error", errorMessage="Not Implemented") }}">
-            <button>Delete</button>
-        </a>
+        <a class="btn" href="{{ url_for("queueStreamsEdit", id=queueStream.id) }}">Edit</a>
+        <a class="btn" href="{{ url_for("error", errorMessage="Not Implemented") }}">Delete</a>
     </div>
 
     {% if queueStream.deleted %}
         <div class="row">
             <p>Soft deleted: {{ queueStream.deleted }}</p>
-            <button type="submit">Restore from soft delete</button>
+            <button class="btn" type="submit">Restore from soft delete</button>
         </div>
     {% endif %}
 {% endblock %}

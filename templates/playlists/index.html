@@ -4,12 +4,8 @@
     <h1>Playlists</h1>
     
     <div class="row">
-        <a href="{{ url_for("playlistsCreate") }}">
-            <button>New Playlist</button>
-        </a>
-        <a href="{{ url_for("error", errorMessage="Not Implemented") }}">
-            <button>New Playlist from YT Playlist</button>
-        </a>
+        <a class="btn" href="{{ url_for("playlistsCreate") }}">New Playlist</a>
+        <a class="btn" href="{{ url_for("error", errorMessage="Not Implemented") }}">New Playlist from YT Playlist</a>
     </div>
 
     <ul>

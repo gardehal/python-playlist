@@ -2,57 +2,42 @@
 {% block title %}{{ queueStream.name }}{% endblock %}
 {% block content %}
     <div class="row">
-        <a href="{{ url_for("playlistsDetails", id=playlist.id) }}">
-            <button><-Playlist--</button>
-        </a>
-        <a href="{{ url_for("play", playlistId=playlist.id, index=index-1) }}">
-            <button><< Back</button>
-        </a>
-        <a href="{{ queueStream.uri }}" target="_blank">
-            <button>Open URI</button>
-        </a>
-        <a href="{{ url_for("play", playlistId=playlist.id, index=index+1, watchedId= queueStream.id) }}">
-            <button>Watched >></button>
-        </a>
-        <a href="{{ url_for("play", playlistId=playlist.id, index=index+1) }}">
-            <button>--Skip-></button>
-        </a>
+        <a class="btn" href="{{ url_for("playlistsDetails", id=playlist.id) }}"><-Playlist--</a>
+        <a class="btn" href="{{ url_for("play", playlistId=playlist.id, index=index-1) }}"><< Back</a>
+        <a class="btn" href="{{ queueStream.uri }}" target="_blank">Open URI</a>
+        <a class="btn" href="{{ url_for("play", playlistId=playlist.id, index=index+1, watchedId= queueStream.id) }}">Watched >></a>
+        <a class="btn" href="{{ url_for("play", playlistId=playlist.id, index=index+1) }}">--Skip-></a>
     </div>
     <div class="row">
-        <a href="{{ url_for("error", errorMessage="Not Implemented") }}">
-            <button>Add to other playlist</button>
-        </a>
+        <a class="btn" href="{{ url_for("error", errorMessage="Not Implemented") }}">Add to other playlist</a>
         {% if circumventUrl %}
-            <a href="{{ circumventUrl }}" target="_blank">
-                <button>Circumvent restricted</button>
-            </a>
+            <a class="btn" href="{{ circumventUrl }}" target="_blank">Circumvent restricted</a>
         {% endif %}
         {% if queueStream.watched %}
-        <a href="{{ url_for("play", playlistId=playlist.id, index=index, unwatchId= queueStream.id) }}">
-            <button>Unwatch</button>
-        </a>
+            <a class="btn" href="{{ url_for("play", playlistId=playlist.id, index=index, unwatchId= queueStream.id) }}">Unwatch</a>
         {% endif %}
     </div>
 
     <p>{{ playlist.name }} - {{ queueStream.streamSourceName }}: {{ queueStream.name }}</p>
 
-    {% if queueStream.isWeb %}
-        {% if embeddedUrl %}
-            <iframe src="{{ embeddedUrl }}" title="{{ queueStream.name }} video player" 
-                style="width:100%; aspect-ratio:16/9;" 
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-                allowfullscreen>
-            </iframe>
+    <div class="videoContainer">
+        {% if queueStream.isWeb %}
+            {% if embeddedUrl %}
+                <iframe class="videoPlayer"  allowfullscreen
+                    src="{{ embeddedUrl }}" title="{{ queueStream.name }} video player" 
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share">
+                </iframe>
+            {% else %}
+                <h2>
+                    This video could not be embedded, <a href="{{ queueStream.uri }}" target="_blank">watch here</a> 
+                </h2>
+            {% endif %}
         {% else %}
-            <h2>
-                This video could not be embedded, <a href="{{ queueStream.uri }}" target="_blank">watch here</a> 
-            </h2>
+            <video  class="videoPlayer" controls>
+                <source src="{{ fileUri }}" type="video/mp4">
+            </video>
         {% endif %}
-    {% else %}
-        <video controls style="width:100%; aspect-ratio:16/9;">
-            <source src="{{ fileUri }}" type="video/mp4">
-        </video>
-    {% endif %}
+    </div>
     
     <hr>
     <div class="row">

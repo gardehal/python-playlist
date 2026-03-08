@@ -3,9 +3,7 @@
 {% block content %}
     <h1>Fetch {{ playlist.name }}</h1>
 
-    <a href="{{ url_for("playlistsDetails", id=playlist.id) }}">
-        <button>Playlist</button>
-    </a>
+    <a class="btn" href="{{ url_for("playlistsDetails", id=playlist.id) }}">Playlist</a>
 
     {% if newQueueStreams|length < 0 %}
         No new QueueStreams

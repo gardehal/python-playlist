@@ -15,52 +15,29 @@
     <div class="row">
         <form action="/play/{{ playlist.id }}">
             <input type="number" name="index" id="index" placeholder="Index" />
-            <button type="submit">Play index</button>
+            <button class="btn" type="submit">Play from</button>
         </form>
     </div>
     <div class="row">
-        <a href="{{ url_for("fetchPlaylist", playlistId=playlist.id) }}">
-            <button>Fetch (new only)</button>
-        </a>
-        <a href="{{ url_for("prunePlaylist", playlistId=playlist.id) }}">
-            <button>Prune</button>
-        </a>
-        <a href="{{ url_for("error", errorMessage="Not Implemented") }}">
-            <button>Purge Fetch</button>
-        </a>
-        <a href="{{ url_for("error", errorMessage="Not Implemented") }}">
-            <button>Download</button>
-        </a>
-        <a href="{{ url_for("error", errorMessage="Not Implemented") }}">
-            <button>Export</button>
-        </a>
-        <a href="{{ url_for("error", errorMessage="Not Implemented") }}">
-            <button>Unwatch all</button>
-        </a>
-        <a href="{{ url_for("playlistsEdit", id=playlist.id) }}">
-            <button>Edit</button>
-        </a>
-        <a href="{{ url_for("playlistsDelete", id=playlist.id) }}">
-            <button>Delete</button>
-        </a>
+        <a class="btn" href="{{ url_for("fetchPlaylist", playlistId=playlist.id) }}">Fetch new</a>
+        <a class="btn" href="{{ url_for("prunePlaylist", playlistId=playlist.id) }}">Prune</a>
+        <a class="btn" href="{{ url_for("error", errorMessage="Not Implemented") }}">Download</a>
+        <a class="btn" href="{{ url_for("error", errorMessage="Not Implemented") }}">Export</a>
+        <a class="btn" href="{{ url_for("error", errorMessage="Not Implemented") }}">Unwatch all</a>
+        <a class="btn" href="{{ url_for("playlistsEdit", id=playlist.id) }}">Edit</a>
+        <a class="btn" href="{{ url_for("playlistsDelete", id=playlist.id) }}">Delete</a>
     </div>
     
     {% if playlist.deleted %}
         <div class="row">
             <p>Soft deleted: {{ playlist.deleted }}</p>
-            <a href="{{ url_for("error", errorMessage="Not Implemented") }}">
-                <button>Restore from soft delete</button>
-            </a>
+            <a class="btn" href="{{ url_for("error", errorMessage="Not Implemented") }}">Restore from soft delete</a>
         </div>
     {% endif %}
 
     <div class="row">
-        <a href="{{ url_for("streamSourcesCreate", playlistId=playlist.id) }}">
-            <button>New StreamSource</button>
-        </a>
-        <a href="{{ url_for("queueStreamsCreate", playlistId=playlist.id) }}">
-            <button>New QueueStream</button>
-        </a>
+        <a class="btn" href="{{ url_for("streamSourcesCreate", playlistId=playlist.id) }}">New StreamSource</a>
+        <a class="btn" href="{{ url_for("queueStreamsCreate", playlistId=playlist.id) }}">New QueueStream</a>
     </div>
     
     <h1>QueueStreams in {{ playlist.name }}</h1>

@@ -9,22 +9,16 @@
     
     <div class="row">
         {% if streamSource.isWeb %}
-            <a href="{{ streamSource.uri }}" target="_blank">
-                <button>Open URI</button>
-            </a>
+            <a class="btn" href="{{ streamSource.uri }}" target="_blank">Open URI</a>
         {% endif %}
-        <a href="{{ url_for("streamSourcesEdit", id=streamSource.id) }}">
-            <button>Edit</button>
-        </a>
-        <a href="{{ url_for("error", errorMessage="Not Implemented") }}">
-            <button>Delete</button>
-        </a>
+        <a class="btn" href="{{ url_for("streamSourcesEdit", id=streamSource.id) }}">Edit</a>
+        <a class="btn" href="{{ url_for("error", errorMessage="Not Implemented") }}">Delete</a>
     </div>
     
     {% if streamSource.deleted %}
         <div class="row">
             <p>Soft deleted: {{ streamSource.deleted }}</p>
-            <button type="submit">Restore from soft delete</button>
+            <button class="btn" type="submit">Restore from soft delete</button>
         </div>
     {% endif %}
 {% endblock %}

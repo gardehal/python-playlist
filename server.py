@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect, url_for
 from flask_wtf import CSRFProtect
 from flask_bootstrap import Bootstrap5
 
@@ -335,6 +335,10 @@ def play(playlistId: str):
     queueStream = queueStreamService.get(queueStreamId)
     if(not queueStream):
         return renderError(f"QueueStream {queueStreamId} was not found.")
+    
+    # When going back, this still hits, add goback variable with int steps to go back, if >0, dont enter here
+    # if(queueStream.watched and not playlist.playWatchedStreams):
+    #     return redirect(url_for("play", playlistId= playlistId, index= index+1))
     
     embeddedUrl: str = None
     circumventUrl: str = None

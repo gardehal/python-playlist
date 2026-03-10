@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_wtf import CSRFProtect
 from flask_bootstrap import Bootstrap5
 
@@ -40,11 +40,6 @@ def index():
 def help():
     return render_template("help.html")
 
-@app.route("/quit")
-def quitApp():
-    quit() # not working? should end server/program locally
-    return index()
-
 @app.route("/error")
 def error():
     errorMessage = request.args.get("errorMessage", "An unspecified error has occurred! Please check the logs for details.")
@@ -61,9 +56,14 @@ def playlistsIndex():
 @app.route("/playlists/<id>")
 def playlistsDetails(id: str):
     playlist = playlistService.get(id, True)
+    if(not playlist):
+        flash(f"Playlist {id} was not found.", "error")
+        return playlistsIndex()
+    
     queueStreams = playlistService.getStreamsByPlaylistId(id)
     streamSources = playlistService.getSourcesByPlaylistId(id)
-    return render_template("playlists/details.html", playlist= playlist, enumerateQueueStreams= enumerate(queueStreams), streamSources= streamSources)
+    enumerateQueueStreams = enumerate(queueStreams) if queueStreams else None
+    return render_template("playlists/details.html", playlist= playlist, enumerateQueueStreams= enumerateQueueStreams, streamSources= streamSources)
 
 @app.route("/playlists/create", methods=["GET", "POST"])
 def playlistsCreate():
@@ -96,48 +96,51 @@ def playlistsEdit(id: str):
     
     playlist = playlistService.get(id)
     if(not playlist):
-        return renderError(f"No Playlist found for id {id}")
-    else:
-        if request.method == "GET":
-            form.name.data = playlist.name
-            form.playWatchedStreams.data = playlist.playWatchedStreams
-            form.allowDuplicates.data = playlist.allowDuplicates
-            form.description.data = playlist.description
-            form.favorite.data = playlist.favorite
-            form.sortOrder.data = playlist.sortOrder
-        elif request.method == "POST":
-            if(form.validate_on_submit()):
-                playlist.name = form.name.data
-                playlist.playWatchedStreams = form.playWatchedStreams.data
-                playlist.allowDuplicates = form.allowDuplicates.data
-                playlist.description = form.description.data
-                playlist.favorite = form.favorite.data
-                playlist.sortOrder = form.sortOrder.data
-                
-                updateResult = playlistService.update(playlist)
-                
-                if(updateResult):
-                    return playlistsDetails(playlist.id)
-                else:
-                    errorMessage = f"Could not update Playlist id {id}"
-            else:
-                errorMessage = "Invalid form values"
+        flash(f"Playlist {id} was not found.", "error")
+        return playlistsIndex()
+    
+    if request.method == "GET":
+        form.name.data = playlist.name
+        form.playWatchedStreams.data = playlist.playWatchedStreams
+        form.allowDuplicates.data = playlist.allowDuplicates
+        form.description.data = playlist.description
+        form.favorite.data = playlist.favorite
+        form.sortOrder.data = playlist.sortOrder
+    elif request.method == "POST":
+        if(form.validate_on_submit()):
+            playlist.name = form.name.data
+            playlist.playWatchedStreams = form.playWatchedStreams.data
+            playlist.allowDuplicates = form.allowDuplicates.data
+            playlist.description = form.description.data
+            playlist.favorite = form.favorite.data
+            playlist.sortOrder = form.sortOrder.data
+            
+            updateResult = playlistService.update(playlist)
+            
+            if(updateResult):
+                return playlistsDetails(playlist.id)
+            
+            errorMessage = f"Could not update Playlist id {id}"
+        else:
+            errorMessage = "Invalid form values"
     
     return render_template("form.html", title= f"Edit {playlist.name}", form= form, errorMessage= errorMessage)
 
 @app.route("/playlists/delete/<id>")
 def playlistsDelete(id: str):
     playlist = playlistService.get(id)
-    if(playlist):
-        # TODO alert + accept: f"Delete {playlist.name}?"
-        
-        deleteResult = playlistService.delete(id)
-        if(deleteResult):
-            return playlistsIndex()
-        else:
-            return renderError(f"Playlist with {id} could not be deleted.")
+    if(not playlist):
+        flash(f"Playlist {id} was not found.", "error")
+        return playlistsDetails(id)
+    
+    # TODO alert + accept: f"Delete {playlist.name}?"
+    
+    deleteResult = playlistService.delete(id)
+    if(deleteResult):
+        return playlistsIndex()
     else:
-        return renderError(f"Playlist {id} was not found.")
+        flash(f"Playlist with {id} could not be deleted.", "error")
+        return playlistsDetails(id)
 
 @app.route("/queueStreams")
 def queueStreamsIndex():
@@ -153,7 +156,8 @@ def queueStreamsDetails(id: str):
 def queueStreamsCreate(playlistId: str):
     playlist = playlistService.get(playlistId)
     if(not playlist):
-        return renderError(f"Playlist {playlistId} was not found.")
+        flash(f"Playlist {playlistId} was not found.", "error")
+        return queueStreamsIndex()
     
     errorMessage = None
     form = QueueStreamForm()
@@ -188,38 +192,39 @@ def queueStreamsEdit(id: str):
     
     queueStream = queueStreamService.get(id)
     if(not queueStream):
-        return renderError(f"No QueueStream found for {id}")
-    else:
-        if request.method == "GET":
-            form.name.data = queueStream.name
-            form.uri.data = queueStream.uri
-            form.isWeb.data = queueStream.isWeb
-            form.streamSourceId.data = queueStream.streamSourceId
-            form.streamSourceName.data = queueStream.streamSourceName
-            form.watched.data = queueStream.watched
-            form.backgroundContent.data = queueStream.backgroundContent
-            form.playtimeSeconds.data = queueStream.playtimeSeconds
-            form.remoteId.data = queueStream.remoteId
-        elif request.method == "POST":
-            if(form.validate_on_submit()):
-                queueStream.name = form.name.data
-                queueStream.uri = form.uri.data
-                queueStream.isWeb = form.isWeb.data
-                queueStream.streamSourceId = form.streamSourceId.data
-                queueStream.streamSourceName = form.streamSourceName.data
-                queueStream.watched = form.watched.data
-                queueStream.backgroundContent = form.backgroundContent.data
-                queueStream.playtimeSeconds = form.playtimeSeconds.data
-                queueStream.remoteId = form.remoteId.data
+        flash(f"QueueStream with {id} was not found.", "error")
+        return queueStreamsIndex()
+    
+    if request.method == "GET":
+        form.name.data = queueStream.name
+        form.uri.data = queueStream.uri
+        form.isWeb.data = queueStream.isWeb
+        form.streamSourceId.data = queueStream.streamSourceId
+        form.streamSourceName.data = queueStream.streamSourceName
+        form.watched.data = queueStream.watched
+        form.backgroundContent.data = queueStream.backgroundContent
+        form.playtimeSeconds.data = queueStream.playtimeSeconds
+        form.remoteId.data = queueStream.remoteId
+    elif request.method == "POST":
+        if(form.validate_on_submit()):
+            queueStream.name = form.name.data
+            queueStream.uri = form.uri.data
+            queueStream.isWeb = form.isWeb.data
+            queueStream.streamSourceId = form.streamSourceId.data
+            queueStream.streamSourceName = form.streamSourceName.data
+            queueStream.watched = form.watched.data
+            queueStream.backgroundContent = form.backgroundContent.data
+            queueStream.playtimeSeconds = form.playtimeSeconds.data
+            queueStream.remoteId = form.remoteId.data
+            
+            updateResult = queueStreamService.update(queueStream)
+            
+            if(updateResult):
+                return queueStreamsDetails(queueStream.id)
                 
-                updateResult = queueStreamService.update(queueStream)
-                
-                if(updateResult):
-                    return queueStreamsDetails(queueStream.id)
-                else:
-                    errorMessage = f"Could not update QueueStream {id}"
-            else:
-                errorMessage = "Invalid form values"
+            errorMessage = f"Could not update QueueStream {id}"
+        else:
+            errorMessage = "Invalid form values"
     
     return render_template("form.html", title= f"Edit {queueStream.name}", form= form, errorMessage= errorMessage)
 
@@ -237,7 +242,8 @@ def streamSourcesDetails(id: str):
 def streamSourcesCreate(playlistId: str):
     playlist = playlistService.get(playlistId)
     if(not playlist):
-        return renderError(f"Playlist {playlistId} was not found.")
+        flash(f"Playlist {playlistId} was not found.", "error")
+        return streamSourcesIndex()
     
     errorMessage = None
     form = StreamSourceForm()
@@ -273,40 +279,41 @@ def streamSourcesEdit(id: str):
     
     streamSource = streamSourceService.get(id)
     if(not streamSource):
-        return renderError(f"StreamSource {id} was not found.")
-    else:
-        if request.method == "GET":
-            form.name.data = streamSource.name
-            form.uri.data = streamSource.uri
-            form.streamSourceTypeId.data = streamSource.streamSourceTypeId
-            form.isWeb.data = streamSource.isWeb
-            form.enableFetch.data = streamSource.enableFetch
-            form.backgroundContent.data = streamSource.backgroundContent
-            form.alwaysDownload.data = streamSource.alwaysDownload
-        elif request.method == "POST":
-            if(form.validate_on_submit()):
-                streamSource.name = form.name.data
-                streamSource.uri = form.uri.data
-                streamSource.streamSourceTypeId = form.streamSourceTypeId.data
-                streamSource.isWeb = form.isWeb.data
-                streamSource.enableFetch = form.enableFetch.data
-                streamSource.backgroundContent = form.backgroundContent.data
-                streamSource.alwaysDownload = form.alwaysDownload.data
-                
-                updateResult = streamSourceService.update(streamSource)
-                
-                if(updateResult):
-                    return streamSourcesDetails(streamSource.id)
-                else:
-                    errorMessage = f"Could not update StreamSource {id}"
-            else:
-                errorMessage = "Invalid form values"
+        flash(f"StreamSource {id} was not found.", "error")
+        return streamSourcesIndex()
+    
+    if request.method == "GET":
+        form.name.data = streamSource.name
+        form.uri.data = streamSource.uri
+        form.streamSourceTypeId.data = streamSource.streamSourceTypeId
+        form.isWeb.data = streamSource.isWeb
+        form.enableFetch.data = streamSource.enableFetch
+        form.backgroundContent.data = streamSource.backgroundContent
+        form.alwaysDownload.data = streamSource.alwaysDownload
+    elif request.method == "POST":
+        if(form.validate_on_submit()):
+            streamSource.name = form.name.data
+            streamSource.uri = form.uri.data
+            streamSource.streamSourceTypeId = form.streamSourceTypeId.data
+            streamSource.isWeb = form.isWeb.data
+            streamSource.enableFetch = form.enableFetch.data
+            streamSource.backgroundContent = form.backgroundContent.data
+            streamSource.alwaysDownload = form.alwaysDownload.data
+            
+            updateResult = streamSourceService.update(streamSource)
+            
+            if(updateResult):
+                return streamSourcesDetails(streamSource.id)
+            
+            errorMessage = f"Could not update StreamSource {id}"
+        else:
+            errorMessage = "Invalid form values"
     
     return render_template("form.html", title= f"Edit {streamSource.name}", form= form, errorMessage= errorMessage)
 
 @app.route("/play/<playlistId>")
 def play(playlistId: str):
-    index = int(request.args.get("index", 0))
+    playIndex = int(request.args.get("index", 0))
     watchedId = request.args.get("watchedId", None)
     unwatchId = request.args.get("unwatchId", None)
     
@@ -327,18 +334,21 @@ def play(playlistId: str):
         
     playlist = playlistService.get(playlistId)
     if(not playlist):
-        return renderError(f"Playlist {playlistId} was not found.")
-    if(index < 0 or index >= len(playlist.streamIds)):
-        return renderError(f"Index was out of range of playlist {playlist.name}, max index: {len(playlist.streamIds) - 1}")
+        flash(f"Playlist {playlistId} was not found.", "error")
+        return index()
+    if(playIndex < 0 or playIndex >= len(playlist.streamIds)):
+        flash(f"Index was out of range of playlist {playlist.name}, max index: {len(playlist.streamIds) - 1}", "error")
+        return playlistsDetails(id = playlist.id)
     
-    queueStreamId = playlist.streamIds[index]
+    queueStreamId = playlist.streamIds[playIndex]
     queueStream = queueStreamService.get(queueStreamId)
     if(not queueStream):
-        return renderError(f"QueueStream {queueStreamId} was not found.")
+        flash(f"QueueStream {queueStreamId}, index {playIndex} was not found.", "error")
+        return playlistsDetails(id = playlist.id)
     
     # When going back, this still hits, add goback variable with int steps to go back, if >0, dont enter here
     # if(queueStream.watched and not playlist.playWatchedStreams):
-    #     return redirect(url_for("play", playlistId= playlistId, index= index+1))
+    #     return redirect(url_for("play", playlistId= playlistId, index= playIndex+1))
     
     embeddedUrl: str = None
     circumventUrl: str = None
@@ -355,20 +365,21 @@ def play(playlistId: str):
     
     # TODO fix index when clicking these, dict index + qs?, fix formating, text overlay over image, fix size too
     nextQueueStreams = []
-    for nextQueueStreamId in playlist.streamIds[index+1:][:4]: # Next 4, if any
+    for nextQueueStreamId in playlist.streamIds[playIndex+1:][:4]: # Next 4, if any
         nextQueueStream = queueStreamService.get(nextQueueStreamId)
         if(nextQueueStream):
             nextQueueStreams.append(nextQueueStream)
         
-    return render_template("play.html", playlist= playlist, queueStream= queueStream, index= index, 
-                           embeddedUrl= embeddedUrl, circumventUrl= circumventUrl, fileUri= fileUri, 
-                           nextQueueStreams= nextQueueStreams)
+    return render_template("play.html", playlist= playlist, queueStream= queueStream, index= playIndex, 
+        embeddedUrl= embeddedUrl, circumventUrl= circumventUrl, fileUri= fileUri, 
+        nextQueueStreams= nextQueueStreams)
 
 @app.route("/fetch/<playlistId>")
 def fetchPlaylist(playlistId):
     playlist = playlistService.get(playlistId)
     
     # TODO while fetching, show some spinner + prints in fetching.html or something
+    flash(f"Fetch started, please wait...", "success")
     newQueueStreams = fetchService.fetch(playlist.id, settings.fetchLimitSingleSource, takeNewOnly= True)
     
     return render_template("fetch.html", playlist= playlist, newQueueStreams= newQueueStreams)
@@ -380,8 +391,8 @@ def prunePlaylist(playlistId):
     data = sharedService.preparePrune(playlistId)
     pruneResult = sharedService.doPrune(data)
     if(pruneResult):
-        # TODO get flask-modals or something and add toast with result
-        print(f"Pruned {len(data.queueStreams)} QueueStreams in Playlist {playlist.name}")
+        # TODO len here is soft deleted, not actually removed ones, gives "wrong" result
+        flash(f"Pruned {len(data.queueStreams)} QueueStreams in Playlist {playlist.name}", "success")
     
     return playlistsDetails(playlistId)
 

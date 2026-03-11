@@ -42,14 +42,20 @@
     <hr>
     <div class="row">
         <h4>Next QueueStreams</h4>
-        {% for queueStream in nextQueueStreams: %}
-            <a href="{{ url_for("play", playlistId=playlist.id, index=index+1) }}">
-                <div class="center" width="2em">
-                    <img src="/static/default.png">
-                    <p>{{ queueStream.name }}</p>
-                    <p>{{ queueStream.streamSourceName }}</p>
-                </div>
-            </a>
-        {% endfor %}
+        
+        {% if nextQueueStreams|length == 0 %}
+            This is the last QueueStream in {{ playlist.name }} 
+            <a class="btn" href="{{ url_for("playlistsDetails", id=playlist.id) }}">Return to {{ playlist.name }}</a>
+        {% else %}
+            {% for queueStream in nextQueueStreams: %}
+                <a href="{{ url_for("play", playlistId=playlist.id, index=index+1) }}">
+                    <div class="center" width="2em">
+                        <img src="/static/default.png">
+                        <p>{{ queueStream.name }}</p>
+                        <p>{{ queueStream.streamSourceName }}</p>
+                    </div>
+                </a>
+            {% endfor %}
+        {% endif %}
     </div>
 {% endblock %}

@@ -228,6 +228,15 @@ def queueStreamsEdit(id: str):
     
     return render_template("form.html", title= f"Edit {queueStream.name}", form= form, errorMessage= errorMessage)
 
+@app.route("/queueStreams/delete/<id>")
+def queueStreamsDelete(id: str):
+    queueStream = queueStreamService.get(id)
+    if(not queueStream):
+        flash(f"QueueStream {id} was not found.", "error")
+        return queueStreamsDetails(id)
+    
+    flash(f"Delete not implemented until alert confirmation works.", "info")
+    
 @app.route("/streamSources")
 def streamSourcesIndex():
     streamSources = streamSourceService.getAll()

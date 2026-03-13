@@ -320,6 +320,15 @@ def streamSourcesEdit(id: str):
     
     return render_template("form.html", title= f"Edit {streamSource.name}", form= form, errorMessage= errorMessage)
 
+@app.route("/streamSources/delete/<id>")
+def streamSourcesDelete(id: str):
+    streamSource = streamSourcesDetails.get(id)
+    if(not streamSource):
+        flash(f"StreamSource {id} was not found.", "error")
+        return streamSourcesDetails(id)
+    
+    flash(f"Delete not implemented until alert confirmation works.", "info")
+
 @app.route("/play/<playlistId>")
 def play(playlistId: str):
     playIndex = int(request.args.get("index", 0))

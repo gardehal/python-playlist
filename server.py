@@ -236,6 +236,7 @@ def queueStreamsDelete(id: str):
         return queueStreamsDetails(id)
     
     flash(f"Delete not implemented until alert confirmation works.", "info")
+    return queueStreamsDetails(id)
     
 @app.route("/streamSources")
 def streamSourcesIndex():
@@ -322,12 +323,13 @@ def streamSourcesEdit(id: str):
 
 @app.route("/streamSources/delete/<id>")
 def streamSourcesDelete(id: str):
-    streamSource = streamSourcesDetails.get(id)
+    streamSource = streamSourceService.get(id)
     if(not streamSource):
         flash(f"StreamSource {id} was not found.", "error")
         return streamSourcesDetails(id)
     
     flash(f"Delete not implemented until alert confirmation works.", "info")
+    return streamSourcesDetails(id)
 
 @app.route("/play/<playlistId>")
 def play(playlistId: str):

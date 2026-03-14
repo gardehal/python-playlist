@@ -11,7 +11,7 @@
             <a class="btn" href="{{ url_for("streamSourcesDetails", id=queueStream.streamSourceId) }}">StreamSource</a>
         {% endif %}
         <a class="btn" href="{{ url_for("queueStreamsEdit", id=queueStream.id) }}">Edit</a>
-        <a class="btn" href="{{ url_for("error", errorMessage="Not Implemented") }}">Delete</a>
+        <a class="btn" href="{{ url_for("queueStreamsDelete", id=queueStream.id) }}">Delete</a>
     </div>
 
     {% if queueStream.deleted %}

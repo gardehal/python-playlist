@@ -7,8 +7,8 @@
 
     <div class="row">
         <a class="btn" href="{{ url_for("playlistsDetails", id=defaultPlaylistId) }}">Default playlist: {{ defaultPlaylistId }}</a>
-        <a class="btn" href="{{ url_for("error", errorMessage="Not Implemented") }}">Purge all</a>
+        <a class="btn" href="{{ url_for("purgeAll") }}">Purge all</a>
         <a class="btn" href="{{ url_for("softDeletedIndex") }}">Soft Deleted Entities</a>
-        <a class="btn" href="{{ url_for("error", errorMessage="Not Implemented") }}">Test</a>
+        <a class="btn" href="{{ url_for("error", errorMessage="Test complete") }}">Test</a>
     </div>
 {% endblock %}

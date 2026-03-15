@@ -416,6 +416,16 @@ def prunePlaylist(playlistId):
     
     return playlistsDetails(playlistId)
 
+@app.route("/purge")
+def purgeAll():
+    
+    # get purge info
+    # print results and ask for confirmation
+    # doPurge
+    
+    flash(f"Not implemented.", "info")
+    return index()
+
 @app.route("/softDeleted")
 def softDeletedIndex():
     playlists = [e for e in playlistService.getAll(True) if e.deleted]

@@ -68,7 +68,8 @@ class Commands():
         uriArgument = Argument(self.uriArgumentName, ["uris", "urls", "u"], list[str],
             optional= True,
             defaultValue= [], useDefaultValue= True,
-            validateFunc= validateUri,
+            castFunc= castStringToList,
+            # validateFunc= validateUri,
             description= "List of URIs or URLs.")
         takeAfterArgument = Argument(self.takeAfterArgumentName, ["takeafter", "after", "ta"], datetime,
             optional= True,

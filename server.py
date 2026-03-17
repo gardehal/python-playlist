@@ -418,10 +418,16 @@ def prunePlaylist(playlistId):
 
 @app.route("/purge")
 def purgeAll():
+    data = sharedService.preparePurge()
     
-    # get purge info
     # print results and ask for confirmation
-    # doPurge
+    
+    if(False):
+        result = self.sharedService.doPurge(data)
+        if(result):
+            printS("Purge completed.", color = BashColor.OKGREEN)
+        else:
+            printS("Purge failed.", color = BashColor.FAIL)
     
     flash(f"Not implemented.", "info")
     return index()

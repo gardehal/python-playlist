@@ -336,6 +336,7 @@ def play(playlistId: str):
     playIndex = int(request.args.get("index", 0))
     watchedId = request.args.get("watchedId", None)
     unwatchId = request.args.get("unwatchId", None)
+    back = eval(request.args.get("back", "False"))
     
     # Move somewhere else, serverhelper.py or something
     if(watchedId): 
@@ -366,9 +367,8 @@ def play(playlistId: str):
         flash(f"QueueStream {queueStreamId}, index {playIndex} was not found.", "error")
         return playlistsDetails(id = playlist.id)
     
-    # When going back, this still hits, add goback variable with int steps to go back, if >0, dont enter here
-    # if(queueStream.watched and not playlist.playWatchedStreams):
-    #     return redirect(url_for("play", playlistId= playlistId, index= playIndex+1))
+    if(not back and queueStream.watched and not playlist.playWatchedStreams):
+        return redirect(url_for("play", playlistId= playlistId, index= playIndex+1))
     
     embeddedUrl: str = None
     circumventUrl: str = None

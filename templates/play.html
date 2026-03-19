@@ -3,7 +3,7 @@
 {% block content %}
     <div class="row">
         <a class="btn" href="{{ url_for("playlistsDetails", id=playlist.id) }}"><-Playlist--</a>
-        <a class="btn" href="{{ url_for("play", playlistId=playlist.id, index=index-1) }}"><< Back</a>
+        <a class="btn" href="{{ url_for("play", playlistId=playlist.id, index=index-1, back=True) }}"><< Back</a>
         <a class="btn" href="{{ queueStream.uri }}" target="_blank">Open URI</a>
         <a class="btn" href="{{ url_for("play", playlistId=playlist.id, index=index+1, watchedId= queueStream.id) }}">Watched >></a>
         <a class="btn" href="{{ url_for("play", playlistId=playlist.id, index=index+1) }}">--Skip-></a>

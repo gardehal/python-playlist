@@ -43,12 +43,12 @@
     <div class="row">
         <h4>Next QueueStreams</h4>
         
-        {% if nextQueueStreams|length == 0 %}
+        {% if not enumeratedNextQueueStreams %}
             This is the last QueueStream in {{ playlist.name }} 
             <a class="btn" href="{{ url_for("playlistsDetails", id=playlist.id) }}">Return to {{ playlist.name }}</a>
         {% else %}
-            {% for queueStream in nextQueueStreams: %}
-                <a href="{{ url_for("play", playlistId=playlist.id, index=index+1) }}">
+            {% for i, queueStream in enumeratedNextQueueStreams: %}
+                <a href="{{ url_for("play", playlistId=playlist.id, index=i+1) }}">
                     <div class="center" width="2em">
                         <img src="/static/default.png">
                         <p>{{ queueStream.name }}</p>

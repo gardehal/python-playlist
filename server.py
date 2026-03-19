@@ -383,16 +383,16 @@ def play(playlistId: str):
         # fast api symlink wont work without replacing entire flask
         fileUri = playbackService.mapUrlToEmbeddedUrl(queueStream)
     
-    # TODO fix index when clicking these, dict index + qs?, fix formating, text overlay over image, fix size too
     nextQueueStreams = []
     for nextQueueStreamId in playlist.streamIds[playIndex+1:][:4]: # Next 4, if any
         nextQueueStream = queueStreamService.get(nextQueueStreamId)
         if(nextQueueStream):
             nextQueueStreams.append(nextQueueStream)
         
+    enumeratedNextQueueStreams = enumerate(nextQueueStreams, playIndex) if nextQueueStreams else None
     return render_template("play.html", playlist= playlist, queueStream= queueStream, index= playIndex, 
         embeddedUrl= embeddedUrl, circumventUrl= circumventUrl, fileUri= fileUri, 
-        nextQueueStreams= nextQueueStreams)
+        enumeratedNextQueueStreams= enumeratedNextQueueStreams)
 
 @app.route("/fetch/<playlistId>")
 def fetchPlaylist(playlistId):

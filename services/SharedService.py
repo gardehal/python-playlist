@@ -79,7 +79,7 @@ class SharedService():
         
         for id in playlist.streamIds:
             stream = self.queueStreamService.get(id, includeSoftDeleted)
-            if(stream != None and stream.watched != None):
+            if(stream and stream.watched):
                 data.queueStreams.append(stream)
         
         if(len(data.queueStreams) > 0):

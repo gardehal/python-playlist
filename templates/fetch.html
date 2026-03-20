@@ -3,6 +3,8 @@
 {% block content %}
     <h1>Fetch {{ playlist.name }}</h1>
 
+    <p>Fetched {{ newQueueStreams|length }} QueueStreams in {{ duration }}.</p>
+
     <a class="btn" href="{{ url_for("playlistsDetails", id=playlist.id) }}">Playlist</a>
 
     {% if newQueueStreams|length < 0 %}

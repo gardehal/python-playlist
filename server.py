@@ -400,9 +400,11 @@ def fetchPlaylist(playlistId):
     
     # TODO while fetching, show some spinner + prints in fetching.html or something
     flash(f"Fetch started, please wait...", "success")
+    started = getDateTime()
     newQueueStreams = fetchService.fetch(playlist.id, settings.fetchLimitSingleSource, takeNewOnly= True)
+    duration = getDateTime() - started
     
-    return render_template("fetch.html", playlist= playlist, newQueueStreams= newQueueStreams)
+    return render_template("fetch.html", playlist= playlist, newQueueStreams= newQueueStreams, duration= duration)
 
 @app.route("/prune/<playlistId>")
 def prunePlaylist(playlistId):

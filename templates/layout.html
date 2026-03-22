@@ -30,6 +30,16 @@
             {% endwith %}
         </div>
 
+        <div id="loadingOverlay" class="loading-overlay">
+            <div class="loading-content">
+                <div class="spinner"></div>
+                <p>Processing... Please wait</p>
+
+                <div id="console-window" style="background:#1e1e1e; color:#0f0; font-family:monospace; padding:15px; height:320px; overflow-y:scroll; border:1px solid #333; white-space:pre-wrap;">
+                </div>
+            </div>
+        </div>
+
         <div id="displayContent">
             <div id="header">
                 <h2>Python Playlist</h2>
@@ -56,14 +66,37 @@
         </div>
 
         <script>
-            document.addEventListener('DOMContentLoaded', function () {
-                const toastElements = document.querySelectorAll('.toast');
-                toastElements.forEach(toastEl => {
+            document.addEventListener("DOMContentLoaded", function () 
+            {
+                const toastElements = document.querySelectorAll(".toast");
+                toastElements.forEach(toastEl => 
+                {
                     const toast = new bootstrap.Toast(toastEl);
                     toast.show();
                 });
             });
+
+            function showLoading() 
+            {
+                document.getElementById("loadingOverlay").style.display = "flex";
+                document.body.classList.add("loading");
+            }
+
+            function hideLoading() 
+            {
+                document.getElementById("loadingOverlay").style.display = "none";
+                document.body.classList.remove("loading");
+            }
+
+            document.querySelectorAll(".displayLoading").forEach(btn => 
+            { 
+                btn.addEventListener("click", async () =>
+                {
+                    showLoading();
+                });
+            });
         </script>
+
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     </body>
 </html>

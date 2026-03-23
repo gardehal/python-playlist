@@ -95,6 +95,54 @@
                     showLoading();
                 });
             });
+
+            const btn = document.getElementById("yourButton");
+            btn.addEventListener("click", async () => 
+            {
+                showLoading();
+
+                const consoleWindow = document.getElementById("console-window");
+                consoleWindow.innerHTML = "";
+
+                try 
+                {
+                    const startRes = await fetch("/enqueueTask", 
+                    {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ })
+                    });
+
+                    const { jobId } = await startRes.json();
+
+                    const eventSource = new EventSource(`/streamLogs?jobId=${jobId}`);
+
+                    eventSource.onmessage = (event) => 
+                    {
+                        if (event.data === "[DONE]") {
+                            eventSource.close();
+                            hideLoading();
+                            return;
+                        }
+
+                        const line = document.createElement("div");
+                        line.textContent = event.data;
+                        consoleWindow.appendChild(line);
+                        consoleWindow.scrollTop = consoleWindow.scrollHeight;
+                    };
+
+                    eventSource.onerror = () => {
+                        eventSource.close();
+                        hideLoading();
+                    };
+
+                } 
+                catch (err) 
+                {
+                    consoleWindow.innerHTML = `<div style="color:red">Failed to start: ${err.message}</div>`;
+                    hideLoading();
+                }
+            });
         </script>
 
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

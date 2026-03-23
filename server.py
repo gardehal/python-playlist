@@ -1,4 +1,10 @@
-from flask import Flask, render_template, request, redirect, url_for, flash
+import uuid
+from queue import Queue
+import threading
+import sys
+import time
+
+from flask import Flask, render_template, request, redirect, url_for, flash, stream_with_context, jsonify, Response
 from flask_wtf import CSRFProtect
 from flask_bootstrap import Bootstrap5
 
@@ -17,10 +23,10 @@ from services.FetchService import *
 from services.SharedService import *
 
 app = Flask(__name__)
-csrf = CSRFProtect(app)
-# TODO, add to settings
-app.secret_key = "foo"
+csrf = CSRFProtect(app) 
+app.secret_key = "foo"# TODO, add to settings
 bootstrap = Bootstrap5(app)
+activeTasks = {}
 
 settings = Settings()
 playlistService = PlaylistService()
@@ -398,11 +404,9 @@ def play(playlistId: str):
 def fetchPlaylist(playlistId):
     playlist = playlistService.get(playlistId)
     
-    # TODO while fetching, show some spinner + prints in fetching.html or something
-    flash(f"Fetch started, please wait...", "success")
     started = getDateTime()
     newQueueStreams = fetchService.fetch(playlist.id, settings.fetchLimitSingleSource, takeNewOnly= True)
-    duration = getDateTime() - started
+    duration = getDateTime() - started # ToHumanReadableString()
     
     return render_template("fetch.html", playlist= playlist, newQueueStreams= newQueueStreams, duration= duration)
 
@@ -442,5 +446,73 @@ def softDeletedIndex():
     
     return render_template("softDeleted.html", playlists= playlists, queueStreams= queueStreams, streamSources= streamSources)
 
+@csrf.exempt
+@app.route("/enqueueTask", methods=["POST"])
+def start_task():
+    input_data = request.get_json() or {}
+
+    jobId = str(uuid.uuid4())
+    logQueue = Queue()
+    activeTasks[jobId] = logQueue
+
+    def run_task():
+        custom_stream = StreamToQueue(logQueue)
+        old_stdout = sys.stdout
+        sys.stdout = custom_stream
+
+        try:
+            print("Starting processing...")
+            print("Step 1 completed")
+            
+            time.sleep(5)
+            print("halfway")
+            time.sleep(5)
+                        
+            print("Task finished successfully!")
+
+        except Exception as e:
+            print(f"Error: {str(e)}")
+        finally:
+            sys.stdout = old_stdout
+            logQueue.put(None)
+
+    threading.Thread(target= run_task, daemon= True).start()
+
+    return jsonify({"jobId": jobId})
+
+@csrf.exempt
+@app.route("/streamLogs")
+def streamLogs():
+    jobId = request.args.get("jobId")
+    if not jobId or jobId not in activeTasks:
+        return "Job not found", 404
+
+    def generate():
+        q = activeTasks[jobId]
+        while True:
+            line = q.get()
+            if line is None:
+                del activeTasks[jobId]
+                yield "data: [DONE]\n\n"
+                break
+            yield f"data: {line}\n\n"
+
+    return Response(stream_with_context(generate()), mimetype="text/event-stream", headers={"Cache-Control": "no-cache"})
+
+class StreamToQueue:
+    def __init__(self, queue):
+        self.queue = queue
+
+    def write(self, text):
+        if text:
+            self.queue.put(text.rstrip())
+            
+    def flush(self):
+        pass
+    
 if __name__ == "__main__":
+    # print("Routes:")
+    # for rule in app.url_map.iter_rules():
+    #     print(f"{rule.rule} - {rule.methods} - {rule.endpoint}")
+    
     app.run(host= "0.0.0.0", port= 8888)

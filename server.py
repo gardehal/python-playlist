@@ -27,6 +27,7 @@ csrf = CSRFProtect(app)
 app.secret_key = "foo"# TODO, add to settings
 bootstrap = Bootstrap5(app)
 activeTasks = {}
+taskRegistry = {}
 
 settings = Settings()
 playlistService = PlaylistService()
@@ -446,37 +447,50 @@ def softDeletedIndex():
     
     return render_template("softDeleted.html", playlists= playlists, queueStreams= queueStreams, streamSources= streamSources)
 
+def registerTask(name):
+    def decorator(func):
+        taskRegistry[name] = func
+        return func
+    return decorator
+
+@registerTask("process_report")
+def process_report(data):
+    print("Starting report generation...")
+    time.sleep(5)
+    print("halfway")
+    time.sleep(5)
+    print("Report finished!")
+
 @csrf.exempt
 @app.route("/enqueueTask", methods=["POST"])
 def start_task():
-    input_data = request.get_json() or {}
+    inputData = request.get_json(silent=True) or {}
+
+    taskName = inputData.get("task")
+    if not taskName or taskName not in taskRegistry:
+        return jsonify({"error": "Unknown task name"}), 400
+
+    target_func = taskRegistry[taskName]
 
     jobId = str(uuid.uuid4())
     logQueue = Queue()
     activeTasks[jobId] = logQueue
 
-    def run_task():
-        custom_stream = StreamToQueue(logQueue)
-        old_stdout = sys.stdout
-        sys.stdout = custom_stream
+    def runTask():
+        customStream = StreamToQueue(logQueue)
+        oldStdOut = sys.stdout
+        sys.stdout = customStream
 
         try:
-            print("Starting processing...")
-            print("Step 1 completed")
-            
-            time.sleep(5)
-            print("halfway")
-            time.sleep(5)
-                        
-            print("Task finished successfully!")
+            target_func(taskName)
 
         except Exception as e:
-            print(f"Error: {str(e)}")
+            print(f"ERROR: {str(e)}")
         finally:
-            sys.stdout = old_stdout
+            sys.stdout = oldStdOut
             logQueue.put(None)
 
-    threading.Thread(target= run_task, daemon= True).start()
+    threading.Thread(target= runTask, daemon= True).start()
 
     return jsonify({"jobId": jobId})
 

@@ -37,6 +37,12 @@ playbackService = PlaybackService()
 fetchService = FetchService()
 sharedService = SharedService()
 
+def registerTask(name):
+    def decorator(func):
+        taskRegistry[name] = func
+        return func
+    return decorator
+
 @app.route("/")
 @app.route("/index")
 def index():
@@ -401,9 +407,14 @@ def play(playlistId: str):
         embeddedUrl= embeddedUrl, circumventUrl= circumventUrl, fileUri= fileUri, 
         enumeratedNextQueueStreams= enumeratedNextQueueStreams)
 
+@registerTask("fetchPlaylist")
 @app.route("/fetch/<playlistId>")
 def fetchPlaylist(playlistId):
     playlist = playlistService.get(playlistId)
+    if(not playlist):
+        flash(f"Playlist {id} was not found.", "error")
+        print(f"Playlist {id} was not found.")
+        return
     
     started = getDateTime()
     newQueueStreams = fetchService.fetch(playlist.id, settings.fetchLimitSingleSource, takeNewOnly= True)
@@ -447,30 +458,17 @@ def softDeletedIndex():
     
     return render_template("softDeleted.html", playlists= playlists, queueStreams= queueStreams, streamSources= streamSources)
 
-def registerTask(name):
-    def decorator(func):
-        taskRegistry[name] = func
-        return func
-    return decorator
-
-@registerTask("process_report")
-def process_report(data):
-    print("Starting report generation...")
-    time.sleep(5)
-    print("halfway")
-    time.sleep(5)
-    print("Report finished!")
-
 @csrf.exempt
 @app.route("/enqueueTask", methods=["POST"])
 def start_task():
     inputData = request.get_json(silent=True) or {}
 
     taskName = inputData.get("task")
+    entityId = inputData.get("entityId")
     if not taskName or taskName not in taskRegistry:
         return jsonify({"error": "Unknown task name"}), 400
 
-    target_func = taskRegistry[taskName]
+    targetFunc = taskRegistry[taskName]
 
     jobId = str(uuid.uuid4())
     logQueue = Queue()
@@ -482,7 +480,8 @@ def start_task():
         sys.stdout = customStream
 
         try:
-            target_func(taskName)
+            print("Task started, please wait...")
+            targetFunc(entityId)
 
         except Exception as e:
             print(f"ERROR: {str(e)}")

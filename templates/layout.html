@@ -88,60 +88,68 @@
                 document.body.classList.remove("loading");
             }
 
-            document.querySelectorAll(".displayLoading").forEach(btn => 
+            document.querySelectorAll(".displayLoading").forEach(button => 
             { 
-                btn.addEventListener("click", async () =>
+                button.addEventListener("click", async () =>
                 {
                     showLoading();
                 });
             });
 
-            const btn = document.getElementById("yourButton");
-            btn.addEventListener("click", async () => 
-            {
-                showLoading();
-
-                const consoleWindow = document.getElementById("console-window");
-                consoleWindow.innerHTML = "";
-
-                try 
+            document.querySelectorAll(".displayLoadingWithLogs").forEach(button => 
+            { 
+                button.addEventListener("click", async () => 
                 {
-                    const startRes = await fetch("/enqueueTask", 
+                    showLoading();
+
+                    const taskName = button.dataset.task;
+                    const taskEntityId = button.dataset.id;
+                    const consoleWindow = document.getElementById("console-window");
+                    consoleWindow.innerHTML = "";
+
+                    try 
                     {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ task: "process_report" })
-                    });
+                        const startRes = await fetch("/enqueueTask", 
+                        {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify(
+                            { 
+                                task: taskName,
+                                entityId: taskEntityId,
+                            })
+                        });
 
-                    const { jobId } = await startRes.json();
+                        const { jobId } = await startRes.json();
 
-                    const eventSource = new EventSource(`/streamLogs?jobId=${jobId}`);
+                        const eventSource = new EventSource(`/streamLogs?jobId=${jobId}`);
 
-                    eventSource.onmessage = (event) => 
-                    {
-                        if (event.data === "[DONE]") {
+                        eventSource.onmessage = (event) => 
+                        {
+                            if (event.data === "[DONE]") {
+                                eventSource.close();
+                                hideLoading();
+                                return;
+                            }
+
+                            const line = document.createElement("div");
+                            line.textContent = event.data;
+                            consoleWindow.appendChild(line);
+                            consoleWindow.scrollTop = consoleWindow.scrollHeight;
+                        };
+
+                        eventSource.onerror = () => {
                             eventSource.close();
                             hideLoading();
-                            return;
-                        }
+                        };
 
-                        const line = document.createElement("div");
-                        line.textContent = event.data;
-                        consoleWindow.appendChild(line);
-                        consoleWindow.scrollTop = consoleWindow.scrollHeight;
-                    };
-
-                    eventSource.onerror = () => {
-                        eventSource.close();
+                    } 
+                    catch (err) 
+                    {
+                        consoleWindow.innerHTML = `<div style="color:red">Failed to start: ${err.message}</div>`;
                         hideLoading();
-                    };
-
-                } 
-                catch (err) 
-                {
-                    consoleWindow.innerHTML = `<div style="color:red">Failed to start: ${err.message}</div>`;
-                    hideLoading();
-                }
+                    }
+                });
             });
         </script>
 

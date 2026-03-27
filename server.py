@@ -413,14 +413,24 @@ def fetchPlaylist(playlistId):
     playlist = playlistService.get(playlistId)
     if(not playlist):
         flash(f"Playlist {id} was not found.", "error")
-        print(f"Playlist {id} was not found.")
         return
     
     started = getDateTime()
-    newQueueStreams = fetchService.fetch(playlist.id, settings.fetchLimitSingleSource, takeNewOnly= True)
-    duration = getDateTime() - started # ToHumanReadableString()
+    newQueueStreams = []
+    flash(f"Fetch running in background...", "info")
     
-    return render_template("fetch.html", playlist= playlist, newQueueStreams= newQueueStreams, duration= duration)
+    def runTask():
+        try:
+            newQueueStreams = fetchService.fetch(playlist.id, settings.fetchLimitSingleSource, takeNewOnly= True)
+        except Exception as e:
+            flash(f"ERROR: {str(e)}", "error")
+
+    threading.Thread(target= runTask, daemon= True).start()
+    # flash(f"Fetch complete, click here for details", "success") # TODO make a link with details
+    
+    duration = getDateTime() - started # ToHumanReadableString()
+    # return render_template("fetch.html", playlist= playlist, newQueueStreams= newQueueStreams, duration= duration)
+    return playlistsDetails(playlistId)
 
 @app.route("/prune/<playlistId>")
 def prunePlaylist(playlistId):

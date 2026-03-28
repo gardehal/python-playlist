@@ -109,16 +109,12 @@ Program for queueing and playing videos from list or from sources like channels 
 
 ## TODO
 
-- rename queuestream -> stream, streamsource -> source, except stream and source are likely reserved keywords
+- twitter/facebook/instagram as sources for videos, implement other sources especially rumble
 - with argumentor, can still use i0 (castFunc)? if not, rewrite docs and remove functions that expect/use this
-- an option to play playlist from last added, e.g. if 12 new videos were added, start playlist at maxlen -12, may need to check watched to prevent "skipped watched.." print
-- play stream by stream ID, eg. checking searched streams
-- implement file/folder fetch
 - add length of stream in seconds to qs, add in all fetches, use for display? - in seconds or timestamp like hh:MM:ss ?
 - implement background content properly, should not wait for input, just play when previous stream finished (assume no ads/breaks/pauses, need playtime in model..)
 - reset doesn't work, not resetting sources
 - restore/add source, have to check on deleted
-- twitter/facebook/instagram as sources for videos?
 - using guids as ids works but if manually sorting through files its hard to find the correct source without gui. change it to source + channel name, e.g. "youtube_SmarterEveryDay"
 - possible bug where if something is watched, the added to another playlists, when pruning first playlist, qs is deleted
 - simple graphics interface, preferably in browser
@@ -135,5 +131,4 @@ Program for queueing and playing videos from list or from sources like channels 
     - pfp for stream source
     - thumbnail for playlist (default blank + some way to add custom user one)
   - new entity, metadata:
-    - service
     - implement where most create/deletes are done, fetches, startups

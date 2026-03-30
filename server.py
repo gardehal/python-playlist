@@ -468,6 +468,27 @@ def softDeletedIndex():
     
     return render_template("softDeleted.html", playlists= playlists, queueStreams= queueStreams, streamSources= streamSources)
 
+@app.route("/addToPlaylist")
+def addPlaybackStreamToPlaylist(playlistId, queueStreamId):
+    playlist = playlistService.get(playlistId)
+    if(not playlist):
+        flash(f"Playlist {id} was not found.", "error")
+        return
+    
+    queueStream = queueStreamService.get(queueStreamId)
+    if(not queueStream):
+        flash(f"QueueStream {id} was not found.", "error")
+        return
+    
+    result = playbackService.addPlaybackStreamToPlaylist(playlistId, queueStream)
+    
+    if(result):
+        flash(f"Added to {playlist.name}", "success")
+    else:
+        flash(f"Failed adding to {playlist.name}", "error")
+        
+    return playlistsDetails(playlistId) # ???
+
 @csrf.exempt
 @app.route("/enqueueTask", methods=["POST"])
 def start_task():

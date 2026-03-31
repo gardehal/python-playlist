@@ -424,13 +424,13 @@ def fetchPlaylist(playlistId):
             duration = getDateTime() - started # ToHumanReadableString()
 
             resultsUrl = f"fetch?count={len(newQueueStreams)}&duration={duration}"
-            flash(f"Fetch complete, click here for details", "success") # TODO make a link with details
+            # flash(f"Fetch complete, click here for details", "success") # TODO make a link with details
         except Exception as e:
             flash(f"ERROR: {str(e)}", "error")
 
     threading.Thread(target= runTask, daemon= True).start()
     
-    return playlistsDetails(playlistId)
+    return jsonify({"result": True})
 
 @app.route("/prune/<playlistId>")
 def prunePlaylist(playlistId):
@@ -468,7 +468,7 @@ def softDeletedIndex():
     
     return render_template("softDeleted.html", playlists= playlists, queueStreams= queueStreams, streamSources= streamSources)
 
-@app.route("/addToPlaylist")
+@app.route("/addToPlaylist", methods=["POST"])
 def addPlaybackStreamToPlaylist(playlistId, queueStreamId):
     playlist = playlistService.get(playlistId)
     if(not playlist):
@@ -487,7 +487,7 @@ def addPlaybackStreamToPlaylist(playlistId, queueStreamId):
     else:
         flash(f"Failed adding to {playlist.name}", "error")
         
-    return playlistsDetails(playlistId) # ???
+    return jsonify({"result": result})
 
 @csrf.exempt
 @app.route("/enqueueTask", methods=["POST"])

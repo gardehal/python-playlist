@@ -417,7 +417,7 @@ def fetchPlaylist(playlistId):
     
     flash(f"Fetch running in background...", "info")
     
-    def runTask():
+    def runFetch():
         try:
             started = getDateTime()
             newQueueStreams = fetchService.fetch(playlist.id, settings.fetchLimitSingleSource, takeNewOnly= True)
@@ -428,7 +428,7 @@ def fetchPlaylist(playlistId):
         except Exception as e:
             flash(f"ERROR: {str(e)}", "error")
 
-    threading.Thread(target= runTask, daemon= True).start()
+    threading.Thread(target= runFetch, daemon= True).start()
     
     return jsonify({"result": True})
 

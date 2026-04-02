@@ -4,7 +4,7 @@ import threading
 import sys
 import time
 
-from flask import Flask, render_template, request, redirect, url_for, flash, stream_with_context, jsonify, Response
+from flask import Flask, render_template, request, redirect, url_for, flash, get_flashed_messages, stream_with_context, jsonify, Response
 from flask_wtf import CSRFProtect
 from flask_bootstrap import Bootstrap5
 
@@ -431,6 +431,41 @@ def fetchPlaylist(playlistId):
     threading.Thread(target= runFetch, daemon= True).start()
     
     return jsonify({"result": True})
+
+@app.route("/test", methods=["POST"])
+def test(playlistId):
+    print("TEST")
+    inputData = request.get_json()
+    playlistId = inputData.get("entityId")
+    
+    playlist = playlistService.get(playlistId)
+    if(not playlist):
+        flash(f"Playlist {id} was not found.", "error")
+        return
+    
+    flash(f"Fetch running in background...", "info")
+    
+    def runFetch():
+        try:
+            started = getDateTime()
+            time.sleep(5)
+            newQueueStreams = ["a", "b", "c"]
+            duration = getDateTime() - started # ToHumanReadableString()
+
+            resultsUrl = f"fetch?count={len(newQueueStreams)}&duration={duration}"
+            # flash(f"Fetch complete, click here for details", "success") # TODO make a link with details
+        except Exception as e:
+            flash(f"ERROR: {str(e)}", "error")
+
+    threading.Thread(target= runFetch, daemon= True).start()
+    
+    flash(f"Finished.", "success")
+        
+    toasts = get_flashed_messages(with_categories= True)
+    return jsonify(
+    {
+        "toasts": toasts
+    })
 
 @app.route("/prune/<playlistId>")
 def prunePlaylist(playlistId):

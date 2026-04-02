@@ -9,6 +9,6 @@
         <a class="btn" href="{{ url_for("playlistsDetails", id=defaultPlaylistId) }}">Default playlist: {{ defaultPlaylistId }}</a>
         <a class="btn" href="{{ url_for("purgeAll") }}">Purge all</a>
         <a class="btn" href="{{ url_for("softDeletedIndex") }}">Soft Deleted Entities</a>
-        <a class="btn displayLoadingWithLogs" data-task="fetchPlaylist" data-id="id">Test</a>
+        <a class="btn runAsync" data-endpoint="/test" data-id="id">Test</a>
     </div>
 {% endblock %}

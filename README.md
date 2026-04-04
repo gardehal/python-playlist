@@ -32,7 +32,7 @@ Program for queueing and playing videos from list or from sources like channels 
     - Refactor available under the command `refactor`, eg. $ `python main.py refactor`
     - Example of a changed entity: `... "lastFetchedId": "abc123def", ...` -> `... "lastFetchedIds": ["abc123def"], ...`
 
-## Examples
+## CLI Examples
 
 #### Add a playlist, stream to the playlist, and play it
 
@@ -119,7 +119,7 @@ Program for queueing and playing videos from list or from sources like channels 
 - possible bug where if something is watched, the added to another playlists, when pruning first playlist, qs is deleted
 - simple graphics interface, preferably in browser
   - maybe create/edit form stuff can be put in helper methods in the form class itself, removing clutter from server.py
-  - on fetch, option to remove/delete qs from result of fetch page, also fix play from here index
+  - on fetch, option to remove/delete qs from result of fetch page, also fix play from here index, also implement link from flash-like message
   - when returning from a create page, the content is updated but the url in browser is sill create, refreshing the page causes the form to be posted again and create a duplicate. must fix
   - some streams can be embedded if added through source, but not manually: ['https://www.youtube.com/watch?v=j5fbFcW3FK0']
   - button to remove a stream from playlist directly in details (or set watched?)

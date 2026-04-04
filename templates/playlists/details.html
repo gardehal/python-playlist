@@ -19,6 +19,7 @@
         </form>
     </div>
     <div class="row">
+        <a class="btn" href="{{ url_for("playlistsDetails", playlistId=playlist.id) }}">Reload</a>
         <a class="btn" onclick="fetch('/fetch/{{ playlist.id }}')">Fetch new</a>
         <a class="btn" href="{{ url_for("prunePlaylist", playlistId=playlist.id) }}">Prune</a>
         <a class="btn" href="{{ url_for("error", errorMessage="Not Implemented") }}">Download</a>

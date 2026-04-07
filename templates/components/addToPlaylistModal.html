@@ -1,0 +1,17 @@
+<div class="modal fade" id="addToPlaylistModal" tabindex="-1" aria-labelledby="entitiesModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-body">
+            <table>
+                {% for playlist in playlists: %}
+                    <tr>
+                        <td>{{ playlist.name }}</td>
+                        <td><a class="btn" href="{{ url_for("addPlaybackStreamToPlaylist", playlistId=playlist.id, queueStreamId=queueStream.id) }}">Add here</a></td>
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+    </div>
+</div>

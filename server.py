@@ -43,6 +43,9 @@ def registerTask(name):
         return func
     return decorator
 
+def reloadPage():
+    return redirect(request.referrer or url_for("index"))
+
 @app.route("/")
 @app.route("/index")
 def index():
@@ -413,7 +416,7 @@ def fetchPlaylist(playlistId):
     playlist = playlistService.get(playlistId)
     if(not playlist):
         flash(f"Playlist {id} was not found.", "error")
-        return
+        return reloadPage()
     
     flash(f"Fetch running in background...", "info")
     
@@ -424,13 +427,14 @@ def fetchPlaylist(playlistId):
             duration = getDateTime() - started # ToHumanReadableString()
 
             resultsUrl = f"fetch?count={len(newQueueStreams)}&duration={duration}"
-            # flash(f"Fetch complete, click here for details", "success") # TODO make a link with details
+            flash(f"Fetch complete", "success") # TODO make a link with details
+            # return reloadPage()
         except Exception as e:
             flash(f"ERROR: {str(e)}", "error")
 
-    threading.Thread(target= runFetch, daemon= True).start()
+    # threading.Thread(target= runFetch, daemon= True).start()
     
-    return jsonify({"result": True})
+    return reloadPage()
 
 @app.route("/test", methods=["POST"])
 def test(playlistId):
@@ -441,7 +445,7 @@ def test(playlistId):
     playlist = playlistService.get(playlistId)
     if(not playlist):
         flash(f"Playlist {id} was not found.", "error")
-        return
+        return reloadPage()
     
     flash(f"Fetch running in background...", "info")
     
@@ -453,19 +457,13 @@ def test(playlistId):
             duration = getDateTime() - started # ToHumanReadableString()
 
             resultsUrl = f"fetch?count={len(newQueueStreams)}&duration={duration}"
-            # flash(f"Fetch complete, click here for details", "success") # TODO make a link with details
+            flash(f"Fetch complete", "success") # TODO make a link with details
         except Exception as e:
             flash(f"ERROR: {str(e)}", "error")
 
     threading.Thread(target= runFetch, daemon= True).start()
     
-    flash(f"Finished.", "success")
-        
-    toasts = get_flashed_messages(with_categories= True)
-    return jsonify(
-    {
-        "toasts": toasts
-    })
+    return reloadPage()
 
 @app.route("/prune/<playlistId>")
 def prunePlaylist(playlistId):
@@ -477,7 +475,7 @@ def prunePlaylist(playlistId):
         # TODO len here is soft deleted, not actually removed ones, gives "wrong" result
         flash(f"Pruned {len(data.queueStreams)} QueueStreams in Playlist {playlist.name}", "success")
     
-    return playlistsDetails(playlistId)
+    return reloadPage()
 
 @app.route("/purge")
 def purgeAll():

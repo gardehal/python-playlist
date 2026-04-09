@@ -418,8 +418,6 @@ def fetchPlaylist(playlistId):
         flash(f"Playlist {id} was not found.", "error")
         return reloadPage()
     
-    flash(f"Fetch running in background...", "info")
-    
     def runFetch():
         try:
             started = getDateTime()
@@ -432,7 +430,29 @@ def fetchPlaylist(playlistId):
         except Exception as e:
             flash(f"ERROR: {str(e)}", "error")
 
-    # threading.Thread(target= runFetch, daemon= True).start()
+    threading.Thread(target= runFetch, daemon= True).start()
+    
+    flash(f"Fetch running in background...", "info")
+    
+    return reloadPage()
+
+@app.route("/testt")
+def testt():
+    # if(not playlist):
+    #     flash(f"Playlist {id} was not found.", "error")
+    #     return reloadPage()
+    
+    def runFetch():
+        try:
+            time.sleep(5)
+            flash(f"test complete", "success") ## missing flask context inside this async
+            return reloadPage() ## missing flask context inside this async
+        except Exception as e:
+            flash(f"ERROR: {str(e)}", "error")
+
+    threading.Thread(target= runFetch, daemon= True).start()
+    
+    flash(f"test running in background...", "info") ## should flash but doesnt
     
     return reloadPage()
 

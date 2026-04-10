@@ -1,6 +1,8 @@
 {% extends "layout.html" %}
 {% block title %}{{ playlist.name }}{% endblock %}
 {% block content %}
+    {% include "components/addToPlaylistModal.html" %}
+
     <h1>{{ playlist.name }}</h1>
     
     <p>Description: {{ playlist.description }}</p>
@@ -19,7 +21,7 @@
         </form>
     </div>
     <div class="row">
-        <a class="btn" href="{{ url_for("playlistsDetails", playlistId=playlist.id) }}">Reload</a>
+        <a class="btn" href="{{ url_for("playlistsDetails", id=playlist.id) }}">Reload</a>
         <a class="btn" onclick="fetch('/fetch/{{ playlist.id }}')">Fetch new</a>
         <a class="btn" href="{{ url_for("prunePlaylist", playlistId=playlist.id) }}">Prune</a>
         <a class="btn" href="{{ url_for("error", errorMessage="Not Implemented") }}">Download</a>

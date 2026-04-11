@@ -9,7 +9,7 @@
         <a class="btn" href="{{ url_for("play", playlistId=playlist.id, index=index+1) }}">--Skip-></a>
     </div>
     <div class="row">
-        <a class="btn" href="{{ url_for("error", errorMessage="Not Implemented") }}">Add to other playlist</a>
+        <a class="btn" data-bs-toggle="modal" data-bs-target="#addToPlaylistModal">Add to other playlist</a>
         {% if circumventUrl %}
             <a class="btn" href="{{ circumventUrl }}" target="_blank">Circumvent restricted</a>
         {% endif %}

@@ -109,11 +109,12 @@ class DownloadService():
         try:
             youtube = YouTube(url)
             printS("Downloading video from ", url)
-            videoPath = self.getVideoPath(directory, youtube.title(), fileExtension, nameRegex, prefix)
-            path = "/".join(videoPath.split("/")[0:-1])
-            name = videoPath.split("/")[-1]
+            videoPath = self.getVideoPath(directory, youtube.title, fileExtension, nameRegex, prefix)
+            path = os.sep.join(videoPath.split(os.sep)[0:-1])
+            name = videoPath.split(os.sep)[-1]
             
-            youtube.streams.filter(progressive = True, file_extension = fileExtension).order_by("resolution").desc().first().download(path, name)
+            video = youtube.streams.filter(progressive = True, file_extension = fileExtension)
+            video.order_by("resolution").desc().first().download(path, name)
             
             return videoPath
         except Exception as e:

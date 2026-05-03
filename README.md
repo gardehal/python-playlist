@@ -118,6 +118,8 @@ Program for queueing and playing videos from list or from sources like channels 
 - using guids as ids works but if manually sorting through files its hard to find the correct source without gui. change it to source + channel name, e.g. "youtube_SmarterEveryDay"
 - possible bug where if something is watched, the added to another playlists, when pruning first playlist, qs is deleted
 - simple graphics interface, preferably in browser
+  - in play view, show index + total length like "10/23" or something to show how many streams left 
+  - show video publish date (if any, maybe new field, should also sort by this in fetch), maybe added?
   - maybe create/edit form stuff can be put in helper methods in the form class itself, removing clutter from server.py
   - on fetch, option to remove/delete qs from result of fetch page, also fix play from here index, also implement link from flash-like message
   - when returning from a create page, the content is updated but the url in browser is sill create, refreshing the page causes the form to be posted again and create a duplicate. must fix

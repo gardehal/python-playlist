@@ -13,7 +13,7 @@ class Commands():
     entityNameArgumentName = "EntityName"
     streamSourceIdsArgumentName = "StreamSourceIds"
     queueStreamIdsArgumentName = "QueueStreamIds"
-    uriArgumentName = "StreamSourceIds"
+    uriArgumentName = "UriList"
     takeAfterArgumentName = "TakeAfter"
     takeBeforeArgumentName = "TakeBefore"
     startIndexArgumentName = "StartIndex"
@@ -66,10 +66,9 @@ class Commands():
             defaultValue= None, useDefaultValue= True,
             description= "Name of new entity.")
         uriArgument = Argument(self.uriArgumentName, ["uris", "urls", "u"], list[str],
-            optional= True,
+            optional= False,
             defaultValue= [], useDefaultValue= True,
             castFunc= castStringToList,
-            # validateFunc= validateUri,
             description= "List of URIs or URLs.")
         takeAfterArgument = Argument(self.takeAfterArgumentName, ["takeafter", "after", "ta"], datetime,
             optional= True,
@@ -453,7 +452,7 @@ class Commands():
         return result
     
 def castStringToList(value: str, separator: str = ",") -> list[str]:
-    return value.split(separator)
+    return value.split(separator) if separator in value else [value]
 
 def castDatetime(value: str) -> datetime:
     return datetime.strptime(value, os.environ.get("INPUT_DATETIME_FORMAT"))

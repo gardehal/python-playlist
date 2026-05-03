@@ -94,12 +94,12 @@ class Main:
                     Main.playlistCliController.addPlaylist(name, playWatchedStreams, allowDuplicates, streamSourceIds)
                     
                 elif(result.commandHitValue == CommandHitValues.ADD_PLAYLIST_FROM_YOUTUBE):
-                    url = result.arguments[Main.commands.uriArgumentName]
+                    urls = result.arguments[Main.commands.uriArgumentName]
                     name = result.arguments[Main.commands.entityNameArgumentName]
                     playWatchedStreams = result.arguments[Main.commands.playWatchedStreamsFlagName]
                     allowDuplicates = result.arguments[Main.commands.allowDuplicatesFlagName]
                     
-                    Main.playlistCliController.addYouTubePlaylist(url, name, playWatchedStreams, allowDuplicates)
+                    Main.playlistCliController.addYouTubePlaylist(urls[0], name, playWatchedStreams, allowDuplicates)
                     
                 elif(result.commandHitValue == CommandHitValues.DELETE_PLAYLIST):
                     playlistIds = result.arguments[Main.commands.playlistIdsArgumentName]

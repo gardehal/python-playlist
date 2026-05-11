@@ -117,7 +117,7 @@ class FetchService():
                 
             if(source.alwaysDownload):
                 printD("\tDownloading due to alwaysDownload flag on source...")
-                for fetchedStream in fetchedStreams:
+                for fetchedStream in fetchedStreams[0]:
                     downloadPath = self.downloadService.download(fetchedStream.uri, source.name)
                     printS("\tDownloaded due to alwaysDownload flag on source, path: ", downloadPath, color = BashColor.OKGREEN, doPrint = (downloadPath != None))
                     printS("\tDownloaded due to alwaysDownload flag on source failed.", color = BashColor.FAIL, doPrint = (downloadPath == None))

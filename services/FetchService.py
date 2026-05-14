@@ -193,7 +193,7 @@ class FetchService():
 
         newStreams = []
         newQueueStreams = []
-        streams = list(channel.videos)
+        streams = list([e for e in channel.videos if e]) # If not null or empty list i.e. []
         lastStreamId = streams[0].video_id
         if(takeNewOnly and takeAfter == None and lastStreamId in streamSource.lastFetchedIds):
             printD("Last video fetched: \"", sanitize(streams[0].title), "\", YouTube ID \"", lastStreamId, "\"", color = BashColor.WARNING, debug = self.settings.debug)

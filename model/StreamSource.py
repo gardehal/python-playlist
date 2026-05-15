@@ -17,6 +17,7 @@ class StreamSource:
                  lastFetchedIds: List[str] = [],
                  backgroundContent: bool = False,
                  alwaysDownload: bool = False,
+                 remoteId: str = None,
                  deleted: datetime = None,
                  added: datetime = getDateTime(),
                  id: str = None):
@@ -30,6 +31,7 @@ class StreamSource:
         self.lastFetchedIds: List[str] = lastFetchedIds
         self.backgroundContent: bool = backgroundContent
         self.alwaysDownload: bool = alwaysDownload
+        self.remoteId: str = remoteId
         self.deleted: datetime = deleted
         self.added: datetime = added
         self.id: str = id
@@ -65,6 +67,7 @@ class StreamSource:
         lastSuccessfulFetchedString,
         lastFetchedIdsString,
         # ", backgroundContent: ", self.backgroundContent, 
+        ", remoteId: ", self.remoteId, 
         deletedString,
         addedString,
         idString]))

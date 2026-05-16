@@ -35,6 +35,7 @@ queueStreamService = QueueStreamService()
 streamSourceService = StreamSourceService()
 playbackService = PlaybackService()
 fetchService = FetchService()
+downloadService = DownloadService()
 sharedService = SharedService()
 
 def registerTask(name):
@@ -418,6 +419,7 @@ def fetchPlaylist(playlistId):
         flash(f"Playlist {id} was not found.", "error")
         return reloadPage()
     
+    flash(f"Fetch running in background...", "info")
     def runFetch():
         try:
             started = getDateTime()
@@ -425,14 +427,47 @@ def fetchPlaylist(playlistId):
             duration = getDateTime() - started # ToHumanReadableString()
 
             resultsUrl = f"fetch?count={len(newQueueStreams)}&duration={duration}"
-            flash(f"Fetch complete", "success") # TODO make a link with details
+            
+            # TODO flash and reload are not available in the scope of an async task
+            # flash(f"Fetch complete", "success") # TODO make a link with details
             # return reloadPage()
         except Exception as e:
             flash(f"ERROR: {str(e)}", "error")
 
     threading.Thread(target= runFetch, daemon= True).start()
     
-    flash(f"Fetch running in background...", "info")
+    return reloadPage()
+
+@registerTask("downloadPlaylist")
+@app.route("/download/<playlistId>")
+def downloadPlaylist(playlistId):
+    playlist = playlistService.get(playlistId)
+    if(not playlist):
+        flash(f"Playlist {id} was not found.", "error")
+        return reloadPage()
+    
+    flash(f"Download running in background...", "info")
+    def runDownload():
+        try:
+            started = getDateTime()
+            
+            for i, streamId in enumerate(playlist.streamIds):
+                stream = queueStreamService.get(streamId)
+                if(not stream.isWeb):
+                    printS("Cannot download a non-web stream, \"", stream.name, "\" was skipped.", color = BashColor.WARNING)
+                    continue
+                
+                try:
+                    downloadService.download(stream.uri, playlist.name)
+                except Exception as e:
+                    printS("Failed to download stream \"", stream.name, "\": ", e, color = BashColor.FAIL)
+                    continue
+            
+            duration = getDateTime() - started # ToHumanReadableString()
+        except Exception as e:
+            flash(f"ERROR: {str(e)}", "error")
+
+    threading.Thread(target= runDownload, daemon= True).start()
     
     return reloadPage()
 

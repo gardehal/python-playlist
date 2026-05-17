@@ -24,7 +24,7 @@
         <a class="btn" href="{{ url_for("playlistsDetails", id=playlist.id) }}">Reload</a>
         <a class="btn" onclick="fetch('/fetch/{{ playlist.id }}')">Fetch new</a>
         <a class="btn" href="{{ url_for("prunePlaylist", playlistId=playlist.id) }}">Prune</a>
-        <a class="btn" href="{{ url_for("error", errorMessage="Not Implemented") }}">Download</a>
+        <a class="btn" href="{{ url_for("downloadPlaylist", playlistId=playlist.id) }}">Download</a>
         <a class="btn" href="{{ url_for("error", errorMessage="Not Implemented") }}">Export</a>
         <a class="btn" href="{{ url_for("error", errorMessage="Not Implemented") }}">Unwatch all</a>
         <a class="btn" href="{{ url_for("playlistsEdit", id=playlist.id) }}">Edit</a>

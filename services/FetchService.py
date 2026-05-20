@@ -1,4 +1,6 @@
+import re
 import json
+import time
 from datetime import datetime
 from typing import List
 from xml.dom.minidom import parseString
@@ -16,7 +18,7 @@ from grdUtil.FileUtil import mkdir
 from grdUtil.InputUtil import sanitize
 from grdUtil.PrintUtil import printD, printS
 from jsonpath_ng import parse
-from pytubefix import Channel
+from pytubefix import Channel, YouTube
 
 from enums.StreamSourceType import StreamSourceType
 from model.Playlist import Playlist
@@ -78,11 +80,14 @@ class FetchService():
             try:
                 if(source.isWeb):
                     if(source.streamSourceTypeId == StreamSourceType.YOUTUBE.value):
-                        fetchedStreams = self.fetchYoutube(source, batchSize, _takeAfter, takeBefore, takeNewOnly)
+                        printS("YouTube fetch disabled for being naughty", color= BashColor.WARNING)
+                        continue
+                    
+                        # fetchedStreams = self.fetchYoutube(source, batchSize, _takeAfter, takeBefore, takeNewOnly)
                         
                         if(_takeAfter != None or takeBefore != None):
                             printS("Arguments takeAfter and takeBefore are not supported by fetchYoutubeHtml, they will be ignored.", color = BashColor.WARNING)
-                        # fetchedStreams = self.fetchYoutubeHtml(source, batchSize, takeNewOnly)
+                        fetchedStreams = self.fetchYoutubeHtml2026(source, batchSize, takeNewOnly)
                     elif(source.streamSourceTypeId == StreamSourceType.ODYSEE.value):
                         fetchedStreams = self.fetchOdysee(source, batchSize, _takeAfter, takeBefore, takeNewOnly)
                     elif(source.streamSourceTypeId == StreamSourceType.RUMBLE.value):
@@ -185,16 +190,24 @@ class FetchService():
         if(channel == None or channel.channel_name == None):
             printS(f"Channel {streamSource.name} (URL: {streamSource.uri}) could not be found or is not valid. Please remove it and add it back.", color = BashColor.FAIL)
             return emptyReturn
-
-        printS(f"Fetching videos from {channel.channel_name}...")
+        
+        if(not streamSource.remoteId):
+            streamSource.remoteId = channel.channel_id
+            streamSource.uri = f"https://www.youtube.com/channel/{streamSource.remoteId}"
+            self.streamSourceService.update(streamSource)
+        
         if(len(channel.video_urls) < 1):
             printS(f"Channel {channel.channel_name} has no videos.", color = BashColor.FAIL)
             return emptyReturn
 
+        printS(f"Fetching videos from {channel.channel_name}...")
         newStreams = []
         newQueueStreams = []
-        streams = list([e for e in channel.videos if e]) # If not null or empty list i.e. []
+        
+        streams = [e for e in channel.video_urls if e] # If not null or empty list i.e. []
         lastStreamId = streams[0].video_id
+        
+        print(f"last stream id from fetch {streams[0].title} {lastStreamId} vs listed {streamSource.lastFetchedIds}")
         if(takeNewOnly and takeAfter == None and lastStreamId in streamSource.lastFetchedIds):
             printD("Last video fetched: \"", sanitize(streams[0].title), "\", YouTube ID \"", lastStreamId, "\"", color = BashColor.WARNING, debug = self.settings.debug)
             printD("Return due to takeNewOnly and takeAfter == None and lastStreamId in streamSource.lastFetchedIds", color = BashColor.WARNING, debug = self.settings.debug)
@@ -236,6 +249,12 @@ class FetchService():
             newQueueStreams.append(queueStream)
         
         return newQueueStreams
+
+    def fetchYoutubeHtml2026(self, streamSource: StreamSource, batchSize: int = 10, takeNewOnly: bool = False) -> List[QueueStream]:
+        
+        defaultReturn = []
+        return defaultReturn
+        
 
     def fetchYoutubeHtml(self, streamSource: StreamSource, batchSize: int = 10, takeNewOnly: bool = False) -> List[QueueStream]:
         """

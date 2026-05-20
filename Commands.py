@@ -69,7 +69,7 @@ class Commands():
             optional= False,
             defaultValue= [], useDefaultValue= True,
             castFunc= castStringToList,
-            description= "List of URIs or URLs.")
+            description= "List of URIs or URLs. If strings include \":\", use argument name, e.g.: urls:\"https://...\"")
         takeAfterArgument = Argument(self.takeAfterArgumentName, ["takeafter", "after", "ta"], datetime,
             optional= True,
             defaultValue= None, useDefaultValue= True,

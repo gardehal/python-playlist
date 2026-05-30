@@ -1,24 +1,22 @@
-import re
 import json
-import time
 from datetime import datetime
 from typing import List
 from xml.dom.minidom import parseString
 from pathlib import Path
-
+import yt_dlp
 import mechanize
 import requests
 from bs4 import BeautifulSoup
+from jsonpath_ng import parse
+from pytubefix import Channel
+
 from grdException.ArgumentException import ArgumentException
 from grdException.DatabaseException import DatabaseException
-from grdException.NotImplementedException import NotImplementedException
 from grdUtil.BashColor import BashColor
 from grdUtil.DateTimeUtil import getDateTime, stringToDatetime
 from grdUtil.FileUtil import mkdir
 from grdUtil.InputUtil import sanitize
-from grdUtil.PrintUtil import printD, printS
-from jsonpath_ng import parse
-from pytubefix import Channel, YouTube
+from grdUtil.PrintUtil import printD, printS, printStack
 
 from enums.StreamSourceType import StreamSourceType
 from model.Playlist import Playlist
@@ -30,7 +28,6 @@ from services.PlaylistService import PlaylistService
 from services.QueueStreamService import QueueStreamService
 from services.StreamSourceService import StreamSourceService
 from Settings import Settings
-
 
 class FetchService():
     downloadService = DownloadService()
@@ -80,14 +77,13 @@ class FetchService():
             try:
                 if(source.isWeb):
                     if(source.streamSourceTypeId == StreamSourceType.YOUTUBE.value):
-                        printS("YouTube fetch disabled for being naughty", color= BashColor.WARNING)
-                        continue
-                    
                         # fetchedStreams = self.fetchYoutube(source, batchSize, _takeAfter, takeBefore, takeNewOnly)
                         
-                        if(_takeAfter != None or takeBefore != None):
+                        if(_takeAfter is not None or takeBefore is not None):
                             printS("Arguments takeAfter and takeBefore are not supported by fetchYoutubeHtml, they will be ignored.", color = BashColor.WARNING)
-                        fetchedStreams = self.fetchYoutubeHtml2026(source, batchSize, takeNewOnly)
+                        
+                        fetchedStreams = self.fetchYoutubeYdl(source, batchSize, takeNewOnly)
+                        # fetchedStreams = self.fetchYoutubeHtml(source, batchSize, takeBefore, takeNewOnly)
                     elif(source.streamSourceTypeId == StreamSourceType.ODYSEE.value):
                         fetchedStreams = self.fetchOdysee(source, batchSize, _takeAfter, takeBefore, takeNewOnly)
                     elif(source.streamSourceTypeId == StreamSourceType.RUMBLE.value):
@@ -250,12 +246,65 @@ class FetchService():
         
         return newQueueStreams
 
-    def fetchYoutubeHtml2026(self, streamSource: StreamSource, batchSize: int = 10, takeNewOnly: bool = False) -> List[QueueStream]:
-        
+    def fetchYoutubeYdl(self, streamSource: StreamSource, batchSize: int = 10, takeNewOnly: bool = False) -> List[QueueStream]:
         defaultReturn = []
-        return defaultReturn
-        
+        ydlOptions = {
+            "quiet": True,
+            "extract_flat": True,
+            "playlistreverse": False,
+            "playlistend": batchSize,
+            "match_filter": yt_dlp.utils.match_filter_func("duration > 60"), # Exclude Shorts
+        }
+        # TODO filter out member only, add member only (generic named permimum sub or something) on source which enable/disables filter
+            
+        with yt_dlp.YoutubeDL(ydlOptions) as ydl:
+            info = ydl.extract_info(streamSource.uri, download= False)
 
+        # Updated and preferred channel URL format
+        if(streamSource.remoteId):
+            streamSource.remoteId = info.get("channel_id")
+            streamSource.uri = f"https://www.youtube.com/channel/{streamSource.remoteId}/videos"
+            self.streamSourceService.update(streamSource)
+            
+        newStreams = []
+        entries = info.get("entries", [])
+        if(len(entries) == 0):
+            printS(f"Channel {streamSource.name} has no videos.", color = BashColor.FAIL)
+            return defaultReturn
+        
+        lastVideoId = entries[0]["id"]
+        if(takeNewOnly and lastVideoId and lastVideoId in streamSource.lastFetchedIds):
+            printD("Last video fetched: \"", sanitize(entries[0]["title"]), "\", YouTube ID \"", lastVideoId, "\"", color = BashColor.WARNING, debug = self.settings.debug)
+            printD("Return due to takeNewOnly and takeAfter == None and lastStreamId in streamSource.lastFetchedIds", color = BashColor.WARNING, debug = self.settings.debug)
+            return defaultReturn
+            
+        for item in entries:
+            if not item:
+                continue
+            
+            title = sanitize(item["title"])
+            remoteId = item["id"]
+            if(takeNewOnly and remoteId in streamSource.lastFetchedIds):
+                printD("Name \"", title, "\", YouTube ID \"", remoteId, "\"", color = BashColor.WARNING, debug = self.settings.debug)
+                printD("Break due to takeNewOnly and stream.video_id in streamSource.lastFetchedIds", color = BashColor.WARNING, debug = self.settings.debug)
+                break
+                
+            queueStream = QueueStream(name = title, 
+                # playtimeSeconds = str(item["duration"]),
+                uri = f"https://www.youtube.com/watch?v={remoteId}", 
+                isWeb = True,
+                streamSourceId = streamSource.id,
+                streamSourceName = streamSource.name,
+                watched = None,
+                backgroundContent = streamSource.backgroundContent,
+                added = getDateTime(),
+                remoteId = remoteId)
+            # "thumbnail": ""
+            newStreams.append(queueStream)
+            
+        newStreams.reverse()
+        return newStreams
+        
     def fetchYoutubeHtml(self, streamSource: StreamSource, batchSize: int = 10, takeNewOnly: bool = False) -> List[QueueStream]:
         """
         Fetch videos from YouTube using a scraper to get HTML.

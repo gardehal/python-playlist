@@ -15,6 +15,7 @@ class StreamSource:
                  lastSuccessfulFetched: datetime = None,
                  lastFetchedId: str = None, # Legacy
                  lastFetchedIds: List[str] = [],
+                 premiumSubscriber: bool = False,
                  backgroundContent: bool = False,
                  alwaysDownload: bool = False,
                  remoteId: str = None,
@@ -29,6 +30,7 @@ class StreamSource:
         self.lastFetched: datetime = lastFetched
         self.lastSuccessfulFetched: datetime = lastSuccessfulFetched
         self.lastFetchedIds: List[str] = lastFetchedIds
+        self.premiumSubscriber: bool = premiumSubscriber
         self.backgroundContent: bool = backgroundContent
         self.alwaysDownload: bool = alwaysDownload
         self.remoteId: str = remoteId
@@ -66,6 +68,7 @@ class StreamSource:
         lastFetchedString,
         lastSuccessfulFetchedString,
         lastFetchedIdsString,
+        # ", premiumSubscriber: ", self.premiumSubscriber, 
         # ", backgroundContent: ", self.backgroundContent, 
         ", remoteId: ", self.remoteId, 
         deletedString,

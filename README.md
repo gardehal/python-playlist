@@ -136,3 +136,5 @@ Program for queueing and playing videos from list or from sources like channels 
     - thumbnail for playlist (default blank + some way to add custom user one)
   - new entity, metadata:
     - implement where most create/deletes are done, fetches, startups
+- add publish date to qs, premiumSubscriber to source
+- pytubefix can probably eb entirely replaced with yt_dlp, including downloads

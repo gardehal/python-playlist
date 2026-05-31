@@ -247,7 +247,23 @@ class FetchService():
         return newQueueStreams
 
     def fetchYoutubeYdl(self, streamSource: StreamSource, batchSize: int = 10, takeNewOnly: bool = False) -> List[QueueStream]:
-        defaultReturn = []
+        """
+        Fetch videos from YouTube using YT_DLP.
+
+        Args:
+            streamSource (StreamSource): StreamSource to fetch from.
+            batchSize (int): Number of videos to check at a time, unrelated to max videos that will be read. Defaults to 10.
+            takeNewOnly (bool): Only take streams marked as new. Disables takeAfter and takeBefore-checks. To use takeAfter and/or takeBefore, set this to False. Defaults to False.
+
+        Returns:
+            List[QueueStream]: List of QueueStream
+        """
+        
+        if(streamSource == None):
+            raise ArgumentException("fetchYoutubeYdl - streamSource was None.")
+        
+        printS(f"Fetching videos from {streamSource.name}...")
+        
         ydlOptions = {
             "quiet": True,
             "extract_flat": True,
@@ -255,41 +271,46 @@ class FetchService():
             "playlistend": batchSize,
             "match_filter": yt_dlp.utils.match_filter_func("duration > 60"), # Exclude Shorts
         }
-        # TODO filter out member only, add member only (generic named permimum sub or something) on source which enable/disables filter
             
         with yt_dlp.YoutubeDL(ydlOptions) as ydl:
-            info = ydl.extract_info(streamSource.uri, download= False)
+            info = ydl.extract_info(streamSource.uri, download = False)
 
         # Updated and preferred channel URL format
-        if(streamSource.remoteId):
-            streamSource.remoteId = info.get("channel_id")
-            streamSource.uri = f"https://www.youtube.com/channel/{streamSource.remoteId}/videos"
+        channelId = info.get("channel_id", "")
+        if(not streamSource.remoteId and channelId):
+            streamSource.remoteId = channelId
+            streamSource.uri = f"https://www.youtube.com/channel/{channelId}/videos"
             self.streamSourceService.update(streamSource)
             
-        newStreams = []
         entries = info.get("entries", [])
         if(len(entries) == 0):
             printS(f"Channel {streamSource.name} has no videos.", color = BashColor.FAIL)
-            return defaultReturn
-        
-        lastVideoId = entries[0]["id"]
-        if(takeNewOnly and lastVideoId and lastVideoId in streamSource.lastFetchedIds):
-            printD("Last video fetched: \"", sanitize(entries[0]["title"]), "\", YouTube ID \"", lastVideoId, "\"", color = BashColor.WARNING, debug = self.settings.debug)
-            printD("Return due to takeNewOnly and takeAfter == None and lastStreamId in streamSource.lastFetchedIds", color = BashColor.WARNING, debug = self.settings.debug)
-            return defaultReturn
+            return []
             
+        newStreams = []
         for item in entries:
             if not item:
                 continue
             
-            title = sanitize(item["title"])
-            remoteId = item["id"]
+            if(item.get("_type") == "playlist"):
+                continue
+            
+            remoteId = item.get("id", "")
+            title = item.get("title", "")
+            if(not remoteId or not title):
+                continue
+            
+            sanitizedTitle = sanitize(title)
+            if(streamSource.premiumSubscriber and item.get("is_members_only") is True):
+                printS(f"{sanitizedTitle} is members only, {streamSource.name} premiumSubscriber is false, skipped fetch.", color = BashColor.WARNING)
+                continue
+        
             if(takeNewOnly and remoteId in streamSource.lastFetchedIds):
-                printD("Name \"", title, "\", YouTube ID \"", remoteId, "\"", color = BashColor.WARNING, debug = self.settings.debug)
+                printD("Name \"", sanitizedTitle, "\", YouTube ID \"", remoteId, "\"", color = BashColor.WARNING, debug = self.settings.debug)
                 printD("Break due to takeNewOnly and stream.video_id in streamSource.lastFetchedIds", color = BashColor.WARNING, debug = self.settings.debug)
                 break
                 
-            queueStream = QueueStream(name = title, 
+            queueStream = QueueStream(name = sanitizedTitle, 
                 # playtimeSeconds = str(item["duration"]),
                 uri = f"https://www.youtube.com/watch?v={remoteId}", 
                 isWeb = True,
@@ -408,6 +429,7 @@ class FetchService():
         Fetch videos from Odysee.
 
         Args:
+            streamSource (StreamSource): StreamSource to fetch from.
             batchSize (int): Number of videos to check at a time, unrelated to max videos that will be read. Defaults to 10.
             takeAfter (datetime): Limit to take video after. Defaults to None.
             takeBefore (datetime): Limit to take video before. Defaults to None.

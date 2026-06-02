@@ -63,17 +63,15 @@ class FetchService():
         newStreams = []
         for sourceId in playlist.streamSourceIds:
             source = self.streamSourceService.get(sourceId)
-            
-            if(source == None):
+            if(not source):
                 printS("StreamSource with ID ", sourceId, " could not be found. Consider removing it using the purge or purgeplaylists commands.", color = BashColor.FAIL)
                 continue
             
             if(not source.enableFetch):
                 continue
 
-            fetchedStreams = []
             _takeAfter = takeAfter if(not takeNewOnly) else source.lastSuccessfulFetched
-            
+            fetchedStreams = []
             try:
                 if(source.isWeb):
                     if(source.streamSourceTypeId == StreamSourceType.YOUTUBE.value):
@@ -259,7 +257,7 @@ class FetchService():
             List[QueueStream]: List of QueueStream
         """
         
-        if(streamSource == None):
+        if(not streamSource):
             raise ArgumentException("fetchYoutubeYdl - streamSource was None.")
         
         printS(f"Fetching videos from {streamSource.name}...")
@@ -271,7 +269,7 @@ class FetchService():
             "playlistend": batchSize,
             "match_filter": yt_dlp.utils.match_filter_func("duration > 60"), # Exclude Shorts
         }
-            
+        
         with yt_dlp.YoutubeDL(ydlOptions) as ydl:
             info = ydl.extract_info(streamSource.uri, download = False)
 
@@ -289,10 +287,7 @@ class FetchService():
             
         newStreams = []
         for item in entries:
-            if not item:
-                continue
-            
-            if(item.get("_type") == "playlist"):
+            if(not item or item.get("_type") == "playlist"):
                 continue
             
             remoteId = item.get("id", "")
@@ -304,12 +299,12 @@ class FetchService():
             if(streamSource.premiumSubscriber and item.get("is_members_only") is True):
                 printS(f"{sanitizedTitle} is members only, {streamSource.name} premiumSubscriber is false, skipped fetch.", color = BashColor.WARNING)
                 continue
-        
+                
             if(takeNewOnly and remoteId in streamSource.lastFetchedIds):
                 printD("Name \"", sanitizedTitle, "\", YouTube ID \"", remoteId, "\"", color = BashColor.WARNING, debug = self.settings.debug)
                 printD("Break due to takeNewOnly and stream.video_id in streamSource.lastFetchedIds", color = BashColor.WARNING, debug = self.settings.debug)
                 break
-                
+            
             queueStream = QueueStream(name = sanitizedTitle, 
                 # playtimeSeconds = str(item["duration"]),
                 uri = f"https://www.youtube.com/watch?v={remoteId}", 

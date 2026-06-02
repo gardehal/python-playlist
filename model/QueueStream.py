@@ -14,6 +14,7 @@ class QueueStream:
                  watched: datetime = None, 
                  backgroundContent: bool = False, 
                  playtimeSeconds: int = None, 
+                 publishedAt: datetime = None, 
                  deleted: datetime = None,
                  added: datetime = getDateTime(),
                  remoteId: str = None,
@@ -26,6 +27,7 @@ class QueueStream:
         self.watched: datetime = watched
         self.backgroundContent: bool = backgroundContent
         self.playtimeSeconds: int = playtimeSeconds
+        self.publishedAt: int = publishedAt
         self.deleted: datetime = deleted
         self.added: datetime = added
         self.remoteId: str = remoteId
@@ -78,6 +80,8 @@ class QueueStream:
         ", ", self.streamSourceName, " ",
         watchedString, 
         # ", backgroundContent: ", self.backgroundContent, 
+        ", ", self.playtimeSeconds, " ",
+        ", ", self.publishedAt, " ",
         deletedString,
         addedString,
         idString]))

@@ -127,7 +127,6 @@ Program for queueing and playing videos from list or from sources like channels 
   - button to remove a stream from playlist directly in details (or set watched?)
   - implement all button functionality
   - for downloads, option to download as audio only, adding track details where applicable, pip install mutagen
-  - embedded player doesn't remember settings (speed, audio levels) unlike real player in source, use/add cookies and pass to embedded?
   - editing playlist, get option to remove steams and sources, reorder, same with other list elements in streamsource
   - more links around, can be useful to open streamsource or queuestream details from play for example, for editing or changing url if some problem?
   - new fields:
@@ -136,5 +135,4 @@ Program for queueing and playing videos from list or from sources like channels 
     - thumbnail for playlist (default blank + some way to add custom user one)
   - new entity, metadata:
     - implement where most create/deletes are done, fetches, startups
-- add publish date to qs, premiumSubscriber to source
 - pytubefix can probably eb entirely replaced with yt_dlp, including downloads

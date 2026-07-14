@@ -118,6 +118,8 @@ Program for queueing and playing videos from list or from sources like channels 
 - using guids as ids works but if manually sorting through files its hard to find the correct source without gui. change it to source + channel name, e.g. "youtube_SmarterEveryDay"
 - possible bug where if something is watched, the added to another playlists, when pruning first playlist, qs is deleted
 - simple graphics interface, preferably in browser
+  - spinner or something to show background processes working, toasts was supposed to do this but only loads on page refresh. some alternatives to flasks built in toasts?
+  - add check on DEFAULT_PLAYLIST_ID wherever its used as url, server error if empty
   - in play view, show index + total length like "10/23" or something to show how many streams left 
   - show video publish date (if any, maybe new field, should also sort by this in fetch), maybe added?
   - maybe create/edit form stuff can be put in helper methods in the form class itself, removing clutter from server.py
@@ -135,4 +137,4 @@ Program for queueing and playing videos from list or from sources like channels 
     - thumbnail for playlist (default blank + some way to add custom user one)
   - new entity, metadata:
     - implement where most create/deletes are done, fetches, startups
-- pytubefix can probably eb entirely replaced with yt_dlp, including downloads
+- pytubefix can probably be entirely replaced with yt_dlp, including downloads

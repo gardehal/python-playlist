@@ -18,7 +18,7 @@
         {% endif %}
     </div>
 
-    <p>{{ playlist.name }} - {{ queueStream.streamSourceName }}: {{ queueStream.name }}</p>
+    <p>{{ playlist.name }} - {{ queueStream.streamSourceName }}: {{ queueStream.name }} (video {{ index + 1 }}/{{ playlist.streamIds|length }})</p>
 
     <div class="videoContainer">
         {% if queueStream.isWeb %}

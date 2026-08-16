@@ -119,7 +119,6 @@ Program for queueing and playing videos from list or from sources like channels 
 - possible bug where if something is watched, the added to another playlists, when pruning first playlist, qs is deleted
 - simple graphics interface, preferably in browser
   - spinner or something to show background processes working, toasts was supposed to do this but only loads on page refresh. some alternatives to flasks built in toasts?
-  - in play view, show index + total length like "10/23" or something to show how many streams left 
   - show video publish date (if any, maybe new field, should also sort by this in fetch), maybe added?
   - maybe create/edit form stuff can be put in helper methods in the form class itself, removing clutter from server.py
   - on fetch, option to remove/delete qs from result of fetch page, also fix play from here index, also implement link from flash-like message

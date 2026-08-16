@@ -14,7 +14,7 @@ from grdUtil.FileUtil import mkdir
 from grdUtil.InputUtil import BashColor, sanitize
 from grdUtil.PrintUtil import printD, printS
 from jsonpath_ng import parse
-from pytubefix import YouTube
+import yt_dlp
 
 from Settings import Settings
 
@@ -57,7 +57,7 @@ class DownloadService():
         Args:
             sourceName (str): Name of source.
             name (str): Name of stream.
-            fileExtension (str): File extension (without .) of stream.
+            fileExtension (str): File extension of stream.
             nameRegex (Pattern[str]): Regex to use for name.
             prefix (str): Any string to prefix filename with.
 
@@ -107,14 +107,28 @@ class DownloadService():
         """
         
         try:
-            youtube = YouTube(url)
-            printS("Downloading video from ", url)
-            videoPath = self.getVideoPath(directory, youtube.title, fileExtension, nameRegex, prefix)
-            path = os.sep.join(videoPath.split(os.sep)[0:-1])
-            name = videoPath.split(os.sep)[-1]
+            # Use yt_dlp instead of pytubefix
+            ydl_opts = {
+                'format': f'bestvideo[ext={fileExtension}]+bestaudio[ext=m4a]/best[ext={fileExtension}]/best',
+                'noplaylist': True,
+            }
             
-            video = youtube.streams.filter(progressive = True, file_extension = fileExtension)
-            video.order_by("resolution").desc().first().download(path, name)
+            # We need the title first to use getVideoPath correctly
+            with yt_dlp.YoutubeDL({'quiet': True}) as ydl:
+                info = ydl.extract_info(url, download=False)
+                videoTitle = info.get('title', 'unknown_video')
+
+            # Re-calculate path using existing logic to respect regex/prefix/sanitization
+            videoPath = self.getVideoPath(directory, videoTitle, fileExtension, nameRegex, prefix)
+            
+            # Update opts with the actual target filename
+            target_dir = os.path.dirname(videoPath)
+            target_filename = os.path.basename(videoPath)
+            ydl_opts['outtmpl'] = os.path.join(target_dir, target_filename)
+
+            printS("Downloading video from ", url)
+            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                ydl.download([url])
             
             return videoPath
         except Exception as e:
@@ -178,4 +192,3 @@ class DownloadService():
             return None
 
         return videoPath
-    

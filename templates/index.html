@@ -6,7 +6,11 @@
     TODO: metadata like last fetched streams(s), last fetch time, last fetched for playlist, number of playlists/qs/ss, ...
 
     <div class="row">
-        <a class="btn" href="{{ url_for("playlistsDetails", id=defaultPlaylistId) }}">Default playlist: {{ defaultPlaylistId }}</a>
+        {% if isDefaultValid %}
+            <a class="btn" href="{{ url_for("playlistsDetails", id=defaultPlaylistId) }}">Default playlist: {{ defaultPlaylistId }}</a>
+        {% else %}
+            <a class="btn disabled">No default playlist</a>
+        {% endif %}
         <a class="btn" href="{{ url_for("purgeAll") }}">Purge all</a>
         <a class="btn" href="{{ url_for("softDeletedIndex") }}">Soft Deleted Entities</a>
         <a class="btn runAsync" data-endpoint="/test" data-id="id">Test</a>

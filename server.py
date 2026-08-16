@@ -50,7 +50,9 @@ def reloadPage():
 @app.route("/")
 @app.route("/index")
 def index():
-    return render_template("index.html", defaultPlaylistId= settings.defaultPlaylistId)
+    default_id = settings.defaultPlaylistId
+    is_default_valid = bool(default_id and playlistService.get(default_id))
+    return render_template("index.html", defaultPlaylistId=settings.defaultPlaylistId, isDefaultValid=is_default_valid)
 
 @app.route("/help")
 @app.route("/docs")

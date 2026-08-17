@@ -425,8 +425,7 @@ def play(playlistId: str):
     circumventUrl: str = None
     fileUri: str = None
     if(queueStream.isWeb):
-        if (queueStream.streamSourceId):
-            embeddedUrl = playbackService.mapUrlToEmbeddedUrl(queueStream)
+        embeddedUrl = playbackService.mapUrlToEmbeddedUrl(queueStream)
             
         circumventUrl = playbackService.getRestrictCircumventedUrl(queueStream)
     else:

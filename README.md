@@ -123,7 +123,6 @@ Program for queueing and playing videos from list or from sources like channels 
   - maybe create/edit form stuff can be put in helper methods in the form class itself, removing clutter from server.py
   - on fetch, option to remove/delete qs from result of fetch page, also fix play from here index, also implement link from flash-like message
   - when returning from a create page, the content is updated but the url in browser is sill create, refreshing the page causes the form to be posted again and create a duplicate. must fix
-  - some streams can be embedded if added through source, but not manually: ['https://www.youtube.com/watch?v=j5fbFcW3FK0']
   - button to remove a stream from playlist directly in details (or set watched?)
   - implement all button functionality
   - editing playlist, get option to remove steams and sources, reorder, same with other list elements in streamsource

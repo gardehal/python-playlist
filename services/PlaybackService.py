@@ -419,17 +419,32 @@ class PlaybackService():
             str | None: URL for embedded player, else None.
         """
         
-        streamSource = self.streamSourceService.get(queueStream.streamSourceId)
-        if(not streamSource):
-            print(f"DEBUG: No streamSource found for queueStream {queueStream.id} {queueStream.name}")
-            return None
-            
-        match streamSource.streamSourceTypeId:
-            case StreamSourceType.YOUTUBE:
-                return f"https://www.youtube.com/embed/{queueStream.remoteId}"
-            case StreamSourceType.ODYSEE:
-                videoIdSplit = queueStream.uri.split("https://odysee.com/")
-                return f"https://odysee.com/$/embed/{videoIdSplit[1]}"
-            case _:
-                return None
-            
+        if queueStream.streamSourceId:
+            streamSource = self.streamSourceService.get(queueStream.streamSourceId)
+
+            if streamSource:
+                try:
+                    streamSourceType = StreamSourceTypeUtil.strToStreamSourceType(queueStream.uri)
+                    match streamSourceType.value:
+                        case StreamSourceType.YOUTUBE:
+                            ytId = self.getYouTubeId(queueStream.uri)
+                            if ytId:
+                                return f"https://www.youtube.com/embed/{ytId}"
+                        case _:
+                            pass
+                except Exception:
+                    pass
+
+        uri = queueStream.uri or ""
+        if "youtube.com/watch?v=" in uri or "youtu.be/" in uri:
+            ytId = self.getYouTubeId(uri)
+            if ytId:
+                return f"https://www.youtube.com/embed/{ytId}"
+        elif "odysee.com/" in uri:
+            prefix = "https://odysee.com/"
+            if prefix in uri:
+                videoIdSplit = uri.split(prefix)
+                if len(videoIdSplit) > 1 and videoIdSplit[1]:
+                    return f"https://odysee.com/$/embed/{videoIdSplit[1]}"
+
+        return None

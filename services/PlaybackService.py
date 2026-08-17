@@ -427,9 +427,10 @@ class PlaybackService():
                     streamSourceType = StreamSourceTypeUtil.strToStreamSourceType(queueStream.uri)
                     match streamSourceType.value:
                         case StreamSourceType.YOUTUBE:
-                            ytId = self.getYouTubeId(queueStream.uri)
-                            if ytId:
-                                return f"https://www.youtube.com/embed/{ytId}"
+                            return f"https://www.youtube.com/embed/{queueStream.remoteId}"
+                        case StreamSourceType.ODYSEE:
+                            videoIdSplit = queueStream.uri.split("https://odysee.com/")
+                            return f"https://odysee.com/$/embed/{videoIdSplit[1]}"
                         case _:
                             pass
                 except Exception:

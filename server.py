@@ -145,21 +145,27 @@ def playlistsEdit(id: str):
     
     return render_template("form.html", title= f"Edit {playlist.name}", form= form, errorMessage= errorMessage)
 
-@app.route("/playlists/delete/<id>")
+@app.route("/playlists/delete/<id>", methods=["GET", "POST"])
 def playlistsDelete(id: str):
     playlist = playlistService.get(id)
     if(not playlist):
         flash(f"Playlist {id} was not found.", "error")
         return playlistsDetails(id)
     
-    # TODO alert + accept: f"Delete {playlist.name}?"
-    
-    deleteResult = playlistService.delete(id)
-    if(deleteResult):
-        return playlistsIndex()
-    else:
-        flash(f"Playlist with {id} could not be deleted.", "error")
-        return playlistsDetails(id)
+    if request.method == "POST":
+        deleteResult = playlistService.delete(id)
+        if(deleteResult):
+            flash(f"Deleted '{playlist.name}' successfully.", "success")
+            return playlistsIndex()
+        else:
+            flash(f"Playlist with {id} could not be deleted.", "error")
+            return playlistsDetails(id)
+
+    return render_template("confirm_action.html", 
+                           title="Confirm Delete", 
+                           message=f"Are you sure you want to delete '{playlist.name}'?",
+                           action_url=url_for("playlistsDelete", id=id),
+                           request=request)
 
 @app.route("/queueStreams")
 def queueStreamsIndex():
@@ -247,15 +253,29 @@ def queueStreamsEdit(id: str):
     
     return render_template("form.html", title= f"Edit {queueStream.name}", form= form, errorMessage= errorMessage)
 
-@app.route("/queueStreams/delete/<id>")
+@app.route("/queueStreams/delete/<id>", methods=["GET", "POST"])
 def queueStreamsDelete(id: str):
     queueStream = queueStreamService.get(id)
     if(not queueStream):
         flash(f"QueueStream {id} was not found.", "error")
         return queueStreamsDetails(id)
     
-    flash(f"Delete not implemented until alert confirmation works.", "info")
-    return queueStreamsDetails(id)
+    if request.method == "POST":
+        deleteResult = queueStreamService.delete(id)
+        if deleteResult:
+            # We don't have a parent playlist ID easily here without looking it up, 
+            # so let's just go to the index or try to find it.
+            flash(f"Deleted '{queueStream.name}' successfully.", "success")
+            return queueStreamsIndex()
+        else:
+            flash(f"Could not delete QueueStream {id}", "error")
+            return queueStreamsDetails(id)
+
+    return render_template("confirm_action.html", 
+                           title="Confirm Delete", 
+                           message=f"Are you sure you want to delete '{queueStream.name}'?",
+                           action_url=url_for("queueStreamsDelete", id=id),
+                           request=request)
     
 @app.route("/streamSources")
 def streamSourcesIndex():
@@ -340,15 +360,27 @@ def streamSourcesEdit(id: str):
     
     return render_template("form.html", title= f"Edit {streamSource.name}", form= form, errorMessage= errorMessage)
 
-@app.route("/streamSources/delete/<id>")
+@app.route("/streamSources/delete/<id>", methods=["GET", "POST"])
 def streamSourcesDelete(id: str):
     streamSource = streamSourceService.get(id)
     if(not streamSource):
         flash(f"StreamSource {id} was not found.", "error")
         return streamSourcesDetails(id)
     
-    flash(f"Delete not implemented until alert confirmation works.", "info")
-    return streamSourcesDetails(id)
+    if request.method == "POST":
+        deleteResult = streamSourceService.delete(id)
+        if deleteResult:
+            flash(f"Deleted '{streamSource.name}' successfully.", "success")
+            return streamSourcesIndex()
+        else:
+            flash(f"Could not delete StreamSource {id}", "error")
+            return streamSourcesDetails(id)
+
+    return render_template("confirm_action.html", 
+                           title="Confirm Delete", 
+                           message=f"Are you sure you want to delete '{streamSource.name}'?",
+                           action_url=url_for("streamSourcesDelete", id=id),
+                           request=request)
 
 @app.route("/play/<playlistId>")
 def play(playlistId: str):
@@ -534,21 +566,22 @@ def prunePlaylist(playlistId):
     
     return reloadPage()
 
-@app.route("/purge")
+@app.route("/purge", methods=["GET", "POST"])
 def purgeAll():
-    data = sharedService.preparePurge()
-    
-    # print results and ask for confirmation
-    
-    if(False):
-        result = self.sharedService.doPurge(data)
-        if(result):
-            printS("Purge completed.", color = BashColor.OKGREEN)
+    if request.method == "POST":
+        data = sharedService.preparePurge()
+        result = sharedService.doPurge(data)
+        if result:
+            flash("Purge completed successfully.", "success")
         else:
-            printS("Purge failed.", color = BashColor.FAIL)
-    
-    flash(f"Not implemented.", "info")
-    return index()
+            flash("Purge failed.", "error")
+        return index()
+
+    return render_template("confirm_action.html", 
+                           title="Confirm Purge All", 
+                           message="Are you sure you want to purge everything? This cannot be undone.",
+                           action_url=url_for("purgeAll"),
+                           request=request)
 
 @app.route("/softDeleted")
 def softDeletedIndex():

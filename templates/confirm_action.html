@@ -1,0 +1,14 @@
+{% extends "layout.html" %}
+{% block title %}Confirm Action{% endblock %}
+{% block content %}
+    <h1>{{ title }}</h1>
+    <p>{{ message }}</p>
+
+    <div class="row">
+        <form action="{{ action_url }}" method="POST" style="display: inline;">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn btn-danger">Confirm</button>
+        </form>
+        <a href="{{ request.referrer or url_for('playlistsIndex') }}" class="btn">Cancel</a>
+    </div>
+{% endblock %}

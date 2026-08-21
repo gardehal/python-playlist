@@ -175,7 +175,8 @@ def queueStreamsIndex():
 @app.route("/queueStreams/<id>")
 def queueStreamsDetails(id: str):
     queueStream = queueStreamService.get(id, True)
-    return render_template("queueStreams/details.html", queueStream= queueStream)
+    playlists = playlistService.getAllSorted()
+    return render_template("queueStreams/details.html", queueStream= queueStream, playlists= playlists)
 
 @app.route("/queueStreams/create/<playlistId>", methods=["GET", "POST"])
 def queueStreamsCreate(playlistId: str):
@@ -441,6 +442,7 @@ def play(playlistId: str):
         
     enumeratedNextQueueStreams = enumerate(nextQueueStreams, playIndex) if nextQueueStreams else None
     return render_template("play.html", playlist= playlist, queueStream= queueStream, index= playIndex, 
+        playlists = [p for p in playlistService.getAllSorted() if p.id != playlistId],
         embeddedUrl= embeddedUrl, circumventUrl= circumventUrl, fileUri= fileUri, 
         enumeratedNextQueueStreams= enumeratedNextQueueStreams)
 
@@ -590,7 +592,37 @@ def softDeletedIndex():
     
     return render_template("softDeleted.html", playlists= playlists, queueStreams= queueStreams, streamSources= streamSources)
 
+@app.route("/api/playlists")
+def getPlaylistsJson():
+    playlists = playlistService.getAllSorted()
+    return jsonify([{"id": p.id, "name": p.name} for p in playlists])
+
 @app.route("/addToPlaylist", methods=["POST"])
+def addPlaybackStreamsToPlaylists():
+    inputData = request.get_json()
+    queueStreamId = inputData.get("entityId")
+    playlistIds = inputData.get("playlistIds") # This will now be a list
+    if not queueStreamId or not playlistIds:
+        return jsonify({"result": False, "error": "Missing IDs"}), 400
+    
+    queueStream = queueStreamService.get(queueStreamId)
+    if not queueStream:
+        return jsonify({"result": False, "error": "QueueStream not found"}), 404
+    
+    success_count = 0
+    for pId in playlistIds:
+        playlist = playlistService.get(pId)
+        if playlist:
+            # Reuse the existing logic to add to a single playlist
+            result = playbackService.addPlaybackStreamToPlaylist(pId, queueStream)
+            if result:
+                success_count += 1
+    
+    return jsonify({
+        "result": success_count > 0,
+        "addedCount": success_count,
+        "totalRequested": len(playlistIds)
+    })
 def addPlaybackStreamToPlaylist(playlistId, queueStreamId):
     playlist = playlistService.get(playlistId)
     if(not playlist):

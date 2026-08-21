@@ -56,21 +56,13 @@
                 <th>Play from here</th>
                 <th>Watched?</th>
             </tr>
-            {% for i, queueStream in enumerateQueueStreams: %}
+            {% for i, queueStream in enumerateQueueStreams %}
                 <tr>
                     <td>{{ i }}</td>
                     <td><a href="{{ url_for("queueStreamsDetails", id=queueStream.id) }}">{{ queueStream.name }}</a></td>
-                    {% if queueStream.streamSourceId %}
-                        <td><a href="{{ url_for("streamSourcesDetails", id=queueStream.streamSourceId) }}">{{ queueStream.streamSourceName }}</a></td>
-                    {% else %}
-                        <td></td>
-                    {% endif %}
-                    <td><a href="{{ url_for("play", playlistId= playlist.id, index= i) }}">Play from here</a></td>
-                    {% if queueStream.watched %}
-                        <td>Yes</td>
-                    {% else %}
-                        <td></td>
-                    {% endif %}
+                    <td><a href="{{ url_for("streamSourcesDetails", id=queueStream.streamSourceId) if queueStream.streamSourceId else '#' }}">{{ queueStream.streamSourceName if queueStream.streamSourceId else '' }}</a></td>
+                    <td><a href="{{ url_for("play", playlistId=playlist.id, index=i) }}">Play from here</a></td>
+                    <td>{{ 'Yes' if queueStream.watched else '' }}</td>
                 </tr>
             {% endfor %}
         </table>
@@ -90,16 +82,8 @@
             {% for streamSource in streamSources: %}
                 <tr>
                     <td><a href="{{ url_for("streamSourcesDetails", id=streamSource.id) }}">{{ streamSource.name }}</a></td>
-                    {% if streamSource.uri %}
-                        <td><a href="{{ streamSource.uri }}" target="_blank">Open</a></td>
-                    {% else %}
-                        <td></td>
-                    {% endif %}
-                    {% if streamSource.enableFetch %}
-                        <td>Yes</td>
-                    {% else %}
-                        <td></td>
-                    {% endif %}
+                    <td>{% if streamSource.uri %}<a href="{{ streamSource.uri }}" target="_blank">Open</a>{% endif %}</td>
+                    <td>{{ 'Yes' if streamSource.enableFetch else '' }}</td>
                 </tr>
             {% endfor %}
         </table>

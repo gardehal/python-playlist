@@ -1,17 +1,26 @@
-<div class="modal fade" id="addToPlaylistModal" tabindex="-1" aria-labelledby="entitiesModalLabel" aria-hidden="true">
+<div class="modal fade" id="addToPlaylistModal" tabindex="-1" aria-labelledby="addToPlaylistModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-body">
-            <table>
-                {% for playlist in playlists: %}
-                    <tr>
-                        <td>{{ playlist.name }}</td>
-                        <td><a class="btn" href="{{ url_for("addPlaybackStreamToPlaylist", playlistId=playlist.id, queueStreamId=queueStream.id) }}">Add here</a></td>
-                    </tr>
-                {% endfor %}
-            </table>
-        </div>
-        <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addToPlaylistModalLabel">Add to Playlist</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted mb-3">Select a playlist to add this stream to.</p>
+                <table class="table table-html-hover">
+                    {% for playlist in playlists %}
+                        <tr id="playlist-row-{{ playlist.id }}">
+                            <td class="align-middle">{{ playlist.name }}</td>
+                            <td class="text-end">
+                                <a class="btn btn-sm btn-primary" href="{{ url_for('addPlaybackStreamToPlaylist', playlistId=playlist.id, queueStreamId=queueStream.id) }}">Add here</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
         </div>
     </div>
 </div>

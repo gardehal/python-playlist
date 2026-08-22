@@ -83,6 +83,18 @@
                 const confirmBtn = document.getElementById('confirm-add-playlists');
                 const errorDiv = document.getElementById('add-playlist-error');
                 const modalEl = document.getElementById('addToPlaylistModal');
+                
+                if (modalEl) {
+                    const closeBtns = modalEl.querySelectorAll('.modal-close-btn');
+                    closeBtns.forEach(btn => {
+                        btn.addEventListener('click', () => {
+                            const modalInstance = bootstrap.Modal.getInstance(modalEl);
+                            if (modalInstance) modalInstance.hide();
+                        });
+                    });
+                }
+                
+                if (selectAllCheckbox && playlistCheckboxes) {
 
                 if (selectAllCheckbox && playlistCheckboxes) {
                     // Handle Select All toggle
@@ -122,7 +134,7 @@
                                 body: JSON.stringify({ queueStreamId, playlistIds: selectedIds })
                             });
                             const data = await response.json();
-                            if (data.success) {
+                            if (data.result) {
                                 // Hide modal and show success toast
                                 const modalInstance = bootstrap.Modal.getInstance(modalEl);
                                 if (modalInstance) modalInstance.hide();

@@ -3,7 +3,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="addToPlaylistModalLabel">Add to Playlist</h5>
-<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+<button type="button" class="btn-close modal-close-btn" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <p class="text-muted mb-3">Select one or more playlists to add this stream to.</p>
@@ -28,7 +28,7 @@
                 </table>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+<button type="button" class="btn btn-secondary modal-close-btn" data-bs-dismiss="modal">Cancel</button>
                 <button type="button" class="btn btn-primary" id="confirm-add-playlists" data-queue-stream-id="{{ queueStream.id if queueStream is defined else '' }}">Confirm</button>
             </div>
         </div>

@@ -76,6 +76,8 @@
                     toast.show();
                 });
 
+            });
+
             // --- Multi-Playlist Modal Logic ---
             document.addEventListener("DOMContentLoaded", function () {
                 const selectAllCheckbox = document.getElementById('select-all-playlists');
@@ -84,7 +86,8 @@
                 const errorDiv = document.getElementById('add-playlist-error');
                 const modalEl = document.getElementById('addToPlaylistModal');
                 
-                if (modalEl) {
+                if (modalEl) 
+                {
                     const closeBtns = modalEl.querySelectorAll('.modal-close-btn');
                     closeBtns.forEach(btn => {
                         btn.addEventListener('click', () => {
@@ -93,10 +96,9 @@
                         });
                     });
                 }
-                
-                if (selectAllCheckbox && playlistCheckboxes) {
 
-                if (selectAllCheckbox && playlistCheckboxes) {
+                if (selectAllCheckbox && playlistCheckboxes) 
+                {
                     // Handle Select All toggle
                     selectAllCheckbox.addEventListener('change', function() {
                         playlistCheckboxes.forEach(cb => cb.checked = this.checked);
@@ -110,59 +112,67 @@
                     });
                 }
 
-                if (confirmBtn) {
+                if (confirmBtn) 
+                {
                     confirmBtn.addEventListener('click', async () => {
                         const selectedIds = Array.from(document.querySelectorAll('.playlist-checkbox:checked'))
                             .map(cb => cb.value);
                         const queueStreamId = confirmBtn.dataset.queueStreamId;
 
                         // Reset error state
-                        if (errorDiv) errorDiv.style.display = 'none';
+                        if (errorDiv) 
+                            errorDiv.style.display = 'none';
 
                         // Validation: At least one must be selected
-                        if (selectedIds.length === 0) {
-                            if (errorDiv) errorDiv.style.display = 'block';
+                        if (selectedIds.length === 0) 
+                        {
+                            if (errorDiv)
+                                errorDiv.style.display = 'block';
+
                             return;
                         }
 
                         // Perform the batch add via fetch
-                        showLoading();
-                        try {
-                            const response = await fetch('/addPlaybackStreamsToPlaylist', {
+                        try 
+                        {
+                            const response = await fetch('/addToPlaylist', {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify({ queueStreamId, playlistIds: selectedIds })
                             });
+
                             const data = await response.json();
-                            if (data.result) {
+                            if (data.result) 
+                            {
                                 // Hide modal and show success toast
                                 const modalInstance = bootstrap.Modal.getInstance(modalEl);
-                                if (modalInstance) modalInstance.hide();
-                                console.log('Added to ' + data.count + ' playlists');
-                            } else {
-                                alert(data.message || 'Error adding to playlists');
+                                if (modalInstance) 
+                                    modalInstance.hide();
+                                
+                                console.log('Added to ' + data.addedCount + ' playlists');
+                            } 
+                            else 
+                            {
+                                alert(data.error || 'Error adding to playlists');
                             }
-                        } catch (err) {
+                        } 
+                        catch (err) 
+                        {
                             console.error('Batch add error:', err);
                             alert('Failed to add to playlists.');
-                        } finally {
-                            hideLoading();
-                        }
+                        } 
                     });
                 }
             });
 
-            document.querySelectorAll(".runAsync").forEach(e => 
-            {
-                e.addEventListener("click", async () =>
-                {
+            document.querySelectorAll(".runAsync").forEach(e => {
+                e.addEventListener("click", async () => {
                     const endpoint = e.dataset.endpoint;
                     const entityId = e.dataset.id;
 
                     try
                     {
-                        const startRes = await fetch("/test", 
-                        {
+                        const startRes = await fetch("/test", {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
                             body: JSON.stringify(

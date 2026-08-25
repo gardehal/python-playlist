@@ -11,16 +11,24 @@
                 <table class="table table-html-hover">
                     <thead>
                         <tr>
-                            <th style="width: 40px;"><input type="checkbox" class="form-check-input" id="select-all-playlists"></th>
-                            <th>Playlists</th>
+                            <td colspan="2" style="padding: 0;">
+                                <label class="d-block p-2 m-0 d-flex align-items-center" style="cursor: pointer;">
+                                    <input type="checkbox" class="form-check-input me-3" id="select-all-playlists">
+                                    <span class="align-middle">Select all playlists</span>
+                                </label>
+                            </td>
                         </tr>
                     </thead>
                     <tbody>
                         {% if playlists is defined and queueStream is defined %}
                             {% for playlist in playlists %}
                                 <tr>
-                                    <td><input type="checkbox" class="form-check-input playlist-checkbox" value="{{ playlist.id }}"></td>
-                                    <td class="align-middle">{{ playlist.name }}</td>
+                                    <td colspan="2" style="padding: 0;">
+                                        <label class="d-block p-2 m-0 d-flex align-items-center" style="cursor: pointer;">
+                                            <input type="checkbox" class="form-check-input playlist-checkbox me-3" value="{{ playlist.id }}">
+                                            <span class="align-middle">{{ playlist.name }}</span>
+                                        </label>
+                                    </td>
                                 </tr>
                             {% endfor %}
                         {% endif %}

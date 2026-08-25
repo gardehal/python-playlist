@@ -603,19 +603,23 @@ def addPlaybackStreamsToPlaylists():
     inputData = request.get_json()
     queueStreamId = inputData.get("queueStreamId")
     playlistIds = inputData.get("playlistIds")
+
     if not queueStreamId or not playlistIds:
+        flash(f"Failed to copy QueueStream, queueStreamId or playlistIds missing.", "error")
         return jsonify({"result": False, "error": "Missing IDs"}), 400
     
     queueStream = queueStreamService.get(queueStreamId)
     if not queueStream:
+        flash(f"Failed to copy QueueStream, queueStream not found.", "error")
         return jsonify({"result": False, "error": "QueueStream not found"}), 404
 
     result = playbackService.addPlaybackStreamToPlaylist(queueStream, playlistIds)
-    success_count = len(result)
+    successCount = len(result)
+    flash(f"Copied QueueStream to {successCount} Playlists.", "success")
     
     return jsonify({
-        "result": success_count > 0,
-        "addedCount": success_count,
+        "result": successCount > 0,
+        "addedCount": successCount,
         "totalRequested": len(playlistIds)
     })
 

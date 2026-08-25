@@ -135,3 +135,9 @@ Program for queueing and playing videos from list or from sources like channels 
     - implement where most create/deletes are done, fetches, startups
 - pytubefix can probably be entirely replaced with yt_dlp, except downloads as it requires weird javascript to fetch about half the videos in testing - see separate doc 2026-08-16-youtube-download-evolution.md
 - for downloads, option to download as audio only, adding track details where applicable, pip install mutagen
+- refactoring
+  - update architecture
+  - replace flask with fastapi?
+  - clean up web (some templates fine, JS is a mess)
+  - clean up cli
+  - clean up business

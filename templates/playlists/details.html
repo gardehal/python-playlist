@@ -60,7 +60,13 @@
                 <tr>
                     <td>{{ i }}</td>
                     <td><a href="{{ url_for("queueStreamsDetails", id=queueStream.id) }}">{{ queueStream.name }}</a></td>
-                    <td><a href="{{ url_for("streamSourcesDetails", id=queueStream.streamSourceId) if queueStream.streamSourceId else '#' }}">{{ queueStream.streamSourceName if queueStream.streamSourceId else '' }}</a></td>
+                    <td>
+                        {% if queueStream.streamSourceId %}
+                            <a href="{{ url_for('streamSourcesDetails', id=queueStream.streamSourceId) }}">{{ queueStream.streamSourceName or 'No Name' }}</a>
+                        {% else %}
+                            {{ queueStream.streamSourceName or '' }}
+                        {% endif %}
+                    </td>
                     <td><a href="{{ url_for("play", playlistId=playlist.id, index=i) }}">Play from here</a></td>
                     <td>{{ 'Yes' if queueStream.watched else '' }}</td>
                 </tr>

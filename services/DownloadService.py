@@ -3,9 +3,13 @@ import os
 import re
 import urllib.request
 from re import Pattern
-
 import mechanize
+import yt_dlp
+from jsonpath_ng import parse
+from mutagen.mp3 import MP3
+from mutagen.id3 import ID3, TIT2, TPE1, TALB
 from bs4 import BeautifulSoup
+
 from grdException.ArgumentException import ArgumentException
 from grdException.NotImplementedException import NotImplementedException
 from grdUtil.BashColor import BashColor
@@ -13,8 +17,6 @@ from grdUtil.DateTimeUtil import getDateTimeAsNumber
 from grdUtil.FileUtil import mkdir
 from grdUtil.InputUtil import BashColor, sanitize
 from grdUtil.PrintUtil import printD, printS
-from jsonpath_ng import parse
-import yt_dlp
 
 from Settings import Settings
 
@@ -192,3 +194,16 @@ class DownloadService():
             return None
 
         return videoPath
+
+
+#    def setMp3Metadata(self, file_path: str, title: str, artist: str, album: str):
+#        audio = MP3(file_path, ID3=ID3)
+
+#        if audio.tags is None:
+#            audio.add_tags()
+
+#        audio.tags.add(TIT2(encoding=3, text=title))
+#        audio.tags.add(TPE1(encoding=3, text=artist))
+#        audio.tags.add(TALB(encoding=3, text=album))
+
+#        audio.save()

@@ -476,6 +476,7 @@ def fetchPlaylist(playlistId):
 @registerTask("downloadPlaylist")
 @app.route("/download/<playlistId>")
 def downloadPlaylist(playlistId):
+    audioOnly = request.args.get("audioOnly", "false").lower() is True
     playlist = playlistService.get(playlistId)
     if(not playlist):
         flash(f"Playlist {id} was not found.", "error")
@@ -493,7 +494,7 @@ def downloadPlaylist(playlistId):
                     continue
                 
                 try:
-                    downloadService.download(stream.uri, playlist.name)
+                    downloadService.download(stream.uri, playlist.name, audioOnly=audioOnly)
                 except Exception as e:
                     printS("Failed to download stream \"", stream.name, "\": ", e, color = BashColor.FAIL)
                     continue

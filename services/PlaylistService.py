@@ -1,8 +1,8 @@
 import os
 from typing import List
 
-from pytubefix import Playlist as PyTubePlaylist, YouTube
 import validators
+import yt_dlp
 from grdException.ArgumentException import ArgumentException
 from grdException.DatabaseException import DatabaseException
 from grdException.NotFoundException import NotFoundException
@@ -10,7 +10,6 @@ from grdService.BaseService import BaseService
 from grdUtil.BashColor import BashColor
 from grdUtil.DateTimeUtil import getDateTime, getDateTimeAsNumber
 from grdUtil.InputUtil import sanitize
-from grdUtil.LocalJsonRepository import LocalJsonRepository
 from grdUtil.LogLevel import LogLevel
 from grdUtil.LogUtil import LogUtil
 from grdUtil.PrintUtil import printD, printS
@@ -420,25 +419,33 @@ class PlaylistService(BaseService[T]):
         
         if "&si=" in url:
             url = url.split("&si=")[0]
-            
-        ytPlaylist = PyTubePlaylist(url)
-        try:
-            # For some reasons the property call just fails for invalid playlist, instead of being None. Except = fail.
-            ytPlaylist.title == None
-        except:
-            raise ArgumentException(f"addYouTubePlaylist - YouTube playlist given by URL \"", url, "\" was not found. It could be set to private or deleted")
-        
-        if(playlist.name == None):
-            playlist.name = sanitize(ytPlaylist.title)
-        if(playlist.description == None):
-            playlist.description = f"Playlist created from YouTube playlist: {url}"
-        
+
+        ydlOptions = {
+            "extract_flat": True,
+            "quiet": True,
+        }
+
         streamsToAdd = []
-        for videoUrl in ytPlaylist.video_urls:
-            video = YouTube(videoUrl)
-            stream = QueueStream(name = sanitize(video.title), uri = video.watch_url, isWeb= True)
-            streamsToAdd.append(stream)
-        
+        with yt_dlp.YoutubeDL(ydlOptions) as ydl:
+            info = ydl.extract_info(url, download=False)
+
+            if(playlist.name == None):
+                playlist.name = sanitize(info.get("title"))
+            if(playlist.description == None):
+                playlist.description = f"Playlist created from YouTube playlist: {url}"
+
+            for entry in info.get("entries", []):
+                
+                if(not entry):
+                    printS("addYouTubePlaylist: entry was not valid")
+                    continue
+
+                videoId = entry.get("id")
+                watchUrl = f"https://www.youtube.com/watch?v={videoId}"
+                title = sanitize(entry.get("title", "No title"))
+                stream = QueueStream(name=title, uri=watchUrl, isWeb=True)
+                streamsToAdd.append(stream)
+    
         addPlaylistResult = self.add(playlist)
         if(addPlaylistResult != None):
             addStreamsResult = self.addStreams(addPlaylistResult.id, streamsToAdd)

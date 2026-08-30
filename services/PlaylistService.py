@@ -435,9 +435,8 @@ class PlaylistService(BaseService[T]):
                 playlist.description = f"Playlist created from YouTube playlist: {url}"
 
             for entry in info.get("entries", []):
-                
                 if(not entry):
-                    printS("addYouTubePlaylist: entry was not valid")
+                    printS("addYouTubePlaylist: entry was not valid", color = BashColor.FAIL)
                     continue
 
                 videoId = entry.get("id")

@@ -140,4 +140,6 @@ Program for queueing and playing videos from list or from sources like channels 
   - replace flask with fastapi?
   - clean up web (some templates fine, JS is a mess)
   - clean up cli
-  - clean up business
+  - clean up busines
+  - replace printS, printD with real logging
+  - pytube/yt-dlp as plug and play clients instead of directly implemented in services

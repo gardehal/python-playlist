@@ -13,6 +13,7 @@ from grdUtil.DateTimeUtil import getDateTime
 from forms.PlaylistForm import *
 from forms.QueueStreamForm import *
 from forms.StreamSourceForm import *
+from forms.YoutubePlaylistForm import *
 
 from Settings import *
 from services.PlaylistService import *
@@ -66,6 +67,22 @@ def error():
 
 def renderError(errorMessage: str):
     return render_template("error.html", errorMessage= errorMessage)
+
+@app.route("/playlists/from-youtube", methods=["GET", "POST"])
+def playlistsFromYoutube():
+    errorMessage = None
+    form = YoutubePlaylistForm()
+    if request.method == "POST" and form.validate_on_submit():
+        try:
+            # TODO can have more values from form
+            new_playlist = Playlist()
+            playlistService.addYouTubePlaylist(new_playlist, form.url.data)
+            flash(f"Created playlist from YouTube URL", "success")
+            return redirect(url_for("playlistsIndex"))
+        except Exception as e:
+            flash(f"Error creating playlist: {str(e)}", "error")
+    
+    return render_template("form.html", title= "Create new Playlist from YouTube", form= form, errorMessage= errorMessage)
 
 @app.route("/playlists")
 def playlistsIndex():

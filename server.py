@@ -74,15 +74,23 @@ def playlistsFromYoutube():
     form = YoutubePlaylistForm()
     if request.method == "POST" and form.validate_on_submit():
         try:
-            # TODO can have more values from form
-            new_playlist = Playlist()
-            playlistService.addYouTubePlaylist(new_playlist, form.url.data)
+            new_playlist = Playlist(
+                name=form.name.data,
+                description=form.description.data,
+                playWatchedStreams=form.playWatchedStreams.data,
+                allowDuplicates=form.allowDuplicates.data,
+                favorite=form.favorite.data,
+                sortOrder=form.sortOrder.data,
+            )
+            
+            playlistId = playlistService.addYouTubePlaylist(new_playlist, form.url.data)
             flash(f"Created playlist from YouTube URL", "success")
-            return redirect(url_for("playlistsIndex"))
+
+            return playlistsDetails(playlistId)
         except Exception as e:
             flash(f"Error creating playlist: {str(e)}", "error")
     
-    return render_template("form.html", title= "Create new Playlist from YouTube", form= form, errorMessage= errorMessage)
+    return render_template("form.html", title="Create new Playlist from YouTube", form=form, errorMessage=errorMessage)
 
 @app.route("/playlists")
 def playlistsIndex():

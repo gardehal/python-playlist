@@ -75,8 +75,8 @@ def playlistsFromYoutube():
     if request.method == "POST" and form.validate_on_submit():
         try:
             new_playlist = Playlist(
-                name=form.name.data,
-                description=form.description.data,
+                name=form.name.data or None,
+                description=form.description.data or None,
                 playWatchedStreams=form.playWatchedStreams.data,
                 allowDuplicates=form.allowDuplicates.data,
                 favorite=form.favorite.data,

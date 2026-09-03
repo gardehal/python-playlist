@@ -4,7 +4,7 @@
     <h1>StreamSources</h1>
     <ul>
         {% for streamSource in streamSources: %}
-            <li><a href="{{ url_for("streamSourcesDetails", id=streamSource.id) }}">{{ streamSource.name }}</a></li>
+            <li><a href="{{ url_for("streamSourcesDetails", id=streamSource.id) }}">{{ streamSource.name if streamSource.name else streamSource.id }}</a></li>
         {% endfor %}
     </ul>
 {% endblock %}

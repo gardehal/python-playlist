@@ -55,6 +55,7 @@
                 <th>Source</th>
                 <th>Play from here</th>
                 <th>Watched?</th>
+                <th>Toggle watched</th>
             </tr>
             {% for i, queueStream in enumerateQueueStreams %}
                 <tr>
@@ -69,6 +70,7 @@
                     </td>
                     <td><a href="{{ url_for("play", playlistId=playlist.id, index=i) }}">Play from here</a></td>
                     <td>{{ 'Yes' if queueStream.watched else '' }}</td>
+                    <td></td>
                 </tr>
             {% endfor %}
         </table>

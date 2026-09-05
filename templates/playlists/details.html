@@ -70,12 +70,49 @@
                     </td>
                     <td><a href="{{ url_for("play", playlistId=playlist.id, index=i) }}">Play from here</a></td>
                     <td>{{ 'Yes' if queueStream.watched else '' }}</td>
-                    <td class="btn"><a href="#">👁️</a></td>
+                    <td class="btn">
+                        <a href="#" class="toggle-watched" data-playlist-id="{{ playlist.id }}" data-stream-id="{{ queueStream.id }}">
+                            {{ '✅' if queueStream.watched else '👁️' }}
+                        </a>
+                    </td>
                 </tr>
             {% endfor %}
         </table>
     {% endif %}
 
+    <script>
+        document.querySelectorAll('.toggle-watched').forEach(button => {
+            button.addEventListener('click', async (e) => {
+                e.preventDefault();
+                const playlistId = button.dataset.playlistId;
+                const streamId = button.dataset.streamId;
+                const url = `/playlist/${playlistId}/toggle_watched/${streamId}`;
+
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': '{{ csrf_token() }}'
+                        }
+                    });
+                    const data = await response.json();
+
+                    if (data.success) {
+                        button.innerHTML = data.watched ? '✅' : '👁️';
+                        // Update the "Watched?" column text as well
+                        const row = button.closest('tr');
+                        const watchedTd = row.querySelector('td:nth-child(5)');
+                        watchedTd.innerText = data.watched ? 'Yes' : '';
+                    } else {
+                        alert('Error toggling watched state: ' + data.error);
+                    }
+                } catch (err) {
+                    console.error('Error:', err);
+                    alert('An error occurred while toggling watched state.');
+                }
+            });
+        });
+    </script>
     <h1>StreamSources in {{ playlist.name }}</h1>
     <hr>
     {% if streamSources|length == 0 %}

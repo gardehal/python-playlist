@@ -109,6 +109,25 @@ def playlistsDetails(id: str):
     enumerateQueueStreams = enumerate(queueStreams) if queueStreams else None
     return render_template("playlists/details.html", playlist= playlist, enumerateQueueStreams= enumerateQueueStreams, streamSources= streamSources)
 
+@app.route("/playlist/<playlistId>/toggle_watched/<streamId>", methods=["POST"])
+def toggleWatched(playlistId: str, streamId: str):
+    queueStream = queueStreamService.get(streamId)
+    if not queueStream:
+        return jsonify({"success": False, "error": "QueueStream not found"}), 404
+    
+    # Toggle watched state
+    if queueStream.watched:
+        queueStream.watched = None
+    else:
+        queueStream.watched = getDateTime()
+    
+    updateResult = queueStreamService.update(queueStream)
+    
+    if updateResult:
+        return jsonify({"success": True, "watched": bool(queueStream.watched)})
+    else:
+        return jsonify({"succeed": False, "error": "Could not update QueueStream"}), 500
+    
 @app.route("/playlists/create", methods=["GET", "POST"])
 def playlistsCreate():
     errorMessage = None

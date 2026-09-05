@@ -70,7 +70,7 @@
                     </td>
                     <td><a href="{{ url_for("play", playlistId=playlist.id, index=i) }}">Play from here</a></td>
                     <td>{{ 'Yes' if queueStream.watched else '' }}</td>
-                    <td></td>
+                    <td class="btn"><a href="#">👁️</a></td>
                 </tr>
             {% endfor %}
         </table>

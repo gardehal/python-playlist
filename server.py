@@ -551,55 +551,6 @@ def downloadPlaylist(playlistId):
     
     return reloadPage()
 
-@app.route("/testt")
-def testt():
-    # if(not playlist):
-    #     flash(f"Playlist {id} was not found.", "error")
-    #     return reloadPage()
-    
-    def runFetch():
-        try:
-            time.sleep(5)
-            flash(f"test complete", "success") ## missing flask context inside this async
-            return reloadPage() ## missing flask context inside this async
-        except Exception as e:
-            flash(f"ERROR: {str(e)}", "error")
-
-    threading.Thread(target= runFetch, daemon= True).start()
-    
-    flash(f"test running in background...", "info") ## should flash but doesnt
-    
-    return reloadPage()
-
-@app.route("/test", methods=["POST"])
-def test(playlistId):
-    print("TEST")
-    inputData = request.get_json()
-    playlistId = inputData.get("entityId")
-    
-    playlist = playlistService.get(playlistId)
-    if(not playlist):
-        flash(f"Playlist {id} was not found.", "error")
-        return reloadPage()
-    
-    flash(f"Fetch running in background...", "info")
-    
-    def runFetch():
-        try:
-            started = getDateTime()
-            time.sleep(5)
-            newQueueStreams = ["a", "b", "c"]
-            duration = getDateTime() - started # ToHumanReadableString()
-
-            resultsUrl = f"fetch?count={len(newQueueStreams)}&duration={duration}"
-            flash(f"Fetch complete", "success") # TODO make a link with details
-        except Exception as e:
-            flash(f"ERROR: {str(e)}", "error")
-
-    threading.Thread(target= runFetch, daemon= True).start()
-    
-    return reloadPage()
-
 @app.route("/prune/<playlistId>")
 def prunePlaylist(playlistId):
     playlist = playlistService.get(playlistId)
@@ -636,11 +587,6 @@ def softDeletedIndex():
     streamSources = [e for e in streamSourceService.getAll(True) if e.deleted]
     
     return render_template("softDeleted.html", playlists= playlists, queueStreams= queueStreams, streamSources= streamSources)
-
-@app.route("/api/playlists")
-def getPlaylistsJson():
-    playlists = playlistService.getAllSorted()
-    return jsonify([{"id": p.id, "name": p.name} for p in playlists])
 
 @csrf.exempt
 @app.route("/addToPlaylist", methods=["POST"])
@@ -687,71 +633,6 @@ def addPlaybackStreamToPlaylist(playlistId, queueStreamId):
         flash(f"Failed adding to {playlist.name}", "error")
         
     return jsonify({"result": result})
-
-@csrf.exempt
-@app.route("/enqueueTask", methods=["POST"])
-def start_task():
-    inputData = request.get_json(silent=True) or {}
-
-    taskName = inputData.get("task")
-    entityId = inputData.get("entityId")
-    if not taskName or taskName not in taskRegistry:
-        return jsonify({"error": "Unknown task name"}), 400
-
-    targetFunc = taskRegistry[taskName]
-
-    jobId = str(uuid.uuid4())
-    logQueue = Queue()
-    activeTasks[jobId] = logQueue
-
-    def runTask():
-        customStream = StreamToQueue(logQueue)
-        oldStdOut = sys.stdout
-        sys.stdout = customStream
-
-        try:
-            print("Task started, please wait...")
-            targetFunc(entityId)
-
-        except Exception as e:
-            print(f"ERROR: {str(e)}")
-        finally:
-            sys.stdout = oldStdOut
-            logQueue.put(None)
-
-    threading.Thread(target= runTask, daemon= True).start()
-
-    return jsonify({"jobId": jobId})
-
-@csrf.exempt
-@app.route("/streamLogs")
-def streamLogs():
-    jobId = request.args.get("jobId")
-    if not jobId or jobId not in activeTasks:
-        return "Job not found", 404
-
-    def generate():
-        q = activeTasks[jobId]
-        while True:
-            line = q.get()
-            if line is None:
-                del activeTasks[jobId]
-                yield "data: [DONE]\n\n"
-                break
-            yield f"data: {line}\n\n"
-
-    return Response(stream_with_context(generate()), mimetype="text/event-stream", headers={"Cache-Control": "no-cache"})
-
-class StreamToQueue:
-    def __init__(self, queue):
-        self.queue = queue
-
-    def write(self, text):
-        if text:
-            self.queue.put(text.rstrip())
-            
-    def flush(self):
-        pass
     
 if __name__ == "__main__":
     # print("Routes:")

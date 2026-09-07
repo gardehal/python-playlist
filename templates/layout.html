@@ -30,16 +30,6 @@
             {% endwith %}
         </div>
 
-        <div id="loadingOverlay" class="loading-overlay">
-            <div class="loading-content">
-                <div class="spinner"></div>
-                <p>Processing... Please wait</p>
-
-                <div id="console-window" style="background:#1e1e1e; color:#0f0; font-family:monospace; padding:15px; height:320px; overflow-y:scroll; border:1px solid #333; white-space:pre-wrap;">
-                </div>
-            </div>
-        </div>
-
         <div id="displayContent">
             <div id="header">
                 <h2>Python Playlist</h2>
@@ -165,38 +155,6 @@
                 }
             });
 
-            document.querySelectorAll(".runAsync").forEach(e => {
-                e.addEventListener("click", async () => {
-                    const endpoint = e.dataset.endpoint;
-                    const entityId = e.dataset.id;
-
-                    try
-                    {
-                        const startRes = await fetch("/test", {
-                            method: "POST",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify(
-                            { 
-                                entityId: entityId,
-                            })
-                        });
-                        // then get result then show toast
-                        
-                        const data = await response.json();
-
-                        if (data.flashed_messages && data.flashed_messages.length > 0)
-                        {
-                            showFlashedToasts(data.flashed_messages);
-                        }
-                    } 
-                    catch (err) 
-                    {
-                        
-                        console.log("showFlashedToasts(...);")
-                    }
-                });
-            });
-
             function showFlashedToasts(messages) {
                 const container = document.getElementById('toast-container');
                 
@@ -238,81 +196,6 @@
                     });
                 });
             }
-
-            function showLoading() 
-            {
-                document.getElementById("loadingOverlay").style.display = "flex";
-                document.body.classList.add("loading");
-            }
-
-            function hideLoading() 
-            {
-                document.getElementById("loadingOverlay").style.display = "none";
-                document.body.classList.remove("loading");
-            }
-
-            document.querySelectorAll(".displayLoading").forEach(button => 
-            { 
-                button.addEventListener("click", async () =>
-                {
-                    showLoading();
-                });
-            });
-
-            document.querySelectorAll(".displayLoadingWithLogs").forEach(button => 
-            { 
-                button.addEventListener("click", async () => 
-                {
-                    showLoading();
-
-                    const taskName = button.dataset.task;
-                    const taskEntityId = button.dataset.id;
-                    const consoleWindow = document.getElementById("console-window");
-                    consoleWindow.innerHTML = "";
-
-                    try 
-                    {
-                        const startRes = await fetch("/enqueueTask", 
-                        {
-                            method: "POST",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify(
-                            { 
-                                task: taskName,
-                                entityId: taskEntityId,
-                            })
-                        });
-
-                        const { jobId } = await startRes.json();
-
-                        const eventSource = new EventSource(`/streamLogs?jobId=${jobId}`);
-
-                        eventSource.onmessage = (event) => 
-                        {
-                            if (event.data === "[DONE]") {
-                                eventSource.close();
-                                hideLoading();
-                                return;
-                            }
-
-                            const line = document.createElement("div");
-                            line.textContent = event.data;
-                            consoleWindow.appendChild(line);
-                            consoleWindow.scrollTop = consoleWindow.scrollHeight;
-                        };
-
-                        eventSource.onerror = () => {
-                            eventSource.close();
-                            hideLoading();
-                        };
-                    } 
-                    catch (err) 
-                    {
-                        consoleWindow.innerHTML = `<div style="color:red">Failed to start: ${err.message}</div>`;
-                        hideLoading();
-                    }
-                });
-            });
         </script>
 
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

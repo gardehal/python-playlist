@@ -1,3 +1,22 @@
+:root {
+    /* Onyx */
+    --bg-color: #070D0B;
+    /* Silver */
+    --text-color: #B5B5B5;
+    /* Evergreen */
+    --accent1: #013D33;
+    /* Jungle Teal */
+    --accent2: #02866F;
+    /* Light Evergreen */
+    --accent1-light: #025a4d;
+    /* Light Jungle Teal */
+    --accent2-light: #2ebfa9;
+    /* Gold */
+    --accent3: #D4AF37;
+    /* Hover color (Light Silver/Lavender) */
+    --hover-color: #E2DBE6;
+}
+
 #displayContent 
 {
     top: 0;
@@ -6,8 +25,8 @@
     display: flex;
     min-height: 100vh;
     align-items: center;
-    color: whitesmoke;
-    background-color: #333;
+    color: var(--text-color);
+    background-color: var(--bg-color);
 }
 
 #displayContent > div
@@ -40,12 +59,25 @@
 {
     border-width: 4px !important;
     border-style: solid !important;
-    border-color: white !important;
+    border-color: var(--accent3) !important;
+    color: var(--text-color);
+}
+
+.btn:hover
+{
+    background-color: var(--hover-color);
+    color: var(--text-color);
 }
 
 a
 {
     width: fit-content !important;
+    color: var(--accent3) !important;
+}
+
+a:hover 
+{
+    color: var(--hover-color) !important;
 }
 
 .videoContainer
@@ -74,15 +106,15 @@ a
 
 .loading-content {
   text-align: center;
-  color: white;
+  color: var(--text-color);
   font-family: Arial, sans-serif;
 }
 
 .spinner {
   width: 60px;
   height: 60px;
-  border: 6px solid #f3f3f3;
-  border-top: 6px solid #3498db;
+  border: 6px solid var(--accent1);
+  border-top: 6px solid var(--accent2);
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin: 0 auto 15px;
@@ -96,4 +128,22 @@ a
 body.loading {
   overflow: hidden;
   pointer-events: none;
+}
+
+/* Form elements styling */
+input[type="text"], 
+input[type="password"], 
+input[type="email"], 
+input[type="number"], 
+textarea, 
+select {
+    background-color: var(--accent1-light) !important;
+    border: 1px solid var(--accent2) !important;
+    color: var(--text-color) !important;
+}
+
+/* Checkboxes and Radios */
+input[type="checkbox"], 
+input[type="radio"] {
+    accent-color: var(--accent3);
 }

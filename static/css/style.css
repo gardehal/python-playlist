@@ -13,8 +13,8 @@
     --accent2-light: #2ebfa9;
     /* Gold */
     --accent3: #D4AF37;
-    /* Hover color (Light Silver/Lavender) */
-    --hover-color: #E2DBE6;
+    /* Platinum */
+    --hover-color: #EBEBEB;
 }
 
 #displayContent 
@@ -60,13 +60,13 @@
     border-width: 4px !important;
     border-style: solid !important;
     border-color: var(--accent3) !important;
-    color: var(--text-color);
+    background-color: var(--accent1) !important;
+    color: var(--text-color) !important;
 }
 
 .btn:hover
 {
-    background-color: var(--hover-color);
-    color: var(--text-color);
+    color: var(--hover-color) !important;
 }
 
 a
@@ -142,8 +142,19 @@ select {
     color: var(--text-color) !important;
 }
 
-/* Checkboxes and Radios */
 input[type="checkbox"], 
 input[type="radio"] {
-    accent-color: var(--accent3);
+    accent-color: var(--accent3) !important;
+}
+
+/* Handle checked state specifically to prevent Bootstrap from overriding with blue/white */
+.form-check-input:checked {
+    background-color: var(--accent3) !important;
+    border-color: var(--accent3) !important;
+}
+
+/* Ensure Bootstrap doesn't override button background */
+.btn-primary, .btn-success, .btn-info, .btn-warning, .btn-danger, .btn-light, .btn-dark {
+    background-color: var(--accent1) !important;
+    border-color: var(--accent3) !important;
 }

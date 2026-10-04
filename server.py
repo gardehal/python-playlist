@@ -341,6 +341,7 @@ def streamSourcesCreate(playlistId: str):
     
     errorMessage = None
     form = StreamSourceForm()
+    form.streamSourceTypeId.choices = [(t.value, t.name) for t in StreamSourceType]
     
     if request.method == "POST":
         if(form.validate_on_submit()):
@@ -348,10 +349,10 @@ def streamSourcesCreate(playlistId: str):
                 name = form.name.data,
                 uri = form.uri.data,
                 isWeb = form.isWeb.data,
+                streamSourceTypeId = form.streamSourceTypeId.data,
                 enableFetch = form.enableFetch.data,
                 backgroundContent = form.backgroundContent.data,
                 alwaysDownload = form.alwaysDownload.data,
-                streamSourceTypeId = 0,
                 lastSuccessfulFetched = None,
                 lastFetchedIds = [],
                 lastFetched = None
@@ -370,6 +371,7 @@ def streamSourcesCreate(playlistId: str):
 def streamSourcesEdit(id: str):
     errorMessage = None
     form = StreamSourceForm()
+    form.streamSourceTypeId.choices = [(t.value, t.name) for t in StreamSourceType]
     
     streamSource = streamSourceService.get(id)
     if(not streamSource):

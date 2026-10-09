@@ -141,3 +141,4 @@ Program for queueing and playing videos from list or from sources like channels 
   - clean up busines
   - replace printS, printD with real logging
   - pytube/yt-dlp as plug and play clients instead of directly implemented in services
+- https://coolors.co/d7fef8-ebebeb-b5b5b5-02866f-013d33-070d0b-d4af37

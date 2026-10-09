@@ -3,10 +3,11 @@
 This file is reserved for conventions, gotchas, and non-obvious facts.
 It should not be used as a log of every session or minor change. Entries should be short and prefixed with the date added/edited.
 
-## Structure
-Entries are grouped by **Layer** (e.g., Backend, Frontend, Infrastructure) and then by **Relative Grouping** (e.g., Routing, Styling, Deployment).
+## Naming Conventions
 
----
+### Domain Entities
+- Avoid ambiguous names like `Stream`. Use specific entity names such as `StreamSource` or `QueueStream` to maintain clarity across the codebase. (2026-10-07)
+
 
 ## Backend
 ### Routing

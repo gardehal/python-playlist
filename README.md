@@ -14,7 +14,7 @@ Program for queueing and playing videos from list or from sources like channels 
 1. Navigate to the base directory of this project and download PIP packages needed to run:
     - $ `pip install -r requirements.txt`
 1. Confirm install by entering the help command:
-    - $ `python main.py help` (it is advised you get an alias for "absolute-installation-path/main.py")
+    - $ `python main.py -help` (it is advised you get an alias for "absolute-installation-path/main.py")
     - Verify that the program prints an overview of commands, arguments, flags, and a description of what they do.
     - This will also create the .env file for settings.
 1. Optional: Update the file .env with setting and secrets:
@@ -29,7 +29,7 @@ Program for queueing and playing videos from list or from sources like channels 
 - Sources currently supported for fetch: YouTube (channels).
 - All data is stored locally in human readable JSON files in the path specified in the .env setting LOCAL_STORAGE_PATH. This defaults to "C:/python/playlists". To edit data, it's easier to change these text files directly, as long as you adhere to the JSON format.
 - 2022-04-30: An update in the StreamSource model requires a refactoring of the data.
-    - Refactor available under the command `refactor`, eg. $ `python main.py refactor`
+    - Refactor available under the command `refactor`, eg. $ `python main.py -refactor`
     - Example of a changed entity: `... "lastFetchedId": "abc123def", ...` -> `... "lastFetchedIds": ["abc123def"], ...`
 
 ## CLI Examples
@@ -37,19 +37,19 @@ Program for queueing and playing videos from list or from sources like channels 
 #### Add a playlist, stream to the playlist, and play it
 
 1. Add a playlist, named "YouTube favourites" which will not play streams already watched and not allow duplicates (of URLs):
-    - $ `python main ap "YouTube favourites" False False`
+    - $ `python main -ap "YouTube favourites" False False`
 1. See an overview of playlists:
-    - $ `python main lp`
+    - $ `python main -lp`
     - Will return something like this, where the ID is a randomly generated UUID:
       - `0 - Name: YouTube favourites, ID: 12345678-1234-1234-1234-123456789012, Streams: 0, Sources: 0`
 1. Using the index (index + 0 = "i0") from the overview, add [this](https://youtu.be/jNQXAC9IVRw) video from youtube to this playlist:
-    - $ `python main a i0 https://youtu.be/jNQXAC9IVRw`
+    - $ `python main -a i0 https://youtu.be/jNQXAC9IVRw`
 1. Check result in overview of playlists:
-    - $ `python main lp`
+    - $ `python main -lp`
     - Will return something like this:
       - `0 - Name: YouTube favourites, ID: 12345678-1234-1234-1234-123456789012, Streams: 1, Sources: 0`
 1. Play all videos in our playlist:
-    - $ `python main p i0`
+    - $ `python main -p i0`
     - Will return some info for playback:
       - `Playing playlist YouTube feed.`
       - `Starting at stream number: 1, shuffle is off, repeat playlist is off, played videos set to watched is on.`
@@ -58,7 +58,7 @@ Program for queueing and playing videos from list or from sources like channels 
     - Pressing enter would continue the playback and play the next stream, but since this is the last one, pressing enter will finish the playback:
       - `Playlist "YouTube feed" finished.` 
 1. Since the option to re-watch streams in playlist is turned off, we can prune our playlist to remove watched streams:
-    - $ `python main prune i0`
+    - $ `python main -prune i0`
     - This will bring up a summary:
       - `Prune summary, the following data will be DELETED:`
       - `QueueStream(s)`
@@ -78,15 +78,15 @@ Program for queueing and playing videos from list or from sources like channels 
 #### Add a source to a playlist and fetch streams
 
 1. To our existing playlist, add [this](https://www.youtube.com/c/smartereveryday) YouTube channel and enable fetch:
-    - $ `python main as i0 https://www.youtube.com/c/smartereveryday True`
+    - $ `python main -as i0 https://www.youtube.com/c/smartereveryday True`
 1. Instruct the program to fetch all videos from this channel uploaded after 31st of december, 2021:
-    - $ `python main f i0 2021-12-31`
+    - $ `python main -f i0 2021-12-31`
     - This may take some time, depending on the videos available on the channel since given date. Updates will be given when available. This message will be given when finished:
       - `Fetched 3 for playlist "YouTube favourites" successfully.`
 1. Check the detailed print of the playlist, here including ALL information available:
-    - $ `python main dp i0 True True True True`
+    - $ `python main -dp i0 True True True True`
 1. Or less verbose details, which has most of the information a user needs:
-    - $ `python main dp i0`
+    - $ `python main -dp i0`
     - The print would look something like this:
       - `name: YouTube favourites, lastWatchedIndex: 1, playWatchedStreams: False, allowDuplicates: False, description: `
       - `   StreamSources`

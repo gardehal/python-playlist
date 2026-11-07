@@ -109,7 +109,7 @@ Program for queueing and playing videos from list or from sources like channels 
 
 ## TODO
 
-- fix annoying/not working flask things: toasts, page/dynamic reload of content
+- fix annoying/not working flask things: toasts, page/dynamic reload of content - 2026-11-07-0755-dynamic-playlist-fetch-updates.md
 - twitter/facebook/instagram as sources for videos, implement other sources especially rumble
 - with argumentor, can still use i0 (castFunc)? if not, rewrite docs and remove functions that expect/use this
 - add length of stream in seconds to qs, add in all fetches, use for display? - in seconds or timestamp like hh:MM:ss ?
@@ -127,9 +127,7 @@ Program for queueing and playing videos from list or from sources like channels 
   - editing playlist, get option to remove steams and sources, reorder, same with other list elements in streamsource
   - more links around, can be useful to open streamsource or queuestream details from play for example, for editing or changing url if some problem?
   - new fields:
-    - thumbnail for queuestream
     - pfp for stream source
-    - thumbnail for playlist (default blank + some way to add custom user one)
   - new entity, metadata:
     - implement where most create/deletes are done, fetches, startups
 - pytubefix can probably be entirely replaced with yt_dlp, except downloads as it requires weird javascript to fetch about half the videos in testing - see separate doc 2026-08-16-youtube-download-evolution.md

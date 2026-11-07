@@ -17,27 +17,7 @@ from forms.YoutubePlaylistForm import *
 
 from Settings import *
 from datetime import datetime
-from application.use_cases.add_stream_to_playlist_use_case import AddStreamToPlaylistUseCase
-from application.use_cases.create_playlist_from_youtube_use_case import CreatePlaylistFromYoutubeUseCase
-from application.use_cases.create_playlist_use_case import CreatePlaylistUseCase
-from application.use_cases.create_queue_stream_use_case import CreateQueueStreamUseCase
-from application.use_cases.create_stream_source_use_case import CreateStreamSourceUseCase
-from application.use_cases.delete_playlist_use_case import DeletePlaylistUseCase
-from application.use_cases.delete_queue_stream_use_case import DeleteQueueStreamUseCase
-from application.use_cases.delete_stream_source_use_case import DeleteStreamSourceUseCase
-from application.use_cases.get_all_playlists_use_case import GetAllPlaylistsUseCase
-from application.use_cases.get_all_queue_streams_use_case import GetAllQueueStreamsUseCase
-from application.use_cases.get_playlist_details_use_case import GetPlaylistDetailsUseCase
-from application.use_cases.get_queue_stream_details_use_case import GetQueueStreamDetailsUseCase
-from application.use_cases.get_stream_source_details_use_case import GetStreamSourceDetailsUseCase
-from application.use_cases.toggle_queue_stream_watched_use_case import ToggleQueueStreamWatchedUseCase
-from application.use_cases.update_playlist_use_case import UpdatePlaylistUseCase
-from application.use_cases.update_queue_stream_use_case import UpdateQueueStreamUseCase
-from application.use_cases.update_stream_source_use_case import UpdateStreamSourceUseCase
-from infrastructure.repositories.base_service_playlist_repository import BaseServicePlaylistRepository, PlaylistRepository
-from infrastructure.repositories.base_service_queue_stream_repository import QueueStreamRepository
-from infrastructure.repositories.base_service_stream_source_repository import StreamSourceRepository
-from infrastructure.providers.youtube_provider import YoutubeProvider
+from composition_root import CompositionRoot
 
 app = Flask(__name__)
 csrf = CSRFProtect(app) 
@@ -46,35 +26,30 @@ bootstrap = Bootstrap5(app)
 activeTasks = {}
 taskRegistry = {}
 
-playlistRepository = BaseServicePlaylistRepository()
-queueStreamRepository = QueueStreamRepository(playlistRepository)
-streamSourceRepository = StreamSourceRepository(playlistRepository)
+application = CompositionRoot()
+playlistRepository = application.playlist_repository
+queueStreamRepository = application.queue_stream_repository
+streamSourceRepository = application.stream_source_repository
+youtubeProvider = application.external_stream_provider
 
-getAllPlaylistsUseCase = GetAllPlaylistsUseCase(playlistRepository)
-getAllQueueStreamsUseCase = GetAllQueueStreamsUseCase(queueStreamRepository)
-getAllStreamSourcesUseCase = GetAllStreamSourcesUseCase(streamSourceRepository)
-createPlaylistUseCase = CreatePlaylistUseCase(playlistRepository)
-createPlaylistFromYoutubeUseCase = CreatePlaylistFromYoutubeUseCase(
-    playlist_repository=playlistRepository, 
-    queue_stream_repository=queueStreamRepository
-)
-getPlaylistDetailsUseCase = GetPlaylistDetailsUseCase(
-    playlist_repository=playlistRepository,
-    queue_stream_repository=queueStreamRepository,
-    stream_source_repository=streamSourceRepository
-)
-getQueueStreamDetailsUseCase = GetQueueStreamDetailsUseCase(queueStreamRepository)
-updatePlaylistUseCase = UpdatePlaylistUseCase(playlistRepository)
-updateQueueStreamUseCase = UpdateQueueStreamUseCase(queueStreamRepository)
-deletePlaylistUseCase = DeletePlaylistUseCase(playlistRepository)
-deleteQueueStreamUseCase = DeleteQueueStreamUseCase(queueStreamRepository)
-createQueueStreamUseCase = CreateQueueStreamUseCase(playlistRepository, queueStreamRepository)
-createStreamSourceUseCase = CreateStreamSourceUseCase(playlistRepository, streamSourceRepository)
-updateStreamSourceUseCase = UpdateStreamSourceUseCase(streamSourceRepository)
-deleteStreamSourceUseCase = DeleteStreamSourceUseCase(streamSourceRepository)
-toggleWatchedUseCase = ToggleQueueStreamWatchedUseCase(queueStreamRepository)
-addStreamToPlaylistUseCase = AddStreamToPlaylistUseCase(playlistRepository, queueStreamRepository)
-getStreamSourceDetailsUseCase = GetStreamSourceDetailsUseCase(streamSourceRepository)
+getAllPlaylistsUseCase = application.get_all_playlists
+getAllQueueStreamsUseCase = application.get_all_queue_streams
+getAllStreamSourcesUseCase = application.get_all_stream_sources
+createPlaylistUseCase = application.create_playlist
+createPlaylistFromYoutubeUseCase = application.create_playlist_from_youtube
+getPlaylistDetailsUseCase = application.get_playlist_details
+getQueueStreamDetailsUseCase = application.get_queue_stream_details
+updatePlaylistUseCase = application.update_playlist
+updateQueueStreamUseCase = application.update_queue_stream
+deletePlaylistUseCase = application.delete_playlist
+deleteQueueStreamUseCase = application.delete_queue_stream
+createQueueStreamUseCase = application.create_queue_stream
+createStreamSourceUseCase = application.create_stream_source
+updateStreamSourceUseCase = application.update_stream_source
+deleteStreamSourceUseCase = application.delete_stream_source
+toggleWatchedUseCase = application.toggle_queue_stream_watched
+addStreamToPlaylistUseCase = application.add_stream_to_playlist
+getStreamSourceDetailsUseCase = application.get_stream_source_details
 
 def registerTask(name):
     def decorator(func):
@@ -243,7 +218,10 @@ def queueStreamsIndex():
 @app.route("/queueStreams/<id>")
 def queueStreamsDetails(id: str):
     queueStream = getQueueStreamDetailsUseCase.execute(id)
-    playlists = playlistRepository.get_all_sorted()
+    if not queueStream:
+        flash(f"QueueStream {id} was not found.", "error")
+        return queueStreamsIndex()
+    playlists = getAllPlaylistsUseCase.execute()
     return render_template("queueStreams/details.html", queueStream= queueStream, playlists= playlists)
 
 @app.route("/queueStreams/create/<playlistId>", methods=["GET", "POST"])
@@ -258,25 +236,16 @@ def queueStreamsCreate(playlistId: str):
     
     if request.method == "POST":
         if(form.validate_on_submit()):
-            queueStream = QueueStream(
-                name = form.name.data,
-                uri = form.uri.data,
-                isWeb = form.isWeb.data,
-                streamSourceId = form.streamSourceId.data,
-                streamSourceName = form.streamSourceName.data,
-                watched = form.watched.data,
-                backgroundContent = form.background_content.data,
-                playtimeSeconds = form.playtimeSeconds.data,
-                remoteId = form.remoteId.data
-            )
-            
             createResult = createQueueStreamUseCase.execute(
-                name=queueStream.name,
-                uri=queueStream.uri,
-                is_web=queueStream.isWeb,
-                stream_source_id=queueStream.streamSourceId,
-                stream_source_name=queueStream.streamSourceName,
-                watched=queueStream.watched
+                name=form.name.data,
+                uri=form.uri.data,
+                is_web=form.isWeb.data,
+                stream_source_id=form.streamSourceId.data or None,
+                stream_source_name=form.streamSourceName.data or None,
+                watched=form.watched.data,
+                background_content=form.backgroundContent.data,
+                playtime_seconds=form.playtimeSeconds.data,
+                remote_id=form.remoteId.data or None,
             )
             
             if(createResult):
@@ -290,45 +259,48 @@ def queueStreamsCreate(playlistId: str):
 def queueStreamsEdit(id: str):
     errorMessage = None
     form = QueueStreamForm()
-    
+
     try:
         queueStream = getQueueStreamDetailsUseCase.execute(id)
-        if(not queueStream):
+        if not queueStream:
             flash(f"QueueStream with {id} was not found.", "error")
             return queueStreamsIndex()
-        
+
         if request.method == "GET":
             form.name.data = queueStream.name
             form.uri.data = queueStream.uri
             form.isWeb.data = queueStream.isWeb
-            form.streamSourceId.data = queueStream.streamSource.id
-            form.streamSourceName.data = queueStream.streamSource.name
+            form.streamSourceId.data = queueStream.streamSourceId
+            form.streamSourceName.data = queueStream.streamSourceName
             form.watched.data = queueStream.watched
-            form.backgroundContent.data = queueStream.background_content
+            form.backgroundContent.data = queueStream.backgroundContent
             form.playtimeSeconds.data = queueStream.playtimeSeconds
             form.remoteId.data = queueStream.remoteId
         elif request.method == "POST":
-            if(form.validate_on_submit()):
+            if form.validate_on_submit():
                 updateResult = updateQueueStreamUseCase.execute(
-                    streamId=id,
+                    queue_stream_id=id,
                     name=form.name.data,
                     uri=form.uri.data,
                     is_web=form.isWeb.data,
-                    stream_source_id=form.streamSourceId.data,
-                    stream_source_name=form.streamSourceName.data,
-                    watched=form.watched.data
+                    stream_source_id=form.streamSourceId.data or None,
+                    stream_source_name=form.streamSourceName.data or None,
+                    watched=form.watched.data,
+                    background_content=form.backgroundContent.data,
+                    playtime_seconds=form.playtimeSeconds.data,
+                    remote_id=form.remoteId.data or None,
                 )
-                if(updateResult):
+                if updateResult:
                     return queueStreamsDetails(id)
-                    
                 errorMessage = f"Could not update QueueStream {id}"
             else:
                 errorMessage = "Invalid form values"
     except Exception as e:
         errorMessage = f"Error updating QueueStream: {str(e)}"
         flash(errorMessage, "error")
-    
-    return render_template("form.html", title= f"Edit {queueStream.name}", form= form, errorMessage= errorMessage)
+
+    title = f"Edit {queueStream.name}" if 'queueStream' in locals() and queueStream else f"Edit {id}"
+    return render_template("form.html", title=title, form=form, errorMessage=errorMessage)
 
 @app.route("/queueStreams/delete/<id>", methods=["GET", "POST"])
 def queueStreamsDelete(id: str):
@@ -344,34 +316,35 @@ def queueStreamsDelete(id: str):
             return queueStreamsIndex()
     except Exception as e:
         flash(f"Error deleting QueueStream: {str(e)}", "error")
+        return queueStreamsIndex()
 
-    return render_template("confirm_action.html", 
-                           title="Confirm Delete", 
-                           message=f"Are you sure you want to delete '{queueStream.name if 'queueStream' in locals() else id}'?",
+    return render_template("confirm_action.html",
+                           title="Confirm Delete",
+                           message=f"Are you sure you want to delete '{queueStream.name}'?",
                            action_url=url_for("queueStreamsDelete", id=id),
                            request=request)
-    
+
 @app.route("/streamSources")
 def streamSourcesIndex():
     streamSources = getAllStreamSourcesUseCase.execute()
-    return render_template("streamSources/index.html", streamSources= streamSources)
+    return render_template("streamSources/index.html", streamSources=streamSources)
 
 @app.route("/streamSources/<id>")
 def streamSourcesDetails(id: str):
     streamSource = getStreamSourceDetailsUseCase.execute(id)
-    return render_template("streamSources/details.html", streamSource= streamSource)
+    return render_template("streamSources/details.html", streamSource=streamSource)
 
 @app.route("/streamSources/create/<playlistId>", methods=["GET", "POST"])
 def streamSourcesCreate(playlistId: str):
     playlist = playlistRepository.get_by_id(playlistId)
-    if(not playlist):
+    if not playlist:
         flash(f"Playlist {playlistId} was not found.", "error")
         return streamSourcesIndex()
-    
+
     errorMessage = None
     form = StreamSourceForm()
     form.streamSourceTypeId.choices = [(t.value, t.name) for t in StreamSourceType]
-    
+
     if request.method == "POST" and form.validate_on_submit():
         try:
             createResult = createStreamSourceUseCase.execute(
@@ -379,30 +352,28 @@ def streamSourcesCreate(playlistId: str):
                 uri=form.uri.data,
                 is_web=form.isWeb.data,
                 stream_source_type_id=form.streamSourceTypeId.data,
-                enable_fetch=form.enableFetch.data
+                enable_fetch=form.enableFetch.data,
             )
-            
             playlist.streamSourceIds.append(createResult.id)
             playlistRepository.save(playlist)
-            
             flash(f"Created StreamSource: {createResult.name}", "success")
             return streamSourcesDetails(id=str(createResult.id))
         except Exception as e:
-            flash(f"Error creating StreamSource: {str(e)}", "error")
-    
-    return render_template("form.html", title= "Create new StreamSource", form= form, errorMessage= errorMessage)
+            errorMessage = f"Error creating StreamSource: {str(e)}"
+            flash(errorMessage, "error")
+
+    return render_template("form.html", title="Create new StreamSource", form=form, errorMessage=errorMessage)
 
 @app.route("/streamSources/edit/<id>", methods=["GET", "POST"])
 def streamSourcesEdit(id: str):
     errorMessage = None
     form = StreamSourceForm()
     form.streamSourceTypeId.choices = [(t.value, t.name) for t in StreamSourceType]
-    
     streamSource = getStreamSourceDetailsUseCase.execute(id)
-    if(not streamSource):
+    if not streamSource:
         flash(f"StreamSource {id} was not found.", "error")
         return streamSourcesIndex()
-    
+
     if request.method == "GET":
         form.name.data = streamSource.name
         form.uri.data = streamSource.uri
@@ -419,15 +390,15 @@ def streamSourcesEdit(id: str):
                 uri=form.uri.data,
                 is_web=form.isWeb.data,
                 stream_source_type_id=form.streamSourceTypeId.data,
-                enable_fetch=form.enableFetch.data
+                enable_fetch=form.enableFetch.data,
             )
             flash(f"Updated StreamSource: {updateResult.name}", "success")
             return streamSourcesDetails(id)
         except Exception as e:
             errorMessage = f"Error updating StreamSource: {str(e)}"
             flash(errorMessage, "error")
-    
-    return render_template("form.html", title= f"Edit {streamSource.name}", form= form, errorMessage= errorMessage)
+
+    return render_template("form.html", title=f"Edit {streamSource.name}", form=form, errorMessage=errorMessage)
 
 @app.route("/streamSources/delete/<id>", methods=["GET", "POST"])
 def streamSourcesDelete(id: str):

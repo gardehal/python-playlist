@@ -12,7 +12,7 @@ class StreamSourceRepository(ABC):
 
     @abstractmethod
     def save(self, stream_source: StreamSource) -> None:
-        """Persist a stream source to the storage backend."""
+        """Persist a source; assign a generated ID to the instance when new."""
         pass
 
     @abstractmethod

@@ -14,7 +14,10 @@ class UpdateQueueStreamUseCase:
                 uri: Optional[str] = None, is_web: Optional[bool] = None, 
                 stream_source_id: Optional[str] = None, 
                 stream_source_name: Optional[str] = None, 
-                watched: Optional[any] = None) -> QueueStream:
+                watched: Optional[any] = None,
+                background_content: Optional[bool] = None,
+                playtime_seconds: Optional[int] = None,
+                remote_id: Optional[str] = None) -> QueueStream:
         """
         Executes the logic to update a queue stream.
 
@@ -37,6 +40,12 @@ class UpdateQueueStreamUseCase:
             queue_stream.streamSourceName = stream_source_name
         if watched is not None:
             queue_stream.watched = watched
+        if background_content is not None:
+            queue_stream.backgroundContent = background_content
+        if playtime_seconds is not None:
+            queue_stream.playtimeSeconds = playtime_seconds
+        if remote_id is not None:
+            queue_stream.remoteId = remote_id
 
         self._queue_stream_repository.save(queue_stream)
         return queue_stream

@@ -36,9 +36,16 @@ class GetPlaylistDetailsUseCase:
         if not playlist:
             return None
             
-        # Using the repository methods to fetch related entities
-        queue_streams = self._queue_stream_repository.get_by_playlist_id(playlist_id)
-        stream_sources = self._stream_source_repository.get_by_playlist_id(playlist_id)
+        queue_streams = [
+            self._queue_stream_repository.get_by_id(stream_id)
+            for stream_id in playlist.streamIds
+        ]
+        queue_streams = [stream for stream in queue_streams if stream is not None]
+        stream_sources = [
+            self._stream_source_repository.get_by_id(source_id)
+            for source_id in playlist.streamSourceIds
+        ]
+        stream_sources = [source for source in stream_sources if source is not None]
         
         return PlaylistDetailsDTO(
             playlist=playlist,

@@ -30,6 +30,34 @@ class YoutubeProvider(ExternalStreamProvider):
                 "thumbnail": info.get("thumbnail", "")
             }
 
+    def fetch_playlist(self, uri: str) -> Dict[str, Any]:
+        """Fetch playlist metadata and flat video entries without downloading media."""
+        ydl_options = {
+            "extract_flat": True,
+            "quiet": True,
+            "no_warnings": True,
+            "skip_download": True,
+        }
+
+        with yt_dlp.YoutubeDL(ydl_options) as ydl:
+            info = ydl.extract_info(uri, download=False)
+
+        entries = []
+        for item in info.get("entries") or []:
+            if not item or not item.get("id"):
+                continue
+            entries.append({
+                "id": item["id"],
+                "title": item.get("title") or "No title",
+                "thumbnail": item.get("thumbnail"),
+            })
+
+        return {
+            "title": info.get("title"),
+            "description": info.get("description"),
+            "entries": entries,
+        }
+
     def download_stream(self, uri: str) -> bytes:
         """
         Downloads the stream content from a YouTube URL using yt_dlp.

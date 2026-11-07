@@ -16,15 +16,16 @@ class BaseServiceStreamSourceRepository(StreamSourceRepository):
         self._service = BaseService(StreamSource, self.settings.debug, storage_path)
 
     def get_by_id(self, stream_source_id: str) -> Optional[StreamSource]:
-        if self._service.exists(stream_source_id):
-            return self._service.entityRepository.getById(stream_source_id)
-        return None
+        return self._service.get(stream_source_id)
 
     def save(self, stream_source: StreamSource) -> None:
-        self._service.add(stream_source)
+        if stream_source.id and self._service.exists(stream_source.id):
+            self._service.update(stream_source)
+        else:
+            self._service.add(stream_source)
 
     def delete(self, stream_source_id: str) -> None:
-        self._service.entityRepository.delete(stream_source_id)
+        self._service.delete(stream_source_id)
 
     def get_all(self) -> List[StreamSource]:
-        return self._service.entityRepository.getAll()
+        return self._service.getAll()

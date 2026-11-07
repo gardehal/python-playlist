@@ -16,15 +16,16 @@ class BaseServiceQueueStreamRepository(QueueStreamRepository):
         self._service = BaseService(QueueStream, self.settings.debug, storage_path)
 
     def get_by_id(self, queue_stream_id: str) -> Optional[QueueStream]:
-        if self._service.exists(queue_stream_id):
-            return self._service.entityRepository.getById(queue_stream_id)
-        return None
+        return self._service.get(queue_stream_id)
 
     def save(self, queue_stream: QueueStream) -> None:
-        self._service.add(queue_stream)
+        if queue_stream.id and self._service.exists(queue_stream.id):
+            self._service.update(queue_stream)
+        else:
+            self._service.add(queue_stream)
 
     def delete(self, queue_stream_id: str) -> None:
-        self._service.entityRepository.delete(queue_stream_id)
+        self._service.delete(queue_stream_id)
 
     def get_all(self) -> List[QueueStream]:
-        return self._service.entityRepository.getAll()
+        return self._service.getAll()

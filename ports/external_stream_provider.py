@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Optional
+from typing import Any, Dict
 
 class ExternalStreamProvider(ABC):
     """Interface for external stream sources (e.g., YouTube, Local)."""
@@ -7,6 +7,11 @@ class ExternalStreamProvider(ABC):
     @abstractmethod
     def fetch_metadata(self, uri: str) -> dict:
         """Fetch metadata from a given URI."""
+        pass
+
+    @abstractmethod
+    def fetch_playlist(self, uri: str) -> Dict[str, Any]:
+        """Fetch playlist metadata and normalized video entries."""
         pass
 
     @abstractmethod

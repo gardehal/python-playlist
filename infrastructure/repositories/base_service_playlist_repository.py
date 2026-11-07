@@ -19,23 +19,16 @@ class BaseServicePlaylistRepository(PlaylistRepository):
         self._service = BaseService(Playlist, self.settings.debug, storage_path)
 
     def get_by_id(self, playlist_id: str) -> Optional[Playlist]:
-        """Retrieve a playlist by its unique identifier using BaseService."""
-        # We use the existing 'exists' and retrieval logic from BaseService via entityRepository
-        if self._service.exists(playlist_id):
-            # Since BaseService uses LocalJsonRepository, we can access the underlying repository
-            return self._service.entityRepository.getById(playlist_id)
-        return None
+        return self._service.get(playlist_id)
 
     def save(self, playlist: Playlist) -> None:
-        """Persist a playlist using BaseService's add method."""
-        self._service.add(playlist)
+        if playlist.id and self._service.exists(playlist.id):
+            self._service.update(playlist)
+        else:
+            self._service.add(playlist)
 
     def delete(self, playlist_id: str) -> None:
-        """Remove a playlist using the underlying repository."""
-        # Assuming BaseService/LocalJsonRepository has a delete or similar mechanism
-        # If not explicitly in BaseService snippet, we use the entityRepository directly
-        self._service.entityRepository.delete(playlist_id)
+        self._service.delete(playlist_id)
 
     def get_all(self) -> List[Playlist]:
-        """Retrieve all available playlists."""
-        return self._service.entityRepository.getAll()
+        return self._service.getAll()

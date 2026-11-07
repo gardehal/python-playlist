@@ -13,6 +13,7 @@ class QueueStreamRepository(ABC):
 
     @abstractmethod
     def save(self, queue_stream: QueueStream) -> None:
+        """Persist a stream; assign a generated ID to the instance when new."""
         pass
 
     @abstractmethod

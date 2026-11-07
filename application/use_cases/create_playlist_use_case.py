@@ -26,9 +26,9 @@ class CreatePlaylistUseCase:
             allowDuplicates=allow_duplicates,
             favorite=favorite,
             sortOrder=sort_order,
-            last_watched_index=0,
-            stream_source_ids=[],
-            stream_ids=[]
+            lastWatchedIndex=0,
+            streamSourceIds=[],
+            streamIds=[]
         )
         
         self._playlist_repository.save(new_playlist)

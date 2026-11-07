@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import List, Optional
-from model.playlist import Playlist
+from model.Playlist import Playlist
 
 class PlaylistRepository(ABC):
     """Interface for playlist data access."""
@@ -12,7 +12,7 @@ class PlaylistRepository(ABC):
 
     @abstractmethod
     def save(self, playlist: Playlist) -> None:
-        """Persist a playlist to the storage backend."""
+        """Persist a playlist; assign a generated ID to the instance when new."""
         pass
 
     @abstractmethod

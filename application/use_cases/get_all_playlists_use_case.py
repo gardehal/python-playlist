@@ -17,4 +17,6 @@ class GetAllPlaylistsUseCase:
         Returns:
             List[Playlist]: A list of all playlists.
         """
-        return self._playlist_repository.getAllSorted()
+        playlists = self._playlist_repository.get_all()
+        playlists.sort(key=lambda playlist: (playlist.favorite * -1, playlist.sortOrder, playlist.name))
+        return playlists

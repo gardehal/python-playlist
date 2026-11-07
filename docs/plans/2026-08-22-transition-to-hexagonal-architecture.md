@@ -1,87 +1,65 @@
-# Change Plan: Transition to Hexagonal Architecture
+# Transition to Hexagonal Architecture
 
-**Reasoning**: 
-- The current architecture is a "monolithic" layered structure where business logic, Flask routing, and data access are tightly coupled. A transition to Hexagonal Architecture will decouple these concerns, making the system easier to test and more flexible to infrastructure changes (like switching storage or providers).
+## Problem
 
-**Objective**: 
-- Reorganize the project into three distinct layers: **Domain** (Core Logic), **Application** (Use Cases/Ports), and **Infrastructure** (Adapters for Web, CLI, and Data).
-- Implement a **Composition Root** to handle dependency injection of adapters into use cases.
-- Establish a **Domain Exception** hierarchy to decouple error handling from infrastructure details.
+Business logic, Flask routes, CLI controllers, and data access began in a tightly coupled layered structure. This plan tracks only the Hexagonal Ports-and-Adapters transition: separating Domain, Application, Infrastructure, and driving-adapter responsibilities so business logic can be tested independently and infrastructure can change with less coupling.
 
-**Files to Modify**:
+## Decisions
+
+- D1: Use a small-to-large strategy, tackling one entity at a time.
+- D2: Keep Domain objects simple; the goal is restructuring, not deep object-logic refactoring.
+- D3: Define Ports before implementing adapters.
+- D4: Use one file per Port to follow SRP and keep dependencies clean.
+- D5: Do not add stub implementations during the Port-definition phase.
+- D6: Wrap the existing JSON repository behavior inside Infrastructure adapters.
+- D7: Refactor entities in this order: `StreamSource`, `QueueStream`, then `Playlist`.
+
+## Approach
+
+1. **Domain and Ports:** Keep `Playlist`, `QueueStream`, and `StreamSource` free of Flask/database-specific logic. Define repository/provider ABCs in individual files and map infrastructure errors to Domain exceptions.
+2. **Application:** Refactor services into use cases that depend on Ports; test use-case logic with Port mocks/stubs.
+3. **Infrastructure:** Implement repository adapters around existing `BaseService` logic and isolate external integrations behind provider adapters.
+4. **Presentation:** Refactor Flask routes and CLI controllers as driving adapters that handle input/output and invoke Application use cases.
+5. **Application wiring:** Add a Composition Root to inject adapters into use cases.
+
+## Todos
+
+- [ ] Add unit tests for use cases using mocked/stubbed Ports.
+- [ ] Wire provider adapters through Ports; services still call yt-dlp directly.
+- [ ] Add the local-filesystem provider adapter described in the Infrastructure phase.
+- [ ] Complete Flask and CLI driving-adapter wiring; `server.py` and `Main.py` still instantiate services directly.
+- [ ] Implement a Composition Root for dependency injection of adapters into use cases.
+
+## Legacy Todos
+
+Original file checklist retained as an historical snapshot; current status is tracked above and in Results.
+
 - [ ] `model/` (Refactor entities to be pure Domain objects)
 - [ ] `services/` (Convert into Application Use Case layer)
 - [ ] `server.py` & `controllers/` (Convert into Driving Adapters for Web)
-- [ ] `controllers/` (Convert existing CLI controllers into Driving Adaps for CLI)
+- [ ] `controllers/` (Convert existing CLI controllers into Driving Adapters for CLI)
 - [ ] New `ports/` directory (Define individual Abstract Base Classes per Port file)
 - [ ] New `infrastructure/repositories/` directory (Implement concrete data access adapters)
 - [ ] New `infrastructure/providers/` directory (Implement concrete external service adapters)
 
-**Detailed Steps**:
+## Notes / considerations
 
-1. **Phase 1: The Domain & Port Definition (The Core)**
-   - **[model/]**
-     - [Action]: Refactor `Playlist`, `QueueStream`, and `StreamSource`.
-     - [Logic]: Remove any Flask-specific or database-specific logic/imports. Ensure they are pure Python objects containing only business rules.
-   - **[new: ports/]**
-     - [Action]: Create individual files for each Port (e.g., `stream_source_repository.py`).
-     - [Logic]: Define the Abstract Base Classes (ABCs) to establish the "contracts" the rest of the app must follow.
-   - **[new: exceptions/]**
-     - [Action]: Define a hierarchy of Domain Exceptions.
-     - [Logic]: Ensure infrastructure adapters map their specific errors (e.g., `FileNotFoundError`) to these domain-level exceptions.
+- The completed Ports, repository adapters, Domain exceptions, and use cases are recorded under Results.
+- Broader README refactoring todos remain separate tasks and are not tracked in this Hexagonal plan.
+- JSON files remain the data store behind repository adapters.
 
-2. **Phase 2: The Application Layer (The Use Cases)**
-   - **[services/]**
-     - [Action]: Refactor existing services into "Use Case Intermountable".
-     - [Logic]: Instead of `PlaylistService.add(playlist)`, create a use case like `AddStreamToPlaylistUseCase`. This class will take the `Repository` port as a dependency and orchestrate the domain logic.
-   - **[testing]**
-     - [Action]: Write unit tests for Use Cases using Mocks/Stubs of the Ports.
-     - [Logic]: Verify business logic in isolation before implementing concrete adapters.
+## Validation
 
-3. **Phase 3: The Infrastructure Layer (The Adapters)
-   - **[new: infrastructure/repositories/]**
-     - [Action]: Implement concrete versions of the ports.
-     - [Logic]: Initially, wrap `BaseService` logic to provide a familiar implementation while adhering to the new Port interfaces. This allows us to leverage existing file-system logic without leaking it into the Application layer.
-   - **[new: infrastructure/providers/]**
-     - [Action]: Isolate external fetching/downloading logic.
-     - [Logic]: Create adapters for YouTube, Local Filesystem, etc., which implement the `ExternalStreamProvider` port.
+- Previously verified: `StreamSource` and `QueueStream` lifecycle use cases work.
+- Previously verified: Domain exceptions are raised and handled in use cases.
+- Validation for the remaining Legacy Todos has not yet been performed.
 
-4. **Phase 4: The Presentation Layer (The Entry Points)**
-   * **[server.py & controllers/]**
-     * [Action]: Refactor Flask routes and CLI controllers.
-     * [Logic]: These become "Driving Adapters". They should only handle HTTP/CLI input, call a Use Case from the Application layer, and return a response.
+## Results
 
-**Note**: We will proceed **entity by entity**, starting with `StreamSource`, then moving to `QueueStream`, and finally `Playlist`. We will define all **Ports** first in Phase 1 as individual files before refactoring implementations in later steps.
-
-# Interview Context
-
-**Q: How should we handle the transition complexity?**
-A: Start with a "Small-to-Large" strategy, tackling one entity at a $\text{time}$ to maintain control.
-
-**Q: How will we handle data storage (currently JSON files)?**
-A: We will use the existing repository-like logic directly within the new Infrastructure/Repository adapters.
-
-**Q: What is the desired level of "Python Magic" in the Domain layer?**
-A: Keep it as simple as possible for now; the primary goal of this round is restructuring, not deep refactoring of the object logic itself.
-
-**Q: Should we define interfaces or implement them immediately?**
-A: Define the Ports (Interfaces) first, then move to implementation as a later step.
-
-**Q: How should the `ports/` directory be structured?**
-A: One file per Port (e.g., `stream_source_repository.py`) to follow SRP and keep dependencies clean.
-
-**Q: Should we implement "Stub" implementations during Phase 1?**
-A: No, define the interfaces first (Option A) to establish the contract before moving to implementation.
-
-# Execution Summary
-- [DONE] Defined all Repository Ports (`Playlist`, `Stream_Source`, `QueueStream`).
-- [DONE] Created Domain Exception hierarchy.
-- [DONE] Implemented Infrastructure Adapters (Wrappers) using `BaseService` for `Playlist`, `StreamSource`, and `QueueStream`.
-- [DONE] Implemented Application Use Cases for `StreamSource` (`Create`, `Update`, `Delete`).
-- [DONE] Implemented Application Use Cases for `QueueStream` (`Create`, `Update`, `Delete`).
-- [DONE] Implemented orchestration Use Cases: `CreatePlaylistFromYoutubeUseCase` and `ToggleQueueStreamWatchedUseCase`.
-
-# Verification Report
-- [VERIFIED] `StreamSource` lifecycle works via new use cases.
-- [VERIFIED] `QueueStream` lifecycle works via new use cases.
-- [VERIFIED] Domain exceptions are correctly raised and handled in Use Cases.
+- Kept `Playlist`, `QueueStream`, and `StreamSource` free of Flask and `BaseService` imports.
+- Defined repository Ports for `Playlist`, `StreamSource`, and `QueueStream`.
+- Created the Domain Exception hierarchy.
+- Implemented `BaseService` repository adapters for `Playlist`, `StreamSource`, and `QueueStream`.
+- Implemented `StreamSource` lifecycle use cases (`Create`, `Update`, `Delete`).
+- Implemented `QueueStream` lifecycle use cases (`Create`, `Update`, `Delete`).
+- Implemented `CreatePlaylistFromYoutubeUseCase` and `ToggleQueueStreamWatchedUseCase`.

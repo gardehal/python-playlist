@@ -110,15 +110,31 @@ Program for queueing and playing videos from list or from sources like channels 
 
 ## TODO
 
+- https://coolors.co/d7fef8-ebebeb-b5b5b5-02866f-013d33-070d0b-d4af37
+
+### Has Plans
+
+- download playlist as audio: 2026-11-07-0910-playlist-audio-downloads.md
 - fix annoying/not working flask things: toasts, page/dynamic reload of content - 2026-11-07-0755-dynamic-playlist-fetch-updates.md
-- twitter/facebook/instagram as sources for videos, implement other sources especially rumble
+- refactoring
+  - 2026-08-22-transition-to-hexagonal-architecture.md
+  - update architecture
+  - replace flask with fastapi?
+  - clean up web (some templates fine, JS is a mess)
+  - clean up cli
+  - clean up busines
+  - replace printS, printD with real logging
+  - pytube/yt-dlp as plug and play clients instead of directly implemented in services
+
+### Needs Plans
+
+- twitter/facebook/instagram and other sources for videos
 - with argumentor, can still use i0 (castFunc)? if not, rewrite docs and remove functions that expect/use this
 - add length of stream in seconds to qs, add in all fetches, use for display? - in seconds or timestamp like hh:MM:ss ?
-- implement background content properly, should not wait for input, just play when previous stream finished (assume no ads/breaks/pauses, need playtime in model..)
+- implement background content properly. currently does nothing. problems:  should not wait for input, just play when previous stream finished (assume no ads/breaks/pauses, need playtime in model..)
 - reset doesn't work, not resetting sources
 - restore/add source, have to check on deleted
-- using guids as ids works but if manually sorting through files its hard to find the correct source without gui. change it to source + channel name, e.g. "youtube_SmarterEveryDay"
-- possible bug where if something is watched, the added to another playlists, when pruning first playlist, qs is deleted
+- using guids as ids works but if manually sorting through files its hard to find the correct source without gui. change it to source + channel name, e.g. "youtube_SmarterEveryDay" or a combo like source_channelname_guid
 - simple graphics interface, preferably in browser
   - show video publish date (if any, maybe new field, should also sort by this in fetch), maybe added?
   - maybe create/edit form stuff can be put in helper methods in the form class itself, removing clutter from server.py
@@ -129,15 +145,5 @@ Program for queueing and playing videos from list or from sources like channels 
   - more links around, can be useful to open streamsource or queuestream details from play for example, for editing or changing url if some problem?
   - new fields:
     - pfp for stream source
-  - new entity, metadata:
-    - implement where most create/deletes are done, fetches, startups
-- for downloads, option to download as audio only, adding track details where applicable, pip install mutagen
-- refactoring
-  - update architecture
-  - replace flask with fastapi?
-  - clean up web (some templates fine, JS is a mess)
-  - clean up cli
-  - clean up busines
-  - replace printS, printD with real logging
-  - pytube/yt-dlp as plug and play clients instead of directly implemented in services
-- https://coolors.co/d7fef8-ebebeb-b5b5b5-02866f-013d33-070d0b-d4af37
+- auditing, metadata:
+  - implement where most create/deletes are done, fetches, startups

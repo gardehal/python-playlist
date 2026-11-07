@@ -1,4 +1,5 @@
 from datetime import datetime
+from urllib.parse import urlparse
 
 from grdUtil.StrUtil import maxLen
 from grdUtil.DateTimeUtil import getDateTime
@@ -11,7 +12,8 @@ class QueueStream:
                  isWeb: bool = False, 
                  streamSourceId: str = None, 
                  streamSourceName: str = None, 
-                 watched: datetime = None, 
+                 watched: datetime = None,
+                 thumbnailUrl: str = None, 
                  backgroundContent: bool = False, 
                  playtimeSeconds: int = None, 
                  publishedAt: datetime = None, 
@@ -32,6 +34,14 @@ class QueueStream:
         self.added: datetime = added
         self.remoteId: str = remoteId
         self.id: str = id
+
+        parsedHost = urlparse(uri).hostname if uri else None
+
+        if(not thumbnailUrl and isWeb and remoteId and parsedHost and
+           (parsedHost == "youtube.com" or parsedHost == "youtu.be" or parsedHost.endswith(".youtube.com"))):
+            thumbnailUrl = f"https://i.ytimg.com/vi/{remoteId}/hqdefault.jpg"
+
+        self.thumbnailUrl: str = thumbnailUrl
         
     def default(self):
         self.name: str = "name"
@@ -40,6 +50,7 @@ class QueueStream:
         self.streamSourceId: str = "streamSourceId"
         self.streamSourceName: str = "streamSourceName"
         self.watched: datetime = getDateTime()
+        self.thumbnailUrl: str = None
         self.backgroundContent: bool = False
         self.deleted: datetime = datetime.now()
         self.added: datetime = getDateTime()

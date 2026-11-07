@@ -12,6 +12,9 @@ It should not be used as a log of every session or minor change. Entries should 
 ## Backend
 ### Routing
 
+### Source Metadata
+- [2026-11-07] Odysee RSS exposes per-video thumbnails via `itunes:image[href]`; store the URL at fetch time.
+
 ## Frontend
 ### Colors & Design System
 - [2026-10-04] CSS variables with semantic color names: Onyx (#070D0B), Silver (#B5B5B5), Evergreen (#013D33), Jungle Teal (#02866F), Gold (#D4AF37), and Platinum (#EBEBEB).

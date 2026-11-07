@@ -109,6 +109,7 @@ Program for queueing and playing videos from list or from sources like channels 
 
 ## TODO
 
+- fix annoying/not working flask things: toasts, page/dynamic reload of content
 - twitter/facebook/instagram as sources for videos, implement other sources especially rumble
 - with argumentor, can still use i0 (castFunc)? if not, rewrite docs and remove functions that expect/use this
 - add length of stream in seconds to qs, add in all fetches, use for display? - in seconds or timestamp like hh:MM:ss ?

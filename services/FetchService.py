@@ -476,6 +476,8 @@ class FetchService():
             pubDate = stringToDatetime(pubDateRaw, "%a, %d %b %Y %H:%M:%S %Z") #Mon, 07 Jun 2021 04:57:59 GMT
             link = stream.getElementsByTagName("link")[0].firstChild.nodeValue
             videoGuid = link.split(":")[-1]
+            thumbnailNodes = stream.getElementsByTagNameNS("http://www.itunes.com/dtds/podcast-1.0.dtd", "image")
+            thumbnailUrl = thumbnailNodes[0].getAttribute("href") if thumbnailNodes else None
             
             if(takeNewOnly and videoGuid in streamSource.lastFetchedIds):
                 printD("Name \"", title, "\", Odysee ID \"", videoGuid, "\"", color = BashColor.WARNING, debug = self.settings.debug)
@@ -497,6 +499,7 @@ class FetchService():
                 streamSourceId = streamSource.id,
                 streamSourceName = streamSource.name,
                 watched = None,
+                thumbnailUrl = thumbnailUrl,
                 backgroundContent = streamSource.backgroundContent,
                 added = getDateTime(),
                 remoteId = videoGuid)

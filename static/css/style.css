@@ -55,6 +55,58 @@
     padding: 1em;
 }
 
+.nextQueueStreams
+{
+    width: 100%;
+    min-width: 0;
+}
+
+.nextQueueStreamsList
+{
+    display: grid;
+    grid-auto-flow: row;
+    grid-template-columns: repeat(4, minmax(15rem, 1fr));
+    gap: 1rem;
+    overflow-x: auto;
+    padding-bottom: 0.75rem;
+}
+
+.nextQueueStream
+{
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    text-decoration: none;
+    width: 100% !important;
+}
+
+.nextQueueStream img
+{
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+}
+
+.nextQueueStreamName,
+.nextQueueStreamSource
+{
+    overflow-wrap: anywhere;
+}
+
+.nextQueueStreamName
+{
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+}
+
+.nextQueueStreamSource
+{
+    font-size: 0.875rem;
+}
+
 .btn
 {
     border-width: 4px !important;

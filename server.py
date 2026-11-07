@@ -481,7 +481,7 @@ def play(playlistId: str):
         fileUri = playbackService.mapUrlToEmbeddedUrl(queueStream)
     
     nextQueueStreams = []
-    for nextQueueStreamId in playlist.streamIds[playIndex+1:][:4]: # Next 4, if any
+    for nextQueueStreamId in playlist.streamIds[playIndex+1:][:16]: # Next 16, if any
         nextQueueStream = queueStreamService.get(nextQueueStreamId)
         if(nextQueueStream):
             nextQueueStreams.append(nextQueueStream)

@@ -40,22 +40,22 @@
     </div>
     
     <hr>
-    <div class="row">
-        <h4>Next QueueStreams</h4>
+    <section class="nextQueueStreams" aria-labelledby="nextQueueStreamsTitle">
+        <h4 id="nextQueueStreamsTitle">Next QueueStreams</h4>
         
         {% if not enumeratedNextQueueStreams %}
             This is the last QueueStream in {{ playlist.name }} 
             <a class="btn" href="{{ url_for("playlistsDetails", id=playlist.id) }}">Return to {{ playlist.name }}</a>
         {% else %}
-            {% for i, queueStream in enumeratedNextQueueStreams: %}
-                <a href="{{ url_for("play", playlistId=playlist.id, index=i+1) }}">
-                    <div class="center" width="2em">
-                        <img src="/static/default.png">
-                        <p>{{ queueStream.name }}</p>
-                        <p>{{ queueStream.streamSourceName }}</p>
-                    </div>
+            <div class="nextQueueStreamsList">
+                {% for i, queueStream in enumeratedNextQueueStreams: %}
+                    <a class="nextQueueStream" href="{{ url_for("play", playlistId=playlist.id, index=i+1) }}">
+                        <img src="{{ queueStream.thumbnailUrl or url_for('static', filename='default.png') }}" alt="Thumbnail for {{ queueStream.name }}" loading="lazy">
+                        <span class="nextQueueStreamName">{{ queueStream.name }}</span>
+                        <span class="nextQueueStreamSource">{{ queueStream.streamSourceName }}</span>
                 </a>
-            {% endfor %}
+                {% endfor %}
+            </div>
         {% endif %}
-    </div>
+    </section>
 {% endblock %}

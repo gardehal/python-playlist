@@ -294,6 +294,8 @@ class FetchService():
             title = item.get("title", "")
             if(not remoteId or not title):
                 continue
+
+            thumbnailUrl = item.get("thumbnail") or f"https://i.ytimg.com/vi/{remoteId}/hqdefault.jpg"
             
             sanitizedTitle = sanitize(title)
             if(streamSource.premiumSubscriber and item.get("is_members_only") is True):
@@ -314,8 +316,8 @@ class FetchService():
                 watched = None,
                 backgroundContent = streamSource.backgroundContent,
                 added = getDateTime(),
-                remoteId = remoteId)
-            # "thumbnail": ""
+                remoteId = remoteId,
+                thumbnailUrl = thumbnailUrl)
             newStreams.append(queueStream)
             
         newStreams.reverse()

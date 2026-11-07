@@ -5,6 +5,8 @@
 
 **Objective**: 
 - Reorganize the project into three distinct layers: **Domain** (Core Logic), **Application** (Use Cases/Ports), and **Infrastructure** (Adapters for Web, CLI, and Data).
+- Implement a **Composition Root** to handle dependency injection of adapters into use cases.
+- Establish a **Domain Exception** hierarchy to decouple error handling from infrastructure details.
 
 **Files to Modify**:
 - [ ] `model/` (Refactor entities to be pure Domain objects)
@@ -24,19 +26,25 @@
    - **[new: ports/]**
      - [Action]: Create individual files for each Port (e.g., `stream_source_repository.py`).
      - [Logic]: Define the Abstract Base Classes (ABCs) to establish the "contracts" the rest of the app must follow.
+   - **[new: exceptions/]**
+     - [Action]: Define a hierarchy of Domain Exceptions.
+     - [Logic]: Ensure infrastructure adapters map their specific errors (e.g., `FileNotFoundError`) to these domain-level exceptions.
 
 2. **Phase 2: The Application Layer (The Use Cases)**
    - **[services/]**
-     - [Action]: Refancor existing services into "Use Case Interactors".
+     - [Action]: Refactor existing services into "Use Case Intermountable".
      - [Logic]: Instead of `PlaylistService.add(playlist)`, create a use case like `AddStreamToPlaylistUseCase`. This class will take the `Repository` port as a dependency and orchestrate the domain logic.
+   - **[testing]**
+     - [Action]: Write unit tests for Use Cases using Mocks/Stubs of the Ports.
+     - [Logic]: Verify business logic in isolation before implementing concrete adapters.
 
-3. **Phase 3: The Infrastructure Layer (The Adapters)**
+3. **Phase 3: The Infrastructure Layer (The Adapters)
    - **[new: infrastructure/repositories/]**
-     - [Action]: Move current data access logic from `services/` to here.
-     - [Logic]: Implement the concrete versions of the ports defined in Phase 1 (e.g., `JsonPlaylistRepository`).
+     - [Action]: Implement concrete versions of the ports.
+     - [Logic]: Initially, wrap `BaseService` logic to provide a familiar implementation while adhering to the new Port interfaces. This allows us to leverage existing file-system logic without leaking it into the Application layer.
    - **[new: infrastructure/providers/]**
      - [Action]: Isolate external fetching/downloading logic.
-     - [Logic]: Create adapters for YouTube, Local Filesystem, etc., which implement the `StreamProvider` port.
+     - [Logic]: Create adapters for YouTube, Local Filesystem, etc., which implement the `ExternalStreamProvider` port.
 
 4. **Phase 4: The Presentation Layer (The Entry Points)**
    * **[server.py & controllers/]**
@@ -66,7 +74,14 @@ A: One file per Port (e.g., `stream_source_repository.py`) to follow SRP and kee
 A: No, define the interfaces first (Option A) to establish the contract before moving to implementation.
 
 # Execution Summary
-- Created new plan file with refined architectural strategy, interview context, and finalized port structure.
+- [DONE] Defined all Repository Ports (`Playlist`, `Stream_Source`, `QueueStream`).
+- [DONE] Created Domain Exception hierarchy.
+- [DONE] Implemented Infrastructure Adapters (Wrappers) using `BaseService` for `Playlist`, `StreamSource`, and `QueueStream`.
+- [DONE] Implemented Application Use Cases for `StreamSource` (`Create`, `Update`, `Delete`).
+- [DONE] Implemented Application Use Cases for `QueueStream` (`Create`, `Update`, `Delete`).
+- [DONE] Implemented orchestration Use Cases: `CreatePlaylistFromYoutubeUseCase` and `ToggleQueueStreamWatchedUseCase`.
 
 # Verification Report
-*(To be completed after implementation)*
+- [VERIFIED] `StreamSource` lifecycle works via new use cases.
+- [VERIFIED] `QueueStream` lifecycle works via new use cases.
+- [VERIFIED] Domain exceptions are correctly raised and handled in Use Cases.

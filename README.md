@@ -97,6 +97,7 @@ Program for queueing and playing videos from list or from sources like channels 
 
 ## Known issues
 
+- YouTube downloads use yt-dlp and may require Node.js for YouTube JavaScript challenges. Make sure `node` is available on `PATH`; the app prints the Node.js path it detects. Without it, some downloads may fail.
 - On install/first use:
   - Some packages may not load imported classes, e.g. pytube, try: 
     - $ pip uninstall package_name
@@ -130,7 +131,6 @@ Program for queueing and playing videos from list or from sources like channels 
     - pfp for stream source
   - new entity, metadata:
     - implement where most create/deletes are done, fetches, startups
-- pytubefix can probably be entirely replaced with yt_dlp, except downloads as it requires weird javascript to fetch about half the videos in testing - see separate doc 2026-08-16-youtube-download-evolution.md
 - for downloads, option to download as audio only, adding track details where applicable, pip install mutagen
 - refactoring
   - update architecture

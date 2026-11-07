@@ -14,6 +14,12 @@ It should not be used as a log of every session or minor change. Entries should 
 
 ### Source Metadata
 - [2026-11-07] Odysee RSS exposes per-video thumbnails via `itunes:image[href]`; store the URL at fetch time.
+- [2026-11-07] CLI `-add` omits `isWeb` and `remoteId`; infer both from YouTube URIs so manual
+	QueueStreams receive thumbnail URLs too.
+
+### Filename Sanitization
+- [2026-11-07] `grdUtil.sanitize(..., mode=1)` removes punctuation, periods, and underscores.
+- Sanitize filename stems only; restore extensions and generated separators afterward.
 
 ## Frontend
 ### Colors & Design System

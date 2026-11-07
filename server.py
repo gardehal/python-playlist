@@ -1,3 +1,4 @@
+import os
 import uuid
 from queue import Queue
 import threading
@@ -234,9 +235,17 @@ def queueStreamsCreate(playlistId: str):
     
     if request.method == "POST":
         if(form.validate_on_submit()):
+            name = form.name.data.strip() if form.name.data else ""
+            uri = form.uri.data
+            if(not name and uri):
+                name = sharedService.getPageTitle(uri) if form.isWeb.data else os.path.basename(uri.rstrip("/\\"))
+            if(not name):
+                errorMessage = "Enter a name or provide a URI with a detectable title."
+                return render_template("form.html", title= "Create new QueueStream", form= form, errorMessage= errorMessage)
+
             queueStream = QueueStream(
-                name = form.name.data,
-                uri = form.uri.data,
+                name = name,
+                uri = uri,
                 isWeb = form.isWeb.data,
                 streamSourceId = form.streamSourceId.data,
                 streamSourceName = form.streamSourceName.data,
@@ -277,7 +286,8 @@ def queueStreamsEdit(id: str):
         form.remoteId.data = queueStream.remoteId
     elif request.method == "POST":
         if(form.validate_on_submit()):
-            queueStream.name = form.name.data
+            if(form.name.data and form.name.data.strip()):
+                queueStream.name = form.name.data.strip()
             queueStream.uri = form.uri.data
             queueStream.isWeb = form.isWeb.data
             queueStream.streamSourceId = form.streamSourceId.data

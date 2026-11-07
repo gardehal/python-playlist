@@ -1,5 +1,12 @@
 # YouTube Download Strategy: Evolution & Implementation
 
+## Current Status (2026-11-07)
+
+The application now uses yt-dlp without pytubefix. The user verified CLI YouTube
+title lookup and a short-video download through the application. The earlier
+pytubefix rescue implementation below is historical; the previously problematic
+sample corpus was not retested. Audio-only download remains unsupported.
+
 ## Overview
 The goal of this task was to implement a robust YouTube downloading service in Python that works reliably across different environments (specifically those without a JavaScript runtime like Node.js or Deno) and avoids `403 Forbidden` errors caused by YouTube's frequent signature obfuscation updates.
 
@@ -25,19 +32,19 @@ YouTube uses complex JavaScript to generate "signatures" for video URLs.
 *   **Result**: **PARTIAL SUCCESS**.
 *   **Reason**: While it improved some aspects, it still hit the same "Signature Wall" at the exact same 12-video limit, proving that no amount of client spoofing can bypass a hard signature requirement without actual JS execution.
 
-### Final Solution: The Hybrid Rescue Method (Implemented)
+### Earlier Implementation: Hybrid Rescue Method (Historical)
 *   **Approach**: Implement a dual-engine architecture in `DownloadService.py`.
     1.  **Primary Engine**: `yt-dlp` using the `mweb` client (for high quality and feature support).
     2.  **Fallback/Rescue Engine**: `pytubefix` (a pure-Python, regex-based library) used in a `try-except` block when `yt-dlp` fails.
 *   **Result**: **SUCCESS**.
 *   **Reason**: This provides the best of both worlds: high-quality downloads when possible, and a "resilient" fallback that can bypass signature walls by using simpler (though less feature-rich) stream requests.
 
-## Current Implementation Details
+## Current Implementation Details (2026-11-07)
 - **File**: `services/DownloadService.py`
-- **Primary Dependencies**: `yt_dlp`, `pytubefix`.
-- **Logic Flow**: 
-  `yt_dlp(mweb)` $\rightarrow$ *if 403 or Error* $\rightarrow$ `pytubefix(progressive mp4)`
+- **Downloader**: yt-dlp only; the pytubefix branch and dependency have been removed.
+- **Runtime**: `DownloadService` configures Node.js for yt-dlp when it is available.
+- **Validation**: The user verified CLI title lookup and a short-video download through the app; the earlier failure corpus was not retested.
 
-## Known Unknowns / Future Work
-- **Bot Detection in `pytubefix`**: During testing, `pytubefix` itself was occasionally flagged as a bot. This suggests that even the "Rescue" method may eventually need a rotating User-Agent or Cookie management to remain permanent.
-- **Quality Trade-off**: The rescue mode priorit\_tizes stability over resolution (using progressive MP4). If 4K is required during a failure, a more complex fallback logic would be needed.
+## Remaining Limits
+- **Historical failure cases**: The full set of videos that failed in earlier yt-dlp experiments was not retested after migration.
+- **Audio-only**: The active yt-dlp download path does not currently honor `audioOnly`.

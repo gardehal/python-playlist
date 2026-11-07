@@ -1,29 +1,28 @@
 from datetime import datetime
-from urllib.parse import urlparse
+from urllib.parse import parse_qs, urlparse
 
 from grdUtil.StrUtil import maxLen
 from grdUtil.DateTimeUtil import getDateTime
 
 
 class QueueStream:
-    def __init__(self, 
-                 name: str = None, 
-                 uri: str = None, 
-                 isWeb: bool = False, 
-                 streamSourceId: str = None, 
-                 streamSourceName: str = None, 
+    def __init__(self,
+                 name: str = None,
+                 uri: str = None,
+                 isWeb: bool = False,
+                 streamSourceId: str = None,
+                 streamSourceName: str = None,
                  watched: datetime = None,
-                 thumbnailUrl: str = None, 
-                 backgroundContent: bool = False, 
-                 playtimeSeconds: int = None, 
-                 publishedAt: datetime = None, 
+                 thumbnailUrl: str = None,
+                 backgroundContent: bool = False,
+                 playtimeSeconds: int = None,
+                 publishedAt: datetime = None,
                  deleted: datetime = None,
                  added: datetime = getDateTime(),
                  remoteId: str = None,
                  id: str = None):
         self.name: str = name
         self.uri: str = uri
-        self.isWeb: bool = isWeb
         self.streamSourceId: str = streamSourceId
         self.streamSourceName: str = streamSourceName
         self.watched: datetime = watched
@@ -32,17 +31,37 @@ class QueueStream:
         self.publishedAt: int = publishedAt
         self.deleted: datetime = deleted
         self.added: datetime = added
-        self.remoteId: str = remoteId
         self.id: str = id
 
-        parsedHost = urlparse(uri).hostname if uri else None
+        parsedUri = urlparse(uri) if uri else None
+        parsedHost = parsedUri.hostname.lower() if parsedUri and parsedUri.hostname else ""
+        isYouTubeUrl = (
+            parsedHost == "youtu.be"
+            or parsedHost == "youtube.com"
+            or parsedHost.endswith(".youtube.com")
+            or parsedHost == "youtube-nocookie.com"
+            or parsedHost.endswith(".youtube-nocookie.com")
+        )
 
-        if(not thumbnailUrl and isWeb and remoteId and parsedHost and
-           (parsedHost == "youtube.com" or parsedHost == "youtu.be" or parsedHost.endswith(".youtube.com"))):
-            thumbnailUrl = f"https://i.ytimg.com/vi/{remoteId}/hqdefault.jpg"
+        if(isYouTubeUrl):
+            isWeb = True
+            pathParts = [part for part in parsedUri.path.split("/") if part]
+            if(not remoteId):
+                videoIds = parse_qs(parsedUri.query).get("v", [])
+                if(videoIds):
+                    remoteId = videoIds[0]
+                elif(parsedHost == "youtu.be" and pathParts):
+                    remoteId = pathParts[0]
+                elif(len(pathParts) > 1 and pathParts[0] in {"shorts", "embed", "live", "v"}):
+                    remoteId = pathParts[1]
 
+            if(not thumbnailUrl and remoteId):
+                thumbnailUrl = f"https://i.ytimg.com/vi/{remoteId}/hqdefault.jpg"
+
+        self.isWeb: bool = isWeb
+        self.remoteId: str = remoteId
         self.thumbnailUrl: str = thumbnailUrl
-        
+
     def default(self):
         self.name: str = "name"
         self.uri: str = "uri"
@@ -59,8 +78,8 @@ class QueueStream:
         return self
 
     def summaryString(self):
-        return "".join(map(str, ["Name: ", self.name, 
-        ", ID: ", self.id, 
+        return "".join(map(str, ["Name: ", self.name,
+        ", ID: ", self.id,
         ", URI: ", self.uri]))
 
     def simpleString(self):
@@ -83,14 +102,12 @@ class QueueStream:
         watchedString = ", watched: " + str(self.watched) if(includeDatetime) else ""
         deletedString = ", deleted: " + str(self.deleted) if(includeDatetime) else ""
         addedString = ", added: " + str(self.added) if(includeDatetime) else ""
-        
-        return "".join(map(str, ["\"",  maxLen(self.name, 50), "\"",
+
+        return "".join(map(str, ["\"", maxLen(self.name, 50), "\"",
         uriString,
-        # ", isWeb: ", self.isWeb, 
         streamSourceIdString,
         ", ", self.streamSourceName, " ",
-        watchedString, 
-        # ", backgroundContent: ", self.backgroundContent, 
+        watchedString,
         ", ", self.playtimeSeconds, " ",
         ", ", self.publishedAt, " ",
         deletedString,

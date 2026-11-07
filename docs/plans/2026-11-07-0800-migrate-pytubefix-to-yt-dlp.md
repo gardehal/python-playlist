@@ -26,28 +26,43 @@ The README suggests pytubefix is still a download fallback, but `DownloadService
 
 ## Todos
 
-- [ ] Verify `pytubefix` call sites and replace YouTube title extraction in `services/SharedService.py` with yt-dlp.
-- [ ] Remove the unused legacy YouTube channel fetch path and `Channel` import from `services/FetchService.py`.
-- [ ] Remove the unreachable pytubefix download branch from `services/DownloadService.py` while preserving active yt-dlp behavior.
-- [ ] Test title lookup and active fetch behavior without pytubefix installed.
-- [ ] Validate yt-dlp download behavior, especially the previously problematic sample set if available; retain the dependency until this gate passes.
-- [ ] Remove `pytubefix` from `requirements.txt` and search the repository for remaining imports/usages.
-- [ ] Update the README TODO and the current-state summary in `docs/plans/2026-08-16-youtube-download-evolution.md`.
-- [ ] Confirm failure messages and output naming remain usable; document the Node.js prerequisite for YouTube downloads.
+- [x] Verify `pytubefix` call sites and replace YouTube title extraction in `services/SharedService.py` with yt-dlp.
+- [x] Remove the unused legacy YouTube channel fetch path and `Channel` import from `services/FetchService.py`.
+- [x] Remove the unreachable pytubefix download branch from `services/DownloadService.py` while preserving active yt-dlp behavior.
+- [x] Test mocked title lookup and import all three services with pytubefix imports blocked.
+- [x] User verified CLI YouTube title lookup and a short-video download through the application.
+- [x] Remove `pytubefix` from `requirements.txt`; no Python imports remain.
+- [x] Remove the obsolete README TODO and update the current-state summary in `docs/plans/2026-08-16-youtube-download-evolution.md`.
+- [x] User retested the previously failing YouTube titles; downloads succeeded.
+- [x] Verify generated and custom filenames remove `!()'` while preserving the extension and generated-name separators.
+- [x] Document the Node.js availability caveat for YouTube downloads in `README.md`; successful output naming was verified.
+- [ ] Exercise the yt-dlp failure path and confirm the app reports the failure clearly.
 
 ## Notes / considerations
 
-- The current `DownloadService` yt-dlp branch configures Node.js when found. A missing Node.js runtime may affect the historical failure cases; verify this before claiming equivalent download coverage.
+- The current `DownloadService` yt-dlp branch configures Node.js when found. Behavior for the historical failure cases without Node.js remains unverified.
 - `audioOnly` is ignored in the active yt-dlp branch today; supporting it is separate work and is not included here.
 - The repository currently has a debug download script rather than a structured YouTube migration test suite. Avoid tests that download long videos; use mocked yt-dlp calls for unit coverage and short representative manual checks for integration.
 - The existing download-evolution note describes earlier attempts and a fallback that does not match the current hardcoded branch selection. Preserve its historical experiments but correct its current-state summary after validation.
 
 ## Validation
 
-- Run Python syntax checks and the repository's available tests after removing pytubefix imports.
-- Mock yt-dlp metadata extraction and verify `SharedService.getPageTitle` returns sanitized titles and handles failures.
-- Verify active YouTube fetch and playlist-import paths still work without pytubefix installed.
-- Exercise representative short-video downloads with and without Node.js where available; do not download long videos.
-- Search for `pytubefix` across source and dependency files; only historical documentation may remain.
+- `python -m compileall -q services/SharedService.py services/FetchService.py services/DownloadService.py` passed.
+- Mocked `SharedService.getPageTitle` check passed for sanitized title and `download=False` metadata extraction.
+- Mocked `DownloadService.downloadYoutube` check passed for metadata lookup, Node.js configuration, output path, and yt-dlp download invocation; no video was downloaded.
+- `SharedService`, `FetchService`, and `DownloadService` imported with pytubefix imports blocked.
+- Source search found no Python pytubefix imports; the legacy `fetchYoutube` name remains only in a commented-out dispatch line.
+- `getVideoPath()` checks passed for default and custom names: `!()'` are removed, the extension is preserved, and generated underscores remain readable. No file was created.
+- User confirmed CLI title lookup and a short-video download both work through the application.
+- User retested the previously failing YouTube titles and confirmed downloads succeeded.
+- Source/dependency search found no Python imports or requirement for `pytubefix`; historical documentation retains experiment context.
+- A forced yt-dlp failure has not been tested through the app.
 
 ## Results
+
+- Replaced the active YouTube title lookup with yt-dlp metadata extraction.
+- Removed the unused pytubefix channel fetch implementation and the unreachable download branch.
+- Sanitizes the filename stem with `grdUtil` mode 1 while preserving the extension and generated-name separators.
+- Removed `pytubefix` from `requirements.txt`; updated README and historical download status.
+- User verified CLI title lookup and downloaded titles that had previously failed. A forced failure case remains untested.
+- `README.md` documents that Node.js should be available on `PATH` for YouTube JavaScript challenges.

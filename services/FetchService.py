@@ -8,7 +8,6 @@ import mechanize
 import requests
 from bs4 import BeautifulSoup
 from jsonpath_ng import parse
-from pytubefix import Channel
 
 from grdException.ArgumentException import ArgumentException
 from grdException.DatabaseException import DatabaseException
@@ -159,89 +158,6 @@ class FetchService():
             
             newQueueStreams.append(queueStream)
 
-        return newQueueStreams
-
-    def fetchYoutube(self, streamSource: StreamSource, batchSize: int = 10, takeAfter: datetime = None, takeBefore: datetime = None, takeNewOnly: bool = False) -> List[QueueStream]:
-        """
-        Fetch videos from YouTube.
-
-        Args:
-            batchSize (int): Number of videos to check at a time, unrelated to max videos that will be read. Defaults to 10.
-            takeAfter (datetime): Limit to take video after. Defaults to None.
-            takeBefore (datetime): Limit to take video before. Defaults to None.
-            takeNewOnly (bool): Only take streams marked as new. Disables takeAfter and takeBefore-checks. To use takeAfter and/or takeBefore, set this to False. Defaults to False.
-
-        Returns:
-            List[QueueStream]: List of QueueStream
-        """
-        
-        if(streamSource == None):
-            raise ArgumentException("fetchYoutube - streamSource was None.")
-
-        emptyReturn = []
-        channel = Channel(streamSource.uri, "WEB")
-
-        if(channel == None or channel.channel_name == None):
-            printS(f"Channel {streamSource.name} (URL: {streamSource.uri}) could not be found or is not valid. Please remove it and add it back.", color = BashColor.FAIL)
-            return emptyReturn
-        
-        if(not streamSource.remoteId):
-            streamSource.remoteId = channel.channel_id
-            streamSource.uri = f"https://www.youtube.com/channel/{streamSource.remoteId}"
-            self.streamSourceService.update(streamSource)
-        
-        if(len(channel.video_urls) < 1):
-            printS(f"Channel {channel.channel_name} has no videos.", color = BashColor.FAIL)
-            return emptyReturn
-
-        printS(f"Fetching videos from {channel.channel_name}...")
-        newStreams = []
-        newQueueStreams = []
-        
-        streams = [e for e in channel.video_urls if e] # If not null or empty list i.e. []
-        lastStreamId = streams[0].video_id
-        
-        print(f"last stream id from fetch {streams[0].title} {lastStreamId} vs listed {streamSource.lastFetchedIds}")
-        if(takeNewOnly and takeAfter == None and lastStreamId in streamSource.lastFetchedIds):
-            printD("Last video fetched: \"", sanitize(streams[0].title), "\", YouTube ID \"", lastStreamId, "\"", color = BashColor.WARNING, debug = self.settings.debug)
-            printD("Return due to takeNewOnly and takeAfter == None and lastStreamId in streamSource.lastFetchedIds", color = BashColor.WARNING, debug = self.settings.debug)
-            return emptyReturn
-            
-        for i, stream in enumerate(streams):
-            if(takeNewOnly and stream.video_id in streamSource.lastFetchedIds):
-                printD("Name \"", sanitize(stream.title), "\", YouTube ID \"", stream.video_id, "\"", color = BashColor.WARNING, debug = self.settings.debug)
-                printD("Break due to takeNewOnly and stream.video_id in streamSource.lastFetchedIds", color = BashColor.WARNING, debug = self.settings.debug)
-                break
-            elif(not takeNewOnly and takeAfter != None and stream.publish_date < takeAfter):
-                printD("Break due to not takeNewOnly and takeAfter != None and stream.publish_date < takeAfter", color = BashColor.WARNING, debug = self.settings.debug)
-                break
-            elif(not takeNewOnly and takeBefore != None and stream.publish_date > takeBefore):
-                printD("Continue due to not takeNewOnly and takeBefore != None and stream.publish_date > takeBefore", color = BashColor.WARNING, debug = self.settings.debug)
-                continue
-            elif(i > batchSize):
-                printD("Break due to i > batchSize", color = BashColor.WARNING, debug = self.settings.debug)
-                break
-            
-            newStreams.append(stream)
-            
-        if(len(newStreams) == 0):
-            return emptyReturn
-        
-        newStreams.reverse()
-        for stream in newStreams:
-            sanitizedTitle = sanitize(stream.title)
-            queueStream = QueueStream(name = sanitizedTitle, 
-                uri = stream.watch_url, 
-                isWeb = True,
-                streamSourceId = streamSource.id,
-                streamSourceName = streamSource.name,
-                watched = None,
-                backgroundContent = streamSource.backgroundContent,
-                added = getDateTime(),
-                remoteId = stream.video_id)
-            
-            newQueueStreams.append(queueStream)
-        
         return newQueueStreams
 
     def fetchYoutubeYdl(self, streamSource: StreamSource, batchSize: int = 10, takeNewOnly: bool = False) -> List[QueueStream]:

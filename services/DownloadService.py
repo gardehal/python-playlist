@@ -1,18 +1,15 @@
 import json
 import os
 import re
-import time
 import shutil
 import urllib.request
 from re import Pattern
 import mechanize
 import yt_dlp
-from pytubefix import YouTube
 from jsonpath_ng import parse
 from mutagen.mp3 import MP3
 from mutagen.id3 import ID3, TIT2, TPE1, TALB
 from bs4 import BeautifulSoup
-from pytubefix.cli import on_progress
 
 from grdException.ArgumentException import ArgumentException
 from grdException.NotImplementedException import NotImplementedException
@@ -95,7 +92,13 @@ class DownloadService():
         if(prefix != None):
             videoFilename = f"{prefix}{videoFilename}"
     
-        videoFilename = sanitize(videoFilename, mode = 3)
+        videoStem, videoExtension = os.path.splitext(videoFilename)
+        if(useDefaultName):
+            videoStem = videoStem.replace("_", " ")
+        videoStem = sanitize(videoStem, mode = 1)
+        if(useDefaultName):
+            videoStem = videoStem.replace(" ", "_")
+        videoFilename = f"{videoStem}{videoExtension}"
         return os.path.join(directory, videoFilename)
 
     def downloadYoutube(self, url: str, directory: str = "youtube", fileExtension: str = "mp4", nameRegex: Pattern[str] = None, prefix: str = None, audioOnly: bool = False) -> str:
@@ -115,87 +118,42 @@ class DownloadService():
         """
         
         try:
-            videoPath = None
-            useYtDlp = 1
-            if(useYtDlp):
-                
-                node_path = shutil.which("node")
-                print("Node path that Python sees:", node_path)
-                print("Node version:", os.popen("node -v").read().strip())
+            node_path = shutil.which("node")
+            print("Node path that Python sees:", node_path)
+            print("Node version:", os.popen("node -v").read().strip())
 
-                ydl_opts = {
-                    'format': f'bestvideo[ext={fileExtension}]+bestaudio[ext=m4a]/best[ext={fileExtension}]/best',
-                    'noplaylist': True,
-                    'quiet': False,
-                    'no_warnings': False,
-                    'verbose': True, 
-                    'retries': 5,
-                    'fragment_retries': 5,
-                    
-                    # Force Node.js runtime
-                    'js_runtimes': {
-                        'node': {'path': node_path} if node_path else {}
-                    },
-                    
-                    # Better client mix to avoid many SABR / PO Token issues
-                    'extractor_args': {
-                        'youtube': {
-                            'player_client': ['android', 'web', 'ios', 'tv', 'mweb'],
-                            'po_token': None,
-                            'player_skip': ['configs'],
-                            # Optional: skip some problematic clients
-                            # 'player_skip': ['webpage'],
-                        }
-                    },
-                }
-                
-                with yt_dlp.YoutubeDL({'quiet': True}) as ydl:
-                    info = ydl.extract_info(url, download=False)
-                    videoTitle = info.get('title', 'unknown_video')
+            ydl_opts = {
+                'format': f'bestvideo[ext={fileExtension}]+bestaudio[ext=m4a]/best[ext={fileExtension}]/best',
+                'noplaylist': True,
+                'quiet': False,
+                'no_warnings': False,
+                'verbose': True,
+                'retries': 5,
+                'fragment_retries': 5,
+                'js_runtimes': {
+                    'node': {'path': node_path} if node_path else {}
+                },
+                'extractor_args': {
+                    'youtube': {
+                        'player_client': ['android', 'web', 'ios', 'tv', 'mweb'],
+                        'po_token': None,
+                        'player_skip': ['configs'],
+                    }
+                },
+            }
 
-                videoPath = self.getVideoPath(directory, videoTitle, fileExtension, nameRegex, prefix)
-                target_dir = os.path.dirname(videoPath)
-                target_filename = os.path.basename(videoPath)
-                ydl_opts['outtmpl'] = os.path.join(target_dir, target_filename)
+            with yt_dlp.YoutubeDL({'quiet': True}) as ydl:
+                info = ydl.extract_info(url, download=False)
+                videoTitle = info.get('title', 'unknown_video')
 
-                printS("Downloading video from ", url)
-                with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                    ydl.download([url])
-            else:
-                youtube = YouTube(url, 
-                    client="WEB",
-                    use_oauth=False,
-                    use_po_token=True, 
-                    allow_oauth_cache=False,
-                    on_progress_callback=on_progress
-                    )
-                
-                time.sleep(1.5)
-                print("PoToken generated:", bool(getattr(youtube, "pot", None)))
+            videoPath = self.getVideoPath(directory, videoTitle, fileExtension, nameRegex, prefix)
+            target_dir = os.path.dirname(videoPath)
+            target_filename = os.path.basename(videoPath)
+            ydl_opts['outtmpl'] = os.path.join(target_dir, target_filename)
 
-                printS("Downloading video from ", url)
-                videoPath = self.getVideoPath(directory, youtube.title, fileExtension, nameRegex, prefix)
-                path = os.sep.join(videoPath.split(os.sep)[0:-1])
-                name = videoPath.split(os.sep)[-1]
-
-                forceAudioOnly = False
-                video = youtube.streams.filter(progressive = True, file_extension = fileExtension)
-                if(not video):
-                    printS("Only audio found for ", url, " ... Attempting to download audio", color = BashColor.WARNING)
-                    video = youtube.streams.filter(adaptive=True, file_extension="mp4", only_video=True)
-                    forceAudioOnly = True
-
-                firstVideoByResolution = video.order_by("resolution").desc().first()
-                if(not firstVideoByResolution):
-                    printS("No video found from Pytube streams for ", url, color = BashColor.FAIL)
-                elif(forceAudioOnly or audioOnly):
-                    youtube.streams.get_by_itag(251).download(path, name)
-                    # youtube.streams.filter(only_audio=True).order_by("abr").desc().first().download(path, name)
-                    # TODO more emtadata, mainly track number. album (playlist name) and year would be good to, but relies on info from playlist or track names
-                    # Alternativly, give user a modal when clicking this, make them input a clean artist, album, year, etc., do not set if fields are blank
-                    self.setMp3Metadata(videoPath, youtube.title, youtube.channel_name)
-                else:
-                    firstVideoByResolution.download(path, name) 
+            printS("Downloading video from ", url)
+            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                ydl.download([url])
             
             return videoPath
         except Exception as e:

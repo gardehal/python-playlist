@@ -2,10 +2,10 @@ import re
 from typing import Dict, List
 
 import mechanize
+import yt_dlp
 from grdUtil.BashColor import BashColor
 from grdUtil.InputUtil import sanitize
 from grdUtil.PrintUtil import printD, printS
-from pytubefix import YouTube
 
 from enums.StreamSourceType import StreamSourceType, StreamSourceTypeUtil
 from model.Playlist import Playlist
@@ -25,7 +25,7 @@ class SharedService():
 
     def getPageTitle(self, url: str) -> str:
         """
-        Get page title from the URL url, using mechanize or PyTube.
+        Get page title from the URL url, using mechanize or yt-dlp.
 
         Args:
             url (str): URL to page to get title from.
@@ -38,9 +38,10 @@ class SharedService():
         title = None
         try:
             if(StreamSourceTypeUtil.strToStreamSourceType(url) == StreamSourceType.YOUTUBE and not isYouTubeChannel):
-                printD("Getting title from pytube.", color = BashColor.WARNING, debug = self.settings.debug)
-                yt = YouTube(url)
-                title = yt.title
+                printD("Getting title from yt-dlp.", color = BashColor.WARNING, debug = self.settings.debug)
+                with yt_dlp.YoutubeDL({"quiet": True, "no_warnings": True, "skip_download": True}) as ydl:
+                    info = ydl.extract_info(url, download=False)
+                title = info.get("title")
             else:
                 printD("Getting title from mechanize.", color = BashColor.WARNING, debug = self.settings.debug)
                 try:

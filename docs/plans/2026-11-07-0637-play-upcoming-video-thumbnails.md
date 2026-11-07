@@ -14,11 +14,12 @@ YouTube thumbnails are not currently stored on `QueueStream`. The active YouTube
 - D4: For the first source integration, use the active `FetchService.fetchYoutubeYdl` path, which extracts flat playlist entries with yt-dlp. Prefer each entry's `thumbnail`; fall back to YouTube's `hqdefault` image URL built from the video ID. `YoutubeProvider.fetch_metadata` is not the active playlist-fetch path.
 - D5: Reuse `QueueStream.thumbnailUrl` and the existing browser `<img>` rendering for other sources. Prefer a usable source-provided image URL; download the image only if direct loading is unavailable or proves unreliable.
 - D6: Do not backfill thumbnails for previously fetched Odysee QueueStreams in this task. Those records retain the default image; newly fetched Odysee streams get their per-item RSS thumbnail.
+- D7: Derive `isWeb` and YouTube `remoteId` from recognized YouTube URLs in `QueueStream`, so manual CLI and web additions receive the same thumbnail fallback as fetched streams.
 
 ## Approach
 
 1. In `templates/play.html` and `static/css/style.css`, give the upcoming list and each item dedicated classes. Display up to 16 upcoming items in a row-first grid of four fixed columns (four rows at the cap), including incomplete rows, with horizontal scrolling when four minimum-width columns do not fit. Stack the image and text within each item; constrain long text to the item width. Continue using the existing default image in this phase.
-2. Add an optional thumbnail URL to `model/QueueStream.py`. Carry the URL from YouTube metadata through `FetchService.fetchYoutubeYdl` into stored QueueStreams, and derive it from `remoteId` for existing YouTube records without the field. Render the stored thumbnail in `play.html` and use `/static/default.png` when it is absent. Confirm the standard YouTube fetch-and-save flow persists and displays the URL.
+2. Add an optional thumbnail URL to `model/QueueStream.py`. Carry the URL from YouTube metadata through `FetchService.fetchYoutubeYdl` into stored QueueStreams, derive IDs and thumbnail URLs from recognized YouTube URIs when absent, and mark those streams as web content. Render the stored thumbnail in `play.html` and use `/static/default.png` when it is absent. Confirm fetched and manually added YouTube streams display thumbnails.
 3. Extend Odysee extraction by identifying its RSS item thumbnail metadata and passing a usable source URL into `QueueStream.thumbnailUrl`. Keep existing Odysee items without stored URLs and new items without usable metadata on the default-image fallback; do not backfill or download images. Rumble is deferred because its fetch implementation is incomplete.
 
 ## Todos
@@ -32,6 +33,8 @@ YouTube thumbnails are not currently stored on `QueueStream`. The active YouTube
 - [x] Phase 2: Populate the field in the active YouTube fetch path in `services/FetchService.py` from yt-dlp's `thumbnail`, with a video-ID-based fallback URL.
 - [x] Phase 2: Render the thumbnail URL in `templates/play.html`, falling back to `/static/default.png`; user confirmed thumbnails display as expected.
 - [x] Phase 2: User tested YouTube fetch and confirmed thumbnails are persisted/displayed as expected.
+- [x] Phase 2: Derive YouTube `remoteId`, `isWeb`, and thumbnail URL from manually added YouTube URIs when omitted.
+- [x] Phase 2: Verify CLI `-add` and web QueueStream creation populate YouTube IDs and thumbnails.
 - [x] Phase 3: Inspect the supplied Odysee channel feed and map its per-item `itunes:image` `href` into `QueueStream.thumbnailUrl`; retain the default fallback where no usable URL exists.
 - [x] Phase 3: User tested Odysee fetch and confirmed newly fetched thumbnails display as expected; previously fetched Odysee items may continue using the default image.
 
@@ -44,6 +47,7 @@ YouTube thumbnails are not currently stored on `QueueStream`. The active YouTube
 - Source checks confirmed the active fetch path assigns `thumbnailUrl` and the template falls back to the local default image.
 - User confirmed YouTube thumbnails render, including for previously imported QueueStreams without a stored thumbnail.
 - User tested YouTube fetch and confirmed fetched thumbnails work in the application.
+- Mocked CLI `-add` and Flask web-create checks passed for YouTube ID, `isWeb`, and thumbnail inference.
 - Odysee RSS request returned HTTP 200 with XML. The first five video items each contained an `itunes:image` element with a distinct `href` on `thumbs.odycdn.com`.
 - Mocked `FetchService.fetchOdysee` check passed for an item with `itunes:image` and one without it; the latter kept `thumbnailUrl` unset for the template fallback.
 - No Odysee video or thumbnail files were downloaded during inspection or validation.
@@ -58,6 +62,6 @@ YouTube thumbnails are not currently stored on `QueueStream`. The active YouTube
 ## Results
 
 - Phase 1: Replaced the shared Bootstrap row layout in `templates/play.html` with a dedicated grid, title/source text below each image, and the existing default-image fallback. Both `server.py` and `server_refactor.py` provide up to 16 upcoming streams; `static/css/style.css` places them in fixed four-column rows, including incomplete rows, with a 15rem minimum and horizontal scrolling on narrow screens. The user confirmed phase-one behavior, including the final item and narrow viewport.
-- Phase 2: Added optional `QueueStream.thumbnailUrl`, populated it from YouTube yt-dlp entries with an `hqdefault` URL fallback, derived thumbnails for existing YouTube records with a remote ID, and updated the upcoming-video image to use the value or the local default image. A mocked fetch check verified both thumbnail sources; the user confirmed YouTube fetching and display.
+- Phase 2: Added optional `QueueStream.thumbnailUrl`, populated it from YouTube yt-dlp entries with an `hqdefault` URL fallback, and updated the upcoming-video image to use the value or the local default image. `QueueStream` now derives YouTube IDs, web status, and thumbnails from recognized URIs, covering CLI and web manual additions. Mocked fetch/create checks passed; the user confirmed fetched thumbnails display.
 - Phase 3: `FetchService.fetchOdysee` reads each RSS item's namespaced `itunes:image` `href` and passes it into `QueueStream.thumbnailUrl`. Missing image elements remain unset and use the existing template fallback. A mocked fetch check passed; the user confirmed Odysee fetching and display for new QueueStreams. Existing Odysee streams are not backfilled.
 - App/browser validation was performed by the user; no app was run by the agent.

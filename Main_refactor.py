@@ -1,7 +1,6 @@
 import os
 import sys
 import webbrowser
-from types import SimpleNamespace
 from urllib.parse import urlparse
 from typing import Optional, Sequence
 

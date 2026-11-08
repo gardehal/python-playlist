@@ -1,14 +1,8 @@
-import uuid
-from queue import Queue
 import threading
-import sys
-import time
 
-from flask import Flask, render_template, request, redirect, url_for, flash, get_flashed_messages, stream_with_context, jsonify, Response
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 from flask_wtf import CSRFProtect
 from flask_bootstrap import Bootstrap5
-
-from grdUtil.DateTimeUtil import getDateTime
 
 from forms.PlaylistForm import *
 from forms.QueueStreamForm import *
@@ -16,7 +10,6 @@ from forms.StreamSourceForm import *
 from forms.YoutubePlaylistForm import *
 
 from Settings import *
-from datetime import datetime
 from composition_root import CompositionRoot
 from enums.StreamSourceType import StreamSourceType
 
@@ -24,15 +17,9 @@ app = Flask(__name__)
 csrf = CSRFProtect(app) 
 app.secret_key = "foo"# TODO, add to settings
 bootstrap = Bootstrap5(app)
-activeTasks = {}
-taskRegistry = {}
 settings = Settings()
 
 application = CompositionRoot()
-playlistRepository = application.playlist_repository
-queueStreamRepository = application.queue_stream_repository
-streamSourceRepository = application.stream_source_repository
-youtubeProvider = application.external_stream_provider
 
 getAllPlaylistsUseCase = application.get_all_playlists
 getAllQueueStreamsUseCase = application.get_all_queue_streams
@@ -61,12 +48,6 @@ getStreamSourceDetailsUseCase = application.get_stream_source_details
 getSoftDeletedEntitiesUseCase = application.get_soft_deleted_entities
 pruneWatchedQueueStreamsUseCase = application.prune_watched_queue_streams
 purgeSoftDeletedEntitiesUseCase = application.purge_soft_deleted_entities
-
-def registerTask(name):
-    def decorator(func):
-        taskRegistry[name] = func
-        return func
-    return decorator
 
 def reloadPage():
     return redirect(request.referrer or url_for("index"))
@@ -484,7 +465,6 @@ def play(playlistId: str):
         embeddedUrl= embeddedUrl, circumventUrl= circumventUrl, fileUri= fileUri, 
         enumeratedNextQueueStreams= enumeratedNextQueueStreams)
 
-@registerTask("fetchPlaylist")
 @app.route("/fetch/<playlistId>")
 def fetchPlaylist(playlistId):
     playlist = getPlaylistUseCase.execute(playlistId)
@@ -507,7 +487,6 @@ def fetchPlaylist(playlistId):
     
     return reloadPage()
 
-@registerTask("downloadPlaylist")
 @app.route("/download/<playlistId>")
 def downloadPlaylist(playlistId):
     audioOnly = request.args.get("audioOnly", "false").lower() == "true"
@@ -589,20 +568,6 @@ def addPlaybackStreamsToPlaylists():
         "totalRequested": len(playlistIds)
     })
 
-def addPlaybackStreamToPlaylist(playlistId, queueStreamId):
-    try:
-        result = copyQueueStreamToPlaylistsUseCase.execute(queueStreamId, [playlistId])
-    except ValueError as e:
-        flash(f"Failed to copy QueueStream: {str(e)}", "error")
-        return jsonify({"result": False, "error": str(e)}), 404
-
-    if(result):
-        flash(f"Added to {result[0].name}", "success")
-    else:
-        flash("Failed to add QueueStream to playlist.", "error")
-        
-    return jsonify({"result": bool(result)})
-    
 if __name__ == "__main__":
     # print("Routes:")
     # for rule in app.url_map.iter_rules():

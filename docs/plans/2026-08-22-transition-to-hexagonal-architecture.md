@@ -30,9 +30,9 @@ Business logic, Flask routes, CLI controllers, and data access began in a tightl
 - [x] Add provider-backed playlist import tests for empty entries and provider errors.
 - [x] Verify and document how repository `save()` assigns IDs; playlist import reads each saved `QueueStream.id` to link it to the playlist.
 - [x] Replace abstract repository construction and fix use-case constructor arities in `server_refactor.py`'s module-level wiring.
-- [ ] Complete `server_refactor.py` route wiring; remaining routes still reference unresolved legacy services or use mismatched calls.
+- [x] Migrate `server_refactor.py` routes to application use cases and Ports; no direct repository or legacy-service references remain in the routes.
 - [ ] Resolve the `CreateStreamSourceUseCase` contract: its docstring promises validation errors, but it currently performs no validation.
-- [ ] Wire remaining yt-dlp service paths through provider Ports; playlist import now uses `YoutubeProvider`.
+- [ ] Replace the transitional fetch/download service adapters with provider-native implementations; playlist import uses `YoutubeProvider`.
 - [ ] Add the local-filesystem provider adapter described in the Infrastructure phase.
 - [ ] Complete Flask and CLI driving-adapter wiring; `server.py` and `Main.py` still instantiate services directly.
 - [x] Implement `CompositionRoot` and use it to wire repositories, `YoutubeProvider`, and use cases in `server_refactor.py`.
@@ -59,8 +59,8 @@ Original file checklist retained as an historical snapshot; current status is tr
 - `GetAllStreamSourcesUseCase` previously imported its repository type through the Infrastructure adapter module; it now imports the Port directly.
 - Repository adapter integration tests verified that `BaseService.add()` assigns IDs, repeat `save()` updates existing records, and `delete()` soft-deletes them. The Ports document the ID assignment contract.
 - `ports/playlist_repository.py` previously imported `model.playlist`; the actual module is `model.Playlist`. This prevented importing use cases on the current environment and is now corrected.
-- `server_refactor.py` previously wired abstract Port types as repositories and passed mismatched constructor arguments; module-level repository/use-case construction is now corrected. Remaining routes still reference legacy service globals not initialized in that module, so the refactor server is not yet verified runnable.
-- `server_refactor.py` now gets repository/provider/use-case construction from `composition_root.py`; its legacy route references remain a separate unfinished migration.
+- `server_refactor.py` previously wired abstract Port types as repositories and passed mismatched constructor arguments; module-level repository/use-case construction is now corrected.
+- All `server_refactor.py` routes use CompositionRoot use cases; fetch and download temporarily use lazy Infrastructure adapters around the existing services.
 - `CreateStreamSourceUseCase` imports `StreamSourceError` and documents validation failures, but contains no validation; the intended validation contract remains unresolved.
 - `CreatePlaylistFromYoutubeUseCase` relies on `QueueStreamRepository.save()` assigning an ID to the entity; this behavior is now verified against the real JSON adapter.
 - Empty provider results create an empty playlist; provider errors propagate before any playlist or stream persistence.
@@ -69,8 +69,9 @@ Original file checklist retained as an historical snapshot; current status is tr
 
 - Previously verified: `StreamSource` and `QueueStream` lifecycle use cases work.
 - Previously verified: Domain exceptions are raised and handled in use cases.
-- `python -m unittest discover -s tests -p "test_use_case_ports.py" -q` passed 37 tests covering all 18 current use-case modules, CompositionRoot, repository adapters, playlist persistence, `YoutubeProvider` normalization/edge cases, and QueueStream create/edit routes.
-- The route tests do not validate `server_refactor.py` startup or the full web application end to end; other routes still use legacy service globals.
+- `python -m unittest discover -s tests -p "test_use_case_ports.py" -q` passed 57 tests covering use cases, CompositionRoot, repository adapters, provider normalization, and Flask routes for home, QueueStream create/edit, copy-to-playlists, playback, fetch, download, prune, soft-deleted listing, and purge.
+- `python -m compileall -q composition_root.py server_refactor.py application/use_cases ports infrastructure/providers` passed.
+- End-to-end operation against external media providers is not verified; fetch/download still use transitional adapters around legacy services.
 
 ## Results
 
@@ -89,5 +90,11 @@ Original file checklist retained as an historical snapshot; current status is tr
 - Added `composition_root.py` to centralize repository, provider, and use-case construction; `server_refactor.py` now consumes it.
 - Corrected `server_refactor.py` to construct concrete repository adapters and match use-case constructor signatures.
 - Wired QueueStream web edit to `UpdateQueueStreamUseCase` for source metadata, watched/background flags, playtime, and remote ID; added a route regression test alongside create coverage.
+- Migrated the home route to the injected playlist repository and initialized `Settings` in `server_refactor.py`.
+- Added playlist lookup and StreamSource-to-playlist link use cases; removed direct repository access from `server_refactor.py` routes.
+- Added `CopyQueueStreamToPlaylistsUseCase` to preserve the legacy per-playlist QueueStream clone behavior and URI/name duplicate filtering; wired the copy endpoint through CompositionRoot.
+- Extended repository Ports with deleted-record listing and permanent removal; migrated prune, purge, and soft-deleted listing to application use cases.
+- Added a pure playback URL use case and migrated `/play` away from `PlaybackService`.
+- Added fetch/download Ports, use cases, and lazy Infrastructure adapters; migrated the corresponding async routes off direct legacy service globals.
 - Added `tests/test_use_case_ports.py` with Port-stub tests across QueueStream, StreamSource, Playlist, and YouTube playlist import use cases.
 - Fixed `GetPlaylistDetailsUseCase` to use declared `get_by_id` Port methods and corrected the `Playlist` model import case in `ports/playlist_repository.py`.

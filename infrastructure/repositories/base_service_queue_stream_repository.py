@@ -27,5 +27,8 @@ class BaseServiceQueueStreamRepository(QueueStreamRepository):
     def delete(self, queue_stream_id: str) -> None:
         self._service.delete(queue_stream_id)
 
-    def get_all(self) -> List[QueueStream]:
-        return self._service.getAll()
+    def remove(self, queue_stream_id: str, include_deleted: bool = False) -> None:
+        self._service.remove(queue_stream_id, include_deleted)
+
+    def get_all(self, include_deleted: bool = False) -> List[QueueStream]:
+        return self._service.getAll(include_deleted)

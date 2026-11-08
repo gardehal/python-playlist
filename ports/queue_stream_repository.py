@@ -21,5 +21,10 @@ class QueueStreamRepository(ABC):
         pass
 
     @abstractmethod
-    def get_all(self) -> List[QueueStream]:
+    def remove(self, queue_stream_id: str, include_deleted: bool = False) -> None:
+        """Permanently remove a stream from the storage backend."""
+        pass
+
+    @abstractmethod
+    def get_all(self, include_deleted: bool = False) -> List[QueueStream]:
         pass

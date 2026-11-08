@@ -17,10 +17,15 @@ class StreamSourceRepository(ABC):
 
     @abstractmethod
     def delete(self, stream_source_id: str) -> None:
-        """Remove a stream source from the storage backend."""
+        """Soft-delete a stream source."""
         pass
 
     @abstractmethod
-    def get_all(self) -> List[StreamSource]:
+    def remove(self, stream_source_id: str, include_deleted: bool = False) -> None:
+        """Permanently remove a stream source from the storage backend."""
+        pass
+
+    @abstractmethod
+    def get_all(self, include_deleted: bool = False) -> List[StreamSource]:
         """Retrieve all available stream sources."""
         pass

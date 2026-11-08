@@ -3,9 +3,12 @@ import io
 import unittest
 from datetime import datetime
 import tempfile
+from types import SimpleNamespace
 from unittest.mock import patch
 
 from application.use_cases.add_stream_to_playlist_use_case import AddStreamToPlaylistUseCase
+from application.use_cases.add_stream_source_to_playlist_use_case import AddStreamSourceToPlaylistUseCase
+from application.use_cases.copy_queue_stream_to_playlists_use_case import CopyQueueStreamToPlaylistsUseCase
 from application.use_cases.create_queue_stream_use_case import CreateQueueStreamUseCase
 from application.use_cases.create_playlist_use_case import CreatePlaylistUseCase
 from application.use_cases.create_playlist_from_youtube_use_case import CreatePlaylistFromYoutubeUseCase
@@ -13,12 +16,19 @@ from application.use_cases.create_stream_source_use_case import CreateStreamSour
 from application.use_cases.delete_queue_stream_use_case import DeleteQueueStreamUseCase
 from application.use_cases.delete_playlist_use_case import DeletePlaylistUseCase
 from application.use_cases.delete_stream_source_use_case import DeleteStreamSourceUseCase
+from application.use_cases.download_playlist_use_case import DownloadPlaylistUseCase
+from application.use_cases.fetch_playlist_use_case import FetchPlaylistUseCase
 from application.use_cases.get_all_playlists_use_case import GetAllPlaylistsUseCase
 from application.use_cases.get_all_queue_streams_use_case import GetAllQueueStreamsUseCase
 from application.use_cases.get_all_stream_sources_use_case import GetAllStreamSourcesUseCase
 from application.use_cases.get_playlist_details_use_case import GetPlaylistDetailsUseCase
+from application.use_cases.get_playlist_use_case import GetPlaylistUseCase
 from application.use_cases.get_queue_stream_details_use_case import GetQueueStreamDetailsUseCase
+from application.use_cases.get_queue_stream_playback_urls_use_case import GetQueueStreamPlaybackUrlsUseCase
+from application.use_cases.get_soft_deleted_entities_use_case import GetSoftDeletedEntitiesUseCase
 from application.use_cases.get_stream_source_details_use_case import GetStreamSourceDetailsUseCase
+from application.use_cases.prune_watched_queue_streams_use_case import PruneWatchedQueueStreamsUseCase
+from application.use_cases.purge_soft_deleted_entities_use_case import PurgeSoftDeletedEntitiesUseCase
 from application.use_cases.toggle_queue_stream_watched_use_case import ToggleQueueStreamWatchedUseCase
 from application.use_cases.update_playlist_use_case import UpdatePlaylistUseCase
 from application.use_cases.update_queue_stream_use_case import UpdateQueueStreamUseCase
@@ -56,7 +66,10 @@ class QueueStreamRepositoryStub(QueueStreamRepository):
         self.deleted.append(queue_stream_id)
         self.queue_streams.pop(queue_stream_id, None)
 
-    def get_all(self):
+    def remove(self, queue_stream_id, include_deleted=False):
+        self.queue_streams.pop(queue_stream_id, None)
+
+    def get_all(self, include_deleted=False):
         return list(self.queue_streams.values())
 
 
@@ -76,7 +89,10 @@ class StreamSourceRepositoryStub(StreamSourceRepository):
         self.deleted.append(stream_source_id)
         self.stream_sources.pop(stream_source_id, None)
 
-    def get_all(self):
+    def remove(self, stream_source_id, include_deleted=False):
+        self.stream_sources.pop(stream_source_id, None)
+
+    def get_all(self, include_deleted=False):
         return list(self.stream_sources.values())
 
 
@@ -95,13 +111,35 @@ class PlaylistRepositoryStub(PlaylistRepository):
     def delete(self, playlist_id):
         self.playlists.pop(playlist_id, None)
 
-    def get_all(self):
+    def remove(self, playlist_id, include_deleted=False):
+        self.playlists.pop(playlist_id, None)
+
+    def get_all(self, include_deleted=False):
         return list(self.playlists.values())
 
 
 class QueueStreamUseCaseTests(unittest.TestCase):
     def setUp(self):
         self.repository = QueueStreamRepositoryStub()
+
+    def test_refactored_home_uses_playlist_repository_for_default_validation(self):
+        import server_refactor
+
+        server_refactor.app.config.update(TESTING=True)
+        playlist = Playlist(name="Home playlist", id="home-playlist")
+        repository = PlaylistRepositoryStub()
+        repository.playlists[playlist.id] = playlist
+        server_refactor.getPlaylistUseCase = GetPlaylistUseCase(repository)
+
+        with patch.object(server_refactor.settings, "defaultPlaylistId", "home-playlist"):
+            with server_refactor.app.test_client() as client:
+                valid_response = client.get("/")
+        self.assertIn(b"Default playlist: home-playlist", valid_response.data)
+
+        with patch.object(server_refactor.settings, "defaultPlaylistId", "missing-playlist"):
+            with server_refactor.app.test_client() as client:
+                missing_response = client.get("/")
+        self.assertIn(b"No default playlist", missing_response.data)
 
     def test_create_saves_queue_stream_through_repository(self):
         use_case = CreateQueueStreamUseCase(self.repository)
@@ -138,6 +176,99 @@ class QueueStreamUseCaseTests(unittest.TestCase):
         self.assertEqual(queue_stream.remoteId, "video123")
         self.assertTrue(queue_stream.thumbnailUrl.endswith("/video123/hqdefault.jpg"))
 
+    def test_playback_urls_map_youtube_and_odysee_and_leave_local_paths_unmapped(self):
+        use_case = GetQueueStreamPlaybackUrlsUseCase()
+
+        youtube_urls = use_case.execute(QueueStream(
+            name="YouTube",
+            uri="https://youtu.be/video123",
+            isWeb=True,
+        ))
+        odysee_urls = use_case.execute(QueueStream(
+            name="Odysee",
+            uri="https://odysee.com/@channel/video:1",
+            isWeb=True,
+        ))
+        local_urls = use_case.execute(QueueStream(
+            name="Local",
+            uri="C:/media/video.mp4",
+            isWeb=False,
+        ))
+
+        self.assertEqual(youtube_urls.embedded_url, "https://www.youtube.com/embed/video123")
+        self.assertEqual(youtube_urls.circumvent_url, "https://www.nsfwyoutube.com/watch?v=video123")
+        self.assertEqual(odysee_urls.embedded_url, "https://odysee.com/$/embed/@channel/video:1")
+        self.assertIsNone(odysee_urls.circumvent_url)
+        self.assertIsNone(local_urls.embedded_url)
+        self.assertIsNone(local_urls.circumvent_url)
+
+    def test_refactored_play_route_uses_playback_url_use_case(self):
+        import server_refactor
+
+        server_refactor.app.config.update(TESTING=True)
+        queue_stream = QueueStream(
+            name="Video",
+            uri="https://youtube.com/watch?v=play123",
+            isWeb=True,
+        )
+        playlist = Playlist(
+            name="Playlist",
+            streamIds=["stream-1"],
+            playWatchedStreams=True,
+            id="playlist-play",
+        )
+        details = SimpleNamespace(playlist=playlist, queue_streams=[queue_stream])
+        server_refactor.getPlaylistDetailsUseCase = SimpleNamespace(execute=lambda playlist_id: details)
+        server_refactor.getAllPlaylistsUseCase = SimpleNamespace(execute=lambda: [playlist])
+        server_refactor.getQueueStreamPlaybackUrlsUseCase = GetQueueStreamPlaybackUrlsUseCase()
+
+        with server_refactor.app.test_client() as client:
+            response = client.get("/play/playlist-play")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b"https://www.youtube.com/embed/play123", response.data)
+        self.assertIn(b"https://www.nsfwyoutube.com/watch?v=play123", response.data)
+
+    def test_copy_creates_a_distinct_stream_for_each_playlist(self):
+        source = QueueStream(name="Video", uri="https://example.com/video", id="source-1")
+        self.repository.queue_streams[source.id] = source
+        playlist_repository = PlaylistRepositoryStub()
+        first = Playlist(name="First", streamIds=[], id="playlist-1")
+        second = Playlist(name="Second", streamIds=[], id="playlist-2")
+        playlist_repository.playlists[first.id] = first
+        playlist_repository.playlists[second.id] = second
+        use_case = CopyQueueStreamToPlaylistsUseCase(playlist_repository, self.repository)
+
+        added_playlists = use_case.execute(source.id, [first.id, second.id])
+
+        self.assertEqual(added_playlists, [first, second])
+        self.assertEqual(len(self.repository.saved), 2)
+        self.assertNotEqual(first.streamIds[0], second.streamIds[0])
+        self.assertNotIn(source.id, first.streamIds + second.streamIds)
+        self.assertEqual(self.repository.saved[0].uri, source.uri)
+        self.assertEqual(self.repository.saved[1].name, source.name)
+
+    def test_copy_skips_duplicate_uri_or_name_when_playlist_disallows_duplicates(self):
+        source = QueueStream(name="Video", uri="https://example.com/video", id="source-1")
+        existing = QueueStream(name="Video", uri="https://example.com/video", id="existing-1")
+        self.repository.queue_streams[source.id] = source
+        self.repository.queue_streams[existing.id] = existing
+        playlist_repository = PlaylistRepositoryStub()
+        playlist = Playlist(
+            name="No duplicates",
+            streamIds=[existing.id],
+            allowDuplicates=False,
+            id="playlist-1",
+        )
+        playlist_repository.playlists[playlist.id] = playlist
+        use_case = CopyQueueStreamToPlaylistsUseCase(playlist_repository, self.repository)
+
+        result = use_case.execute(source.id, [playlist.id])
+
+        self.assertEqual(result, [])
+        self.assertEqual(playlist.streamIds, [existing.id])
+        self.assertEqual(self.repository.saved, [])
+
     def test_refactored_web_create_uses_case_and_links_saved_stream(self):
         import server_refactor
 
@@ -146,9 +277,10 @@ class QueueStreamUseCaseTests(unittest.TestCase):
         playlist_repository = PlaylistRepositoryStub()
         playlist_repository.playlists[playlist.id] = playlist
         queue_stream_repository = QueueStreamRepositoryStub()
-        server_refactor.playlistRepository = playlist_repository
+        server_refactor.getPlaylistUseCase = GetPlaylistUseCase(playlist_repository)
         server_refactor.queueStreamRepository = queue_stream_repository
         server_refactor.createQueueStreamUseCase = CreateQueueStreamUseCase(queue_stream_repository)
+        server_refactor.addStreamToPlaylistUseCase = AddStreamToPlaylistUseCase(playlist_repository)
         server_refactor.playlistsDetails = lambda playlist_id: "created"
 
         with server_refactor.app.test_client() as client:
@@ -212,6 +344,35 @@ class QueueStreamUseCaseTests(unittest.TestCase):
         self.assertEqual(queue_stream.playtimeSeconds, 410)
         self.assertEqual(queue_stream.remoteId, "edit123")
         self.assertIs(repository.saved[-1], queue_stream)
+
+    def test_refactored_batch_copy_uses_copy_use_case(self):
+        import server_refactor
+
+        server_refactor.app.config.update(TESTING=True, WTF_CSRF_ENABLED=False)
+        source = QueueStream(name="Video", uri="https://example.com/video", id="source-video")
+        queue_repository = QueueStreamRepositoryStub()
+        queue_repository.queue_streams[source.id] = source
+        playlist_repository = PlaylistRepositoryStub()
+        first = Playlist(name="First", streamIds=[], id="playlist-first")
+        second = Playlist(name="Second", streamIds=[], id="playlist-second")
+        playlist_repository.playlists[first.id] = first
+        playlist_repository.playlists[second.id] = second
+        server_refactor.copyQueueStreamToPlaylistsUseCase = CopyQueueStreamToPlaylistsUseCase(
+            playlist_repository,
+            queue_repository,
+        )
+
+        with server_refactor.app.test_client() as client:
+            response = client.post("/addToPlaylist", json={
+                "queueStreamId": source.id,
+                "playlistIds": [first.id, second.id],
+            })
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.get_json()["addedCount"], 2)
+        self.assertTrue(response.get_json()["result"])
+        self.assertEqual(len(queue_repository.saved), 2)
+        self.assertNotEqual(first.streamIds[0], second.streamIds[0])
 
     def test_update_changes_requested_fields_and_saves(self):
         existing = QueueStream(name="Before", uri="https://example.com/video", id="qs-1")
@@ -682,6 +843,302 @@ class BaseServiceRepositoryAdapterTests(unittest.TestCase):
                     repository.delete(entity.id)
                     self.assertIsNone(repository.get_by_id(entity.id))
                     self.assertEqual(repository.get_all(), [])
+                    deleted_entities = repository.get_all(include_deleted=True)
+                    self.assertEqual([deleted.id for deleted in deleted_entities], [entity.id])
+                    repository.remove(entity.id, include_deleted=True)
+                    self.assertEqual(repository.get_all(include_deleted=True), [])
+
+
+class PlaylistLinkUseCaseTests(unittest.TestCase):
+    def test_get_playlist_returns_entity_or_none(self):
+        repository = PlaylistRepositoryStub()
+        playlist = Playlist(name="Playlist", id="playlist-1")
+        repository.playlists[playlist.id] = playlist
+        use_case = GetPlaylistUseCase(repository)
+
+        self.assertIs(use_case.execute(playlist.id), playlist)
+        self.assertIsNone(use_case.execute("playlist-missing"))
+
+    def test_add_stream_source_to_playlist_persists_source_id(self):
+        repository = PlaylistRepositoryStub()
+        playlist = Playlist(name="Playlist", streamSourceIds=[], id="playlist-1")
+        repository.playlists[playlist.id] = playlist
+        use_case = AddStreamSourceToPlaylistUseCase(repository)
+
+        result = use_case.execute(playlist.id, "source-1")
+
+        self.assertIs(result, playlist)
+        self.assertEqual(playlist.streamSourceIds, ["source-1"])
+
+    def test_add_stream_source_to_missing_playlist_raises_domain_error(self):
+        use_case = AddStreamSourceToPlaylistUseCase(PlaylistRepositoryStub())
+
+        with self.assertRaisesRegex(PlaylistNotFoundError, "playlist-missing"):
+            use_case.execute("playlist-missing", "source-1")
+
+
+class MediaUseCaseTests(unittest.TestCase):
+    def test_fetch_playlist_forwards_requested_fetch_options(self):
+        class FetchProviderStub:
+            def __init__(self):
+                self.request = None
+
+            def fetch_playlist(self, playlist_id, batch_size, take_new_only):
+                self.request = (playlist_id, batch_size, take_new_only)
+                return []
+
+        playlist_repository = PlaylistRepositoryStub()
+        playlist = Playlist(name="Playlist", id="playlist-1")
+        playlist_repository.playlists[playlist.id] = playlist
+        provider = FetchProviderStub()
+        use_case = FetchPlaylistUseCase(playlist_repository, provider)
+
+        result = use_case.execute(playlist.id, batch_size=25, take_new_only=False)
+
+        self.assertEqual(result, [])
+        self.assertEqual(provider.request, (playlist.id, 25, False))
+
+    def test_fetch_playlist_rejects_missing_playlist(self):
+        use_case = FetchPlaylistUseCase(PlaylistRepositoryStub(), object())
+
+        with self.assertRaisesRegex(PlaylistNotFoundError, "playlist-missing"):
+            use_case.execute("playlist-missing", batch_size=10)
+
+    def test_download_playlist_counts_successes_skips_and_failures(self):
+        class DownloadProviderStub:
+            def __init__(self):
+                self.requests = []
+
+            def download_stream(self, uri, playlist_name, audio_only):
+                self.requests.append((uri, playlist_name, audio_only))
+                if uri.endswith("fail"):
+                    raise RuntimeError("download failed")
+                return "downloaded.mp4"
+
+        playlist_repository = PlaylistRepositoryStub()
+        queue_stream_repository = QueueStreamRepositoryStub()
+        playlist = Playlist(
+            name="Playlist",
+            streamIds=["web-1", "local", "missing", "web-fail"],
+            id="playlist-1",
+        )
+        playlist_repository.playlists[playlist.id] = playlist
+        queue_stream_repository.queue_streams["web-1"] = QueueStream(
+            name="Web", uri="https://example.com/web", isWeb=True, id="web-1"
+        )
+        queue_stream_repository.queue_streams["local"] = QueueStream(
+            name="Local", uri="C:/media/local.mp4", isWeb=False, id="local"
+        )
+        queue_stream_repository.queue_streams["web-fail"] = QueueStream(
+            name="Failed", uri="https://example.com/fail", isWeb=True, id="web-fail"
+        )
+        provider = DownloadProviderStub()
+        use_case = DownloadPlaylistUseCase(playlist_repository, queue_stream_repository, provider)
+
+        result = use_case.execute(playlist.id, audio_only=True)
+
+        self.assertEqual(result.downloaded_count, 1)
+        self.assertEqual(result.skipped_count, 2)
+        self.assertEqual(result.failed_count, 1)
+        self.assertEqual(provider.requests, [
+            ("https://example.com/web", "Playlist", True),
+            ("https://example.com/fail", "Playlist", True),
+        ])
+
+    def test_refactored_fetch_route_dispatches_fetch_use_case(self):
+        import server_refactor
+
+        class ImmediateThread:
+            def __init__(self, target, daemon):
+                self.target = target
+
+            def start(self):
+                self.target()
+
+        playlist = Playlist(name="Fetch", id="playlist-fetch")
+        repository = PlaylistRepositoryStub()
+        repository.playlists[playlist.id] = playlist
+        requests = []
+        server_refactor.getPlaylistUseCase = GetPlaylistUseCase(repository)
+        server_refactor.fetchPlaylistUseCase = SimpleNamespace(
+            execute=lambda *args, **kwargs: requests.append((args, kwargs))
+        )
+        server_refactor.app.config.update(TESTING=True)
+
+        with patch.object(server_refactor.threading, "Thread", ImmediateThread):
+            with patch.object(server_refactor, "reloadPage", return_value="queued"):
+                with patch.object(server_refactor.settings, "fetchLimitSingleSource", 19):
+                    with server_refactor.app.test_client() as client:
+                        response = client.get(f"/fetch/{playlist.id}")
+
+        self.assertEqual(response.data, b"queued")
+        self.assertEqual(requests, [((playlist.id, 19), {"take_new_only": True})])
+
+    def test_refactored_download_route_dispatches_audio_only_option(self):
+        import server_refactor
+
+        class ImmediateThread:
+            def __init__(self, target, daemon):
+                self.target = target
+
+            def start(self):
+                self.target()
+
+        playlist = Playlist(name="Download", id="playlist-download")
+        repository = PlaylistRepositoryStub()
+        repository.playlists[playlist.id] = playlist
+        requests = []
+        server_refactor.getPlaylistUseCase = GetPlaylistUseCase(repository)
+        server_refactor.downloadPlaylistUseCase = SimpleNamespace(
+            execute=lambda *args, **kwargs: requests.append((args, kwargs))
+        )
+        server_refactor.app.config.update(TESTING=True)
+
+        with patch.object(server_refactor.threading, "Thread", ImmediateThread):
+            with patch.object(server_refactor, "reloadPage", return_value="queued"):
+                with server_refactor.app.test_client() as client:
+                    response = client.get(f"/download/{playlist.id}?audioOnly=true")
+
+        self.assertEqual(response.data, b"queued")
+        self.assertEqual(requests, [((playlist.id,), {"audio_only": True})])
+
+
+class RepositoryMaintenanceUseCaseTests(unittest.TestCase):
+    def test_prune_soft_deletes_watched_streams_and_unlinks_them(self):
+        playlist_repository = PlaylistRepositoryStub()
+        queue_stream_repository = QueueStreamRepositoryStub()
+        watched_stream = QueueStream(name="Watched", watched=datetime(2026, 1, 1), id="watched")
+        unwatched_stream = QueueStream(name="Unwatched", id="unwatched")
+        playlist = Playlist(
+            name="Playlist",
+            streamIds=[watched_stream.id, unwatched_stream.id],
+            playWatchedStreams=False,
+            id="playlist-1",
+        )
+        playlist_repository.playlists[playlist.id] = playlist
+        queue_stream_repository.queue_streams[watched_stream.id] = watched_stream
+        queue_stream_repository.queue_streams[unwatched_stream.id] = unwatched_stream
+        use_case = PruneWatchedQueueStreamsUseCase(playlist_repository, queue_stream_repository)
+
+        result = use_case.execute(playlist.id)
+
+        self.assertEqual(result, [watched_stream])
+        self.assertEqual(queue_stream_repository.deleted, [watched_stream.id])
+        self.assertEqual(playlist.streamIds, [unwatched_stream.id])
+        self.assertIs(playlist_repository.get_by_id(playlist.id), playlist)
+
+    def test_get_soft_deleted_entities_filters_active_records(self):
+        playlist_repository = PlaylistRepositoryStub()
+        queue_stream_repository = QueueStreamRepositoryStub()
+        stream_source_repository = StreamSourceRepositoryStub()
+        deleted_playlist = Playlist(name="Deleted", id="deleted-playlist", deleted=datetime(2026, 1, 1))
+        active_playlist = Playlist(name="Active", id="active-playlist")
+        deleted_stream = QueueStream(name="Deleted", id="deleted-stream", deleted=datetime(2026, 1, 1))
+        deleted_source = StreamSource(name="Deleted", id="deleted-source", deleted=datetime(2026, 1, 1))
+        playlist_repository.playlists = {deleted_playlist.id: deleted_playlist, active_playlist.id: active_playlist}
+        queue_stream_repository.queue_streams[deleted_stream.id] = deleted_stream
+        stream_source_repository.stream_sources[deleted_source.id] = deleted_source
+        use_case = GetSoftDeletedEntitiesUseCase(
+            playlist_repository,
+            queue_stream_repository,
+            stream_source_repository,
+        )
+
+        result = use_case.execute()
+
+        self.assertEqual(result.playlists, [deleted_playlist])
+        self.assertEqual(result.queueStreams, [deleted_stream])
+        self.assertEqual(result.streamSources, [deleted_source])
+
+    def test_purge_permanently_removes_only_soft_deleted_entities(self):
+        playlist_repository = PlaylistRepositoryStub()
+        queue_stream_repository = QueueStreamRepositoryStub()
+        stream_source_repository = StreamSourceRepositoryStub()
+        deleted_playlist = Playlist(name="Deleted", id="deleted-playlist", deleted=datetime(2026, 1, 1))
+        active_playlist = Playlist(name="Active", id="active-playlist")
+        deleted_stream = QueueStream(name="Deleted", id="deleted-stream", deleted=datetime(2026, 1, 1))
+        deleted_source = StreamSource(name="Deleted", id="deleted-source", deleted=datetime(2026, 1, 1))
+        playlist_repository.playlists = {deleted_playlist.id: deleted_playlist, active_playlist.id: active_playlist}
+        queue_stream_repository.queue_streams[deleted_stream.id] = deleted_stream
+        stream_source_repository.stream_sources[deleted_source.id] = deleted_source
+        use_case = PurgeSoftDeletedEntitiesUseCase(
+            playlist_repository,
+            queue_stream_repository,
+            stream_source_repository,
+        )
+
+        self.assertTrue(use_case.execute())
+
+        self.assertEqual(playlist_repository.get_all(), [active_playlist])
+        self.assertEqual(queue_stream_repository.get_all(), [])
+        self.assertEqual(stream_source_repository.get_all(), [])
+
+    def test_refactored_prune_route_uses_prune_use_case(self):
+        import server_refactor
+
+        playlist_repository = PlaylistRepositoryStub()
+        queue_stream_repository = QueueStreamRepositoryStub()
+        watched_stream = QueueStream(name="Watched", watched=datetime(2026, 1, 1), id="watched")
+        playlist = Playlist(
+            name="Playlist",
+            streamIds=[watched_stream.id],
+            playWatchedStreams=False,
+            id="playlist-1",
+        )
+        playlist_repository.playlists[playlist.id] = playlist
+        queue_stream_repository.queue_streams[watched_stream.id] = watched_stream
+        server_refactor.pruneWatchedQueueStreamsUseCase = PruneWatchedQueueStreamsUseCase(
+            playlist_repository,
+            queue_stream_repository,
+        )
+        with patch.object(server_refactor, "reloadPage", return_value="pruned"):
+            with server_refactor.app.test_client() as client:
+                response = client.get(f"/prune/{playlist.id}")
+
+        self.assertEqual(response.data, b"pruned")
+        self.assertEqual(queue_stream_repository.deleted, [watched_stream.id])
+        self.assertEqual(playlist.streamIds, [])
+
+    def test_refactored_soft_deleted_route_uses_get_use_case(self):
+        import server_refactor
+
+        playlist_repository = PlaylistRepositoryStub()
+        queue_stream_repository = QueueStreamRepositoryStub()
+        stream_source_repository = StreamSourceRepositoryStub()
+        deleted_playlist = Playlist(name="Deleted playlist", id="deleted", deleted=datetime(2026, 1, 1))
+        playlist_repository.playlists[deleted_playlist.id] = deleted_playlist
+        server_refactor.getSoftDeletedEntitiesUseCase = GetSoftDeletedEntitiesUseCase(
+            playlist_repository,
+            queue_stream_repository,
+            stream_source_repository,
+        )
+
+        with server_refactor.app.test_client() as client:
+            response = client.get("/softDeleted")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b"Deleted playlist", response.data)
+
+    def test_refactored_purge_route_uses_purge_use_case(self):
+        import server_refactor
+
+        server_refactor.app.config.update(TESTING=True, WTF_CSRF_ENABLED=False)
+        playlist_repository = PlaylistRepositoryStub()
+        queue_stream_repository = QueueStreamRepositoryStub()
+        stream_source_repository = StreamSourceRepositoryStub()
+        deleted_playlist = Playlist(name="Deleted", id="deleted", deleted=datetime(2026, 1, 1))
+        playlist_repository.playlists[deleted_playlist.id] = deleted_playlist
+        server_refactor.purgeSoftDeletedEntitiesUseCase = PurgeSoftDeletedEntitiesUseCase(
+            playlist_repository,
+            queue_stream_repository,
+            stream_source_repository,
+        )
+        with patch.object(server_refactor, "index", return_value="purged"):
+            with server_refactor.app.test_client() as client:
+                response = client.post("/purge")
+
+        self.assertEqual(response.data, b"purged")
+        self.assertEqual(playlist_repository.get_all(), [])
 
 
 class ToggleQueueStreamWatchedUseCaseTests(unittest.TestCase):

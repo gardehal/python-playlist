@@ -27,5 +27,8 @@ class BaseServiceStreamSourceRepository(StreamSourceRepository):
     def delete(self, stream_source_id: str) -> None:
         self._service.delete(stream_source_id)
 
-    def get_all(self) -> List[StreamSource]:
-        return self._service.getAll()
+    def remove(self, stream_source_id: str, include_deleted: bool = False) -> None:
+        self._service.remove(stream_source_id, include_deleted)
+
+    def get_all(self, include_deleted: bool = False) -> List[StreamSource]:
+        return self._service.getAll(include_deleted)

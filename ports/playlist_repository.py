@@ -17,10 +17,15 @@ class PlaylistRepository(ABC):
 
     @abstractmethod
     def delete(self, playlist_id: str) -> None:
-        """Remove a playlist from the storage backend."""
+        """Soft-delete a playlist."""
         pass
 
     @abstractmethod
-    def get_all(self) -> List[Playlist]:
+    def remove(self, playlist_id: str, include_deleted: bool = False) -> None:
+        """Permanently remove a playlist from the storage backend."""
+        pass
+
+    @abstractmethod
+    def get_all(self, include_deleted: bool = False) -> List[Playlist]:
         """Retrieve all available playlists."""
         pass

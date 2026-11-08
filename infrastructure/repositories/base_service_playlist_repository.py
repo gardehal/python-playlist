@@ -30,5 +30,8 @@ class BaseServicePlaylistRepository(PlaylistRepository):
     def delete(self, playlist_id: str) -> None:
         self._service.delete(playlist_id)
 
-    def get_all(self) -> List[Playlist]:
-        return self._service.getAll()
+    def remove(self, playlist_id: str, include_deleted: bool = False) -> None:
+        self._service.remove(playlist_id, include_deleted)
+
+    def get_all(self, include_deleted: bool = False) -> List[Playlist]:
+        return self._service.getAll(include_deleted)

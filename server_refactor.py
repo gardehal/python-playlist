@@ -25,6 +25,7 @@ app.secret_key = "foo"# TODO, add to settings
 bootstrap = Bootstrap5(app)
 activeTasks = {}
 taskRegistry = {}
+settings = Settings()
 
 application = CompositionRoot()
 playlistRepository = application.playlist_repository
@@ -38,7 +39,11 @@ getAllStreamSourcesUseCase = application.get_all_stream_sources
 createPlaylistUseCase = application.create_playlist
 createPlaylistFromYoutubeUseCase = application.create_playlist_from_youtube
 getPlaylistDetailsUseCase = application.get_playlist_details
+getPlaylistUseCase = application.get_playlist
 getQueueStreamDetailsUseCase = application.get_queue_stream_details
+getQueueStreamPlaybackUrlsUseCase = application.get_queue_stream_playback_urls
+fetchPlaylistUseCase = application.fetch_playlist
+downloadPlaylistUseCase = application.download_playlist
 updatePlaylistUseCase = application.update_playlist
 updateQueueStreamUseCase = application.update_queue_stream
 deletePlaylistUseCase = application.delete_playlist
@@ -49,7 +54,12 @@ updateStreamSourceUseCase = application.update_stream_source
 deleteStreamSourceUseCase = application.delete_stream_source
 toggleWatchedUseCase = application.toggle_queue_stream_watched
 addStreamToPlaylistUseCase = application.add_stream_to_playlist
+addStreamSourceToPlaylistUseCase = application.add_stream_source_to_playlist
+copyQueueStreamToPlaylistsUseCase = application.copy_queue_stream_to_playlists
 getStreamSourceDetailsUseCase = application.get_stream_source_details
+getSoftDeletedEntitiesUseCase = application.get_soft_deleted_entities
+pruneWatchedQueueStreamsUseCase = application.prune_watched_queue_streams
+purgeSoftDeletedEntitiesUseCase = application.purge_soft_deleted_entities
 
 def registerTask(name):
     def decorator(func):
@@ -64,7 +74,7 @@ def reloadPage():
 @app.route("/index")
 def index():
     default_id = settings.defaultPlaylistId
-    is_default_valid = bool(default_id and playlistService.get(default_id))
+    is_default_valid = bool(default_id and getPlaylistUseCase.execute(default_id))
     return render_template("index.html", defaultPlaylistId=settings.defaultPlaylistId, isDefaultValid=is_default_valid)
 
 @app.route("/help")
@@ -159,7 +169,7 @@ def playlistsEdit(id: str):
     form = PlaylistForm()
     
     try:
-        playlist = playlistRepository.get_by_id(id)
+        playlist = getPlaylistUseCase.execute(id)
         if not playlist:
             flash(f"Playlist {id} was not found.", "error")
             return playlistsIndex()
@@ -192,7 +202,7 @@ def playlistsEdit(id: str):
 @app.route("/playlists/delete/<id>", methods=["GET", "POST"])
 def playlistsDelete(id: str):
     try:
-        playlist = playlistRepository.get_by_id(id)
+        playlist = getPlaylistUseCase.execute(id)
         if not playlist:
             flash(f"Playlist {id} was not found.", "error")
             return playlistsDetails(id)
@@ -226,7 +236,7 @@ def queueStreamsDetails(id: str):
 
 @app.route("/queueStreams/create/<playlistId>", methods=["GET", "POST"])
 def queueStreamsCreate(playlistId: str):
-    playlist = playlistRepository.get_by_id(playlistId)
+    playlist = getPlaylistUseCase.execute(playlistId)
     if(not playlist):
         flash(f"Playlist {playlistId} was not found.", "error")
         return queueStreamsIndex()
@@ -249,8 +259,7 @@ def queueStreamsCreate(playlistId: str):
             )
             
             if(createResult):
-                playlist.streamIds.append(createResult.id)
-                playlistRepository.save(playlist)
+                addStreamToPlaylistUseCase.execute(playlistId, createResult.id)
                 return playlistsDetails(playlistId)
     
     return render_template("form.html", title= "Create new QueueStream", form= form, errorMessage= errorMessage)
@@ -336,7 +345,7 @@ def streamSourcesDetails(id: str):
 
 @app.route("/streamSources/create/<playlistId>", methods=["GET", "POST"])
 def streamSourcesCreate(playlistId: str):
-    playlist = playlistRepository.get_by_id(playlistId)
+    playlist = getPlaylistUseCase.execute(playlistId)
     if not playlist:
         flash(f"Playlist {playlistId} was not found.", "error")
         return streamSourcesIndex()
@@ -354,8 +363,7 @@ def streamSourcesCreate(playlistId: str):
                 stream_source_type_id=form.streamSourceTypeId.data,
                 enable_fetch=form.enableFetch.data,
             )
-            playlist.streamSourceIds.append(createResult.id)
-            playlistRepository.save(playlist)
+            addStreamSourceToPlaylistUseCase.execute(playlistId, createResult.id)
             flash(f"Created StreamSource: {createResult.name}", "success")
             return streamSourcesDetails(id=str(createResult.id))
         except Exception as e:
@@ -457,14 +465,12 @@ def play(playlistId: str):
     embeddedUrl: str = None
     circumventUrl: str = None
     fileUri: str = None
+    playbackUrls = getQueueStreamPlaybackUrlsUseCase.execute(queueStream)
     if(queueStream.isWeb):
-        embeddedUrl = playbackService.mapUrlToEmbeddedUrl(queueStream)
-            
-        circumventUrl = playbackService.getRestrictCircumventedUrl(queueStream)
+        embeddedUrl = playbackUrls.embedded_url
+        circumventUrl = playbackUrls.circumvent_url
     else:
-        # Abs paths dont work, copy file over?
-        # fast api symlink wont work without replacing entire flask
-        fileUri = playbackService.mapUrlToEmbeddedUrl(queueStream)
+        fileUri = playbackUrls.embedded_url
     
     nextQueueStreams = []
     for next_qs in queue_streams[playIndex+1 : playIndex+17]: # Next 16, if any
@@ -480,25 +486,21 @@ def play(playlistId: str):
 @registerTask("fetchPlaylist")
 @app.route("/fetch/<playlistId>")
 def fetchPlaylist(playlistId):
-    playlist = playlistService.get(playlistId)
-    if(not playlist):
-        flash(f"Playlist {id} was not found.", "error")
+    playlist = getPlaylistUseCase.execute(playlistId)
+    if not playlist:
+        flash(f"Playlist {playlistId} was not found.", "error")
         return reloadPage()
     
     flash(f"Fetch running in background...", "info")
     def runFetch():
         try:
-            started = getDateTime()
-            newQueueStreams = fetchService.fetch(playlist.id, settings.fetchLimitSingleSource, takeNewOnly= True)
-            duration = getDateTime() - started # ToHumanReadableString()
-
-            resultsUrl = f"fetch?count={len(newQueueStreams)}&duration={duration}"
-            
-            # TODO flash and reload are not available in the scope of an async task
-            # flash(f"Fetch complete", "success") # TODO make a link with details
-            # return reloadPage()
-        except Exception as e:
-            flash(f"ERROR: {str(e)}", "error")
+            fetchPlaylistUseCase.execute(
+                playlist.id,
+                settings.fetchLimitSingleSource,
+                take_new_only=True,
+            )
+        except Exception:
+            app.logger.exception("Background playlist fetch failed")
 
     threading.Thread(target= runFetch, daemon= True).start()
     
@@ -507,32 +509,18 @@ def fetchPlaylist(playlistId):
 @registerTask("downloadPlaylist")
 @app.route("/download/<playlistId>")
 def downloadPlaylist(playlistId):
-    audioOnly = request.args.get("audioOnly", "false").lower() is True
-    playlist = playlistService.get(playlistId)
-    if(not playlist):
-        flash(f"Playlist {id} was not found.", "error")
+    audioOnly = request.args.get("audioOnly", "false").lower() == "true"
+    playlist = getPlaylistUseCase.execute(playlistId)
+    if not playlist:
+        flash(f"Playlist {playlistId} was not found.", "error")
         return reloadPage()
     
     flash(f"Download running in background...", "info")
     def runDownload():
         try:
-            started = getDateTime()
-            
-            for i, streamId in enumerate(playlist.streamIds):
-                stream = queueStreamService.get(streamId)
-                if(not stream.isWeb):
-                    printS("Cannot download a non-web stream, \"", stream.name, "\" was skipped.", color = BashColor.WARNING)
-                    continue
-                
-                try:
-                    downloadService.download(stream.uri, playlist.name, audioOnly=audioOnly)
-                except Exception as e:
-                    printS("Failed to download stream \"", stream.name, "\": ", e, color = BashColor.FAIL)
-                    continue
-            
-            duration = getDateTime() - started # ToHumanReadableString()
-        except Exception as e:
-            flash(f"ERROR: {str(e)}", "error")
+            downloadPlaylistUseCase.execute(playlist.id, audio_only=audioOnly)
+        except Exception:
+            app.logger.exception("Background playlist download failed")
 
     threading.Thread(target= runDownload, daemon= True).start()
     
@@ -540,21 +528,16 @@ def downloadPlaylist(playlistId):
 
 @app.route("/prune/<playlistId>")
 def prunePlaylist(playlistId):
-    playlist = playlistService.get(playlistId)
-    
-    data = sharedService.preparePrune(playlistId)
-    pruneResult = sharedService.doPrune(data)
-    if(pruneResult):
-        # TODO len here is soft deleted, not actually removed ones, gives "wrong" result
-        flash(f"Pruned {len(data.queueStreams)} QueueStreams in Playlist {playlist.name}", "success")
+    prunedStreams = pruneWatchedQueueStreamsUseCase.execute(playlistId)
+    if prunedStreams:
+        flash(f"Pruned {len(prunedStreams)} QueueStreams from Playlist {playlistId}", "success")
     
     return reloadPage()
 
 @app.route("/purge", methods=["GET", "POST"])
 def purgeAll():
     if request.method == "POST":
-        data = sharedService.preparePurge()
-        result = sharedService.doPurge(data)
+        result = purgeSoftDeletedEntitiesUseCase.execute()
         if result:
             flash("Purge completed successfully.", "success")
         else:
@@ -569,29 +552,33 @@ def purgeAll():
 
 @app.route("/softDeleted")
 def softDeletedIndex():
-    playlists = [e for e in playlistService.getAll(True) if e.deleted]
-    queueStreams = [e for e in queueStreamService.getAll(True) if e.deleted]
-    streamSources = [e for e in streamSourceService.getAll(True) if e.deleted]
-    
-    return render_template("softDeleted.html", playlists= playlists, queueStreams= queueStreams, streamSources= streamSources)
+    deletedEntities = getSoftDeletedEntitiesUseCase.execute()
+    return render_template(
+        "softDeleted.html",
+        playlists=deletedEntities.playlists,
+        queueStreams=deletedEntities.queueStreams,
+        streamSources=deletedEntities.streamSources,
+    )
 
 @csrf.exempt
 @app.route("/addToPlaylist", methods=["POST"])
 def addPlaybackStreamsToPlaylists():
-    inputData = request.get_json()
+    inputData = request.get_json(silent=True)
+    if not isinstance(inputData, dict):
+        inputData = {}
     queueStreamId = inputData.get("queueStreamId")
     playlistIds = inputData.get("playlistIds")
 
-    if not queueStreamId or not playlistIds:
+    if not queueStreamId or not isinstance(playlistIds, list) or not playlistIds:
         flash(f"Failed to copy QueueStream, queueStreamId or playlistIds missing.", "error")
         return jsonify({"result": False, "error": "Missing IDs"}), 400
-    
-    queueStream = queueStreamService.get(queueStreamId)
-    if not queueStream:
-        flash(f"Failed to copy QueueStream, queueStream not found.", "error")
-        return jsonify({"result": False, "error": "QueueStream not found"}), 404
 
-    result = playbackService.addPlaybackStreamToPlaylist(queueStream, playlistIds)
+    try:
+        result = copyQueueStreamToPlaylistsUseCase.execute(queueStreamId, playlistIds)
+    except ValueError as e:
+        flash(f"Failed to copy QueueStream: {str(e)}", "error")
+        return jsonify({"result": False, "error": str(e)}), 404
+
     successCount = len(result)
     flash(f"Copied QueueStream to {successCount} Playlists.", "success")
     
@@ -602,24 +589,18 @@ def addPlaybackStreamsToPlaylists():
     })
 
 def addPlaybackStreamToPlaylist(playlistId, queueStreamId):
-    playlist = playlistService.get(playlistId)
-    if(not playlist):
-        flash(f"Playlist {id} was not found.", "error")
-        return
-    
-    queueStream = queueStreamService.get(queueStreamId)
-    if(not queueStream):
-        flash(f"QueueStream {id} was not found.", "error")
-        return
-    
-    result = playbackService.addPlaybackStreamToPlaylist(playlistId, queueStream)
-    
+    try:
+        result = copyQueueStreamToPlaylistsUseCase.execute(queueStreamId, [playlistId])
+    except ValueError as e:
+        flash(f"Failed to copy QueueStream: {str(e)}", "error")
+        return jsonify({"result": False, "error": str(e)}), 404
+
     if(result):
-        flash(f"Added to {playlist.name}", "success")
+        flash(f"Added to {result[0].name}", "success")
     else:
-        flash(f"Failed adding to {playlist.name}", "error")
+        flash("Failed to add QueueStream to playlist.", "error")
         
-    return jsonify({"result": result})
+    return jsonify({"result": bool(result)})
     
 if __name__ == "__main__":
     # print("Routes:")

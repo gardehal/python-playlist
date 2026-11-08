@@ -1,5 +1,6 @@
 import contextlib
 import io
+import os
 import unittest
 from datetime import datetime
 import tempfile
@@ -41,10 +42,13 @@ from ports.playlist_repository import PlaylistRepository
 from ports.queue_stream_repository import QueueStreamRepository
 from ports.stream_source_repository import StreamSourceRepository
 from infrastructure.providers.youtube_provider import YoutubeProvider
+from infrastructure.providers.ytdlp_stream_download_provider import YtDlpStreamDownloadProvider
 from infrastructure.repositories.base_service_playlist_repository import BaseServicePlaylistRepository
 from infrastructure.repositories.base_service_queue_stream_repository import BaseServiceQueueStreamRepository
 from infrastructure.repositories.base_service_stream_source_repository import BaseServiceStreamSourceRepository
 from composition_root import CompositionRoot
+from enums.CommandHitValues import CommandHitValues
+from Main_refactor import MainRefactor
 
 
 class QueueStreamRepositoryStub(QueueStreamRepository):
@@ -453,6 +457,21 @@ class StreamSourceUseCaseTests(unittest.TestCase):
     def setUp(self):
         self.repository = StreamSourceRepositoryStub()
 
+    def test_refactored_stream_source_create_page_loads_type_choices(self):
+        import server_refactor
+
+        server_refactor.app.config.update(TESTING=True)
+        playlist = Playlist(name="Playlist", streamSourceIds=[], id="playlist-source")
+        playlist_repository = PlaylistRepositoryStub()
+        playlist_repository.playlists[playlist.id] = playlist
+        server_refactor.getPlaylistUseCase = GetPlaylistUseCase(playlist_repository)
+
+        with server_refactor.app.test_client() as client:
+            response = client.get(f"/streamSources/create/{playlist.id}")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b"Type", response.data)
+
     def test_create_saves_stream_source_through_repository(self):
         use_case = CreateStreamSourceUseCase(self.repository)
 
@@ -468,6 +487,40 @@ class StreamSourceUseCaseTests(unittest.TestCase):
         self.assertEqual(source.name, "Channel")
         self.assertEqual(source.streamSourceTypeId, 2)
         self.assertTrue(source.enableFetch)
+
+    def test_create_normalizes_name_and_string_type_id_and_accepts_empty_uri(self):
+        source = CreateStreamSourceUseCase(self.repository).execute(
+            name="  Channel  ",
+            uri="  ",
+            is_web=False,
+            stream_source_type_id="2",
+        )
+
+        self.assertEqual(source.name, "Channel")
+        self.assertEqual(source.uri, "")
+        self.assertEqual(source.streamSourceTypeId, 2)
+
+    def test_create_rejects_missing_or_oversized_name(self):
+        use_case = CreateStreamSourceUseCase(self.repository)
+
+        for name in (None, "   ", "n" * 201):
+            with self.subTest(name=name):
+                with self.assertRaises(StreamSourceError):
+                    use_case.execute(name, "", False)
+
+        self.assertEqual(self.repository.saved, [])
+
+    def test_create_rejects_oversized_uri_and_unknown_type_id(self):
+        use_case = CreateStreamSourceUseCase(self.repository)
+
+        with self.assertRaisesRegex(StreamSourceError, "URI cannot exceed"):
+            use_case.execute("Channel", "u" * 201, False)
+        with self.assertRaisesRegex(StreamSourceError, "not supported"):
+            use_case.execute("Channel", "", False, stream_source_type_id=999)
+        with self.assertRaisesRegex(StreamSourceError, "valid type number"):
+            use_case.execute("Channel", "", False, stream_source_type_id="unknown")
+
+        self.assertEqual(self.repository.saved, [])
 
     def test_update_changes_requested_fields_and_saves(self):
         existing = StreamSource(name="Before", uri="https://example.com/channel", id="ss-1")
@@ -760,6 +813,90 @@ class CompositionRootTests(unittest.TestCase):
         self.assertIs(composition_root.external_stream_provider, provider)
         self.assertEqual(playlist.name, "Composed playlist")
         self.assertEqual(len(playlist.streamIds), 1)
+        self.assertIsInstance(composition_root.stream_download_provider, YtDlpStreamDownloadProvider)
+
+
+class MainRefactorTests(unittest.TestCase):
+    def test_add_playlist_dispatch_uses_injected_composition_root(self):
+        playlist_repository = PlaylistRepositoryStub()
+        composition_root = CompositionRoot(
+            playlist_repository=playlist_repository,
+            queue_stream_repository=QueueStreamRepositoryStub(),
+            stream_source_repository=StreamSourceRepositoryStub(),
+            external_stream_provider=YoutubePlaylistProviderStub({"entries": []}),
+        )
+        settings = SimpleNamespace(watchedLogFilepath=None, debug=False)
+        main = MainRefactor(composition_root, settings)
+        result = SimpleNamespace(
+            commandHitValue=CommandHitValues.ADD_PLAYLIST,
+            commandName="AddPlaylist",
+            arguments={
+                main.commands.entityNameArgumentName: "Hexagonal playlist",
+                main.commands.playWatchedStreamsFlagName: False,
+                main.commands.allowDuplicatesFlagName: False,
+                main.commands.streamSourceIdsArgumentName: [],
+            },
+        )
+
+        with patch("Main_refactor.printS"):
+            main._dispatch(result, argumentor=None)
+
+        playlists = playlist_repository.get_all()
+        self.assertEqual(len(playlists), 1)
+        self.assertEqual(playlists[0].name, "Hexagonal playlist")
+        self.assertFalse(playlists[0].playWatchedStreams)
+        self.assertFalse(playlists[0].allowDuplicates)
+
+
+class YtDlpStreamDownloadProviderTests(unittest.TestCase):
+    def test_downloads_to_playlist_directory_with_audio_or_video_format(self):
+        class FakeYoutubeDL:
+            calls = []
+
+            def __init__(self, options):
+                self.options = options
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, exc_type, exc_value, traceback):
+                return False
+
+            def extract_info(self, uri, download):
+                self.calls.append((self.options, uri, download))
+                return {
+                    "filepath": self.options["outtmpl"].replace("%(title)s.%(ext)s", "Video.mp4")
+                }
+
+        with tempfile.TemporaryDirectory() as storage_path:
+            with patch(
+                "infrastructure.providers.ytdlp_stream_download_provider.yt_dlp.YoutubeDL",
+                FakeYoutubeDL,
+            ):
+                provider = YtDlpStreamDownloadProvider(storage_path)
+                video_path = provider.download_stream(
+                    "https://youtube.com/watch?v=video-1",
+                    "My playlist",
+                )
+                audio_path = provider.download_stream(
+                    "https://youtube.com/watch?v=video-2",
+                    "My playlist",
+                    audio_only=True,
+                )
+
+        video_options, video_uri, video_download = FakeYoutubeDL.calls[0]
+        audio_options, audio_uri, audio_download = FakeYoutubeDL.calls[1]
+        expected_directory = os.path.join(storage_path, "video", "My_playlist")
+        self.assertEqual(video_path, os.path.join(expected_directory, "Video.mp4"))
+        self.assertEqual(audio_path, video_path)
+        self.assertEqual(video_uri, "https://youtube.com/watch?v=video-1")
+        self.assertEqual(audio_uri, "https://youtube.com/watch?v=video-2")
+        self.assertTrue(video_download)
+        self.assertTrue(audio_download)
+        self.assertEqual(video_options["format"], "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best")
+        self.assertEqual(audio_options["format"], "bestaudio/best")
+        self.assertEqual(video_options["noplaylist"], True)
+        self.assertTrue(video_options["outtmpl"].startswith(expected_directory))
 
 
 class BaseServiceRepositoryAdapterTests(unittest.TestCase):

@@ -28,8 +28,8 @@ from application.use_cases.update_playlist_use_case import UpdatePlaylistUseCase
 from application.use_cases.update_queue_stream_use_case import UpdateQueueStreamUseCase
 from application.use_cases.update_stream_source_use_case import UpdateStreamSourceUseCase
 from infrastructure.providers.youtube_provider import YoutubeProvider
-from infrastructure.providers.legacy_download_service_adapter import LegacyDownloadServiceAdapter
 from infrastructure.providers.legacy_fetch_service_adapter import LegacyFetchServiceAdapter
+from infrastructure.providers.ytdlp_stream_download_provider import YtDlpStreamDownloadProvider
 from infrastructure.repositories.base_service_playlist_repository import BaseServicePlaylistRepository
 from infrastructure.repositories.base_service_queue_stream_repository import BaseServiceQueueStreamRepository
 from infrastructure.repositories.base_service_stream_source_repository import BaseServiceStreamSourceRepository
@@ -56,7 +56,7 @@ class CompositionRoot:
         self.stream_source_repository = stream_source_repository or BaseServiceStreamSourceRepository()
         self.external_stream_provider = external_stream_provider or YoutubeProvider()
         self.playlist_fetch_provider = playlist_fetch_provider or LegacyFetchServiceAdapter()
-        self.stream_download_provider = stream_download_provider or LegacyDownloadServiceAdapter()
+        self.stream_download_provider = stream_download_provider or YtDlpStreamDownloadProvider()
 
         self.add_stream_to_playlist = AddStreamToPlaylistUseCase(self.playlist_repository)
         self.add_stream_source_to_playlist = AddStreamSourceToPlaylistUseCase(self.playlist_repository)

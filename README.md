@@ -110,8 +110,6 @@ Program for queueing and playing videos from list or from sources like channels 
 
 ## TODO
 
-- https://coolors.co/d7fef8-ebebeb-b5b5b5-02866f-013d33-070d0b-d4af37
-
 ### Has Plans
 
 - download playlist as audio: 2026-11-07-0910-playlist-audio-downloads.md

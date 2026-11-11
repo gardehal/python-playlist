@@ -1,277 +1,262 @@
 import os
 import sys
+import webbrowser
+from urllib.parse import urlparse
+from typing import Optional, Sequence
 
-from grdUtil.BashColor import BashColor
-from grdUtil.FileUtil import makeFiles
-from grdUtil.PrintUtil import printLists, printS
-from Argumentor import *
-from enums.CommandHitValues import CommandHitValues
-
+from Argumentor import Argumentor
 from Commands import Commands
-from controllers.PlaylistCliController import PlaylistCliController
-from controllers.QueueStreamCliController import QueueStreamCliController
-from controllers.SharedCliController import SharedCliController
-from controllers.StreamSourceCliController import StreamSourceCliController
-from services.DownloadService import DownloadService
-from services.FetchService import FetchService
-from services.LegacyService import LegacyService
-from services.PlaylistService import PlaylistService
-from services.SharedService import SharedService
-from services.StreamSourceService import StreamSourceService
 from Settings import Settings
+from composition_root import CompositionRoot
+from enums.CommandHitValues import CommandHitValues
+from enums.StreamSourceType import StreamSourceTypeUtil
+from grdUtil.FileUtil import makeFiles
+from grdUtil.InputUtil import getIdsFromInput
+from grdUtil.PrintUtil import printLists, printS
+from grdUtil.StaticUtil import StaticUtil
 
-class Main:
-    commands: Commands = Commands()
-    settings: Settings = Settings()
-    downloadService: DownloadService = DownloadService()
-    fetchService: FetchService = FetchService()
-    legacyService: LegacyService = LegacyService()
-    playlistService: PlaylistService = PlaylistService()
-    sharedService: SharedService = SharedService()
-    streamSourceService: StreamSourceService = StreamSourceService()
-    sharedCliController: SharedCliController = SharedCliController()
-    playlistCliController: PlaylistCliController = PlaylistCliController()
-    queueStreamCliController: QueueStreamCliController = QueueStreamCliController()
-    streamSourceCliController: StreamSourceCliController = StreamSourceCliController()
 
-    def main():
-        makeFiles(Main.settings.watchedLogFilepath)
+class MainRefactor:
+    def __init__(
+        self,
+        composition_root: Optional[CompositionRoot] = None,
+        settings: Optional[Settings] = None,
+        commands: Optional[Commands] = None,
+    ) -> None:
+        print("Initializing MainRefactor")
         
-        argumentor = Main.commands.getArgumentor()
-        results = argumentor.validate(sys.argv)
+        self.application = composition_root or CompositionRoot()
+        self.settings = settings or Settings()
+        self.commands = commands or Commands()
 
-        if(len(results) == 0):
-            print("No valid command was found, please consult the manual for available commands. See the syntax description below:")
+    def run(self, argv: Optional[Sequence[str]] = None) -> None:
+        makeFiles(self.settings.watchedLogFilepath)
+        argumentor = self.commands.getArgumentor()
+        results = argumentor.validate(list(argv) if argv is not None else sys.argv)
+
+        if not results:
+            print("No valid command was found, please consult the manual for available commands.")
             print(argumentor.getSyntaxDescription())
             return
-            
-        try:
-            for result in results:
-                # print(result.toString()) # For debugging
-                if(not result.isValid):
-                    print(f"Input for {result.commandName} was not valid:")
-                    print(result.getFormattedMessages())
+
+        for result in results:
+            if not result.isValid:
+                print(f"Input for {result.commandName} was not valid:")
+                print(result.getFormattedMessages())
+                continue
+
+            if result.messages:
+                print(f"Command {result.commandName} was accepted with modifications:")
+                print(result.getFormattedMessages())
+
+            try:
+                self._dispatch(result, argumentor)
+            except Exception as error:
+                printS(f"Command {result.commandName} failed: {error}")
+
+    def _dispatch(self, result, argumentor: Argumentor) -> None:
+        command = result.commandHitValue
+        arguments = result.arguments
+
+        if command == CommandHitValues.HELP:
+            print(argumentor.getFormattedDescription())
+        elif command == CommandHitValues.TEST:
+            printS("Test")
+        elif command == CommandHitValues.EDIT:
+            playlist_id = self._resolve_playlist_ids(arguments[self.commands.playlistIdsArgumentName])[0]
+            filepath = os.path.join(self.settings.localStoragePath, "Playlist", f"{playlist_id}.json")
+            if not hasattr(os, "startfile"):
+                raise OSError("Opening playlist files is supported only on Windows.")
+            os.startfile(os.path.abspath(filepath))
+        elif command == CommandHitValues.LIST_SETTINGS:
+            print(self.settings.getAllSettingsAsTable())
+        elif command == CommandHitValues.ADD_PLAYLIST:
+            playlist = self.application.create_playlist.execute(
+                name=arguments[self.commands.entityNameArgumentName],
+                play_watched_streams=arguments[self.commands.playWatchedStreamsFlagName],
+                allow_duplicates=arguments[self.commands.allowDuplicatesFlagName],
+            )
+            for stream_source_id in arguments[self.commands.streamSourceIdsArgumentName]:
+                self.application.add_stream_source_to_playlist.execute(playlist.id, stream_source_id)
+            printS(f'Playlist "{playlist.name}" added successfully.')
+        elif command == CommandHitValues.ADD_PLAYLIST_FROM_YOUTUBE:
+            playlist = self.application.create_playlist_from_youtube.execute(
+                url=arguments[self.commands.uriArgumentName][0],
+                name=arguments[self.commands.entityNameArgumentName],
+                play_watched_streams=arguments[self.commands.playWatchedStreamsFlagName],
+                allow_duplicates=arguments[self.commands.allowDuplicatesFlagName],
+            )
+            printS(f'Playlist "{playlist.name}" added from YouTube.')
+        elif command == CommandHitValues.DELETE_PLAYLIST:
+            playlist_ids = self._resolve_playlist_ids(arguments[self.commands.playlistIdsArgumentName])
+            for playlist_id in playlist_ids:
+                self.application.delete_playlist.execute(playlist_id)
+            printS(f"Deleted {len(playlist_ids)} playlist(s).")
+        elif command == CommandHitValues.LIST_PLAYLISTS:
+            playlists = self.application.get_all_playlists.execute()
+            if arguments[self.commands.includeSoftDeletedFlagName]:
+                deleted = self.application.get_soft_deleted_entities.execute().playlists
+                playlists = playlists + deleted
+            printLists([[playlist.summaryString() for playlist in playlists]], [f"{len(playlists)} Playlists"])
+        elif command == CommandHitValues.DETAILS_PLAYLIST:
+            playlist_ids = self._resolve_playlist_ids(arguments[self.commands.playlistIdsArgumentName])
+            for playlist_id in playlist_ids:
+                details = self.application.get_playlist_details.execute(playlist_id)
+                if details is None:
+                    printS(f"Playlist {playlist_id} was not found.")
                     continue
+                playlist = details.playlist
+                printS(playlist.detailsString(
+                    includeUri=arguments[self.commands.includeUriFlagName],
+                    includeId=arguments[self.commands.includeIdFlagName],
+                    includeDatetime=arguments[self.commands.includeDateTimeFlagName],
+                    includeListCount=arguments[self.commands.includeListCountFlagName],
+                ))
+                for stream in details.queue_streams:
+                    printS(stream.detailsString(
+                        includeUri=arguments[self.commands.includeUriFlagName],
+                        includeId=arguments[self.commands.includeIdFlagName],
+                        includeDatetime=arguments[self.commands.includeDateTimeFlagName],
+                    ))
+                if arguments[self.commands.includeSourceFlagName]:
+                    for source in details.stream_sources:
+                        printS(source.detailsString(
+                            includeUri=arguments[self.commands.includeUriFlagName],
+                            includeId=arguments[self.commands.includeIdFlagName],
+                            includeDatetime=arguments[self.commands.includeDateTimeFlagName],
+                        ))
+        elif command == CommandHitValues.FETCH_PLAYLIST:
+            playlist_ids = self._resolve_playlist_ids(arguments[self.commands.playlistIdsArgumentName])
+            take_after = arguments[self.commands.takeAfterArgumentName]
+            take_before = arguments[self.commands.takeBeforeArgumentName]
+            if take_after is not None or take_before is not None:
+                printS("Fetch date ranges are not supported by the current provider Port.")
+                return
+            for playlist_id in playlist_ids:
+                streams = self.application.fetch_playlist.execute(
+                    playlist_id,
+                    self.settings.fetchLimitSingleSource,
+                    take_new_only=arguments[self.commands.takeAllFlagName],
+                )
+                printS(f"Fetched {len(streams)} stream(s) for playlist {playlist_id}.")
+        elif command == CommandHitValues.PRUNE_PLAYLIST:
+            if arguments[self.commands.includeSoftDeletedFlagName] or arguments[self.commands.permanentlyDeleteFlagName]:
+                printS("Prune options for deleted or permanent records are not supported by the current use case.")
+                return
+            for playlist_id in self._resolve_playlist_ids(arguments[self.commands.playlistIdsArgumentName]):
+                if not self._confirm(f"Prune watched streams from playlist {playlist_id}?"):
+                    continue
+                streams = self.application.prune_watched_queue_streams.execute(playlist_id)
+                printS(f"Pruned {len(streams)} stream(s) from playlist {playlist_id}.")
+        elif command == CommandHitValues.PURGE:
+            if self._confirm("Permanently remove all soft-deleted entities?"):
+                self.application.purge_soft_deleted_entities.execute()
+                printS("Purge completed.")
+        elif command == CommandHitValues.DOWNLOAD_PLAYLIST:
+            if self._has_download_options(arguments):
+                printS("Custom download ranges, names, and output directories are not supported by the current use case.")
+                return
+            for playlist_id in self._resolve_playlist_ids(arguments[self.commands.playlistIdsArgumentName]):
+                result = self.application.download_playlist.execute(playlist_id)
+                printS(
+                    f"Downloaded {result.downloaded_count}; skipped {result.skipped_count}; "
+                    f"failed {result.failed_count}."
+                )
+        elif command in (CommandHitValues.ADD_STREAM, CommandHitValues.ADD_MULTIPLE_STREAMS):
+            playlist_id = self._resolve_playlist_ids(arguments[self.commands.playlistIdsArgumentName])[0]
+            uris = arguments[self.commands.uriArgumentName]
+            requested_name = arguments[self.commands.entityNameArgumentName]
+            for uri in uris:
+                name = requested_name or self._name_from_uri(uri)
+                stream = self.application.create_queue_stream.execute(
+                    name=name,
+                    uri=uri,
+                    is_web=urlparse(uri).scheme.lower() in {"http", "https"},
+                )
+                self.application.add_stream_to_playlist.execute(playlist_id, stream.id)
+                printS(f'Added stream "{stream.name}" to playlist {playlist_id}.')
+        elif command == CommandHitValues.ADD_SOURCE:
+            if arguments[self.commands.backgroundContentFlagName]:
+                printS("Background-content sources are not supported by the current create use case.")
+                return
+            playlist_id = self._resolve_playlist_ids(arguments[self.commands.playlistIdsArgumentName])[0]
+            uri = arguments[self.commands.uriArgumentName][0]
+            source_type = StreamSourceTypeUtil.strToStreamSourceType(uri)
+            if source_type is None:
+                printS(f"Could not determine stream source type for {uri}.")
+                return
+            name = arguments[self.commands.entityNameArgumentName] or self._name_from_uri(uri)
+            source = self.application.create_stream_source.execute(
+                name=name,
+                uri=uri,
+                is_web=urlparse(uri).scheme.lower() in {"http", "https"},
+                stream_source_type_id=source_type.value,
+                enable_fetch=arguments[self.commands.enableFetchFlagName],
+            )
+            self.application.add_stream_source_to_playlist.execute(playlist_id, source.id)
+            printS(f'Added stream source "{source.name}" to playlist {playlist_id}.')
+        elif command == CommandHitValues.LIST_SOURCES:
+            sources = self.application.get_all_stream_sources.execute()
+            if arguments[self.commands.includeSoftDeletedFlagName]:
+                sources += self.application.get_soft_deleted_entities.execute().streamSources
+            printLists([[source.summaryString() for source in sources]], [f"{len(sources)} StreamSources"])
+        elif command == CommandHitValues.OPEN_SOURCE:
+            sources = self.application.get_all_stream_sources.execute()
+            source_ids = getIdsFromInput(
+                arguments[self.commands.streamSourceIdsArgumentName],
+                [source.id for source in sources],
+                sources,
+                startAtZero=False,
+                debug=self.settings.debug,
+            )
+            for source_id in source_ids:
+                source = self.application.get_stream_source_details.execute(source_id)
+                if source is not None:
+                    webbrowser.open(source.uri)
+        elif command == CommandHitValues.LIST_SOFT_DELETED:
+            entities = self.application.get_soft_deleted_entities.execute()
+            simplified = arguments[self.commands.simplifiedPrintFlagName]
+            formatter = (lambda entity: entity.summaryString()) if simplified else (lambda entity: entity.detailsString())
+            printLists(
+                [
+                    [formatter(entity) for entity in entities.playlists],
+                    [formatter(entity) for entity in entities.queueStreams],
+                    [formatter(entity) for entity in entities.streamSources],
+                ],
+                ["playlists", "queueStreams", "streamSources"],
+            )
+        else:
+            printS(f"Command {result.commandName} is not migrated to the Hexagonal CLI yet.")
 
-                if(result.messages):
-                    print(f"Command {result.commandName} was accepted with modifications:")
-                    print(result.getFormattedMessages())
+    def _resolve_playlist_ids(self, requested_ids):
+        playlists = self.application.get_all_playlists.execute()
+        return getIdsFromInput(
+            requested_ids,
+            [playlist.id for playlist in playlists],
+            playlists,
+            startAtZero=False,
+            debug=self.settings.debug,
+        )
 
-                if(result.commandHitValue == CommandHitValues.HELP):
-                    print(argumentor.getFormattedDescription())
+    def _name_from_uri(self, uri: str) -> str:
+        parsed_uri = urlparse(uri)
+        name = os.path.basename(parsed_uri.path.rstrip("/"))
+        return name or uri
 
-                elif(result.commandHitValue == CommandHitValues.TEST):
-                    printS("Test", color = BashColor.OKBLUE)
-                    # Test code here
-                    quit()
-                    
-                elif(result.commandHitValue == CommandHitValues.EDIT):
-                    playlistIds = result.arguments[Main.commands.playlistIdsArgumentName]
+    def _has_download_options(self, arguments) -> bool:
+        return any((
+            arguments[self.commands.directoryNameArgumentName] is not None,
+            arguments[self.commands.startIndexArgumentName] != 0,
+            arguments[self.commands.endIndexArgumentName] is not None,
+            arguments[self.commands.streamNameRegexArgumentName] is not None,
+            arguments[self.commands.useIndexFlagName],
+        ))
 
-                    filepath = os.path.join(Main.settings.localStoragePath, "Playlist", playlistIds[0] + ".json")
-                    filepath = str(filepath).replace("\\", "/")
-                    os.startfile(filepath)
-                    
-                elif(result.commandHitValue == CommandHitValues.SEARCH):
-                    searchTerm = result.arguments[Main.commands.searchQueryArgumentName]
-                    includeSoftDeleted = result.arguments[Main.commands.includeSoftDeletedFlagName]
+    @staticmethod
+    def _confirm(message: str) -> bool:
+        printS(message, " (y/n): ")
+        return input().strip().lower() in StaticUtil.affirmative
 
-                    searchResult = Main.sharedService.search(searchTerm, includeSoftDeleted)
-                    
-                    resultList = []
-                    resultList.append([" - ".join([e.id, e.name]) for e in searchResult.playlists])
-                    resultList.append([" - ".join([e.id, e.name]) for e in searchResult.streamSources])
-                    resultList.append([" - ".join([e.id, e.name]) for e in searchResult.queueStreams])
-                    printLists(resultList, ["playlists", "streamSources", "queueStreams"])
-                    
-                # Playlist
-                elif(result.commandHitValue == CommandHitValues.ADD_PLAYLIST):
-                    name = result.arguments[Main.commands.entityNameArgumentName]
-                    playWatchedStreams = result.arguments[Main.commands.playWatchedStreamsFlagName]
-                    allowDuplicates = result.arguments[Main.commands.allowDuplicatesFlagName]
-                    streamSourceIds = result.arguments[Main.commands.streamSourceIdsArgumentName]
-                    
-                    Main.playlistCliController.addPlaylist(name, playWatchedStreams, allowDuplicates, streamSourceIds)
-                    
-                elif(result.commandHitValue == CommandHitValues.ADD_PLAYLIST_FROM_YOUTUBE):
-                    urls = result.arguments[Main.commands.uriArgumentName]
-                    name = result.arguments[Main.commands.entityNameArgumentName]
-                    playWatchedStreams = result.arguments[Main.commands.playWatchedStreamsFlagName]
-                    allowDuplicates = result.arguments[Main.commands.allowDuplicatesFlagName]
-                    
-                    Main.playlistCliController.addYouTubePlaylist(urls[0], name, playWatchedStreams, allowDuplicates)
-                    
-                elif(result.commandHitValue == CommandHitValues.DELETE_PLAYLIST):
-                    playlistIds = result.arguments[Main.commands.playlistIdsArgumentName]
-                    
-                    Main.playlistCliController.deletePlaylists(playlistIds)
-                    
-                elif(result.commandHitValue == CommandHitValues.RESTORE_PLAYLIST):
-                    playlistIds = result.arguments[Main.commands.playlistIdsArgumentName]
-                    
-                    Main.playlistCliController.restorePlaylists(playlistIds)
-                    
-                elif(result.commandHitValue == CommandHitValues.LIST_PLAYLISTS):
-                    includeSoftDeleted = result.arguments[Main.commands.includeSoftDeletedFlagName]
-                    
-                    Main.playlistCliController.printPlaylists(includeSoftDeleted)
-                    
-                elif(result.commandHitValue == CommandHitValues.DETAILS_PLAYLIST):
-                    playlistIds = result.arguments[Main.commands.playlistIdsArgumentName]
-                    includeUri = result.arguments[Main.commands.includeUriFlagName]
-                    includeId = result.arguments[Main.commands.includeIdFlagName]
-                    includeDatetime = result.arguments[Main.commands.includeDateTimeFlagName]
-                    includeListCount = result.arguments[Main.commands.includeListCountFlagName]
-                    includeSource = result.arguments[Main.commands.includeSourceFlagName]
-                    
-                    Main.playlistCliController.printPlaylistsDetailed(playlistIds, includeUri, includeId, includeDatetime, includeListCount, includeSource)
-                    
-                # elif(result.commandHitValue == CommandHitValues.ListWatchedCommands):
-                #     playlistIds = result.arguments[Main.commands.playlistIdsArgumentName]
-                    
-                #     Main.playlistCliController.printWatchedStreams(playlistIds)
-                    
-                elif(result.commandHitValue == CommandHitValues.FETCH_PLAYLIST):
-                    playlistIds = result.arguments[Main.commands.playlistIdsArgumentName]
-                    takeAfter = result.arguments[Main.commands.takeAfterArgumentName]
-                    takeBefore = result.arguments[Main.commands.takeBeforeArgumentName]
-                    takeNewOnly = result.arguments[Main.commands.takeAllFlagName]
-                    
-                    Main.playlistCliController.fetchPlaylists(playlistIds, Main.settings.fetchLimitSingleSource, takeAfter, takeBefore, takeNewOnly)
-                    
-                elif(result.commandHitValue == CommandHitValues.PRUNE_PLAYLIST):
-                    playlistIds = result.arguments[Main.commands.playlistIdsArgumentName]
-                    includeSoftDeleted = result.arguments[Main.commands.includeSoftDeletedFlagName]
-                    permanentlyDelete = result.arguments[Main.commands.permanentlyDeleteFlagName]
-                    
-                    for id in playlistIds:
-                        Main.sharedCliController.prune(id, includeSoftDeleted, permanentlyDelete)
-                
-                elif(result.commandHitValue == CommandHitValues.PURGE_PLAYLIST):
-                    Main.sharedCliController.purgePlaylists(True, True)
-
-                elif(result.commandHitValue == CommandHitValues.PURGE):
-                    Main.sharedCliController.purge()
-
-                elif(result.commandHitValue == CommandHitValues.RESET_PLAYLIST_FETCH):
-                    playlistIds = result.arguments[Main.commands.playlistIdsArgumentName]
-                    
-                    Main.playlistCliController.resetPlaylists(playlistIds)
-
-                elif(result.commandHitValue == CommandHitValues.DOWNLOAD_PLAYLIST):
-                    playlistIds = result.arguments[Main.commands.playlistIdsArgumentName]
-                    directoryName = result.arguments[Main.commands.directoryNameArgumentName]
-                    startIndex = result.arguments[Main.commands.startIndexArgumentName]
-                    endIndex = result.arguments[Main.commands.endIndexArgumentName]
-                    streamNameRegex = result.arguments[Main.commands.streamNameRegexArgumentName]
-                    useIndex = result.arguments[Main.commands.useIndexFlagName]
-                    
-                    Main.playlistCliController.downloadPlaylist(playlistIds[0], directoryName, startIndex, endIndex, streamNameRegex, useIndex)
-                    
-                elif(result.commandHitValue == CommandHitValues.EXPORT_PLAYLIST):
-                    playlistIds = result.arguments[Main.commands.playlistIdsArgumentName]
-                    directoryName = result.arguments[Main.commands.directoryNameArgumentName]
-                    
-                    Main.playlistCliController.exportPlaylist(playlistIds[0], directoryName)
-
-                elif(result.commandHitValue == CommandHitValues.UNWATCH_ALL_PLAYLIST):
-                    playlistIds = result.arguments[Main.commands.playlistIdsArgumentName]
-                    
-                    Main.playlistCliController.unwatchAllInPlaylist(playlistIds[0])
-
-                # Playback
-                elif(result.commandHitValue == CommandHitValues.PLAY):
-                    playlistIds = result.arguments[Main.commands.playlistIdsArgumentName]
-                    startIndex = result.arguments[Main.commands.startIndexArgumentName]
-                    shuffle = result.arguments[Main.commands.shuffleFlagName]
-                    repeat = result.arguments[Main.commands.repeatFlagName]
-                    
-                    Main.playlistCliController.playPlaylists(playlistIds[0], startIndex, shuffle, repeat)
-
-                # Streams
-                elif(result.commandHitValue == CommandHitValues.ADD_STREAM):
-                    playlistIds = result.arguments[Main.commands.playlistIdsArgumentName]
-                    uris = result.arguments[Main.commands.uriArgumentName]
-                    name = result.arguments[Main.commands.entityNameArgumentName]
-                    
-                    Main.queueStreamCliController.addQueueStream(playlistIds[0], uris[0], name)
-
-                elif(result.commandHitValue == CommandHitValues.ADD_MULTIPLE_STREAMS):
-                    playlistIds = result.arguments[Main.commands.playlistIdsArgumentName]
-                    uris = result.arguments[Main.commands.uriArgumentName]
-                    
-                    Main.queueStreamCliController.addQueueStream(playlistIds[0], uris)
-
-                elif(result.commandHitValue == CommandHitValues.DELETE_STREAM):
-                    playlistIds = result.arguments[Main.commands.playlistIdsArgumentName]
-                    queueStreamIds = result.arguments[Main.commands.queueStreamIdsArgument]
-                    
-                    Main.queueStreamCliController.deleteQueueStreams(playlistIds[0], queueStreamIds)
-                
-                elif(result.commandHitValue == CommandHitValues.RESTORE_STREAM):
-                    playlistIds = result.arguments[Main.commands.playlistIdsArgumentName]
-                    queueStreamIds = result.arguments[Main.commands.queueStreamIdsArgument]
-                                        
-                    Main.queueStreamCliController.restoreQueueStreams(playlistIds[0], queueStreamIds)
-
-                # Sources
-                elif(result.commandHitValue == CommandHitValues.ADD_SOURCE):
-                    playlistIds = result.arguments[Main.commands.playlistIdsArgumentName]
-                    uris = result.arguments[Main.commands.uriArgumentName]
-                    enableFetch = result.arguments[Main.commands.enableFetchFlagName]
-                    backgroundContent = result.arguments[Main.commands.backgroundContentFlagName]
-                    name = result.arguments[Main.commands.entityNameArgumentName]
-                    
-                    Main.streamSourceCliController.addStreamSource(playlistIds[0], uris[0], enableFetch, backgroundContent, name)
-
-                elif(result.commandHitValue == CommandHitValues.DELETE_SOURCE):
-                    playlistIds = result.arguments[Main.commands.playlistIdsArgumentName]
-                    streamSourceIds = result.arguments[Main.commands.streamSourceIdsArgumentName]
-
-                    Main.streamSourceCliController.deleteStreamSources(playlistIds[0], streamSourceIds)
-                    
-                elif(result.commandHitValue == CommandHitValues.RESTORE_SOURCE):
-                    playlistIds = result.arguments[Main.commands.playlistIdsArgumentName]
-                    streamSourceIds = result.arguments[Main.commands.streamSourceIdsArgumentName]
-                    
-                    Main.streamSourceCliController.restoreStreamSources(playlistIds[0], streamSourceIds)
-
-                elif(result.commandHitValue == CommandHitValues.LIST_SOURCES):
-                    includeSoftDeleted = result.arguments[Main.commands.includeSoftDeletedFlagName]
-                    
-                    Main.streamSourceCliController.listStreamSources(includeSoftDeleted)
-                
-                elif(result.commandHitValue == CommandHitValues.OPEN_SOURCE):
-                    streamSourceIds = result.arguments[Main.commands.streamSourceIdsArgumentName]
-                    
-                    Main.streamSourceCliController.openStreamSource(streamSourceIds)
-
-                # Meta
-                elif(result.commandHitValue == CommandHitValues.LIST_SETTINGS):
-                    result = Main.settings.getAllSettingsAsTable()
-                    print(result)
-
-                elif(result.commandHitValue == CommandHitValues.LIST_SOFT_DELETED):
-                    simplified = result.arguments[Main.commands.simplifiedPrintFlagName]
-                    
-                    result = Main.sharedService.getAllSoftDeleted()
-                    if(simplified):
-                        resultList = [[e.summaryString() for e in l] for l in [*result.values()]]
-                    else: 
-                        resultList = [[e.detailsString() for e in l] for l in [*result.values()]]
-                        
-                    printLists(resultList, [*result.keys()])
-
-                elif(result.commandHitValue == CommandHitValues.REFACTOR_OLD):
-                    refactorLastFetchedIdResult = Main.legacyService.refactorPlaytimeSecondsAlwaysDownloadFavorite()
-                    if(len(refactorLastFetchedIdResult) > 0):
-                        printS("Refactored ", len(refactorLastFetchedIdResult), " StreamSources. IDs:", color = BashColor.OKGREEN)
-                        printS(refactorLastFetchedIdResult)
-                    else:
-                        printS("No refactors needed for refactorLastFetchedId.", color = BashColor.OKGREEN)
-
-        except KeyboardInterrupt:
-            printS("Program was aborted by user.", color = BashColor.OKGREEN)
 
 if __name__ == "__main__":
-    Main.main()
+    MainRefactor().run()

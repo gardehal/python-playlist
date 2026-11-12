@@ -70,7 +70,10 @@ class CompositionRoot:
             self.queue_stream_repository,
             self.external_stream_provider,
         )
-        self.create_queue_stream = CreateQueueStreamUseCase(self.queue_stream_repository)
+        self.create_queue_stream = CreateQueueStreamUseCase(
+            self.queue_stream_repository,
+            self.external_stream_provider,
+        )
         self.create_stream_source = CreateStreamSourceUseCase(self.stream_source_repository)
         self.delete_playlist = DeletePlaylistUseCase(self.playlist_repository)
         self.delete_queue_stream = DeleteQueueStreamUseCase(self.queue_stream_repository)

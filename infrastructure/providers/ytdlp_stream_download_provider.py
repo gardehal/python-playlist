@@ -4,6 +4,8 @@ from typing import Optional
 from urllib.parse import urlparse
 
 import yt_dlp
+from grdUtil.DateTimeUtil import getDateTimeAsNumber
+from grdUtil.InputUtil import sanitize
 from werkzeug.utils import secure_filename
 
 from ports.stream_download_provider import StreamDownloadProvider
@@ -36,7 +38,6 @@ class YtDlpStreamDownloadProvider(StreamDownloadProvider):
             "retries": 5,
             "fragment_retries": 5,
             "windowsfilenames": os.name == "nt",
-            "outtmpl": os.path.join(output_directory, "%(title)s.%(ext)s"),
         }
 
         host = urlparse(uri).hostname or ""
@@ -51,6 +52,18 @@ class YtDlpStreamDownloadProvider(StreamDownloadProvider):
                     "player_skip": ["configs"],
                 }
             }
+
+        with yt_dlp.YoutubeDL(options) as downloader:
+            metadata = downloader.extract_info(uri, download=False)
+
+        if not metadata:
+            return None
+
+        title = metadata.get("title") or "unknown_video"
+        filename_stem = f"{getDateTimeAsNumber()}_{title}".replace(" ", "_").lower()
+        filename_stem = sanitize(filename_stem.replace("_", " "), mode=1).replace(" ", "_")
+        filename_stem = filename_stem.replace("%", "%%")
+        options["outtmpl"] = os.path.join(output_directory, f"{filename_stem}.%(ext)s")
 
         with yt_dlp.YoutubeDL(options) as downloader:
             info = downloader.extract_info(uri, download=True)

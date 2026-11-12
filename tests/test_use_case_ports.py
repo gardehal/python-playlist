@@ -48,7 +48,7 @@ from infrastructure.repositories.base_service_queue_stream_repository import Bas
 from infrastructure.repositories.base_service_stream_source_repository import BaseServiceStreamSourceRepository
 from composition_root import CompositionRoot
 from enums.CommandHitValues import CommandHitValues
-from Main_refactor import MainRefactor
+from Main import MainRefactor
 
 
 class QueueStreamRepositoryStub(QueueStreamRepository):
@@ -127,7 +127,7 @@ class QueueStreamUseCaseTests(unittest.TestCase):
         self.repository = QueueStreamRepositoryStub()
 
     def test_refactored_home_uses_playlist_repository_for_default_validation(self):
-        import server_refactor
+        import server as server_refactor
 
         server_refactor.app.config.update(TESTING=True)
         playlist = Playlist(name="Home playlist", id="home-playlist")
@@ -207,7 +207,7 @@ class QueueStreamUseCaseTests(unittest.TestCase):
         self.assertIsNone(local_urls.circumvent_url)
 
     def test_refactored_play_route_uses_playback_url_use_case(self):
-        import server_refactor
+        import server as server_refactor
 
         server_refactor.app.config.update(TESTING=True)
         queue_stream = QueueStream(
@@ -232,6 +232,40 @@ class QueueStreamUseCaseTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn(b"https://www.youtube.com/embed/play123", response.data)
         self.assertIn(b"https://www.nsfwyoutube.com/watch?v=play123", response.data)
+
+    def test_play_with_deleted_watched_or_unwatched_stream_redirects_to_playlist(self):
+        import server
+
+        repository = QueueStreamRepositoryStub()
+        use_case = ToggleQueueStreamWatchedUseCase(repository)
+        with patch.object(server, "toggleWatchedUseCase", use_case):
+            with server.app.test_client() as client:
+                for parameter in ("watchedId", "unwatchId"):
+                    with self.subTest(parameter=parameter):
+                        response = client.get(
+                            "/play/playlist-play",
+                            query_string={"index": 42, parameter: "deleted-stream"},
+                        )
+                        self.assertEqual(response.status_code, 302)
+                        self.assertEqual(response.headers["Location"], "/playlists/playlist-play")
+
+    def test_play_with_existing_watched_stream_still_toggles_it(self):
+        import server
+
+        repository = QueueStreamRepositoryStub()
+        stream = QueueStream(name="Video", uri="https://youtube.com/watch?v=play123", id="stream-live")
+        repository.queue_streams[stream.id] = stream
+        playlist = Playlist(name="Playlist", streamIds=[stream.id], playWatchedStreams=True, id="playlist-play")
+        details = SimpleNamespace(playlist=playlist, queue_streams=[stream])
+        with patch.object(server, "toggleWatchedUseCase", ToggleQueueStreamWatchedUseCase(repository)), \
+             patch.object(server, "getPlaylistDetailsUseCase", SimpleNamespace(execute=lambda playlist_id: details)), \
+             patch.object(server, "getAllPlaylistsUseCase", SimpleNamespace(execute=lambda: [playlist])), \
+             patch.object(server, "getQueueStreamPlaybackUrlsUseCase", GetQueueStreamPlaybackUrlsUseCase()):
+            with server.app.test_client() as client:
+                response = client.get("/play/playlist-play", query_string={"watchedId": stream.id})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIsNotNone(stream.watched)
 
     def test_copy_creates_a_distinct_stream_for_each_playlist(self):
         source = QueueStream(name="Video", uri="https://example.com/video", id="source-1")
@@ -274,7 +308,7 @@ class QueueStreamUseCaseTests(unittest.TestCase):
         self.assertEqual(self.repository.saved, [])
 
     def test_refactored_web_create_uses_case_and_links_saved_stream(self):
-        import server_refactor
+        import server as server_refactor
 
         server_refactor.app.config.update(TESTING=True, WTF_CSRF_ENABLED=False)
         playlist = Playlist(name="Web playlist", streamIds=[], id="playlist-web")
@@ -308,7 +342,7 @@ class QueueStreamUseCaseTests(unittest.TestCase):
         self.assertEqual(playlist.streamIds, [queue_stream.id])
 
     def test_refactored_web_edit_updates_queue_stream_through_case(self):
-        import server_refactor
+        import server as server_refactor
 
         server_refactor.app.config.update(TESTING=True, WTF_CSRF_ENABLED=False)
         queue_stream = QueueStream(
@@ -350,7 +384,7 @@ class QueueStreamUseCaseTests(unittest.TestCase):
         self.assertIs(repository.saved[-1], queue_stream)
 
     def test_refactored_batch_copy_uses_copy_use_case(self):
-        import server_refactor
+        import server as server_refactor
 
         server_refactor.app.config.update(TESTING=True, WTF_CSRF_ENABLED=False)
         source = QueueStream(name="Video", uri="https://example.com/video", id="source-video")
@@ -458,7 +492,7 @@ class StreamSourceUseCaseTests(unittest.TestCase):
         self.repository = StreamSourceRepositoryStub()
 
     def test_refactored_stream_source_create_page_loads_type_choices(self):
-        import server_refactor
+        import server as server_refactor
 
         server_refactor.app.config.update(TESTING=True)
         playlist = Playlist(name="Playlist", streamSourceIds=[], id="playlist-source")
@@ -838,7 +872,7 @@ class MainRefactorTests(unittest.TestCase):
             },
         )
 
-        with patch("Main_refactor.printS"):
+        with patch("Main.printS"):
             main._dispatch(result, argumentor=None)
 
         playlists = playlist_repository.get_all()
@@ -854,7 +888,7 @@ class YtDlpStreamDownloadProviderTests(unittest.TestCase):
             calls = []
 
             def __init__(self, options):
-                self.options = options
+                self.options = dict(options)
 
             def __enter__(self):
                 return self
@@ -864,15 +898,17 @@ class YtDlpStreamDownloadProviderTests(unittest.TestCase):
 
             def extract_info(self, uri, download):
                 self.calls.append((self.options, uri, download))
+                if not download:
+                    return {"title": "Video"}
                 return {
-                    "filepath": self.options["outtmpl"].replace("%(title)s.%(ext)s", "Video.mp4")
+                    "filepath": self.options["outtmpl"].replace("%(ext)s", "mp4")
                 }
 
-        with tempfile.TemporaryDirectory() as storage_path:
+        with tempfile.TemporaryDirectory(dir="tests") as storage_path:
             with patch(
                 "infrastructure.providers.ytdlp_stream_download_provider.yt_dlp.YoutubeDL",
                 FakeYoutubeDL,
-            ):
+            ), patch("infrastructure.providers.ytdlp_stream_download_provider.getDateTimeAsNumber", return_value=20261111123456):
                 provider = YtDlpStreamDownloadProvider(storage_path)
                 video_path = provider.download_stream(
                     "https://youtube.com/watch?v=video-1",
@@ -884,10 +920,10 @@ class YtDlpStreamDownloadProviderTests(unittest.TestCase):
                     audio_only=True,
                 )
 
-        video_options, video_uri, video_download = FakeYoutubeDL.calls[0]
-        audio_options, audio_uri, audio_download = FakeYoutubeDL.calls[1]
+        video_options, video_uri, video_download = FakeYoutubeDL.calls[1]
+        audio_options, audio_uri, audio_download = FakeYoutubeDL.calls[3]
         expected_directory = os.path.join(storage_path, "video", "My_playlist")
-        self.assertEqual(video_path, os.path.join(expected_directory, "Video.mp4"))
+        self.assertEqual(video_path, os.path.join(expected_directory, "20261111123456_video.mp4"))
         self.assertEqual(audio_path, video_path)
         self.assertEqual(video_uri, "https://youtube.com/watch?v=video-1")
         self.assertEqual(audio_uri, "https://youtube.com/watch?v=video-2")
@@ -1083,7 +1119,7 @@ class MediaUseCaseTests(unittest.TestCase):
         ])
 
     def test_refactored_fetch_route_dispatches_fetch_use_case(self):
-        import server_refactor
+        import server as server_refactor
 
         class ImmediateThread:
             def __init__(self, target, daemon):
@@ -1112,7 +1148,7 @@ class MediaUseCaseTests(unittest.TestCase):
         self.assertEqual(requests, [((playlist.id, 19), {"take_new_only": True})])
 
     def test_refactored_download_route_dispatches_audio_only_option(self):
-        import server_refactor
+        import server as server_refactor
 
         class ImmediateThread:
             def __init__(self, target, daemon):
@@ -1211,7 +1247,7 @@ class RepositoryMaintenanceUseCaseTests(unittest.TestCase):
         self.assertEqual(stream_source_repository.get_all(), [])
 
     def test_refactored_prune_route_uses_prune_use_case(self):
-        import server_refactor
+        import server as server_refactor
 
         playlist_repository = PlaylistRepositoryStub()
         queue_stream_repository = QueueStreamRepositoryStub()
@@ -1228,16 +1264,19 @@ class RepositoryMaintenanceUseCaseTests(unittest.TestCase):
             playlist_repository,
             queue_stream_repository,
         )
-        with patch.object(server_refactor, "reloadPage", return_value="pruned"):
-            with server_refactor.app.test_client() as client:
-                response = client.get(f"/prune/{playlist.id}")
+        with server_refactor.app.test_client() as client:
+            response = client.get(
+                f"/prune/{playlist.id}",
+                headers={"Referer": f"http://localhost/play/{playlist.id}?index=42&watchedId={watched_stream.id}"},
+            )
 
-        self.assertEqual(response.data, b"pruned")
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.headers["Location"], f"/playlists/{playlist.id}")
         self.assertEqual(queue_stream_repository.deleted, [watched_stream.id])
         self.assertEqual(playlist.streamIds, [])
 
     def test_refactored_soft_deleted_route_uses_get_use_case(self):
-        import server_refactor
+        import server as server_refactor
 
         playlist_repository = PlaylistRepositoryStub()
         queue_stream_repository = QueueStreamRepositoryStub()
@@ -1257,7 +1296,7 @@ class RepositoryMaintenanceUseCaseTests(unittest.TestCase):
         self.assertIn(b"Deleted playlist", response.data)
 
     def test_refactored_purge_route_uses_purge_use_case(self):
-        import server_refactor
+        import server as server_refactor
 
         server_refactor.app.config.update(TESTING=True, WTF_CSRF_ENABLED=False)
         playlist_repository = PlaylistRepositoryStub()

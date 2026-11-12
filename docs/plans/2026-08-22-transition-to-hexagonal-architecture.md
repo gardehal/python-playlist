@@ -13,7 +13,7 @@ Business logic, Flask routes, CLI controllers, and data access began in a tightl
 - D5: Do not add stub implementations during the Port-definition phase.
 - D6: Wrap the existing JSON repository behavior inside Infrastructure adapters.
 - D7: Refactor entities in this order: `StreamSource`, `QueueStream`, then `Playlist`.
-- D8: Prepare and verify both refactored entrypoints before deleting the originals and renaming the refactored files (confirmed with user).
+- D8: The user switched the refactored entrypoints into `server.py` and `Main.py` and retained the old versions. Complete the remaining parity and verification work after the swap.
 
 ## Approach
 
@@ -35,16 +35,16 @@ Business logic, Flask routes, CLI controllers, and data access began in a tightl
 - [x] Resolve the `CreateStreamSourceUseCase` validation contract using the form's name/URI length limits, optional URI behavior, and supported source type IDs.
 - [ ] Replace the transitional fetch service adapter with a provider-native implementation; playlist import uses `YoutubeProvider`.
 - [x] Replace the transitional download service adapter with `YtDlpStreamDownloadProvider` and preserve playlist output directories plus audio/video format selection.
-- [ ] Complete CLI command parity in `Main_refactor.py`: search, restore, playlist purge/reset/export, playback, stream/source deletion, and legacy data-refactor commands; verify any intentionally unsupported command is explicitly agreed.
+- [ ] Complete CLI command parity in `Main.py`: search, restore, playlist purge/reset/export, playback, stream/source deletion, and legacy data-refactor commands; verify any intentionally unsupported command is explicitly agreed.
 - [ ] Restore and test CLI option parity: fetch date ranges, custom download options, prune options, source background content, ID/index resolution, and confirmation prompts for destructive actions.
-- [ ] Check CLI behavior against `Main.py` for remaining command arguments, output, error handling, and exit status; add parser-to-use-case tests using isolated repositories.
-- [ ] Check web route and behavior parity against `server.py`; in particular, verify StreamSource create/edit persist `backgroundContent`, `alwaysDownload`, and numeric source type IDs, and check queue-stream create/edit and playlist linking.
+- [ ] Check CLI behavior against the retained old entrypoint for remaining command arguments, output, error handling, and exit status; add parser-to-use-case tests using isolated repositories.
+- [ ] Check web route and behavior parity against the retained old entrypoint; in particular, verify StreamSource create/edit persist `backgroundContent`, `alwaysDownload`, and numeric source type IDs, and check queue-stream create/edit and playlist linking.
 - [ ] Test CLI and web workflows with temporary JSON storage: create, list, detail, update, copy/link, watched state, delete/restore, prune and confirmed purge; verify persistence after reload and cross-entrypoint visibility where supported.
-- [ ] Test YouTube import, source fetch, playback URL mapping, and audio/video downloads, including empty/error results, using isolated fixtures and fakes; separately verify live integrations with approved test data before cutover.
-- [ ] Verify `server_refactor.py` startup and all Flask routes, including missing records, form validation, asynchronous fetch/download failures, and relevant templates; avoid production data.
-- [ ] Inventory and update launch scripts, imports, deployment configuration, documentation, and tests referencing either entrypoint before cutover; prepare a rollback and back up data.
-- [ ] After parity and verification gates pass, delete `server.py` and `Main.py`, rename `server_refactor.py` to `server.py` and `Main_refactor.py` to `Main.py`, and update references.
-- [ ] After the swap, run the focused and full available test suites, compile and import the active entrypoints, smoke-test CLI and web against temporary storage, and verify launch configuration and rollback readiness.
+- [ ] Continue source-fetch testing; verify YouTube import, playback URL mapping, and audio/video downloads across relevant empty/error cases using isolated fixtures and fakes, plus approved live test data.
+- [ ] Verify active `server.py` startup and all Flask routes, including missing records, form validation, asynchronous fetch/download failures, and relevant templates; avoid production data.
+- [ ] Inventory and update launch scripts, imports, deployment configuration, documentation, and tests referencing the renamed entrypoints; verify backup and rollback readiness.
+- [x] Switch the refactored entrypoints into `server.py` and `Main.py`; the user retained the old versions.
+- [ ] Complete post-swap verification: run the available test suites, compile and import the active entrypoints, smoke-test CLI and web against temporary storage, and verify launch configuration and rollback readiness.
 - [x] Implement `CompositionRoot` and use it to wire repositories, `YoutubeProvider`, and use cases in `server_refactor.py`.
 
 ## Legacy Todos
@@ -70,9 +70,9 @@ Original file checklist retained as an historical snapshot; current status is tr
 - Repository adapter integration tests verified that `BaseService.add()` assigns IDs, repeat `save()` updates existing records, and `delete()` soft-deletes them. The Ports document the ID assignment contract.
 - `ports/playlist_repository.py` previously imported `model.playlist`; the actual module is `model.Playlist`. This prevented importing use cases on the current environment and is now corrected.
 - `server_refactor.py` previously wired abstract Port types as repositories and passed mismatched constructor arguments; module-level repository/use-case construction is now corrected.
-- All `server_refactor.py` routes use CompositionRoot use cases; fetch temporarily uses a lazy Infrastructure adapter around the existing service.
-- `Main_refactor.py` is a parallel CompositionRoot-backed CLI entrypoint with no service/controller imports. It handles commands with existing use cases and explicitly reports unmigrated legacy-only commands; it is not yet a drop-in replacement for `Main.py`.
-- Existing route tests cover selected flows with stubs; passing tests or compiling does not establish web or CLI feature parity. The actual entrypoint swap remains pending the above gates.
+- The refactored routes are now active in `server.py` and use CompositionRoot use cases; fetch temporarily uses a lazy Infrastructure adapter around the existing service.
+- The refactored CLI is now active in `Main.py`. It handles commands with existing use cases and explicitly reports unmigrated legacy-only commands; CLI parity is still incomplete.
+- Existing route tests cover selected flows with stubs; passing tests or compiling does not establish web or CLI feature parity. The swap occurred before all verification gates were complete.
 - The local-filesystem provider adapter is deferred at the user's request because the original implementation did not work; it is excluded from active Todos.
 - `CreateStreamSourceUseCase` trims and requires a name, enforces the form's 200-character name/URI limits, permits an empty optional URI, normalizes numeric-string type IDs, and accepts only type ID `0` or declared `StreamSourceType` values.
 - `CreatePlaylistFromYoutubeUseCase` relies on `QueueStreamRepository.save()` assigning an ID to the entity; this behavior is now verified against the real JSON adapter.
@@ -82,10 +82,10 @@ Original file checklist retained as an historical snapshot; current status is tr
 
 - Previously verified: `StreamSource` and `QueueStream` lifecycle use cases work.
 - Previously verified: Domain exceptions are raised and handled in use cases.
-- `python -m unittest discover -s tests -p "test_use_case_ports.py" -q` passed 63 tests covering use cases, CompositionRoot, repository adapters, provider normalization, Flask routes, and `Main_refactor.py` use-case dispatch.
-- `python -m compileall -q Main_refactor.py composition_root.py server_refactor.py application/use_cases ports infrastructure/providers` passed.
-- `python Main_refactor.py -help > $null` exited successfully.
-- External media downloads are not exercised end to end; fetch still uses a transitional adapter around the legacy service.
+- Before the swap, the focused suite passed 63 tests, the refactored entrypoints compiled, and the refactored CLI help command exited successfully.
+- After the swap, `python -m unittest discover -s tests -p "test*.py" -q` passed 72 tests, including stubbed QueueStream title lookup and download filename checks against the active entrypoints; the changed naming components compiled.
+- User-reported manual testing: most Playlist, QueueStream, and StreamSource create/edit/delete actions work; playlist import and playlist download work. More time is needed to test fetches.
+- Fetch remains backed by a transitional adapter around the legacy service; automated naming tests did not make live media requests. Full CLI/web parity and error cases remain unverified.
 
 ## Results
 
@@ -114,5 +114,7 @@ Original file checklist retained as an historical snapshot; current status is tr
 - Added fetch/download Ports, use cases, and lazy Infrastructure adapters; migrated the corresponding async routes off direct legacy service globals.
 - Replaced the legacy download adapter with `YtDlpStreamDownloadProvider`, which selects audio/video formats and saves under a sanitized playlist directory; verified its yt-dlp options and output path with a fake client.
 - Added `Main_refactor.py`, which parses the existing CLI commands and dispatches supported operations through an injected `CompositionRoot`; unmigrated commands are reported rather than delegated to legacy controllers.
+- The user switched the refactored web and CLI entrypoints into `server.py` and `Main.py`, retaining the old versions; post-swap testing remains in progress.
+- Restored blank QueueStream name lookup through the metadata provider and datetime-prefixed, sanitized download filenames; added focused regression tests and updated test imports for the active entrypoints.
 - Added `tests/test_use_case_ports.py` with Port-stub tests across QueueStream, StreamSource, Playlist, and YouTube playlist import use cases.
 - Fixed `GetPlaylistDetailsUseCase` to use declared `get_by_id` Port methods and corrected the `Playlist` model import case in `ports/playlist_repository.py`.

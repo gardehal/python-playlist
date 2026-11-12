@@ -22,7 +22,7 @@ class YoutubeProvider(ExternalStreamProvider):
             info = ydl.extract_info(uri, download=False)
             
             return {
-                "name": info.get("title", "Unknown Title"),
+                "name": info.get("title"),
                 "uri": uri,
                 "is_web": True,
                 "duration_seconds": info.get("duration", 0),

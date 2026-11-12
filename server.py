@@ -230,17 +230,21 @@ def queueStreamsCreate(playlistId: str):
     
     if request.method == "POST":
         if(form.validate_on_submit()):
-            createResult = createQueueStreamUseCase.execute(
-                name=form.name.data,
-                uri=form.uri.data,
-                is_web=form.isWeb.data,
-                stream_source_id=form.streamSourceId.data or None,
-                stream_source_name=form.streamSourceName.data or None,
-                watched=form.watched.data,
-                background_content=form.backgroundContent.data,
-                playtime_seconds=form.playtimeSeconds.data,
-                remote_id=form.remoteId.data or None,
-            )
+            try:
+                createResult = createQueueStreamUseCase.execute(
+                    name=form.name.data,
+                    uri=form.uri.data,
+                    is_web=form.isWeb.data,
+                    stream_source_id=form.streamSourceId.data or None,
+                    stream_source_name=form.streamSourceName.data or None,
+                    watched=form.watched.data,
+                    background_content=form.backgroundContent.data,
+                    playtime_seconds=form.playtimeSeconds.data,
+                    remote_id=form.remoteId.data or None,
+                )
+            except ValueError as error:
+                errorMessage = str(error)
+                return render_template("form.html", title="Create new QueueStream", form=form, errorMessage=errorMessage)
             
             if(createResult):
                 addStreamToPlaylistUseCase.execute(playlistId, createResult.id)
@@ -420,11 +424,15 @@ def play(playlistId: str):
     unwatchId = request.args.get("unwatchId", None)
     back = eval(request.args.get("back", "False"))
     
-    if(watchedId): 
-        toggleWatchedUseCase.execute(watchedId)
-            
-    if(unwatchId): 
-        toggleWatchedUseCase.execute(unwatchId)
+    try:
+        if(watchedId):
+            toggleWatchedUseCase.execute(watchedId)
+
+        if(unwatchId):
+            toggleWatchedUseCase.execute(unwatchId)
+    except ValueError:
+        flash("The stream is no longer available. Return to the playlist to continue playback.", "warning")
+        return redirect(url_for("playlistsDetails", id=playlistId))
         
     playlistDto = getPlaylistDetailsUseCase.execute(playlistId)
     if(not playlistDto):
@@ -514,7 +522,7 @@ def prunePlaylist(playlistId):
     if prunedStreams:
         flash(f"Pruned {len(prunedStreams)} QueueStreams from Playlist {playlistId}", "success")
     
-    return reloadPage()
+    return redirect(url_for("playlistsDetails", id=playlistId))
 
 @app.route("/purge", methods=["GET", "POST"])
 def purgeAll():

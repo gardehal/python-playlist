@@ -16,10 +16,19 @@ It should not be used as a log of every session or minor change. Entries should 
 - [2026-11-07] Odysee RSS exposes per-video thumbnails via `itunes:image[href]`; store the URL at fetch time.
 - [2026-11-07] CLI `-add` omits `isWeb` and `remoteId`; infer both from YouTube URIs so manual
 	QueueStreams receive thumbnail URLs too.
+- [2026-11-14] When a web QueueStream name is blank, `CreateQueueStreamUseCase` obtains it via
+	`ExternalStreamProvider.fetch_metadata`; missing/failed titles must not be persisted as empty names.
 
 ### Filename Sanitization
 - [2026-11-07] `grdUtil.sanitize(..., mode=1)` removes punctuation, periods, and underscores.
 - Sanitize filename stems only; restore extensions and generated separators afterward.
+- [2026-11-14] Downloads need a timestamped, sanitized title stem; retrieve metadata before setting
+	`yt-dlp`'s output template and preserve the extension selected by the downloader.
+
+### Playback After Prune
+- [2026-11-14] Prune removes watched stream IDs from the playlist and soft-deletes those streams.
+	A stale playback URL may still carry `watchedId` for a deleted stream; return prune to playlist
+	details and handle missing toggle targets without a 500.
 
 ## Frontend
 ### Colors & Design System

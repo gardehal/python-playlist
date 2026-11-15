@@ -18,7 +18,8 @@ class Playlist():
                  deleted: datetime = None,
                  updated: datetime = getDateTime(),
                  added: datetime = getDateTime(),
-                 id: str = None):
+                 id: str = None,
+                 thumbnailUrl: str = None):
         self.name: str = name
         self.streamIds: List[str] = streamIds
         self.lastWatchedIndex: int = lastWatchedIndex
@@ -26,6 +27,7 @@ class Playlist():
         self.allowDuplicates: bool = allowDuplicates
         self.streamSourceIds: List[str] = streamSourceIds
         self.description: str = description
+        self.thumbnailUrl: str = thumbnailUrl
         self.favorite: bool = favorite
         self.sortOrder: int = sortOrder
         self.deleted: str = deleted

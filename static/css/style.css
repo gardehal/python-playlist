@@ -112,6 +112,36 @@
     color: var(--hover-color) !important;
 }
 
+.audio-download-trigger
+{
+    width: fit-content !important;
+    flex: 0 0 auto;
+}
+
+.audio-download-modal-content
+{
+    color: var(--text-color);
+    background-color: var(--bg-color);
+    border: 2px solid var(--accent3);
+}
+
+.audio-download-modal-content .modal-header,
+.audio-download-modal-content .modal-footer
+{
+    border-color: var(--accent1-light);
+}
+
+.audio-download-modal-content .modal-title,
+.audio-download-modal-content .form-label
+{
+    color: var(--text-color);
+}
+
+.audio-download-modal-content .btn-close
+{
+    filter: invert(1) grayscale(100%) brightness(200%);
+}
+
 a
 {
     width: fit-content !important;

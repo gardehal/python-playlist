@@ -37,6 +37,7 @@ class Commands():
     repeatFlagName = "Repeat"
     enableFetchFlagName = "EnableFetch"
     backgroundContentFlagName = "BackgroundContent"
+    audioOnlyFlagName = "AudioOnly"
     
     def getArgumentor(self):
         searchQueryArgument = Argument(self.searchQueryArgumentName, ["search", "s"], str, 
@@ -125,6 +126,8 @@ class Commands():
             description= "Take all streams, comparing from last fetch.")
         useIndexFlag = BoolFlag(self.useIndexFlagName, ["useindex", "index", "ui"],
             description= "Add index (+1) on stream names so they naturally sort in order.")
+        audioOnlyFlag = BoolFlag(self.audioOnlyFlagName, ["audioonly", "ao"],
+            description= "Download audio as MP3 instead of downloading video.")
         shuffleFlag = BoolFlag(self.shuffleFlagName, ["shuffle", "s"],
             description= "Shuffle playlist.")
         repeatFlag = BoolFlag(self.repeatFlagName, ["repeat", "r"],
@@ -188,8 +191,8 @@ class Commands():
             description= "Resets fetch status of StreamSources in a Playlist and deletes QueueStreams from Playlist.")
         downloadPlaylistCommand = Command("DownloadPlaylist", ["downloadplaylist", "dwpl"], CommandHitValues.DOWNLOAD_PLAYLIST,
             arguments= [playlistIdsArgument, directoryNameArgument, startIndexArgument, endIndexArgument, streamNameRegexArgument],
-            flags= [useIndexFlag],
-            description= "Download streams from web sources for given playlist, with optional directory name (under localStoragePath in settings), start-end index, regex for naming streams (e.g. all streams are named \"Podcast guys: Actual Title\", use regex \": (.*)\", including \"s), and option to add index (+1) on stream names so they naturally sort in order.")
+            flags= [useIndexFlag, audioOnlyFlag],
+            description= "Download streams from web sources for a playlist. Use audioonly to convert them to MP3; optional video-download directory, range, regex, and index options are available.")
         exportPlaylistCommand = Command("ExportPlaylist", ["export"], CommandHitValues.EXPORT_PLAYLIST,
             arguments= [playlistIdsArgument, directoryNameArgument],
             description= "Export all sources and streams in a list to a text files.")

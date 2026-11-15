@@ -157,7 +157,10 @@ class MainRefactor:
                 printS("Custom download ranges, names, and output directories are not supported by the current use case.")
                 return
             for playlist_id in self._resolve_playlist_ids(arguments[self.commands.playlistIdsArgumentName]):
-                result = self.application.download_playlist.execute(playlist_id)
+                result = self.application.download_playlist.execute(
+                    playlist_id,
+                    audio_only=arguments[self.commands.audioOnlyFlagName],
+                )
                 printS(
                     f"Downloaded {result.downloaded_count}; skipped {result.skipped_count}; "
                     f"failed {result.failed_count}."

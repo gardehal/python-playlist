@@ -25,6 +25,9 @@
         <a class="btn" onclick="fetch('/fetch/{{ playlist.id }}')">Fetch new</a>
         <a class="btn" href="{{ url_for("prunePlaylist", playlistId=playlist.id) }}">Prune</a>
         <a class="btn" href="{{ url_for("downloadPlaylist", playlistId=playlist.id) }}">Download</a>
+        <button class="btn audio-download-trigger" type="button" data-bs-toggle="modal" data-bs-target="#audioDownloadModal">
+            Download audio (MP3)
+        </button>
         <a class="btn" href="{{ url_for("error", errorMessage="Not Implemented") }}">Export</a>
         <a class="btn" href="{{ url_for("error", errorMessage="Not Implemented") }}">Unwatch all</a>
         <a class="btn" href="{{ url_for("playlistsEdit", id=playlist.id) }}">Edit</a>
@@ -41,6 +44,42 @@
     <div class="row">
         <a class="btn" href="{{ url_for("streamSourcesCreate", playlistId=playlist.id) }}">New StreamSource</a>
         <a class="btn" href="{{ url_for("queueStreamsCreate", playlistId=playlist.id) }}">New QueueStream</a>
+    </div>
+
+    <div class="modal fade" id="audioDownloadModal" tabindex="-1" aria-labelledby="audioDownloadModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content audio-download-modal-content">
+                <form action="{{ url_for('downloadPlaylist', playlistId=playlist.id) }}" method="get">
+                    <div class="modal-header">
+                        <h2 class="modal-title fs-5" id="audioDownloadModalLabel">Audio download metadata</h2>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" name="audioOnly" value="true">
+                        <div class="mb-3">
+                            <label class="form-label" for="audioAlbum">Album / folder</label>
+                            <input class="form-control" id="audioAlbum" name="album" type="text" value="{{ playlist.name }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="audioArtist">Artist</label>
+                            <input class="form-control" id="audioArtist" name="artist" type="text" value="{{ audioArtist }}">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="audioYear">Year</label>
+                            <input class="form-control" id="audioYear" name="year" type="number" min="1000" max="9999" inputmode="numeric">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="audioGenre">Genre</label>
+                            <input class="form-control" id="audioGenre" name="genre" type="text">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Download MP3s</button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
     
     <h1>QueueStreams in {{ playlist.name }}</h1>

@@ -113,8 +113,16 @@ def playlistsDetails(id: str):
     playlist = detailsDto.playlist
     queueStreams = detailsDto.queue_streams
     streamSources = detailsDto.stream_sources
+    sourceNames = {stream.streamSourceName for stream in queueStreams if stream.streamSourceName}
+    audioArtist = next(iter(sourceNames)) if len(sourceNames) == 1 else ""
     enumerateQueueStreams = enumerate(queueStreams) if queueStreams else None
-    return render_template("playlists/details.html", playlist=playlist, enumerateQueueStreams=enumerateQueueStreams, streamSources=streamSources)
+    return render_template(
+        "playlists/details.html",
+        playlist=playlist,
+        enumerateQueueStreams=enumerateQueueStreams,
+        streamSources=streamSources,
+        audioArtist=audioArtist,
+    )
 
 @app.route("/playlist/<playlistId>/toggle_watched/<streamId>", methods=["POST"])
 def toggleWatched(playlistId: str, streamId: str):
@@ -500,15 +508,32 @@ def fetchPlaylist(playlistId):
 @app.route("/download/<playlistId>")
 def downloadPlaylist(playlistId):
     audioOnly = request.args.get("audioOnly", "false").lower() == "true"
+    album = request.args.get("album", "").strip()
+    artist = request.args.get("artist", "").strip()
+    year = request.args.get("year", "").strip()
+    genre = request.args.get("genre", "").strip()
     playlist = getPlaylistUseCase.execute(playlistId)
     if not playlist:
         flash(f"Playlist {playlistId} was not found.", "error")
+        return reloadPage()
+
+    try:
+        downloadPlaylistUseCase.validate_playlist_options(playlist.id, audio_only=audioOnly)
+    except (RuntimeError, ValueError) as error:
+        flash(str(error), "warning")
         return reloadPage()
     
     flash(f"Download running in background...", "info")
     def runDownload():
         try:
-            downloadPlaylistUseCase.execute(playlist.id, audio_only=audioOnly)
+            downloadPlaylistUseCase.execute(
+                playlist.id,
+                audio_only=audioOnly,
+                album=album,
+                artist=artist,
+                year=year,
+                genre=genre,
+            )
         except Exception:
             app.logger.exception("Background playlist download failed")
 

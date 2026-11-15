@@ -18,6 +18,7 @@ It should not be used as a log of every session or minor change. Entries should 
 	QueueStreams receive thumbnail URLs too.
 - [2026-11-14] When a web QueueStream name is blank, `CreateQueueStreamUseCase` obtains it via
 	`ExternalStreamProvider.fetch_metadata`; missing/failed titles must not be persisted as empty names.
+- [2026-11-14] YouTube playlist imports retain the playlist thumbnail on `Playlist.thumbnailUrl`; audio downloads save it and the first video thumbnail beside MP3s.
 
 ### Filename Sanitization
 - [2026-11-07] `grdUtil.sanitize(..., mode=1)` removes punctuation, periods, and underscores.

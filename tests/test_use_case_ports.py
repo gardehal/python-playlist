@@ -653,6 +653,7 @@ class PlaylistLifecycleUseCaseTests(unittest.TestCase):
         queue_stream_repository = QueueStreamRepositoryStub()
         provider = YoutubePlaylistProviderStub({
             "title": "Channel playlist",
+            "thumbnail": "https://thumbs.example/playlist.jpg",
             "entries": [
                 {"id": "video-1", "title": "First video", "thumbnail": "https://thumbs.example/1.jpg"},
                 {"id": "video-2", "title": "Second video"},
@@ -668,6 +669,7 @@ class PlaylistLifecycleUseCaseTests(unittest.TestCase):
         playlist = use_case.execute("https://youtube.com/playlist?list=test")
 
         self.assertEqual(playlist.name, "Channel playlist")
+        self.assertEqual(playlist.thumbnailUrl, "https://thumbs.example/playlist.jpg")
         self.assertEqual(playlist.streamIds, ["queue-stream-1", "queue-stream-2"])
         self.assertEqual(len(queue_stream_repository.saved), 2)
         self.assertEqual(queue_stream_repository.saved[0].remoteId, "video-1")
@@ -797,8 +799,16 @@ class YoutubeProviderTests(unittest.TestCase):
                 self.download = download
                 return {
                     "title": "Playlist title",
+                    "thumbnails": [
+                        {"url": "https://thumbs.example/playlist-1600.jpg", "width": 1600, "height": 900},
+                        {"url": "https://thumbs.example/playlist-1280.jpg", "width": 1280, "height": 720},
+                    ],
                     "entries": [
-                        {"id": "video-1", "title": "Video", "thumbnail": "https://thumbs.example/1.jpg"},
+                        {"id": "video-1", "title": "Video", "thumbnails": [
+                            {"url": "https://thumbs.example/video-320.jpg", "width": 320, "height": 180},
+                            {"url": "https://thumbs.example/video-1280.jpg", "width": 1280, "height": 720},
+                            {"url": "https://thumbs.example/video-1920.jpg", "width": 1920, "height": 1080},
+                        ]},
                         None,
                         {"title": "Missing ID"},
                     ],
@@ -808,8 +818,9 @@ class YoutubeProviderTests(unittest.TestCase):
             playlist = YoutubeProvider().fetch_playlist("https://youtube.com/playlist?list=test")
 
         self.assertEqual(playlist["title"], "Playlist title")
+        self.assertEqual(playlist["thumbnail"], "https://thumbs.example/playlist-1280.jpg")
         self.assertEqual(playlist["entries"], [
-            {"id": "video-1", "title": "Video", "thumbnail": "https://thumbs.example/1.jpg"}
+            {"id": "video-1", "title": "Video", "thumbnail": "https://thumbs.example/video-1280.jpg"}
         ])
 
 
@@ -881,6 +892,44 @@ class MainRefactorTests(unittest.TestCase):
         self.assertFalse(playlists[0].playWatchedStreams)
         self.assertFalse(playlists[0].allowDuplicates)
 
+    def test_audio_only_download_flag_reaches_download_use_case(self):
+        playlist_repository = PlaylistRepositoryStub()
+        playlist = Playlist(name="Playlist", streamIds=[], id="playlist-audio")
+        playlist_repository.playlists[playlist.id] = playlist
+        composition_root = CompositionRoot(
+            playlist_repository=playlist_repository,
+            queue_stream_repository=QueueStreamRepositoryStub(),
+            stream_source_repository=StreamSourceRepositoryStub(),
+            external_stream_provider=YoutubePlaylistProviderStub({"entries": []}),
+        )
+        requests = []
+        composition_root.download_playlist = SimpleNamespace(
+            execute=lambda *args, **kwargs: (
+                requests.append((args, kwargs))
+                or SimpleNamespace(downloaded_count=0, skipped_count=0, failed_count=0)
+            )
+        )
+        main = MainRefactor(composition_root, SimpleNamespace(watchedLogFilepath=None, debug=False))
+        arguments = {
+            main.commands.playlistIdsArgumentName: [playlist.id],
+            main.commands.directoryNameArgumentName: None,
+            main.commands.startIndexArgumentName: 0,
+            main.commands.endIndexArgumentName: None,
+            main.commands.streamNameRegexArgumentName: None,
+            main.commands.useIndexFlagName: False,
+            main.commands.audioOnlyFlagName: True,
+        }
+        result = SimpleNamespace(
+            commandHitValue=CommandHitValues.DOWNLOAD_PLAYLIST,
+            commandName="DownloadPlaylist",
+            arguments=arguments,
+        )
+
+        with patch("Main.printS"):
+            main._dispatch(result, argumentor=None)
+
+        self.assertEqual(requests, [((playlist.id,), {"audio_only": True})])
+
 
 class YtDlpStreamDownloadProviderTests(unittest.TestCase):
     def test_downloads_to_playlist_directory_with_audio_or_video_format(self):
@@ -900,8 +949,9 @@ class YtDlpStreamDownloadProviderTests(unittest.TestCase):
                 self.calls.append((self.options, uri, download))
                 if not download:
                     return {"title": "Video"}
+                extension = "mp3" if self.options.get("postprocessors") else "mp4"
                 return {
-                    "filepath": self.options["outtmpl"].replace("%(ext)s", "mp4")
+                    "filepath": self.options["outtmpl"].replace("%(ext)s", extension)
                 }
 
         with tempfile.TemporaryDirectory(dir="tests") as storage_path:
@@ -924,7 +974,7 @@ class YtDlpStreamDownloadProviderTests(unittest.TestCase):
         audio_options, audio_uri, audio_download = FakeYoutubeDL.calls[3]
         expected_directory = os.path.join(storage_path, "video", "My_playlist")
         self.assertEqual(video_path, os.path.join(expected_directory, "20261111123456_video.mp4"))
-        self.assertEqual(audio_path, video_path)
+        self.assertEqual(audio_path, os.path.join(expected_directory, "20261111123456_Video.mp3"))
         self.assertEqual(video_uri, "https://youtube.com/watch?v=video-1")
         self.assertEqual(audio_uri, "https://youtube.com/watch?v=video-2")
         self.assertTrue(video_download)
@@ -932,7 +982,21 @@ class YtDlpStreamDownloadProviderTests(unittest.TestCase):
         self.assertEqual(video_options["format"], "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best")
         self.assertEqual(audio_options["format"], "bestaudio/best")
         self.assertEqual(video_options["noplaylist"], True)
+        self.assertNotIn("postprocessors", video_options)
+        self.assertEqual(audio_options["postprocessors"], [{
+            "key": "FFmpegExtractAudio",
+            "preferredcodec": "mp3",
+            "preferredquality": "192",
+        }])
         self.assertTrue(video_options["outtmpl"].startswith(expected_directory))
+
+    def test_audio_only_preflight_requires_ffmpeg(self):
+        provider = YtDlpStreamDownloadProvider(storage_path="tests")
+
+        with patch("infrastructure.providers.ytdlp_stream_download_provider.shutil.which", return_value=None):
+            with self.assertRaisesRegex(RuntimeError, "require FFmpeg"):
+                provider.validate_options(audio_only=True)
+            provider.validate_options(audio_only=False)
 
 
 class BaseServiceRepositoryAdapterTests(unittest.TestCase):
@@ -1082,41 +1146,92 @@ class MediaUseCaseTests(unittest.TestCase):
             def __init__(self):
                 self.requests = []
 
-            def download_stream(self, uri, playlist_name, audio_only):
-                self.requests.append((uri, playlist_name, audio_only))
+            def download_stream(self, uri, playlist_name, audio_only, metadata=None):
+                self.requests.append((uri, playlist_name, audio_only, metadata))
                 if uri.endswith("fail"):
                     raise RuntimeError("download failed")
                 return "downloaded.mp4"
+
+            def validate_options(self, audio_only=False):
+                return None
 
         playlist_repository = PlaylistRepositoryStub()
         queue_stream_repository = QueueStreamRepositoryStub()
         playlist = Playlist(
             name="Playlist",
+            thumbnailUrl="https://thumbs.example/playlist.jpg",
             streamIds=["web-1", "local", "missing", "web-fail"],
             id="playlist-1",
         )
         playlist_repository.playlists[playlist.id] = playlist
         queue_stream_repository.queue_streams["web-1"] = QueueStream(
-            name="Web", uri="https://example.com/web", isWeb=True, id="web-1"
+            name="Web", uri="https://youtube.com/watch?v=web", isWeb=True,
+            thumbnailUrl="https://thumbs.example/video.jpg", id="web-1"
         )
         queue_stream_repository.queue_streams["local"] = QueueStream(
             name="Local", uri="C:/media/local.mp4", isWeb=False, id="local"
         )
         queue_stream_repository.queue_streams["web-fail"] = QueueStream(
-            name="Failed", uri="https://example.com/fail", isWeb=True, id="web-fail"
+            name="Failed", uri="https://youtu.be/fail", isWeb=True, id="web-fail"
         )
         provider = DownloadProviderStub()
         use_case = DownloadPlaylistUseCase(playlist_repository, queue_stream_repository, provider)
 
-        result = use_case.execute(playlist.id, audio_only=True)
+        result = use_case.execute(
+            playlist.id,
+            audio_only=True,
+            album="Custom album",
+            artist="Artist",
+            year="2024",
+            genre="Jazz",
+        )
 
         self.assertEqual(result.downloaded_count, 1)
         self.assertEqual(result.skipped_count, 2)
         self.assertEqual(result.failed_count, 1)
-        self.assertEqual(provider.requests, [
-            ("https://example.com/web", "Playlist", True),
-            ("https://example.com/fail", "Playlist", True),
-        ])
+        first_metadata = provider.requests[0][3]
+        failed_metadata = provider.requests[1][3]
+        self.assertEqual(provider.requests[0][:3], ("https://youtube.com/watch?v=web", "Playlist", True))
+        self.assertEqual(provider.requests[1][:3], ("https://youtu.be/fail", "Playlist", True))
+        self.assertEqual(
+            (first_metadata.title, first_metadata.album, first_metadata.artist,
+             first_metadata.year, first_metadata.genre, first_metadata.track_number,
+             first_metadata.track_total),
+            ("Web", "Custom album", "Artist", "2024", "Jazz", 1, 4),
+        )
+        self.assertEqual(failed_metadata.track_number, 4)
+        self.assertEqual(first_metadata.playlist_thumbnail_url, "https://thumbs.example/playlist.jpg")
+        self.assertEqual(first_metadata.video_thumbnail_url, "https://thumbs.example/video.jpg")
+
+    def test_audio_only_rejects_non_youtube_web_stream_before_any_download(self):
+        class DownloadProviderStub:
+            def __init__(self):
+                self.requests = []
+
+            def validate_options(self, audio_only=False):
+                return None
+
+            def download_stream(self, *args, **kwargs):
+                self.requests.append((args, kwargs))
+                return "downloaded.mp3"
+
+        playlist_repository = PlaylistRepositoryStub()
+        queue_stream_repository = QueueStreamRepositoryStub()
+        playlist = Playlist(name="Mixed", streamIds=["youtube", "odysee"], id="playlist-mixed")
+        playlist_repository.playlists[playlist.id] = playlist
+        queue_stream_repository.queue_streams["youtube"] = QueueStream(
+            name="YouTube", uri="https://youtube.com/watch?v=video", isWeb=True, id="youtube"
+        )
+        queue_stream_repository.queue_streams["odysee"] = QueueStream(
+            name="Odysee", uri="https://odysee.com/@channel/video", isWeb=True, id="odysee"
+        )
+        provider = DownloadProviderStub()
+        use_case = DownloadPlaylistUseCase(playlist_repository, queue_stream_repository, provider)
+
+        with self.assertRaisesRegex(ValueError, "YouTube QueueStreams only"):
+            use_case.execute(playlist.id, audio_only=True)
+
+        self.assertEqual(provider.requests, [])
 
     def test_refactored_fetch_route_dispatches_fetch_use_case(self):
         import server as server_refactor
@@ -1163,6 +1278,7 @@ class MediaUseCaseTests(unittest.TestCase):
         requests = []
         server_refactor.getPlaylistUseCase = GetPlaylistUseCase(repository)
         server_refactor.downloadPlaylistUseCase = SimpleNamespace(
+            validate_playlist_options=lambda playlist_id, audio_only=False: None,
             execute=lambda *args, **kwargs: requests.append((args, kwargs))
         )
         server_refactor.app.config.update(TESTING=True)
@@ -1170,10 +1286,99 @@ class MediaUseCaseTests(unittest.TestCase):
         with patch.object(server_refactor.threading, "Thread", ImmediateThread):
             with patch.object(server_refactor, "reloadPage", return_value="queued"):
                 with server_refactor.app.test_client() as client:
-                    response = client.get(f"/download/{playlist.id}?audioOnly=true")
+                    response = client.get(f"/download/{playlist.id}", query_string={
+                        "audioOnly": "true",
+                        "album": "Selected album",
+                        "artist": "Selected artist",
+                        "year": "2020",
+                        "genre": "Jazz",
+                    })
 
         self.assertEqual(response.data, b"queued")
-        self.assertEqual(requests, [((playlist.id,), {"audio_only": True})])
+        self.assertEqual(requests, [((playlist.id,), {
+            "audio_only": True,
+            "album": "Selected album",
+            "artist": "Selected artist",
+            "year": "2020",
+            "genre": "Jazz",
+        })])
+
+    def test_refactored_download_route_warns_before_starting_thread_without_ffmpeg(self):
+        import server as server_refactor
+
+        playlist = Playlist(name="Download", id="playlist-no-ffmpeg")
+        repository = PlaylistRepositoryStub()
+        repository.playlists[playlist.id] = playlist
+        server_refactor.getPlaylistUseCase = GetPlaylistUseCase(repository)
+
+        def reject_audio_only(audio_only=False):
+            if audio_only:
+                raise RuntimeError("Audio-only MP3 downloads require FFmpeg.")
+
+        server_refactor.downloadPlaylistUseCase = SimpleNamespace(
+            validate_playlist_options=lambda playlist_id, audio_only=False: reject_audio_only(audio_only),
+            execute=lambda *args, **kwargs: self.fail("Download must not start"),
+        )
+        server_refactor.app.config.update(TESTING=True)
+
+        with patch.object(
+            server_refactor.threading,
+            "Thread",
+            side_effect=AssertionError("Background thread must not start"),
+        ):
+            with patch.object(server_refactor, "reloadPage", return_value="reloaded"):
+                with server_refactor.app.test_client() as client:
+                    response = client.get(f"/download/{playlist.id}?audioOnly=true")
+                    with client.session_transaction() as session:
+                        messages = session.get("_flashes", [])
+
+        self.assertEqual(response.data, b"reloaded")
+        self.assertTrue(any("require FFmpeg" in message for category, message in messages))
+
+    def test_refactored_download_route_blocks_non_youtube_audio_before_thread(self):
+        import server
+
+        playlist_repository = PlaylistRepositoryStub()
+        queue_stream_repository = QueueStreamRepositoryStub()
+        playlist = Playlist(
+            name="Mixed playlist",
+            streamIds=["youtube", "odysee"],
+            id="playlist-mixed-download",
+        )
+        playlist_repository.playlists[playlist.id] = playlist
+        queue_stream_repository.queue_streams["youtube"] = QueueStream(
+            name="YouTube",
+            uri="https://youtube.com/watch?v=video123",
+            isWeb=True,
+            id="youtube",
+        )
+        queue_stream_repository.queue_streams["odysee"] = QueueStream(
+            name="Odysee",
+            uri="https://odysee.com/@channel/video",
+            isWeb=True,
+            id="odysee",
+        )
+        server.getPlaylistUseCase = GetPlaylistUseCase(playlist_repository)
+        server.downloadPlaylistUseCase = DownloadPlaylistUseCase(
+            playlist_repository,
+            queue_stream_repository,
+            SimpleNamespace(validate_options=lambda audio_only=False: None),
+        )
+        server.app.config.update(TESTING=True)
+
+        with patch.object(
+            server.threading,
+            "Thread",
+            side_effect=AssertionError("Background thread must not start"),
+        ):
+            with patch.object(server, "reloadPage", return_value="reloaded"):
+                with server.app.test_client() as client:
+                    response = client.get(f"/download/{playlist.id}?audioOnly=true")
+                    with client.session_transaction() as session:
+                        messages = session.get("_flashes", [])
+
+        self.assertEqual(response.data, b"reloaded")
+        self.assertTrue(any("YouTube QueueStreams only" in message for category, message in messages))
 
 
 class RepositoryMaintenanceUseCaseTests(unittest.TestCase):

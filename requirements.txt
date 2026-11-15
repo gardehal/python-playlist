@@ -6,6 +6,7 @@ flask_wtf==1.2.2
 grdutil==1.9.3
 jsonpath_ng==1.7.0
 mechanize==0.4.10
+mutagen==1.48.1
 psutil==6.1.1
 python-dotenv==1.2.2
 Requests==2.34.2

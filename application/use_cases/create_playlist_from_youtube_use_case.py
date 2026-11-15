@@ -37,6 +37,7 @@ class CreatePlaylistFromYoutubeUseCase:
             description=description or f"Playlist created from YouTube playlist: {url}",
             playWatchedStreams=play_watched_streams,
             allowDuplicates=allow_duplicates,
+            thumbnailUrl=playlist_metadata.get("thumbnail"),
             favorite=favorite,
             sortOrder=sort_order,
             lastWatchedIndex=0,

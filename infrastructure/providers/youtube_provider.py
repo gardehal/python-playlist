@@ -1,5 +1,5 @@
 from ports.external_stream_provider import ExternalStreamProvider
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 import yt_dlp
 
 class YoutubeProvider(ExternalStreamProvider):
@@ -27,8 +27,27 @@ class YoutubeProvider(ExternalStreamProvider):
                 "is_web": True,
                 "duration_seconds": info.get("duration", 0),
                 "description": info.get("description", ""),
-                "thumbnail": info.get("thumbnail", "")
+                "thumbnail": self._best_thumbnail_url(info)
             }
+
+    @staticmethod
+    def _best_thumbnail_url(info: Dict[str, Any]) -> Optional[str]:
+        thumbnails = info.get("thumbnails") or []
+        capped_thumbnails = [
+            thumbnail
+            for thumbnail in thumbnails
+            if thumbnail.get("url")
+            and thumbnail.get("width")
+            and thumbnail.get("height")
+            and max(thumbnail["width"], thumbnail["height"]) <= 1500
+        ]
+        if capped_thumbnails:
+            return max(
+                capped_thumbnails,
+                key=lambda thumbnail: thumbnail["width"] * thumbnail["height"],
+            )["url"]
+
+        return info.get("thumbnail")
 
     def fetch_playlist(self, uri: str) -> Dict[str, Any]:
         """Fetch playlist metadata and flat video entries without downloading media."""
@@ -49,12 +68,13 @@ class YoutubeProvider(ExternalStreamProvider):
             entries.append({
                 "id": item["id"],
                 "title": item.get("title") or "No title",
-                "thumbnail": item.get("thumbnail"),
+                "thumbnail": self._best_thumbnail_url(item),
             })
 
         return {
             "title": info.get("title"),
             "description": info.get("description"),
+            "thumbnail": self._best_thumbnail_url(info),
             "entries": entries,
         }
 

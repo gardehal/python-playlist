@@ -118,6 +118,12 @@
     flex: 0 0 auto;
 }
 
+#fetch-playlist
+{
+    width: fit-content !important;
+    flex: 0 0 auto;
+}
+
 .audio-download-modal-content
 {
     color: var(--text-color);

@@ -1,4 +1,6 @@
 import threading
+import time
+import uuid
 
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 from flask_wtf import CSRFProtect
@@ -50,6 +52,25 @@ pruneWatchedQueueStreamsUseCase = application.prune_watched_queue_streams
 purgeSoftDeletedEntitiesUseCase = application.purge_soft_deleted_entities
 
 print("Initializing ServerRefactor")
+
+fetchTasks = {}
+activeFetchTasks = {}
+fetchTasksLock = threading.Lock()
+fetchTaskRetentionSeconds = 300
+
+
+def cleanupFetchTasks(now=None):
+    now = now or time.time()
+    expiredTaskIds = [
+        taskId
+        for taskId, task in fetchTasks.items()
+        if task["status"] in {"completed", "failed"}
+        and now - task["finishedAt"] >= fetchTaskRetentionSeconds
+    ]
+    for taskId in expiredTaskIds:
+        task = fetchTasks.pop(taskId)
+        if activeFetchTasks.get(task["playlistId"]) == taskId:
+            activeFetchTasks.pop(task["playlistId"], None)
               
 def reloadPage():
     return redirect(request.referrer or url_for("index"))
@@ -483,27 +504,81 @@ def play(playlistId: str):
         embeddedUrl= embeddedUrl, circumventUrl= circumventUrl, fileUri= fileUri, 
         enumeratedNextQueueStreams= enumeratedNextQueueStreams)
 
-@app.route("/fetch/<playlistId>")
+@app.route("/fetch/<playlistId>", methods=["POST"])
 def fetchPlaylist(playlistId):
     playlist = getPlaylistUseCase.execute(playlistId)
     if not playlist:
-        flash(f"Playlist {playlistId} was not found.", "error")
-        return reloadPage()
-    
-    flash(f"Fetch running in background...", "info")
+        return jsonify({"error": f"Playlist {playlistId} was not found."}), 404
+
+    with fetchTasksLock:
+        cleanupFetchTasks()
+        existingTaskId = activeFetchTasks.get(playlistId)
+        existingTask = fetchTasks.get(existingTaskId)
+        if existingTask and existingTask["status"] in {"pending", "running"}:
+            return jsonify({"taskId": existingTaskId, "alreadyRunning": True}), 202
+
+        taskId = str(uuid.uuid4())
+        fetchTasks[taskId] = {
+            "playlistId": playlistId,
+            "status": "pending",
+            "resultCount": None,
+            "error": None,
+            "finishedAt": None,
+        }
+        activeFetchTasks[playlistId] = taskId
+
     def runFetch():
+        with fetchTasksLock:
+            task = fetchTasks.get(taskId)
+            if task is None:
+                return
+            task["status"] = "running"
         try:
-            fetchPlaylistUseCase.execute(
+            fetchedQueueStreams = fetchPlaylistUseCase.execute(
                 playlist.id,
                 settings.fetchLimitSingleSource,
                 take_new_only=True,
             )
-        except Exception:
+            with fetchTasksLock:
+                task = fetchTasks.get(taskId)
+                if task is not None:
+                    task["status"] = "completed"
+                    task["resultCount"] = len(fetchedQueueStreams or [])
+                    task["finishedAt"] = time.time()
+        except Exception as error:
             app.logger.exception("Background playlist fetch failed")
+            with fetchTasksLock:
+                task = fetchTasks.get(taskId)
+                if task is not None:
+                    task["status"] = "failed"
+                    task["error"] = str(error) or "Playlist fetch failed."
+                    task["finishedAt"] = time.time()
 
-    threading.Thread(target= runFetch, daemon= True).start()
-    
-    return reloadPage()
+    try:
+        threading.Thread(target=runFetch, daemon=True).start()
+    except Exception as error:
+        with fetchTasksLock:
+            fetchTasks[taskId]["status"] = "failed"
+            fetchTasks[taskId]["error"] = str(error) or "Could not start playlist fetch."
+            fetchTasks[taskId]["finishedAt"] = time.time()
+        return jsonify({"taskId": taskId, "error": fetchTasks[taskId]["error"]}), 500
+
+    return jsonify({"taskId": taskId, "alreadyRunning": False}), 202
+
+
+@app.route("/fetch/tasks/<taskId>")
+def fetchTaskStatus(taskId):
+    with fetchTasksLock:
+        cleanupFetchTasks()
+        task = fetchTasks.get(taskId)
+        if task is None:
+            return jsonify({"error": "Fetch task was not found or has expired."}), 404
+        return jsonify({
+            "taskId": taskId,
+            "status": task["status"],
+            "resultCount": task["resultCount"],
+            "error": task["error"],
+        })
 
 @app.route("/download/<playlistId>")
 def downloadPlaylist(playlistId):

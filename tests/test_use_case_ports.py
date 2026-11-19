@@ -1249,18 +1249,90 @@ class MediaUseCaseTests(unittest.TestCase):
         requests = []
         server_refactor.getPlaylistUseCase = GetPlaylistUseCase(repository)
         server_refactor.fetchPlaylistUseCase = SimpleNamespace(
-            execute=lambda *args, **kwargs: requests.append((args, kwargs))
+            execute=lambda *args, **kwargs: requests.append((args, kwargs)) or [QueueStream(), QueueStream()]
         )
-        server_refactor.app.config.update(TESTING=True)
+        server_refactor.app.config.update(TESTING=True, WTF_CSRF_ENABLED=False)
 
         with patch.object(server_refactor.threading, "Thread", ImmediateThread):
-            with patch.object(server_refactor, "reloadPage", return_value="queued"):
-                with patch.object(server_refactor.settings, "fetchLimitSingleSource", 19):
-                    with server_refactor.app.test_client() as client:
-                        response = client.get(f"/fetch/{playlist.id}")
+            with patch.object(server_refactor.settings, "fetchLimitSingleSource", 19):
+                with server_refactor.app.test_client() as client:
+                    response = client.post(f"/fetch/{playlist.id}")
+                    task_id = response.json["taskId"]
+                    status_response = client.get(f"/fetch/tasks/{task_id}")
 
-        self.assertEqual(response.data, b"queued")
+        self.assertEqual(response.status_code, 202)
+        self.assertFalse(response.json["alreadyRunning"])
+        self.assertEqual(status_response.json["status"], "completed")
+        self.assertEqual(status_response.json["resultCount"], 2)
         self.assertEqual(requests, [((playlist.id, 19), {"take_new_only": True})])
+
+    def test_refactored_fetch_route_reports_pending_and_prevents_duplicate_starts(self):
+        import server as server_refactor
+
+        class DeferredThread:
+            started = []
+
+            def __init__(self, target, daemon):
+                self.target = target
+
+            def start(self):
+                self.started.append(self.target)
+
+        playlist = Playlist(name="Pending fetch", id="playlist-fetch-pending")
+        repository = PlaylistRepositoryStub()
+        repository.playlists[playlist.id] = playlist
+        server_refactor.getPlaylistUseCase = GetPlaylistUseCase(repository)
+        server_refactor.fetchPlaylistUseCase = SimpleNamespace(execute=lambda *args, **kwargs: [])
+        server_refactor.app.config.update(TESTING=True, WTF_CSRF_ENABLED=False)
+
+        with patch.object(server_refactor, "fetchTasks", {}), \
+             patch.object(server_refactor, "activeFetchTasks", {}), \
+             patch.object(server_refactor, "fetchTasksLock", server_refactor.threading.Lock()), \
+             patch.object(server_refactor.threading, "Thread", DeferredThread):
+            with server_refactor.app.test_client() as client:
+                first_response = client.post(f"/fetch/{playlist.id}")
+                task_id = first_response.json["taskId"]
+                duplicate_response = client.post(f"/fetch/{playlist.id}")
+                status_response = client.get(f"/fetch/tasks/{task_id}")
+
+        self.assertEqual(first_response.status_code, 202)
+        self.assertTrue(duplicate_response.json["alreadyRunning"])
+        self.assertEqual(duplicate_response.json["taskId"], task_id)
+        self.assertEqual(status_response.json["status"], "pending")
+        self.assertEqual(len(DeferredThread.started), 1)
+
+    def test_refactored_fetch_route_captures_worker_failure(self):
+        import server as server_refactor
+
+        class ImmediateThread:
+            def __init__(self, target, daemon):
+                self.target = target
+
+            def start(self):
+                self.target()
+
+        playlist = Playlist(name="Failed fetch", id="playlist-fetch-failed")
+        repository = PlaylistRepositoryStub()
+        repository.playlists[playlist.id] = playlist
+        server_refactor.getPlaylistUseCase = GetPlaylistUseCase(repository)
+        server_refactor.fetchPlaylistUseCase = SimpleNamespace(
+            execute=lambda *args, **kwargs: (_ for _ in ()).throw(RuntimeError("provider unavailable"))
+        )
+        server_refactor.app.config.update(TESTING=True, WTF_CSRF_ENABLED=False)
+
+        with patch.object(server_refactor, "fetchTasks", {}), \
+             patch.object(server_refactor, "activeFetchTasks", {}), \
+             patch.object(server_refactor, "fetchTasksLock", server_refactor.threading.Lock()), \
+             patch.object(server_refactor.threading, "Thread", ImmediateThread), \
+             patch.object(server_refactor.app.logger, "exception") as log_exception:
+            with server_refactor.app.test_client() as client:
+                response = client.post(f"/fetch/{playlist.id}")
+                status_response = client.get(f"/fetch/tasks/{response.json['taskId']}")
+
+        self.assertEqual(response.status_code, 202)
+        self.assertEqual(status_response.json["status"], "failed")
+        self.assertEqual(status_response.json["error"], "provider unavailable")
+        log_exception.assert_called_once_with("Background playlist fetch failed")
 
     def test_refactored_download_route_dispatches_audio_only_option(self):
         import server as server_refactor

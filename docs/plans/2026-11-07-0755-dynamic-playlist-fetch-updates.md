@@ -30,9 +30,9 @@ Several successful create and edit POST handlers call another view directly inst
 
 ## Todos
 
-- [ ] Add in-memory fetch task state and JSON start/status endpoints in `server.py`.
-- [ ] Capture background fetch success and exceptions in task status; do not call `flash()` from the worker.
-- [ ] Update Fetch new to show progress, prevent duplicate starts, poll, and recover from terminal and network errors with visible feedback.
+- [x] Add in-memory fetch task state and JSON start/status endpoints in `server.py`.
+- [x] Capture background fetch success and exceptions in task status; do not call `flash()` from the worker.
+- [x] Update Fetch new to show start, completion/result, failure, and prolonged status-network-error toasts; prevent duplicate starts and restore the control.
 - [ ] Refresh the QueueStreams section and count after successful fetch without reloading; retain working watched controls and correct row state.
 - [ ] Redirect affected successful form submissions and confirmation cancels to explicit appropriate landing pages.
 - [ ] Add focused tests for task lifecycle, duplicate starts, failure/recovery, refreshed controls, and post/redirect/get navigation.
@@ -57,3 +57,8 @@ Several successful create and edit POST handlers call another view directly inst
 - Verify standard flash messages, invalid-form errors, and server-rendered navigation remain intact.
 
 ## Results
+
+- First vertical slice implemented: `POST /fetch/<playlistId>` returns a task ID, while `GET /fetch/tasks/<taskId>` reports pending/running/completed/failed status and the number of new QueueStreams.
+- Fetch tasks are deduplicated per playlist, terminal task records expire after five minutes, and worker errors are logged and surfaced through status rather than Flask flash state.
+- Playlist details now show a start toast followed by a result-count completion toast or a failure toast. The feedback uses text insertion for messages and the fetch button recovers after completion or connection loss.
+- Focused server/use-case and details-template tests passed; `python -m unittest discover -s tests -p "test*.py" -q` passed 85 tests. `compileall` for changed Python files and `git diff --check` also passed.

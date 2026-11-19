@@ -162,6 +162,9 @@ class QueueStreamNamingTests(unittest.TestCase):
                 response = client.get(f"/playlists/{playlist.id}")
 
         self.assertEqual(response.status_code, 200)
+        self.assertIn(b'id="fetch-playlist"', response.data)
+        self.assertIn(b"Playlist fetch started.", response.data)
+        self.assertIn(b"Fetch completed:", response.data)
         self.assertIn(b"Download audio (MP3)", response.data)
         self.assertIn(b"audio-download-trigger", response.data)
         self.assertIn(b"audio-download-modal-content", response.data)

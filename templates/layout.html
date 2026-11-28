@@ -12,7 +12,7 @@
         </head>
 
     <body>
-        <div id="toast-container" class="toast-container position-absolute top-0 end-0 p-3" style="z-index: 999;">
+        <div id="toast-container" class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 999;">
             {% with messages = get_flashed_messages(with_categories=True) %}
                 {% if messages %}
                     {% for category, message in messages %}
@@ -158,5 +158,263 @@
         </script>
 
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+        <script>
+            const fetchTaskStorageKey = 'python-playlists.active-fetch-tasks';
+            const activeFetchPolls = new Set();
+
+            function readStoredFetchTasks() {
+                try {
+                    const tasks = JSON.parse(sessionStorage.getItem(fetchTaskStorageKey) || '{}');
+                    return tasks && typeof tasks === 'object' && !Array.isArray(tasks) ? tasks : {};
+                } catch (error) {
+                    return {};
+                }
+            }
+
+            function storeFetchTask(taskId, taskInfo) {
+                try {
+                    const tasks = readStoredFetchTasks();
+                    tasks[taskId] = taskInfo;
+                    sessionStorage.setItem(fetchTaskStorageKey, JSON.stringify(tasks));
+                } catch (error) {
+                    return false;
+                }
+                return true;
+            }
+
+            function removeStoredFetchTask(taskId) {
+                try {
+                    const tasks = readStoredFetchTasks();
+                    delete tasks[taskId];
+                    if (Object.keys(tasks).length) {
+                        sessionStorage.setItem(fetchTaskStorageKey, JSON.stringify(tasks));
+                    } else {
+                        sessionStorage.removeItem(fetchTaskStorageKey);
+                    }
+                } catch (error) {
+                    return;
+                }
+            }
+
+            function showToast(message, category) {
+                const toastContainer = document.getElementById('toast-container');
+                const toast = document.createElement('div');
+                toast.className = `toast align-items-center text-bg-${category} border-0`;
+                toast.setAttribute('role', 'status');
+                toast.setAttribute('aria-live', 'polite');
+                toast.setAttribute('aria-atomic', 'true');
+
+                const content = document.createElement('div');
+                content.className = 'd-flex';
+                const body = document.createElement('div');
+                body.className = 'toast-body';
+                body.textContent = message;
+                const closeButton = document.createElement('button');
+                closeButton.type = 'button';
+                closeButton.className = 'btn-close btn-close-white me-2 m-auto';
+                closeButton.dataset.bsDismiss = 'toast';
+                closeButton.setAttribute('aria-label', 'Close');
+
+                content.append(body, closeButton);
+                toast.append(content);
+                toastContainer.append(toast);
+                const toastInstance = bootstrap.Toast.getOrCreateInstance(toast, { autohide: false });
+                toastInstance.show();
+                toast.addEventListener('hidden.bs.toast', () => toast.remove());
+            }
+
+            function createFetchToast(message) {
+                const toastContainer = document.getElementById('toast-container');
+                const toast = document.createElement('div');
+                toast.className = 'toast align-items-center text-bg-info border-0';
+                toast.setAttribute('role', 'status');
+                toast.setAttribute('aria-live', 'polite');
+                toast.setAttribute('aria-atomic', 'true');
+                toast.dataset.bsAutohide = 'false';
+
+                const content = document.createElement('div');
+                content.className = 'd-flex align-items-center';
+                const body = document.createElement('div');
+                body.className = 'toast-body d-flex align-items-center gap-2';
+                const spinner = document.createElement('span');
+                spinner.className = 'spinner-border spinner-border-sm';
+                spinner.setAttribute('aria-hidden', 'true');
+                const messageText = document.createElement('span');
+                messageText.textContent = message;
+                body.append(spinner, messageText);
+                const closeButton = document.createElement('button');
+                closeButton.type = 'button';
+                closeButton.className = 'btn-close btn-close-white me-2 m-auto';
+                closeButton.dataset.bsDismiss = 'toast';
+                closeButton.setAttribute('aria-label', 'Close');
+
+                content.append(body, closeButton);
+                toast.append(content);
+                toastContainer.append(toast);
+                const toastInstance = bootstrap.Toast.getOrCreateInstance(toast, { autohide: false });
+                toastInstance.show();
+                toast.addEventListener('hidden.bs.toast', () => toast.remove());
+                return { toast, toastInstance, messageText };
+            }
+
+            function dismissFetchToast(fetchToast) {
+                if (!fetchToast.toast.classList.contains('show')) {
+                    return Promise.resolve();
+                }
+
+                return new Promise(resolve => {
+                    fetchToast.toast.addEventListener('hidden.bs.toast', resolve, { once: true });
+                    fetchToast.toastInstance.hide();
+                });
+            }
+
+            async function finishFetchTask(taskId, fetchToast, message, category) {
+                if (fetchToast) {
+                    await dismissFetchToast(fetchToast);
+                }
+                removeStoredFetchTask(taskId);
+                showToast(message, category);
+            }
+
+            async function pollFetchTask(taskId, taskInfo, fetchButton, fetchToast = null) {
+                if (activeFetchPolls.has(taskId)) {
+                    return;
+                }
+
+                activeFetchPolls.add(taskId);
+                if (fetchButton) {
+                    fetchButton.disabled = true;
+                }
+                let networkFailures = 0;
+
+                try {
+                    while (true) {
+                        await new Promise(resolve => window.setTimeout(resolve, networkFailures >= 5 ? 5000 : 3000));
+                        let statusResponse;
+                        try {
+                            statusResponse = await fetch(`/fetch/tasks/${encodeURIComponent(taskId)}`, { cache: 'no-store' });
+                        } catch (error) {
+                            networkFailures += 1;
+                            if (fetchToast && networkFailures >= 5) {
+                                fetchToast.messageText.textContent = 'Connection lost. Retrying fetch status...';
+                            }
+                            continue;
+                        }
+
+                        if (statusResponse.status === 404) {
+                            await finishFetchTask(taskId, fetchToast, 'Fetch status expired or is no longer available.', 'warning');
+                            return;
+                        }
+
+                        let statusData;
+                        try {
+                            statusData = await statusResponse.json();
+                        } catch (error) {
+                            networkFailures += 1;
+                            if (fetchToast && networkFailures >= 5) {
+                                fetchToast.messageText.textContent = 'Connection lost. Retrying fetch status...';
+                            }
+                            continue;
+                        }
+
+                        if (!statusResponse.ok) {
+                            networkFailures += 1;
+                            if (fetchToast && networkFailures >= 5) {
+                                fetchToast.messageText.textContent = 'Connection lost. Retrying fetch status...';
+                            }
+                            continue;
+                        }
+                        networkFailures = 0;
+
+                        if (statusData.status === 'completed') {
+                            const count = statusData.resultCount;
+                            const label = count === 1 ? 'QueueStream' : 'QueueStreams';
+                            await finishFetchTask(taskId, fetchToast, `Fetch completed: ${count} new ${label}.`, 'success');
+                            return;
+                        }
+                        if (statusData.status === 'failed') {
+                            await finishFetchTask(taskId, fetchToast, `Fetch failed: ${statusData.error}`, 'danger');
+                            return;
+                        }
+                    }
+                } catch (error) {
+                    await finishFetchTask(taskId, fetchToast, error.message, 'danger');
+                } finally {
+                    activeFetchPolls.delete(taskId);
+                    if (fetchButton) {
+                        fetchButton.disabled = false;
+                    }
+                }
+            }
+
+            async function startPlaylistFetch(fetchButton) {
+                fetchButton.disabled = true;
+                const fetchToast = createFetchToast('Playlist fetch started.');
+                let taskId = null;
+
+                try {
+                    const startResponse = await fetch(fetchButton.dataset.startUrl, {
+                        method: 'POST',
+                        headers: { 'X-CSRFToken': fetchButton.dataset.csrfToken }
+                    });
+                    const startData = await startResponse.json();
+                    if (!startResponse.ok) {
+                        throw new Error(startData.error || 'Could not start playlist fetch.');
+                    }
+                    if (!startData.taskId) {
+                        throw new Error('The fetch start response did not include a task ID.');
+                    }
+                    if (startData.alreadyRunning) {
+                        fetchToast.messageText.textContent = 'Fetch already in progress.';
+                    }
+
+                    taskId = startData.taskId;
+                    storeFetchTask(taskId, {
+                        playlistId: fetchButton.dataset.playlistId,
+                        playlistName: fetchButton.dataset.playlistName
+                    });
+                    await pollFetchTask(taskId, {
+                        playlistId: fetchButton.dataset.playlistId,
+                        playlistName: fetchButton.dataset.playlistName
+                    }, fetchButton, fetchToast);
+                } catch (error) {
+                    if (taskId) {
+                        removeStoredFetchTask(taskId);
+                    }
+                    await finishFetchTask(taskId, fetchToast, error.message, 'danger');
+                    fetchButton.disabled = false;
+                }
+            }
+
+            function resumeActiveFetches() {
+                const tasks = readStoredFetchTasks();
+                Object.entries(tasks).forEach(([taskId, taskInfo]) => {
+                    if (!taskInfo || typeof taskInfo.playlistId !== 'string') {
+                        removeStoredFetchTask(taskId);
+                        return;
+                    }
+
+                    const fetchButton = document.getElementById('fetch-playlist');
+                    const matchingButton = fetchButton && fetchButton.dataset.playlistId === taskInfo.playlistId
+                        ? fetchButton
+                        : null;
+                    pollFetchTask(taskId, taskInfo, matchingButton);
+                });
+            }
+
+            document.addEventListener('click', event => {
+                const fetchButton = event.target.closest('#fetch-playlist');
+                if (fetchButton) {
+                    event.preventDefault();
+                    startPlaylistFetch(fetchButton);
+                }
+            });
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', resumeActiveFetches, { once: true });
+            } else {
+                resumeActiveFetches();
+            }
+        </script>
     </body>
 </html>

@@ -112,13 +112,7 @@
     color: var(--hover-color) !important;
 }
 
-.audio-download-trigger
-{
-    width: fit-content !important;
-    flex: 0 0 auto;
-}
-
-#fetch-playlist
+.content-sized-button
 {
     width: fit-content !important;
     flex: 0 0 auto;
